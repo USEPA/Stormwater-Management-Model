@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
+//             04/04/14   (Build 5.1.003)
 //   Author:   L. Rossman (EPA)
 //             R. Dickinson (CDM)
 //
@@ -68,7 +69,7 @@ static TUHGroup*  UHGroup;             // processing data for each UH group
 static int        RdiiStep;            // RDII time step (sec)
 static int        NumRdiiNodes;        // number of nodes w/ RDII data
 static int*       RdiiNodeIndex;       // indexes of nodes w/ RDII data
-static double*    RdiiNodeFlow;        // inflows for nodes with RDII 
+static REAL4*     RdiiNodeFlow;        // inflows for nodes with RDII          //(5.1.003)
 static int        RdiiFlowUnits;       // RDII flow units code
 static DateTime   RdiiStartDate;       // start date of RDII inflow period
 static DateTime   RdiiEndDate;         // end date of RDII inflow period 
@@ -560,7 +561,7 @@ int readRdiiFileHeader()
     // --- allocate memory for RdiiNodeIndex & RdiiNodeFlow arrays
     RdiiNodeIndex = (int *) calloc(NumRdiiNodes, sizeof(int));
     if ( !RdiiNodeIndex ) return ERR_MEMORY;
-    RdiiNodeFlow = (double *) calloc(NumRdiiNodes, sizeof(double));
+    RdiiNodeFlow = (REAL4 *) calloc(NumRdiiNodes, sizeof(REAL4));              //(5.1.003)
     if ( !RdiiNodeFlow ) return ERR_MEMORY;
 
     // --- read indexes of RDII nodes
@@ -619,7 +620,7 @@ int readRdiiTextFileHeader()
     // --- allocate memory for RdiiNodeIndex & RdiiNodeFlow arrays
     RdiiNodeIndex = (int *) calloc(NumRdiiNodes, sizeof(int));
     if ( !RdiiNodeIndex ) return ERR_MEMORY;
-    RdiiNodeFlow = (double *) calloc(NumRdiiNodes, sizeof(double));
+    RdiiNodeFlow = (REAL4 *) calloc(NumRdiiNodes, sizeof(REAL4));              //(5.1.003)
     if ( !RdiiNodeFlow ) return ERR_MEMORY;
 
     // --- read names of RDII nodes from file & save their indexes
@@ -654,7 +655,7 @@ void readRdiiFlows()
         if ( feof(Frdii.file) ) return;
         fread(&RdiiStartDate, sizeof(DateTime), 1, Frdii.file);
         if ( RdiiStartDate == NO_DATE ) return;
-        if ( fread(RdiiNodeFlow, sizeof(REAL4), NumRdiiNodes, Frdii.file)
+        if ( fread(RdiiNodeFlow, sizeof(REAL4), NumRdiiNodes, Frdii.file)      //(5.1.003)
             < (size_t)NumRdiiNodes ) RdiiStartDate = NO_DATE;
         else RdiiEndDate = datetime_addSeconds(RdiiStartDate, RdiiStep);
     }
@@ -672,7 +673,7 @@ void readRdiiTextFlows()
     int    i, n;
     int    yr = 0, mon = 0, day = 0,
 		   hr = 0, min = 0, sec = 0;   // year, month, day, hour, minute, second
-    float  x;                          // RDII flow in original units
+    double x;                          // RDII flow in original units          //(5.1.003)
     char   line[MAXLINE+1];            // line from RDII data file
     char   s[MAXLINE+1];               // node ID label (not used)
 
@@ -684,7 +685,7 @@ void readRdiiTextFlows()
         n = sscanf(line, "%s %d %d %d %d %d %d %f",
             s, &yr, &mon, &day, &hr, &min, &sec, &x);
         if ( n < 8 ) return;
-        RdiiNodeFlow[i] = x / Qcf[RdiiFlowUnits];
+        RdiiNodeFlow[i] = (REAL4)(x / Qcf[RdiiFlowUnits]);                     //(5.1.003)
     }
     RdiiStartDate = datetime_encodeDate(yr, mon, day) +
                     datetime_encodeTime(hr, min, sec);
@@ -939,7 +940,7 @@ int  allocRdiiMemory()
     // --- allocate memory for RDII indexes & inflow at each node w/ RDII data
     RdiiNodeIndex = (int *) calloc(NumRdiiNodes, sizeof(int));
     if ( !RdiiNodeIndex ) return FALSE;
-    RdiiNodeFlow = (double *) calloc(NumRdiiNodes, sizeof(double));
+    RdiiNodeFlow = (REAL4 *) calloc(NumRdiiNodes, sizeof(REAL4));              //(5.1.003)
     if ( !RdiiNodeFlow ) return FALSE;
     return TRUE;
 }
@@ -1330,7 +1331,7 @@ void getUnitHydRdii(DateTime currentDate)
         {
             if ( UHGroup[j].uh[k].hasPastRain )
             {
-                UHGroup[j].rdii += getUnitHydConvol(j, k, rainInterval);       //(5.0.017 - LR)
+                UHGroup[j].rdii += getUnitHydConvol(j, k, rainInterval);
             }
         }
     }
@@ -1452,7 +1453,7 @@ int getNodeRdii()
         else hasRdii = TRUE;
 
         // --- update total RDII volume
-        RdiiNodeFlow[n] = rdii;
+        RdiiNodeFlow[n] = (REAL4)rdii;
         if ( rdii > 0.0 )
         {
             TotalRdiiVol += rdii * (double)RdiiStep;
@@ -1471,7 +1472,7 @@ void saveRdiiFlows(DateTime currentDate)
 //
 {
     fwrite(&currentDate, sizeof(DateTime), 1, Frdii.file);
-    fwrite(RdiiNodeFlow, sizeof(REAL4), NumRdiiNodes, Frdii.file);
+    fwrite(RdiiNodeFlow, sizeof(REAL4), NumRdiiNodes, Frdii.file);             //(5.1.003)
 }
 
 //=============================================================================
