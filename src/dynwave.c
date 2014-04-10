@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14   (5.1.001)
+//             03/28/14   (5.1.002)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -21,7 +22,7 @@
 #include "headers.h"
 #include <malloc.h>
 #include <math.h>
-#include <omp.h>
+//#include <omp.h>
 
 //-----------------------------------------------------------------------------
 //     Constants 
@@ -562,8 +563,10 @@ void setNodeDepth(int i, double dt)
     if ( yLast <= yCrown || Node[i].type == STORAGE || isPonded )
     {
         dy = dV / surfArea;
-        Xnode[i].oldSurfArea = Xnode[i].newSurfArea;
         yNew = yOld + dy;
+
+        // --- save non-ponded surface area for use in surcharge algorithm     //(5.1.002)
+        if ( !isPonded ) Xnode[i].oldSurfArea = surfArea;                      //(5.1.002)
 
         // --- apply under-relaxation to new depth estimate
         if ( Steps > 0 )
@@ -601,7 +604,7 @@ void setNodeDepth(int i, double dt)
         yNew = yLast + dy;
         if ( yNew < yCrown ) yNew = yCrown - FUDGE;
 
-        // --- don't allow a ponded node to rise much above full depth
+        // --- don't allow a newly ponded node to rise much above full depth
         if ( canPond && yNew > Node[i].fullDepth )
             yNew = Node[i].fullDepth + FUDGE;
     }

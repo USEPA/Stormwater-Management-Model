@@ -21,9 +21,9 @@
 //  Leave only one of the following 3 lines un-commented,
 //  depending on the choice of compilation target
 //**********************************************************
-//#define CLE     /* Compile as a command line executable */
+#define CLE     /* Compile as a command line executable */
 //#define SOL     /* Compile as a shared object library */
-#define DLL     /* Compile as a Windows DLL */
+//#define DLL     /* Compile as a Windows DLL */
 
 // --- define WINDOWS
 #undef WINDOWS
@@ -286,7 +286,7 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
         // --- write project title to report file & validate data
         report_writeTitle();
         project_validate();
-	report_writeOptions();
+	    report_writeOptions();
 
         // --- write input summary to report file if requested
         if ( RptFlags.input ) inputrpt_writeInput();

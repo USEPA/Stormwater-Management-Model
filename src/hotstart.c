@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14  (Build 5.1.001)
+//             03/28/14  (Build 5.1.002)
 //   Author:   L. Rossman (EPA)
 //
 //   Hot Start file functions.
@@ -111,13 +112,17 @@ int openHotstartFile1()
         }
         fileVersion = 1;
     }
+
+	sprintf(Msg, "\nfStampx = %s, fileVersion = %d", fStampx, fileVersion);
+	report_writeLine(Msg);
+
     nSubcatch = -1;
     nNodes = -1;
     nLinks = -1;
     nPollut = -1;
     nLandUses = -1;
     flowUnits = -1;
-    if ( fileVersion == 2 )
+    if ( fileVersion >= 2 )                                                    //(5.1.002)
     {    
         fread(&nSubcatch, sizeof(int), 1, Fhotstart1.file);
     }

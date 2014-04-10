@@ -140,11 +140,11 @@ int massbal_open()
     // --- add contribution of minimum surface area to initial storage
     if ( RouteModel == DW )
     {
-	for (j = 0; j < Nobjects[NODE]; j++)
-	{
+	    for (j = 0; j < Nobjects[NODE]; j++)
+	    {
             if ( Node[j].type != STORAGE ) FlowTotals.initStorage +=
-		Node[j].initDepth * MinSurfArea;
-	}
+		        Node[j].initDepth * MinSurfArea;
+	    }
     }
 
     // --- initialize arrays to null
