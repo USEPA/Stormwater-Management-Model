@@ -2,20 +2,8 @@
 //   text.h
 //
 //   Project: EPA SWMM5
-//   Version: 5.0
-//   Date:    6/19/07   (Build 5.0.010)
-//            7/16/07   (Build 5.0.011)
-//            2/4/08    (Build 5.0.012)
-//            3/11/08   (Build 5.0.013)
-//            1/21/09   (Build 5.0.014)
-//            4/10/09   (Build 5.0.015)
-//            6/22/09   (Build 5.0.016)
-//            10/7/09   (Build 5.0.017)
-//            11/18/09  (Build 5.0.018)
-//            07/30/10  (Build 5.0.019)
-//            08/23/10  (Build 5.0.020)
-//            09/27/10  (Build 5.0.021)
-//            04/20/11  (Build 5.0.022)
+//   Version: 5.1
+//   Date:    03/19/14  (Build 5.1.001)
 //   Author:  L. Rossman
 //
 //   Text strings
@@ -23,7 +11,7 @@
 
 #define FMT01 \
  "\n Correct syntax is:\n swmm5 <input file> <report file> <output file>\n"
-#define FMT02 "\n... EPA-SWMM 5.0 (Build 5.0.022)\n"                           //(5.0.022 - LR)
+#define FMT02 "\n... EPA-SWMM 5.1 (Build 5.1.001)\n"
 
 #define FMT03 " There are errors.\n"
 #define FMT04 " There are warnings.\n"
@@ -31,7 +19,7 @@
 #define FMT06 "\n o  Retrieving project data"
 #define FMT07 "\n o  Writing output report"
 #define FMT08 \
-  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.0 (Build 5.0.022)"         //(5.0.022 - LR)
+  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build 5.1.001)"
 #define FMT09 \
   "\n  --------------------------------------------------------------"
 #define FMT10 "\n"
@@ -45,10 +33,10 @@
 #define FMT18  "at line %d of %s] section:"
 #define FMT19  "\n  Maximum error count exceeded."
 #define FMT20  "\n\n  Analysis begun on:  %s"
-#define FMT20a "  Analysis ended on:  %s"                                      //(5.0.011 - LR)
+#define FMT20a "  Analysis ended on:  %s"
 #define FMT21  "  Total elapsed time: "
 
-// Warning messages                                                            //(5.0.015 - LR)
+// Warning messages
 #define WARN01 "WARNING 01: wet weather time step reduced to recording interval for Rain Gage" 
 #define WARN02 "WARNING 02: maximum depth increased for Node"
 #define WARN03 "WARNING 03: negative offset ignored for Link"
@@ -56,8 +44,9 @@
 #define WARN05 "WARNING 05: minimum slope used for Conduit"
 #define WARN06 "WARNING 06: dry weather time step increased to the wet weather time step"
 #define WARN07 "WARNING 07: routing time step reduced to the wet weather time step"
-#define WARN08 "WARNING 08: elevation drop exceeds length for Conduit"         //(5.0.018 - LR)
-#define WARN09 "WARNING 09: time series interval greater than recording interval for Rain Gage" //(5.0.018 - LR)
+#define WARN08 "WARNING 08: elevation drop exceeds length for Conduit"
+#define WARN09 "WARNING 09: time series interval greater than recording interval for Rain Gage"
+#define WARN10 "WARNING 10: crest elevation is below downstream invert for regulator Link"
 
 // Analysis Option Keywords
 #define  w_FLOW_UNITS        "FLOW_UNITS"
@@ -88,12 +77,16 @@
 #define  w_TEMPDIR           "TEMPDIR"
 #define  w_IGNORE_RAINFALL   "IGNORE_RAINFALL"
 #define  w_FORCE_MAIN_EQN    "FORCE_MAIN_EQUATION"
-#define  w_LINK_OFFSETS      "LINK_OFFSETS"                                    //(5.0.012 - LR)
-#define  w_MIN_SLOPE         "MIN_SLOPE"                                       //(5.0.014 - LR)
-#define  w_IGNORE_SNOWMELT   "IGNORE_SNOWMELT"                                 //(5.0.014 - LR)
-#define  w_IGNORE_GWATER     "IGNORE_GROUNDWATER"                              //(5.0.014 - LR)
-#define  w_IGNORE_ROUTING    "IGNORE_ROUTING"                                  //(5.0.014 - LR)
-#define  w_IGNORE_QUALITY    "IGNORE_QUALITY"                                  //(5.0.014 - LR)
+#define  w_LINK_OFFSETS      "LINK_OFFSETS"
+#define  w_MIN_SLOPE         "MIN_SLOPE"
+#define  w_IGNORE_SNOWMELT   "IGNORE_SNOWMELT"
+#define  w_IGNORE_GWATER     "IGNORE_GROUNDWATER"
+#define  w_IGNORE_ROUTING    "IGNORE_ROUTING"
+#define  w_IGNORE_QUALITY    "IGNORE_QUALITY"
+#define  w_MAX_TRIALS        "MAX_TRIALS"
+#define  w_HEAD_TOL          "HEAD_TOLERANCE"
+#define  w_SYS_FLOW_TOL      "SYS_FLOW_TOL"
+#define  w_LAT_FLOW_TOL      "LAT_FLOW_TOL"
 
 // Flow Units
 #define  w_CFS               "CFS"
@@ -116,13 +109,14 @@
 
 // Infiltration Methods
 #define  w_HORTON            "HORTON"
+#define  w_MOD_HORTON        "MODIFIED_HORTON"
 #define  w_GREEN_AMPT        "GREEN_AMPT"
 #define  w_CURVE_NUMEBR      "CURVE_NUMBER"
 
-// Normal Flow Criteria                                                        //(5.0.010 - LR)
-#define  w_SLOPE             "SLOPE"                                           //(5.0.010 - LR)
-#define  w_FROUDE            "FROUDE"                                          //(5.0.010 - LR)
-#define  w_BOTH              "BOTH"                                            //(5.0.010 - LR)
+// Normal Flow Criteria
+#define  w_SLOPE             "SLOPE"
+#define  w_FROUDE            "FROUDE"
+#define  w_BOTH              "BOTH"
 
 // Snowmelt Data Keywords
 #define  w_WINDSPEED         "WINDSPEED"
@@ -133,10 +127,10 @@
 // Evaporation Data Options
 #define  w_CONSTANT          "CONSTANT"
 #define  w_TIMESERIES        "TIMESERIES"
-#define  w_TEMPERATURE       "TEMPERATURE"                                     //(5.0.016 - LR)
+#define  w_TEMPERATURE       "TEMPERATURE"
 #define  w_FILE              "FILE"
-#define  w_RECOVERY          "RECOVERY"                                        //(5.0.014 - LR)
-#define  w_DRYONLY           "DRY_ONLY"                                        //(5.0.019 - LR)
+#define  w_RECOVERY          "RECOVERY"
+#define  w_DRYONLY           "DRY_ONLY"
 
 // DWF Time Pattern Types
 #define  w_MONTHLY           "MONTHLY"
@@ -149,10 +143,10 @@
 #define  w_VOLUME            "VOLUME"
 #define  w_CUMULATIVE        "CUMULATIVE"
 
-// Unit Hydrograph Types                                                       //(5.0.015 - LR)
-#define  w_SHORT             "SHORT"                                           //(5.0.015 - LR)
-#define  w_MEDIUM            "MEDIUM"                                          //(5.0.015 - LR)
-#define  w_LONG              "LONG"                                            //(5.0.015 - LR)
+// Unit Hydrograph Types
+#define  w_SHORT             "SHORT"
+#define  w_MEDIUM            "MEDIUM"
+#define  w_LONG              "LONG"
 
 // Internal Runoff Routing Options
 #define  w_OUTLET            "OUTLET"
@@ -177,7 +171,7 @@
 #define  w_TYPE2             "TYPE2"
 #define  w_TYPE3             "TYPE3"
 #define  w_TYPE4             "TYPE4"
-#define  w_IDEAL             "IDEAL"                                           //(5.0.010 - LR)
+#define  w_IDEAL             "IDEAL"
 
 // Pump Curve Variables
 #define  w_VOLUME            "VOLUME"
@@ -217,14 +211,13 @@
 #define  w_BASKETHANDLE      "BASKETHANDLE"
 #define  w_SEMICIRCULAR      "SEMICIRCULAR"
 #define  w_IRREGULAR         "IRREGULAR"
-#define  w_CUSTOM            "CUSTOM"                                          //(5.0.010 - LR)
-#define  w_FORCE_MAIN        "FORCE_MAIN"                                      //(5.0.010 - LR)
-#define  w_H_W               "H-W"                                             //(5.0.010 - LR)
-#define  w_D_W               "D-W"                                             //(5.0.010 - LR)
+#define  w_CUSTOM            "CUSTOM"
+#define  w_FORCE_MAIN        "FORCE_MAIN"
+#define  w_H_W               "H-W"
+#define  w_D_W               "D-W" 
 
-// Link Offset Options                                                         //(5.0.012 - LR)
-#define  w_ELEVATION         "ELEVATION"                                       //(5.0.012 - LR)
-         // w_DEPTH defined previously.                                        //(5.0.012 - LR)
+// Link Offset Options
+#define  w_ELEVATION         "ELEVATION"
 
 // Transect Data Input Codes
 #define  w_NC                "NC"
@@ -235,13 +228,15 @@
 #define  w_INCHES            "IN"
 #define  w_MMETER            "MM"
 
-// Flow Volume Units                                                           //(5.0.012 - LR)
-#define  w_MGAL              "10^6 gal"                                        //(5.0.014 - LR)
-#define  w_MLTRS             "10^6 ltr"                                        //(5.0.014 - LR)
+// Flow Volume Units
+#define  w_MGAL              "10^6 gal"
+#define  w_MLTRS             "10^6 ltr"
+#define  w_GAL               "gal" 
+#define  w_LTR               "ltr"
 
-// Ponded Depth Units                                                          //(5.0.019 - LR)
-#define  w_PONDED_FEET       "Feet"                                            //(5.0.019 - LR)
-#define  w_PONDED_METERS     "Meters"                                          //(5.0.019 - LR)
+// Ponded Depth Units
+#define  w_PONDED_FEET       "Feet"
+#define  w_PONDED_METERS     "Meters"
 
 // Concentration Units
 #define  w_MGperL            "MG/L"
@@ -262,7 +257,7 @@
 #define  w_POW               "POW"
 #define  w_EXP               "EXP"
 #define  w_SAT               "SAT"
-#define  w_EXT               "EXT"                                             //(5.0.019 - LR)
+#define  w_EXT               "EXT"
 
 // Normalizing Variables for Pollutant Buildup
 #define  w_PER_AREA          "AREA"
@@ -285,7 +280,7 @@
 #define  w_DIVERSION         "DIVERSION"
 #define  w_TIDAL             "TIDAL"
 #define  w_RATING            "RATING"
-#define  w_SHAPE             "SHAPE"                                           //(5.0.010 - LR)
+#define  w_SHAPE             "SHAPE"
 #define  w_PUMP1             "PUMP1"
 #define  w_PUMP2             "PUMP2"
 #define  w_PUMP3             "PUMP3"
@@ -416,6 +411,6 @@
 #define  ws_BACKDROP         "[BACKDROP"
 #define  ws_TAG              "[TAG"
 #define  ws_PROFILE          "[PROFILE"
-#define  ws_LID_CONTROL      "[LID_CONTROL"                                    //(5.0.019 - LR)
-#define  ws_LID_USAGE        "[LID_USAGE"                                      //(5.0.019 - LR)
-
+#define  ws_LID_CONTROL      "[LID_CONTROL"
+#define  ws_LID_USAGE        "[LID_USAGE"
+#define  ws_GW_FLOW          "[GW_FLOW"

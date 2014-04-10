@@ -2,11 +2,8 @@
 //   consts.h
 //
 //   Project: EPA SWMM5
-//   Version: 5.0
-//   Date:    6/19/07   (Build 5.0.010)
-//            1/21/09   (Build 5.0.014)
-//            11/18/09  (Build 5.0.018)
-//            09/30/10  (Build 5.0.021)
+//   Version: 5.1
+//   Date:    03/20/14  (Build 5.1.001)
 //   Author:  L. Rossman
 //
 //   Various Constants
@@ -16,7 +13,7 @@
 // General Constants
 //------------------
 
-#define   VERSION            50021                                             //(5.0.021 - LR)
+#define   VERSION            51000
 #define   MAGICNUMBER        516114522
 #define   EOFMARK            0x1A           // Use 0x04 for UNIX systems
 #define   MAXTITLE           3              // Max. # title lines
@@ -25,12 +22,13 @@
 #define   MAXFNAME           259            // Max. # characters in file name
 #define   MAXTOKS            40             // Max. items per line of input
 #define   MAXSTATES          10             // Max. # computed hyd. variables
+#define   MAXODES            4              // Max. # ODE's to be solved
 #define   NA                 -1             // NOT APPLICABLE code
 #define   TRUE               1              // Value for TRUE state
 #define   FALSE              0              // Value for FALSE state
 #define   BIG                1.E10          // Generic large value
 #define   TINY               1.E-6          // Generic small value
-#define   ZERO               1.E-10         // Effective zero value            //(5.0.014 - LR)
+#define   ZERO               1.E-10         // Effective zero value
 #define   MISSING            -1.E10         // Missing value code
 #define   PI                 3.141592654    // Value of pi
 #define   GRAVITY            32.2           // accel. of gravity in US units
@@ -60,8 +58,8 @@
 //---------------------------------------------------
 // Minimum depth for reporting non-zero water quality
 //---------------------------------------------------
-#define   MIN_WQ_DEPTH  0.01     // ft (= 3 mm)
-#define   MIN_WQ_FLOW   0.001    // cfs
+//#define   MIN_WQ_DEPTH  0.01     // ft (= 3 mm)
+//#define   MIN_WQ_FLOW   0.001    // cfs
 
 //-----------------------------------------------------
 // Minimum flow depth and area for dynamic wave routing

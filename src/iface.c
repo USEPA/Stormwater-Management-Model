@@ -2,9 +2,8 @@
 //   iface.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
-//             10/7/09   (Build 5.0.017)
+//   Version:  5.1
+//   Date:     03/20/14   (Build 5.1.001)
 //   Author:   L. Rossman
 //
 //   Routing interface file functions.
@@ -283,11 +282,11 @@ void iface_saveOutletResults(DateTime reportDate, FILE* file)
 //
 {
     int i, p, yr, mon, day, hr, min, sec;
-    //char theDate[25];                                                        //(5.0.010 - RD)
+    char theDate[25];
     datetime_decodeDate(reportDate, &yr, &mon, &day);
     datetime_decodeTime(reportDate, &hr, &min, &sec);
-    //sprintf(theDate, " %04d %02d  %02d  %02d  %02d  %02d ",                  //(5.0.010 - RD)
-    //        yr, mon, day, hr, min, sec);                                     //(5.0.010 - RD)
+    sprintf(theDate, " %04d %02d  %02d  %02d  %02d  %02d ",
+            yr, mon, day, hr, min, sec);
     for (i=0; i<Nobjects[NODE]; i++)
     {
         // --- check that node is an outlet node
@@ -295,9 +294,7 @@ void iface_saveOutletResults(DateTime reportDate, FILE* file)
 
         // --- write node ID, date, flow, and quality to file
         fprintf(file, "\n%-16s", Node[i].ID);
-        //fprintf(file, "%s", theDate);                                       //(5.0.010 - RD) 
-        fprintf(file, " %04d %02d  %02d  %02d  %02d  %02d ",                  //(5.0.010 - RD)
-            yr, mon, day, hr, min, sec);                                      //(5.0.010 - RD)
+        fprintf(file, "%s", theDate);
         fprintf(file, " %-10f", Node[i].inflow * UCF(FLOW));
         for ( p = 0; p < Nobjects[POLLUT]; p++ )
         {
@@ -471,10 +468,6 @@ int  getIfaceFilePolluts()
     if ( !strcomp(s1, "FLOW") )  return ERR_ROUTING_FILE_FORMAT;
     IfaceFlowUnits = findmatch(s2, FlowUnitWords);
     if ( IfaceFlowUnits < 0 ) return ERR_ROUTING_FILE_FORMAT;
-
-
-////  This section was moved out of the if (...) statement below it   ////     //(5.0.017 - LR)
-////  so that not all pollutants have to be in the interface file.    ////     //(5.0.017 - LR)
 
     // --- allocate memory for pollutant index array
     if ( Nobjects[POLLUT] > 0 )

@@ -2,26 +2,19 @@
 //   flowrout.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
-//             2/4/08    (Build 5.0.012)
-//             3/11/08   (Build 5.0.013)
-//             1/21/09   (Build 5.0.014)
-//             4/10/09   (Build 5.0.015)
-//             07/30/10  (Build 5.0.019)
-//             09/30/10  (Build 5.0.021)
-//   Author:   L. Rossman
+//   Version:  5.1
+//   Date:     03/19/14  (Build 5.1.00)
+//   Author:   L. Rossman (EPA)
+//             M. Tryby (EPA)
 //
 //   Flow routing functions.
 //
-//   Note: The Link offset properties z1 and z2 have been renamed to
-//         offset1 and offset2 for build 5.0.012.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
+#include "headers.h"
 #include <stdlib.h>
 #include <math.h>
-#include "headers.h"
 
 //-----------------------------------------------------------------------------
 //  Constants
@@ -53,7 +46,8 @@ static double getLinkInflow(int link, double dt);
 static void   setNewNodeState(int node, double dt);
 static void   setNewLinkState(int link);
 static void   updateNodeDepth(int node, double y);
-static int    steadyflow_execute(int link, double* qin, double* qout);
+static int    steadyflow_execute(int link, double* qin, double* qout,
+              double tStep);
 
 
 //=============================================================================
@@ -134,7 +128,6 @@ int flowrout_execute(int links[], int routingModel, double tStep)
     double qout;                       // link outflow (cfs)
     double steps;                      // computational step count
 
-////  The code below was modified to initialize overflows.  ////               //(5.0.012 - LR)
     // --- set overflows to drain any ponded water
     if ( ErrorCode ) return 0;
     for (j = 0; j < Nobjects[NODE]; j++)
@@ -147,13 +140,11 @@ int flowrout_execute(int links[], int routingModel, double tStep)
             Node[j].overflow = (Node[j].newVolume - Node[j].fullVolume)/tStep;
         }
     }
-////  End of modified code.  ////                                              //(5.0.012 - LR)
 
     // --- execute dynamic wave routing if called for
     if ( routingModel == DW )
     {
-        steps = dynwave_execute(links, tStep);
-        return (int)steps;
+        return dynwave_execute(tStep);
     }
 
     // --- otherwise examine each link, moving from upstream to downstream
@@ -169,7 +160,8 @@ int flowrout_execute(int links[], int routingModel, double tStep)
         qin  = getLinkInflow(j, tStep);
 
         // route flow through link
-        if ( routingModel == SF ) steps += steadyflow_execute(j, &qin, &qout);
+        if ( routingModel == SF )
+            steps += steadyflow_execute(j, &qin, &qout, tStep);
         else steps += kinwave_execute(j, &qin, &qout, tStep);
         Link[j].newFlow = qout;
 
@@ -195,8 +187,7 @@ void validateTreeLayout()
 //           and Kinematic Wave flow routing
 //
 {
-    int   j, node1, node2;
-    double elev1, elev2;
+    int    j;
 
     // --- check nodes
     for ( j = 0; j < Nobjects[NODE]; j++ )
@@ -234,25 +225,22 @@ void validateTreeLayout()
     // ---  check links 
     for (j=0; j<Nobjects[LINK]; j++)
     {
-        node1 = Link[j].node1;
         switch ( Link[j].type )
         {
-          // --- non-dummy conduits cannot have adverse slope                  //(5.0.014 - LR)
+          // --- non-dummy conduits cannot have adverse slope
           case CONDUIT:
-            node2 = Link[j].node2;
-            elev1 = Link[j].offset1 + Node[node1].invertElev;
-            elev2 = Link[j].offset2 + Node[node2].invertElev;
-            if ( elev1 < elev2 && Link[j].xsect.type != DUMMY )                //(5.0.014 - LR)
-            {
-                report_writeErrorMsg(ERR_SLOPE, Link[j].ID);
-            }
-            break;
+              if ( Conduit[Link[j].subIndex].slope < 0.0 &&
+                   Link[j].xsect.type != DUMMY )
+              {
+                  report_writeErrorMsg(ERR_SLOPE, Link[j].ID);
+              }
+              break;
 
           // --- regulator links must be outlets of storage nodes
           case ORIFICE:
           case WEIR:
           case OUTLET:
-            if ( Node[node1].type != STORAGE )
+            if ( Node[Link[j].node1].type != STORAGE )
             {
                 report_writeErrorMsg(ERR_REGULATOR, Link[j].ID);
             }
@@ -276,31 +264,31 @@ void validateGeneralLayout()
     for ( i=0; i<Nobjects[NODE]; i++ ) Node[i].inflow = 0.0;
 
     // --- examine each link
-    for ( j=0; j<Nobjects[LINK]; j++ )
+    for ( j = 0; j < Nobjects[LINK]; j++ )
     {
         // --- update inflow link count of downstream node
         i = Link[j].node1;
         if ( Node[i].type != OUTFALL ) i = Link[j].node2;
         Node[i].inflow += 1.0;
 
-        // --- if link is dummy link or ideal pump then it must                //(5.0.010 - LR)
+        // --- if link is dummy link or ideal pump then it must
         //     be the only link exiting the upstream node 
-        if ( (Link[j].type == CONDUIT && Link[j].xsect.type == DUMMY) ||       //(5.0.010 - LR)
-             (Link[j].type == PUMP &&                                          //(5.0.010 - LR)
-              Pump[Link[j].subIndex].type == IDEAL_PUMP) )                     //(5.0.010 - LR)
+        if ( (Link[j].type == CONDUIT && Link[j].xsect.type == DUMMY) ||
+             (Link[j].type == PUMP &&
+              Pump[Link[j].subIndex].type == IDEAL_PUMP) )
         {
             i = Link[j].node1;
-            if ( Link[j].direction < 0 ) i = Link[j].node2;                    //(5.0.014 - LR)
+            if ( Link[j].direction < 0 ) i = Link[j].node2;
             if ( Node[i].degree > 1 )
             {
-                report_writeErrorMsg(ERR_MULTI_DUMMY_LINK, Node[i].ID);        //(5.0.014 - LR)
+                report_writeErrorMsg(ERR_DUMMY_LINK, Node[i].ID);
             }
         }
     }
 
     // --- check each node to see if it qualifies as an outlet node
     //     (meaning that degree = 0)
-    for ( i=0; i<Nobjects[NODE]; i++ )
+    for ( i = 0; i < Nobjects[NODE]; i++ )
     {
         // --- if node is of type Outfall, check that it has only 1
         //     connecting link (which can either be an outflow or inflow link)
@@ -316,7 +304,7 @@ void validateGeneralLayout()
     if ( outletCount == 0 ) report_writeErrorMsg(ERR_NO_OUTLETS, "");
 
     // --- reset node inflows back to zero
-    for ( i=0; i<Nobjects[NODE]; i++ )
+    for ( i = 0; i < Nobjects[NODE]; i++ )
     {
         if ( Node[i].inflow == 0.0 ) Node[i].degree = -Node[i].degree;
         Node[i].inflow = 0.0;
@@ -329,7 +317,7 @@ void initNodeDepths(void)
 //
 //  Input:   none
 //  Output:  none
-//  Purpose: sets initial depth at nodes for Dyn. Wave flow routing.
+//  Purpose: sets initial depth at nodes for Dynamic Wave flow routing.
 //
 {
     int   i;                           // link or node index
@@ -339,14 +327,14 @@ void initNodeDepths(void)
     // --- use Node[].inflow as a temporary accumulator for depth in 
     //     connecting links and Node[].outflow as a temporary counter
     //     for the number of connecting links
-    for (i=0; i<Nobjects[NODE]; i++)
+    for (i = 0; i < Nobjects[NODE]; i++)
     {
         Node[i].inflow  = 0.0;
         Node[i].outflow = 0.0;
     }
 
     // --- total up flow depths in all connecting links into nodes
-    for (i=0; i<Nobjects[LINK]; i++)
+    for (i = 0; i < Nobjects[LINK]; i++)
     {
         if ( Link[i].newDepth > FUDGE ) y = Link[i].newDepth + Link[i].offset1;
         else y = 0.0;
@@ -388,7 +376,7 @@ void initLinkDepths()
     double y, y1, y2;                  // depths (ft)
 
     // --- examine each link
-    for (i=0; i<Nobjects[LINK]; i++)
+    for (i = 0; i < Nobjects[LINK]; i++)
     {
         // --- examine each conduit
         if ( Link[i].type == CONDUIT )
@@ -426,27 +414,22 @@ void initNodes()
     {
         // --- set default crown elevations here
         Node[i].crownElev = Node[i].invertElev;
-        //if ( Node[i].type == STORAGE )                                       //(5.0.012 - LR)
-        //{                                                                    //(5.0.012 - LR)
-        //    Node[i].crownElev += Node[i].fullDepth;                          //(5.0.012 - LR)
-        //}                                                                    //(5.0.012 - LR)
 
-        // --- initialize node inflow and outflow                              //(5.0.010 - LR)
+        // --- initialize node inflow and outflow
         Node[i].inflow = Node[i].newLatFlow;
         Node[i].outflow = 0.0;
-        // Node[i].newVolume = node_getVolume(i, Node[i].newDepth);            //(5.0.010 - LR)
 
         // --- initialize node volume
-        Node[i].newVolume = 0.0;                                               //(5.0.010 - LR)
-        if ( AllowPonding &&                                                   //(5.0.010 - LR)
-             Node[i].pondedArea > 0.0 &&                                       //(5.0.010 - LR)
-             Node[i].newDepth > Node[i].fullDepth )                            //(5.0.010 - LR)
-        {                                                                      //(5.0.010 - LR)
-            Node[i].newVolume = Node[i].fullVolume +                           //(5.0.010 - LR)
-                                (Node[i].newDepth - Node[i].fullDepth) *       //(5.0.010 - LR)
-                                Node[i].pondedArea;                            //(5.0.010 - LR)
-        }                                                                      //(5.0.010 - LR)
-        else Node[i].newVolume = node_getVolume(i, Node[i].newDepth);          //(5.0.010 - LR)
+        Node[i].newVolume = 0.0;
+        if ( AllowPonding &&
+             Node[i].pondedArea > 0.0 &&
+             Node[i].newDepth > Node[i].fullDepth )
+        {
+            Node[i].newVolume = Node[i].fullVolume +
+                                (Node[i].newDepth - Node[i].fullDepth) *
+                                Node[i].pondedArea;
+        }
+        else Node[i].newVolume = node_getVolume(i, Node[i].newDepth);
     }
 
     // --- update nodal inflow/outflow at ends of each link
@@ -500,13 +483,12 @@ void initLinks()
             // --- find areas based on initial flow depth
             Conduit[k].a1 = xsect_getAofY(&Link[i].xsect, Link[i].newDepth);
             Conduit[k].a2 = Conduit[k].a1;
-            //Conduit[k].aMid = Conduit[k].a1;                                 //(5.0.013 - LR)
 
             // --- compute initial volume from area
-            Link[i].newVolume = Conduit[k].a1 * link_getLength(i) *            //(5.0.015 - LR)
+            Link[i].newVolume = Conduit[k].a1 * link_getLength(i) *
                                 Conduit[k].barrels;
             Link[i].oldVolume = Link[i].newVolume;
-        }                                                                      //(5.0.013 - LR)
+        }
 
         // --- update crown elev. of nodes at either end
         j = Link[i].node1;
@@ -515,7 +497,6 @@ void initLinks()
         j = Link[i].node2;
         z = Node[j].invertElev + Link[i].offset2 + Link[i].xsect.yFull;
         Node[j].crownElev = MAX(Node[j].crownElev, z);
-        //}                                                                    //(5.0.013 - LR)
     }
 }
 
@@ -582,9 +563,7 @@ void updateStorageState(int i, int j, int links[], double dt)
         outflow = getStorageOutflow(i, j, links, dt);
 
         // --- find new volume from flow balance eqn.
-        v2 = vFixed - 0.5 * outflow * dt - node_getLosses(i, dt);              //(5.0.019 - LR)
-
-////  The code below was modified to consider ponding.  ////                   //(5.0.012 - LR)
+        v2 = vFixed - 0.5 * outflow * dt - node_getLosses(i, dt);
 
         // --- limit volume to full volume if no ponding
         //     and compute overflow rate
@@ -603,8 +582,6 @@ void updateStorageState(int i, int j, int links[], double dt)
         if ( v2 > Node[i].fullVolume ) d2 = node_getPondedDepth(i, v2);
         else d2 = node_getDepth(i, v2);
         Node[i].newDepth = d2;
-
-////  End of updated code.  ////                                               //(5.0.012 - LR)
 
         // --- use under-relaxation to estimate new depth value
         //     and stop if close enough to previous value
@@ -659,21 +636,18 @@ void setNewNodeState(int j, double dt)
     int   canPond;                     // TRUE if ponding can occur at node  
     double newNetInflow;               // inflow - outflow at node (cfs)
 
-    // --- storage nodes have already been updated                             //(5.0.021 - LR)
-    if ( Node[j].type == STORAGE ) return;                                     //(5.0.021 - LR)
+    // --- storage nodes have already been updated
+    if ( Node[j].type == STORAGE ) return; 
 
     // --- update stored volume using mid-point integration
     newNetInflow = Node[j].inflow - Node[j].outflow;
     Node[j].newVolume = Node[j].oldVolume +
                         0.5 * (Node[j].oldNetInflow + newNetInflow) * dt;
-    if ( Node[j].newVolume < FUDGE ) Node[j].newVolume = 0.0;                  //(5.0.010 - LR)
+    if ( Node[j].newVolume < FUDGE ) Node[j].newVolume = 0.0;
 
     // --- determine any overflow lost from system
     Node[j].overflow = 0.0;
     canPond = (AllowPonding && Node[j].pondedArea > 0.0);
-
-////  The following code was updated to consider all overflow  ////            //(5.0.012 - LR)
-////  as flooding whether or not ponding occurs.               ////
     if ( Node[j].newVolume > Node[j].fullVolume )
     {
         Node[j].overflow = (Node[j].newVolume - MAX(Node[j].oldVolume,
@@ -681,12 +655,11 @@ void setNewNodeState(int j, double dt)
         if ( Node[j].overflow < FUDGE ) Node[j].overflow = 0.0;
         if ( !canPond ) Node[j].newVolume = Node[j].fullVolume;
     }
-////  End of update.  ////                                                     //(5.0.012 - LR)
 
     // --- compute a depth from volume
     //     (depths at upstream nodes are subsequently adjusted in
     //     setNewLinkState to reflect depths in connected conduit)
-    Node[j].newDepth = node_getDepth(j, Node[j].newVolume);                    //(5.0.019 - LR)
+    Node[j].newDepth = node_getDepth(j, Node[j].newVolume);
 }
 
 //=============================================================================
@@ -700,7 +673,7 @@ void setNewLinkState(int j)
 //
 {
     int   k;
-    double a, y1, y2;                                                          //(5.0.013 - LR)
+    double a, y1, y2;
 
     Link[j].newDepth = 0.0;
     Link[j].newVolume = 0.0;
@@ -709,8 +682,8 @@ void setNewLinkState(int j)
     {
         // --- find avg. depth from entry/exit conditions
         k = Link[j].subIndex;
-        a = 0.5 * (Conduit[k].a1 + Conduit[k].a2);                             //(5.0.013 - LR)
-        Link[j].newVolume = a * link_getLength(j) * Conduit[k].barrels;        //(5.0.015 - LR)
+        a = 0.5 * (Conduit[k].a1 + Conduit[k].a2);
+        Link[j].newVolume = a * link_getLength(j) * Conduit[k].barrels;
         y1 = xsect_getYofA(&Link[j].xsect, Conduit[k].a1);
         y2 = xsect_getYofA(&Link[j].xsect, Conduit[k].a2);
         Link[j].newDepth = 0.5 * (y1 + y2);
@@ -719,10 +692,10 @@ void setNewLinkState(int j)
         updateNodeDepth(Link[j].node1, y1 + Link[j].offset1);
         updateNodeDepth(Link[j].node2, y2 + Link[j].offset2);
 
-        // --- check if capacity limited                                       //(5.0.012 - LR)
-        if ( Conduit[k].a1 >= Link[j].xsect.aFull )                            //(5.0.012 - LR)
-             Conduit[k].capacityLimited = TRUE;                                //(5.0.012 - LR)
-        else Conduit[k].capacityLimited = FALSE;                               //(5.0.012 - LR)
+        // --- check if capacity limited
+        if ( Conduit[k].a1 >= Link[j].xsect.aFull )
+             Conduit[k].capacityLimited = TRUE;
+        else Conduit[k].capacityLimited = FALSE;
     }
 }
 
@@ -739,9 +712,9 @@ void updateNodeDepth(int i, double y)
     // --- storage nodes were updated elsewhere
     if ( Node[i].type == STORAGE ) return;
 
-    // --- if non-outfall node is flooded, then use full depth                 //(5.0.010 - LR)
-    if ( Node[i].type != OUTFALL &&                                            //(5.0.010 - LR)
-         Node[i].overflow > 0.0 ) y = Node[i].fullDepth;                       //(5.0.010 - LR)
+    // --- if non-outfall node is flooded, then use full depth
+    if ( Node[i].type != OUTFALL &&
+         Node[i].overflow > 0.0 ) y = Node[i].fullDepth;
 
     // --- if current new depth below y
     if ( Node[i].newDepth < y )
@@ -759,10 +732,11 @@ void updateNodeDepth(int i, double y)
 
 //=============================================================================
 
-int steadyflow_execute(int j, double* qin, double* qout)
+int steadyflow_execute(int j, double* qin, double* qout, double tStep)
 //
 //  Input:   j = link index
 //           qin = inflow to link (cfs)
+//           tStep = time step (sec)
 //  Output:  qin = adjusted inflow to link (limited by flow capacity) (cfs)
 //           qout = link's outflow (cfs)
 //           returns 1 if successful
@@ -778,22 +752,28 @@ int steadyflow_execute(int j, double* qin, double* qout)
     {
         k = Link[j].subIndex;
         q = (*qin) / Conduit[k].barrels;
-        if ( Link[j].xsect.type == DUMMY ) Conduit[k].a1 = 0.0;                //(5.0.013 - LR)
+        if ( Link[j].xsect.type == DUMMY ) Conduit[k].a1 = 0.0;
         else 
         {
-            if ( q > Link[j].qFull )                                           //(5.0.012 - LR)
+            // --- subtract evap and infil losses from inflow
+            q -= link_getLossRate(j, tStep);
+            if ( q < 0.0 ) q = 0.0;
+
+            // --- flow can't exceed full flow 
+            if ( q > Link[j].qFull )
             {
-                q = Link[j].qFull;                                             //(5.0.012 - LR)
-                Conduit[k].a1 = Link[j].xsect.aFull;                           //(5.0.013 - LR)
+                q = Link[j].qFull;
+                Conduit[k].a1 = Link[j].xsect.aFull;
                 (*qin) = q * Conduit[k].barrels;
             }
+
+            // --- infer flow area from flow rate 
             else
             {
                 s = q / Conduit[k].beta;
-                Conduit[k].a1 = xsect_getAofS(&Link[j].xsect, s);              //(5.0.013 - LR)
+                Conduit[k].a1 = xsect_getAofS(&Link[j].xsect, s);
             }
         }
-        //Conduit[k].a1 = Conduit[k].aMid;                                     //(5.0.013 - LR)
         Conduit[k].a2 = Conduit[k].a1;
         Conduit[k].q1 = q;
         Conduit[k].q2 = q;

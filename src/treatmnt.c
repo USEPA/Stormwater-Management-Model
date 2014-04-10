@@ -2,10 +2,8 @@
 //   treatmnt.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
-//             1/21/09   (Build 5.0.014)
-//             10/7/09   (Build 5.0.017)
+//   Version:  5.1
+//   Date:     03/20/14   (Build 5.1.001)
 //   Author:   L. Rossman
 //
 //   Pollutant treatment functions
@@ -45,7 +43,7 @@ static TTreatment* Treatment;          // pointer to Treatment object
 //  treatment_close         (called from routing_close)
 //  treatmnt_readExpression (called from parseLine in input.c)
 //  treatmnt_delete         (called from deleteObjects in project.c)
-//  treatmnt_setInflow      (called from qualrout_execute)                     //(5.0.014 - LR)
+//  treatmnt_setInflow      (called from qualrout_execute)
 //  treatmnt_treat          (called from findNodeQual in qualrout.c)
 
 //-----------------------------------------------------------------------------
@@ -107,7 +105,7 @@ int  treatmnt_readExpression(char* tok[], int ntoks)
     char  s[MAXLINE+1];
     char* expr;
     int   i, j, k, p;
-    MathExpr* equation;                // ptr. to a math. expression           //(5.0.010 - LR)
+    MathExpr* equation;                // ptr. to a math. expression
 
     // --- retrieve node & pollutant
     if ( ntoks < 3 ) return error_setInpError(ERR_ITEMS, "");
@@ -184,7 +182,7 @@ void  treatmnt_setInflow(double qIn, double wIn[])
 //
 {
     int    p;
-    if ( qIn > 0.0 )                                                           //(5.0.014 - LR)
+    if ( qIn > 0.0 )
         for (p = 0; p < Nobjects[POLLUT]; p++) Cin[p] = wIn[p]/qIn;
     else
         for (p = 0; p < Nobjects[POLLUT]; p++) Cin[p] = 0.0;
@@ -204,7 +202,7 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
 {
     int    p;                          // pollutant index
     double cOut;                       // concentration after treatment
-//  double cLost;                      // concentration lost by treatment      //(5.0.017 - LR)
+//  double cLost;                      // concentration lost by treatment
     double massLost;                   // mass lost by treatment per time step
 
     // --- set global variables for node j
@@ -216,14 +214,17 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
     V  = v;                            // current node volume
 
     // --- initialze each removal to indicate no value 
-    for ( p=0; p<Nobjects[POLLUT]; p++) R[p] = -1.0;
+    for ( p = 0; p < Nobjects[POLLUT]; p++) R[p] = -1.0;
 
     // --- determine removal of each pollutant
-    for ( p=0; p<Nobjects[POLLUT]; p++)
+    for ( p = 0; p < Nobjects[POLLUT]; p++)
     {
         // --- removal is zero if there is no treatment equation
         Treatment = &Node[j].treatment[p];
         if ( Treatment->equation == NULL ) R[p] = 0.0;
+
+        // --- no removal for removal-type expression when there is no inflow 
+	    else if ( Treatment->treatType == REMOVAL && q <= ZERO ) R[p] = 0.0;
 
         // --- otherwise evaluate the treatment expression to find R[p]
         else getRemoval(p);
@@ -236,11 +237,12 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
     }
 
     // --- update nodal concentrations and mass balances
-    else for ( p=0; p<Nobjects[POLLUT]; p++ )
+    else for ( p = 0; p < Nobjects[POLLUT]; p++ )
     {
         if ( R[p] == 0.0 ) continue;
 
         // --- removal-type treatment equations get applied to inflow stream
+
         if ( Treatment->treatType == REMOVAL )
         {
             // --- if no pollutant in inflow then cOut is current nodal concen.
@@ -260,10 +262,10 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
             cOut = (1.0 - R[p]) * Node[j].newQual[p];
         }
 
-        // --- mass lost must account for any initial mass in storage          //(5.0.017 - LR)
-        massLost = (Cin[p]*q*tStep + Node[j].oldQual[p]*Node[j].oldVolume -    //(5.0.017 - LR)
-                   cOut*(q*tStep + Node[j].oldVolume)) / tStep;                //(5.0.017 - LR)
-        massLost = MAX(0.0, massLost);                                         //(5.0.017 - LR)
+        // --- mass lost must account for any initial mass in storage 
+        massLost = (Cin[p]*q*tStep + Node[j].oldQual[p]*Node[j].oldVolume - 
+                   cOut*(q*tStep + Node[j].oldVolume)) / tStep; 
+        massLost = MAX(0.0, massLost); 
 
         // --- add mass loss to mass balance totals and revise nodal concentration
         massbal_addReactedMass(p, massLost);
@@ -287,7 +289,7 @@ int  createTreatment(int j)
     {
         return FALSE;
     }
-    for (p=0; p<Nobjects[POLLUT]; p++)
+    for (p = 0; p < Nobjects[POLLUT]; p++)
     {
         Node[j].treatment[p].equation = NULL;
     }

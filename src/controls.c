@@ -2,12 +2,8 @@
 //   controls.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07  (Build 5.0.010)
-//             2/4/08   (Build 5.0.012)
-//             3/11/08  (Build 5.0.013)
-//             1/21/09  (Build 5.0.014)
-//             07/30/10 (Build 5.0.019)
+//   Version:  5.1
+//   Date:     03/21/14 (Build 5.1.001)
 //   Author:   L. Rossman
 //
 //   Rule-based controls functions.
@@ -23,20 +19,23 @@
 //-----------------------------------------------------------------------------
 enum RuleState   {r_RULE, r_IF, r_AND, r_OR, r_THEN, r_ELSE, r_PRIORITY,
                   r_ERROR};
-enum RuleObject  {r_NODE, r_LINK, r_PUMP, r_ORIFICE, r_WEIR, r_OUTLET, r_SIMULATION};
+enum RuleObject  {r_NODE, r_LINK, r_CONDUIT, r_PUMP, r_ORIFICE, r_WEIR,
+	              r_OUTLET, r_SIMULATION};
 enum RuleAttrib  {r_DEPTH, r_HEAD, r_INFLOW, r_FLOW, r_STATUS, r_SETTING,
-                  r_TIME, r_DATE, r_CLOCKTIME, r_DAY, r_MONTH};                //(5.0.014 - LR)
+                  r_TIME, r_DATE, r_CLOCKTIME, r_DAY, r_MONTH};
 enum RuleOperand {EQ, NE, LT, LE, GT, GE};
-enum RuleSetting {r_CURVE, r_TIMESERIES, r_PID, r_NUMERIC};                    //(5.0.012 - LR)
+enum RuleSetting {r_CURVE, r_TIMESERIES, r_PID, r_NUMERIC};
 
 static char* ObjectWords[] =
-    {"NODE", "LINK", "PUMP", "ORIFICE", "WEIR", "OUTLET", "SIMULATION", NULL};
+    {"NODE", "LINK", "CONDUIT", "PUMP", "ORIFICE", "WEIR", "OUTLET",
+	 "SIMULATION", NULL};
 static char* AttribWords[] =
     {"DEPTH", "HEAD", "INFLOW", "FLOW", "STATUS", "SETTING",
-     "TIME", "DATE", "CLOCKTIME", "DAY", "MONTH", NULL};                       //(5.0.014 - LR)
+     "TIME", "DATE", "CLOCKTIME", "DAY", "MONTH", NULL};
 static char* OperandWords[] = {"=", "<>", "<", "<=", ">", ">=", NULL};
 static char* StatusWords[]  = {"OFF", "ON", NULL};
-static char* SettingTypeWords[] = {"CURVE", "TIMESERIES", "PID", NULL};        //(5.0.012 - LR)
+static char* ConduitWords[] = {"CLOSED", "OPEN", NULL};
+static char* SettingTypeWords[] = {"CURVE", "TIMESERIES", "PID", NULL};
 
 //-----------------------------------------------------------------------------                  
 // Data Structures
@@ -62,8 +61,8 @@ struct  TAction
    int     curve;
    int     tseries;
    double  value;
-   double  kp, ki, kd;                                                         //(5.0.012 - LR)
-   double  e1, e2;                                                             //(5.0.012 - LR)
+   double  kp, ki, kd;
+   double  e1, e2;
    struct  TAction *next;
 };
 
@@ -93,7 +92,7 @@ struct TActionList* ActionList;        // Linked list of control actions
 int    InputState;                     // State of rule interpreter
 int    RuleCount;                      // Total number of rules
 double ControlValue;                   // Value of controller variable
-double SetPoint;                       // Value of controller setpoint         //(5.0.012 - LR)
+double SetPoint;                       // Value of controller setpoint
 
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
@@ -110,7 +109,7 @@ int    addPremise(int r, int type, char* Tok[], int nToks);
 int    addAction(int r, char* Tok[], int nToks);
 int    evaluatePremise(struct TPremise* p, DateTime theDate, DateTime theTime,
                        DateTime elapsedTime, double tStep);
-int    checkTimeValue(struct TPremise* p, double time1, double time2);
+int    checkTimeValue(struct TPremise* p, double tStart, double tStep);
 int    checkValue(struct TPremise* p, double x);
 void   updateActionList(struct TAction* a);
 int    executeActionList(DateTime currentTime);
@@ -119,9 +118,9 @@ void   deleteActionList(void);
 void   deleteRules(void);
 int    findExactMatch(char *s, char *keyword[]);
 int    setActionSetting(char* tok[], int nToks, int* curve, int* tseries,
-       int* attrib, double* value);                                            //(5.0.012 - LR)
+       int* attrib, double* value);
 void   updateActionValue(struct TAction* a, DateTime currentTime, double dt);
-double getPIDSetting(struct TAction* a, double dt);                            //(5.0.012 - LR)
+double getPIDSetting(struct TAction* a, double dt);
 
 
 //=============================================================================
@@ -184,7 +183,7 @@ int  controls_addRuleClause(int r, int keyword, char* tok[], int nToks)
         if ( Rules[r].ID == NULL )
             Rules[r].ID = project_findID(CONTROL, tok[1]);
         InputState = r_RULE;
-        if ( nToks > 2 ) return ERR_RULE;                                      //(5.0.010 - LR)
+        if ( nToks > 2 ) return ERR_RULE;
         return 0;
 
       case r_IF:
@@ -216,7 +215,7 @@ int  controls_addRuleClause(int r, int keyword, char* tok[], int nToks)
         if ( InputState != r_THEN && InputState != r_ELSE ) return ERR_RULE;
         InputState = r_PRIORITY;
         if ( !getDouble(tok[1], &Rules[r].priority) ) return ERR_NUMBER;
-        if ( nToks > 2 ) return ERR_RULE;                                      //(5.0.010 - LR)
+        if ( nToks > 2 ) return ERR_RULE;
         return 0;
     }
     return 0;
@@ -228,7 +227,7 @@ int controls_evaluate(DateTime currentTime, DateTime elapsedTime, double tStep)
 //
 //  Input:   currentTime = current simulation date/time
 //           elapsedTime = decimal days since start of simulation
-//           tStep = simulation time step (days)                               //(5.0.013 - LR)
+//           tStep = simulation time step (days)
 //  Output:  returns number of new actions taken
 //  Purpose: evaluates all control rules at current time of the simulation.
 //
@@ -271,7 +270,7 @@ int controls_evaluate(DateTime currentTime, DateTime elapsedTime, double tStep)
         else                  a = Rules[r].elseActions;
         while (a)
         {
-            updateActionValue(a, currentTime, tStep);                          //(5.0.012 - LR)
+            updateActionValue(a, currentTime, tStep);
             updateActionList(a);
             a = a->next;
         }
@@ -317,6 +316,7 @@ int  addPremise(int r, int type, char* tok[], int nToks)
         break;
 
       case r_LINK:
+      case r_CONDUIT:
       case r_PUMP:
       case r_ORIFICE:
       case r_WEIR:
@@ -340,8 +340,9 @@ int  addPremise(int r, int type, char* tok[], int nToks)
       case r_INFLOW: break;
       default: return error_setInpError(ERR_KEYWORD, tok[n]);
     }
-    else if ( obj == r_LINK ) switch (attrib)
+    else if ( obj == r_LINK || obj == r_CONDUIT ) switch (attrib)
     {
+      case r_STATUS:
       case r_DEPTH:
       case r_FLOW: break;
       default: return error_setInpError(ERR_KEYWORD, tok[n]);
@@ -353,7 +354,7 @@ int  addPremise(int r, int type, char* tok[], int nToks)
       default: return error_setInpError(ERR_KEYWORD, tok[n]);
     }
     else if ( obj == r_ORIFICE || obj == r_WEIR ||
-              obj == r_OUTLET ) switch (attrib)                                //(5.0.010 - LR)
+              obj == r_OUTLET ) switch (attrib)
     {
       case r_SETTING: break;
       default: return error_setInpError(ERR_KEYWORD, tok[n]);
@@ -362,9 +363,9 @@ int  addPremise(int r, int type, char* tok[], int nToks)
     {
       case r_TIME:
       case r_DATE:
-      case r_CLOCKTIME:                                                        //(5.0.014 - LR)
-      case r_DAY:                                                              //(5.0.014 - LR)
-      case r_MONTH: break;                                                     //(5.0.014 - LR)
+      case r_CLOCKTIME:
+      case r_DAY:
+      case r_MONTH: break;
       default: return error_setInpError(ERR_KEYWORD, tok[n]);
     }
 
@@ -380,6 +381,7 @@ int  addPremise(int r, int type, char* tok[], int nToks)
     {
       case r_STATUS:
         value = findmatch(tok[n], StatusWords);
+		if ( value < 0.0 ) value = findmatch(tok[n], ConduitWords);
         if ( value < 0.0 ) return error_setInpError(ERR_KEYWORD, tok[n]);
         break;
 
@@ -395,27 +397,26 @@ int  addPremise(int r, int type, char* tok[], int nToks)
         break;
 
       case r_DAY:
-        if ( !getDouble(tok[n], &value) )                                      //(5.0.014 - LR)
-            return error_setInpError(ERR_NUMBER, tok[n]);                      //(5.0.014 - LR)
-        if ( value < 1.0 || value > 7.0 )                                      //(5.0.014 - LR)
-             return error_setInpError(ERR_DATETIME, tok[n]);                   //(5.0.014 - LR)
-        break;                                                                 //(5.0.014 - LR)
+        if ( !getDouble(tok[n], &value) ) 
+            return error_setInpError(ERR_NUMBER, tok[n]);
+        if ( value < 1.0 || value > 7.0 )
+             return error_setInpError(ERR_DATETIME, tok[n]);
+        break;
 
-
-      case r_MONTH:                                                            //(5.0.014 - LR)
-        if ( !getDouble(tok[n], &value) )                                      //(5.0.014 - LR)
-            return error_setInpError(ERR_NUMBER, tok[n]);                      //(5.0.014 - LR)
-        if ( value < 1.0 || value > 12.0 )                                     //(5.0.014 - LR)
-             return error_setInpError(ERR_DATETIME, tok[n]);                   //(5.0.014 - LR)
-        break;                                                                 //(5.0.014 - LR)
+      case r_MONTH:
+        if ( !getDouble(tok[n], &value) )
+            return error_setInpError(ERR_NUMBER, tok[n]);
+        if ( value < 1.0 || value > 12.0 )
+             return error_setInpError(ERR_DATETIME, tok[n]);
+        break;
        
       default: if ( !getDouble(tok[n], &value) )
           return error_setInpError(ERR_NUMBER, tok[n]);
     }
 
-    // --- check if another clause is on same line                             //(5.0.010 - LR)
-    n++;                                                                       //(5.0.010 - LR) 
-    if ( n < nToks && findmatch(tok[n], RuleKeyWords) >= 0 ) return ERR_RULE;  //(5.0.010 - LR)
+    // --- check if another clause is on same line
+    n++; 
+    if ( n < nToks && findmatch(tok[n], RuleKeyWords) >= 0 ) return ERR_RULE;
 
     // --- create the premise object
     p = (struct TPremise *) malloc(sizeof(struct TPremise));
@@ -452,9 +453,9 @@ int  addAction(int r, char* tok[], int nToks)
 {
     int    obj, link, attrib;
     int    curve = -1, tseries = -1;
-    int    n;                                                                  //(5.0.010 - LR)
+    int    n;
     int    err;
-    double values[] = {1.0, 0.0, 0.0};                                         //(5.0.012 - LR)
+    double values[] = {1.0, 0.0, 0.0};
 
     struct TAction* a;
 
@@ -463,7 +464,8 @@ int  addAction(int r, char* tok[], int nToks)
 
     // --- check for valid object type
     obj = findmatch(tok[1], ObjectWords);
-    if ( obj != r_PUMP && obj != r_ORIFICE && obj != r_WEIR && obj != r_OUTLET )
+    if ( obj != r_LINK && obj != r_CONDUIT && obj != r_PUMP && 
+         obj != r_ORIFICE && obj != r_WEIR && obj != r_OUTLET )
         return error_setInpError(ERR_KEYWORD, tok[1]);
 
     // --- check that object name exists and is of correct type
@@ -471,6 +473,10 @@ int  addAction(int r, char* tok[], int nToks)
     if ( link < 0 ) return error_setInpError(ERR_NAME, tok[2]);
     switch (obj)
     {
+      case r_CONDUIT:
+	if ( Link[link].type != CONDUIT )
+	    return error_setInpError(ERR_NAME, tok[2]);
+	break;
       case r_PUMP:
         if ( Link[link].type != PUMP )
             return error_setInpError(ERR_NAME, tok[2]);
@@ -494,18 +500,29 @@ int  addAction(int r, char* tok[], int nToks)
     if ( attrib < 0 ) return error_setInpError(ERR_KEYWORD, tok[3]);
 
     // --- get control action setting
-    if ( obj == r_PUMP )
+    if ( obj == r_CONDUIT )
+    {
+        if ( attrib == r_STATUS )
+	{
+            values[0] = findmatch(tok[5], ConduitWords);
+            if ( values[0] < 0.0 )
+                return error_setInpError(ERR_KEYWORD, tok[5]);
+        }
+        else return error_setInpError(ERR_KEYWORD, tok[3]);
+    }
+
+    else if ( obj == r_PUMP )
     {
         if ( attrib == r_STATUS )
         {
-            values[0] = findmatch(tok[5], StatusWords);                        //(5.0.012 - LR)
-            if ( values[0] < 0.0 )                                             //(5.0.012 - LR)
-                return error_setInpError(ERR_KEYWORD, tok[5]);                 //(5.0.012 - LR)
+            values[0] = findmatch(tok[5], StatusWords);
+            if ( values[0] < 0.0 )
+                return error_setInpError(ERR_KEYWORD, tok[5]);
         }
         else if ( attrib == r_SETTING )
         {
-            err = setActionSetting(tok, nToks, &curve, &tseries,               //(5.0.012 - LR)
-                                   &attrib, values);                           //(5.0.012 - LR)
+            err = setActionSetting(tok, nToks, &curve, &tseries,
+                                   &attrib, values);
             if ( err > 0 ) return err;
         }
         else return error_setInpError(ERR_KEYWORD, tok[3]);
@@ -513,24 +530,24 @@ int  addAction(int r, char* tok[], int nToks)
 
     else if ( obj == r_ORIFICE || obj == r_WEIR || obj == r_OUTLET )
     {
-        if ( attrib == r_SETTING )                                             //(5.0.012 - LR)
-        {                                                                      //(5.0.012 - LR)
-           err = setActionSetting(tok, nToks, &curve, &tseries,                //(5.0.012 - LR)
-                                  &attrib, values);                            //(5.0.012 - LR)
+        if ( attrib == r_SETTING )
+        {
+           err = setActionSetting(tok, nToks, &curve, &tseries,
+                                  &attrib, values);
            if ( err > 0 ) return err;
-           if (  attrib == r_SETTING                                           //(5.0.012 - LR)
-           && (values[0] < 0.0 || values[0] > 1.0) )                           //(5.0.012 - LR)
-               return error_setInpError(ERR_NUMBER, tok[5]);                   //(5.0.012 - LR)
-        }                                                                      //(5.0.012 - LR)
+           if (  attrib == r_SETTING
+           && (values[0] < 0.0 || values[0] > 1.0) ) 
+               return error_setInpError(ERR_NUMBER, tok[5]);
+        }
         else return error_setInpError(ERR_KEYWORD, tok[3]);
     }
     else return error_setInpError(ERR_KEYWORD, tok[1]);
 
-    // --- check if another clause is on same line                             //(5.0.010 - LR)
-    n = 6;                                                                     //(5.0.010 - LR) 
-    if ( curve >= 0 || tseries >= 0 ) n = 7;                                   //(5.0.010 - LR)
-    if ( attrib == r_PID ) n = 9;                                              //(5.0.012 - LR)
-    if ( n < nToks && findmatch(tok[n], RuleKeyWords) >= 0 ) return ERR_RULE;  //(5.0.010 - LR)
+    // --- check if another clause is on same line
+    n = 6;
+    if ( curve >= 0 || tseries >= 0 ) n = 7;
+    if ( attrib == r_PID ) n = 9;
+    if ( n < nToks && findmatch(tok[n], RuleKeyWords) >= 0 ) return ERR_RULE;
 
     // --- create the action object
     a = (struct TAction *) malloc(sizeof(struct TAction));
@@ -540,15 +557,15 @@ int  addAction(int r, char* tok[], int nToks)
     a->attribute = attrib;
     a->curve     = curve;
     a->tseries   = tseries;
-    a->value     = values[0];                                                  //(5.0.012 - LR)
-    if ( attrib == r_PID )                                                     //(5.0.012 - LR)
-    {                                                                          //(5.0.012 - LR)
-        a->kp = values[0];                                                     //(5.0.012 - LR)
-        a->ki = values[1];                                                     //(5.0.012 - LR)
-        a->kd = values[2];                                                     //(5.0.012 - LR)
-        a->e1 = 0.0;                                                           //(5.0.012 - LR)
-        a->e2 = 0.0;                                                           //(5.0.012 - LR)
-    }                                                                          //(5.0.012 - LR)
+    a->value     = values[0];
+    if ( attrib == r_PID )
+    {
+        a->kp = values[0];
+        a->ki = values[1];
+        a->kd = values[2];
+        a->e1 = 0.0;
+        a->e2 = 0.0;
+    }
     if ( InputState == r_THEN )
     {
         a->next = Rules[r].thenActions;
@@ -564,15 +581,15 @@ int  addAction(int r, char* tok[], int nToks)
 
 //=============================================================================
 
-int  setActionSetting(char* tok[], int nToks, int* curve, int* tseries,        //(5.0.012 - LR)
-                      int* attrib, double values[])                            //(5.0.012 - LR)
+int  setActionSetting(char* tok[], int nToks, int* curve, int* tseries,
+                      int* attrib, double values[])
 //
 //  Input:   tok = array of string tokens containing action statement
 //           nToks = number of string tokens
 //  Output:  curve = index of controller curve
 //           tseries = index of controller time series
-//           attrib = r_PID if PID controller used                             //(5.0.012 - LR)
-//           values = values of control settings                               //(5.0.012 - LR)
+//           attrib = r_PID if PID controller used
+//           values = values of control settings
 //           returns an error code
 //  Purpose: identifies how control actions settings are determined.
 //
@@ -598,23 +615,23 @@ int  setActionSetting(char* tok[], int nToks, int* curve, int* tseries,        /
         m = project_findObject(TSERIES, tok[6]);
         if ( m < 0 ) return error_setInpError(ERR_NAME, tok[6]);
         *tseries = m;
-        Tseries[m].refersTo = CONTROL;                                         //(5.0.019 - LR)
+        Tseries[m].refersTo = CONTROL;
         break;
 
-    // --- control determined by PID controller                                //(5.0.012 - LR)
-    case r_PID:                                                                //(5.0.012 - LR)
-        if (nToks < 9) return error_setInpError(ERR_ITEMS, "");                //(5.0.012 - LR)
-        for (m=6; m<=8; m++)                                                   //(5.0.012 - LR)
-        {                                                                      //(5.0.012 - LR)
-            if ( !getDouble(tok[m], &values[m-6]) )                            //(5.0.012 - LR)
-                return error_setInpError(ERR_NUMBER, tok[m]);                  //(5.0.012 - LR)
-        }                                                                      //(5.0.012 - LR)
-        *attrib = r_PID;                                                       //(5.0.012 - LR)
-        break;                                                                 //(5.0.012 - LR)
+    // --- control determined by PID controller 
+    case r_PID:
+        if (nToks < 9) return error_setInpError(ERR_ITEMS, "");
+        for (m=6; m<=8; m++)
+        {
+            if ( !getDouble(tok[m], &values[m-6]) )
+                return error_setInpError(ERR_NUMBER, tok[m]);
+        }
+        *attrib = r_PID;
+        break;
 
     // --- direct numerical control is used
     default:
-        if ( !getDouble(tok[5], &values[0]) )                                  //(5.0.012 - LR)
+        if ( !getDouble(tok[5], &values[0]) )
             return error_setInpError(ERR_NUMBER, tok[5]);
     }
     return 0;
@@ -622,11 +639,11 @@ int  setActionSetting(char* tok[], int nToks, int* curve, int* tseries,        /
 
 //=============================================================================
 
-void  updateActionValue(struct TAction* a, DateTime currentTime, double dt)    //(5.0.012 - LR)
+void  updateActionValue(struct TAction* a, DateTime currentTime, double dt)
 //
 //  Input:   a = an action object
-//           currentTime = current simulation date/time (days)                 //(5.0.013 - LR)
-//           dt = time step (days)                                             //(5.0.013 - LR)
+//           currentTime = current simulation date/time (days)
+//           dt = time step (days)
 //  Output:  none
 //  Purpose: updates value of actions found from Curves or Time Series.
 //
@@ -646,9 +663,6 @@ void  updateActionValue(struct TAction* a, DateTime currentTime, double dt)    /
 }
 
 //=============================================================================
-
-////  New function to get PID control setting.  ////                           //(5.0.012 - LR)
-////  Function re-written as PID definitions have changed.  ////               //(5.0.013 - LR)
 
 double getPIDSetting(struct TAction* a, double dt)
 //
@@ -764,7 +778,7 @@ int executeActionList(DateTime currentTime)
         if ( !a1 ) break;
         if ( a1->link >= 0 )
         {
-            if ( Link[a1->link].targetSetting != a1->value )                   //(5.0.010 - LR)
+            if ( Link[a1->link].targetSetting != a1->value )
             {
                 Link[a1->link].targetSetting = a1->value;
                 if ( RptFlags.controls )
@@ -788,7 +802,7 @@ int evaluatePremise(struct TPremise* p, DateTime theDate, DateTime theTime,
 //           theDate = the current simulation date
 //           theTime = the current simulation time of day
 //           elpasedTime = decimal days since the start of the simulation
-//           tStep = current time step (days)                                  //(5.0.013 - LR)
+//           tStep = current time step (days)
 //  Output:  returns TRUE if the condition is true or FALSE otherwise
 //  Purpose: evaluates the truth of a control rule premise condition.
 //
@@ -800,22 +814,23 @@ int evaluatePremise(struct TPremise* p, DateTime theDate, DateTime theTime,
     switch ( p->attribute )
     {
       case r_TIME:
-        return checkTimeValue(p, elapsedTime, elapsedTime + tStep);
-
+        return checkTimeValue(p, elapsedTime, tStep/2.0);
+        
       case r_DATE:
         return checkValue(p, theDate);
 
       case r_CLOCKTIME:
-        return checkTimeValue(p, theTime, theTime + tStep);
+        return checkTimeValue(p, theTime, tStep/2.0);
 
-      case r_DAY:                                                              //(5.0.014 - LR)
-        return checkValue(p, datetime_dayOfWeek(theDate));                     //(5.0.014 - LR)
+      case r_DAY:
+        return checkValue(p, datetime_dayOfWeek(theDate));
 
-      case r_MONTH:                                                            //(5.0.014 - LR)
-        return checkValue(p, datetime_monthOfYear(theDate));                   //(5.0.014 - LR)
+      case r_MONTH:
+        return checkValue(p, datetime_monthOfYear(theDate));
 
       case r_STATUS:
-        if ( j < 0 || Link[j].type != PUMP ) return FALSE;
+        if ( j < 0 ||
+            (Link[j].type != CONDUIT && Link[j].type != PUMP) ) return FALSE;
         else return checkValue(p, Link[j].setting);
         
       case r_SETTING:
@@ -825,7 +840,7 @@ int evaluatePremise(struct TPremise* p, DateTime theDate, DateTime theTime,
 
       case r_FLOW:
         if ( j < 0 ) return FALSE;
-        else return checkValue(p, Link[j].direction*Link[j].newFlow*UCF(FLOW));//(5.0.019 - LR)
+        else return checkValue(p, Link[j].direction*Link[j].newFlow*UCF(FLOW));
 
       case r_DEPTH:
         if ( j >= 0 ) return checkValue(p, Link[j].newDepth*UCF(LENGTH));
@@ -848,26 +863,28 @@ int evaluatePremise(struct TPremise* p, DateTime theDate, DateTime theTime,
 
 //=============================================================================
 
-int checkTimeValue(struct TPremise* p, double time1, double time2)
+int checkTimeValue(struct TPremise* p, double tStart, double halfStep)
 //
 //  Input:   p = control rule premise condition
-//           time1 = time of day or elapsed time at start of current time step
-//           time2 = time of day or elapsed time at end of current time step
+//           tStart = time of day or elapsed time at start of current time step
+//           halfStep = 1/2 the current time step (days)
 //  Output:  returns TRUE if time condition is satisfied
 //  Purpose: evaluates the truth of a condition involving time.
 //
 {
     if ( p->operand == EQ )
     {
-        if ( p->value >= time1 && p->value < time2 ) return TRUE;
+        if ( p->value >= tStart - halfStep
+        &&   p->value < tStart + halfStep ) return TRUE;
         return FALSE;
     }
     else if ( p->operand == NE )
     {
-        if ( p->value < time1 || p->value >= time2 ) return TRUE;
+        if ( p->value < tStart - halfStep
+        ||   p->value >= tStart + halfStep ) return TRUE;
         return FALSE;
     }
-    else return checkValue(p, time1);
+    else return checkValue(p, tStart);
 }
 
 //=============================================================================
@@ -880,7 +897,7 @@ int checkValue(struct TPremise* p, double x)
 //  Purpose: evaluates the truth of a condition involving a numerical comparison.
 //
 {
-    SetPoint = p->value;                                                       //(5.0.012 - LR)
+    SetPoint = p->value;
     ControlValue = x;
     switch (p->operand)
     {

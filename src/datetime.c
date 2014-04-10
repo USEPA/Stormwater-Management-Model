@@ -2,8 +2,8 @@
 //   datetime.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
+//   Version:  5.1
+//   Date:     03/20/14   (Build 5.1.001)
 //   Author:   L. Rossman
 //
 //   DateTime functions.
@@ -12,6 +12,7 @@
 
 #include <math.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include "datetime.h"
 
@@ -216,9 +217,9 @@ void datetime_decodeDate(DateTime date, int* year, int* month, int* day)
 void datetime_decodeTime(DateTime time, int* h, int* m, int* s)
 
 //  Input:   time = decimal fraction of a day
-//  Output:  h = hour of day (0-24)
-//           m = minute of hour (0-60)
-//           s = second of minute (0-60)
+//  Output:  h = hour of day (0-23)
+//           m = minute of hour (0-59)
+//           s = second of minute (0-59)
 //  Purpose: decodes DateTime value to hour:minute:second.
 
 {
@@ -227,6 +228,7 @@ void datetime_decodeTime(DateTime time, int* h, int* m, int* s)
     secs = (int)(floor((time - floor(time))*SecsPerDay + 0.5));
     divMod(secs, 60, &mins, s);
     divMod(mins, 60, h, m);
+    if ( *h > 23 ) *h = 0;
 }
 
 //=============================================================================
@@ -335,9 +337,21 @@ int datetime_strToTime(char* s, DateTime* t)
 //  Output:  t = encoded time,
 //           returns 1 if conversion successful, 0 if not
 //  Purpose: converts a string time to a DateTime value.
+//  Note:    accepts time as hr:min:sec or as decimal hours.
 
 {
     int  n, hr, min = 0, sec = 0;
+    char *endptr;
+
+    // Attempt to read time as decimal hours
+    *t = strtod(s, &endptr);
+    if ( *endptr == 0 )
+    {
+        *t /= 24.0;
+        return 1;
+    }
+
+    // Read time in hr:min:sec format
     *t = 0.0;
     n = sscanf(s, "%d:%d:%d", &hr, &min, &sec);
     if ( n == 0 ) return 0;

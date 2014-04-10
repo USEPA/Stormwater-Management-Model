@@ -2,20 +2,19 @@
 //   inputrpt.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     2/4/08   (Build 5.0.012)
-//             11/18/09 (Build 5.0.018)
-//             07/30/10 (Build 5.0.019)
+//   Version:  5.1
+//   Date:     03/20/14 (Build 5.1.001)
 //   Author:   L. Rossman
 //
 //   Report writing functions for input data summary.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <string.h>
 #include <time.h>
 #include "headers.h"
-#include "lid.h"                                                               //(5.0.019 - LR)
+#include "lid.h"
 
 #define WRITE(x) (report_writeLine((x)))
 
@@ -30,7 +29,7 @@ void inputrpt_writeInput()
 {
     int m;
     int i, k;
-    int lidCount = 0;                                                          //(5.0.019 - LR)
+    int lidCount = 0;
     if ( ErrorCode ) return;
 
     WRITE("");
@@ -52,14 +51,14 @@ void inputrpt_writeInput()
         WRITE("Pollutant Summary");
         WRITE("*****************");
         fprintf(Frpt.file,
-    "\n                              Ppt.      GW         Kdecay");
+    "\n                               Ppt.      GW         Kdecay");
         fprintf(Frpt.file,
-    "\n  Name                Units   Concen.   Concen.    1/days    CoPollutant");
+    "\n  Name                 Units   Concen.   Concen.    1/days    CoPollutant");
         fprintf(Frpt.file,
-    "\n  ----------------------------------------------------------------------");
+    "\n  -----------------------------------------------------------------------");
         for (i = 0; i < Nobjects[POLLUT]; i++)
         {
-            fprintf(Frpt.file, "\n  %-20s%5s%10.2f%10.2f%10.2f", Pollut[i].ID,
+            fprintf(Frpt.file, "\n  %-20s %5s%10.2f%10.2f%10.2f", Pollut[i].ID,
                 QualUnitsWords[Pollut[i].units], Pollut[i].pptConcen,
                 Pollut[i].gwConcen, Pollut[i].kDecay*SECperDAY);
             if ( Pollut[i].coPollut >= 0 )
@@ -76,14 +75,14 @@ void inputrpt_writeInput()
         WRITE("Landuse Summary");
         WRITE("***************");
         fprintf(Frpt.file,
-    "\n                        Sweeping   Maximum      Last");
+    "\n                         Sweeping   Maximum      Last");
         fprintf(Frpt.file,
-    "\n  Name                  Interval   Removal     Swept");
+    "\n  Name                   Interval   Removal     Swept");
         fprintf(Frpt.file,
-    "\n  --------------------------------------------------");
+    "\n  ---------------------------------------------------");
         for (i=0; i<Nobjects[LANDUSE]; i++)
         {
-            fprintf(Frpt.file, "\n  %-20s%10.2f%10.2f%10.2f", Landuse[i].ID,
+            fprintf(Frpt.file, "\n  %-20s %10.2f%10.2f%10.2f", Landuse[i].ID,
                 Landuse[i].sweepInterval, Landuse[i].sweepRemoval,
                 Landuse[i].sweepDays0);
         }
@@ -97,21 +96,23 @@ void inputrpt_writeInput()
         WRITE("Raingage Summary");
         WRITE("****************");
     fprintf(Frpt.file,
-"\n                                          Data        Recording");          //(5.0.018 - LR)
+"\n                                                      Data       Recording");
     fprintf(Frpt.file,
-"\n  Name                Data Source         Type        Interval ");          //(5.0.018 - LR)
+"\n  Name                 Data Source                    Type       Interval ");
     fprintf(Frpt.file,
-"\n  -------------------------------------------------------------");          //(5.0.018 - LR)
+"\n  ------------------------------------------------------------------------");
         for (i = 0; i < Nobjects[GAGE]; i++)
         {
             if ( Gage[i].tSeries >= 0 )
             {
-                fprintf(Frpt.file, "\n  %-20s%-20s%-10s  %3d min.",            //(5.0.018 - LR)
-                    Gage[i].ID, Tseries[Gage[i].tSeries].ID,
+                fprintf(Frpt.file, "\n  %-20s %-30s ",
+                    Gage[i].ID, Tseries[Gage[i].tSeries].ID);
+                fprintf(Frpt.file, "%-10s %3d min.",
                     RainTypeWords[Gage[i].rainType],
-                    (Gage[i].rainInterval)/60);                                //(5.0.018 - LR)
+                    (Gage[i].rainInterval)/60);
             }
-            else fprintf(Frpt.file, "\n  %-20s%-20s", Gage[i].ID, Gage[i].fname);
+            else fprintf(Frpt.file, "\n  %-20s %-30s",
+                Gage[i].ID, Gage[i].fname);
         }
     }
 
@@ -123,27 +124,27 @@ void inputrpt_writeInput()
         WRITE("Subcatchment Summary");
         WRITE("********************");
         fprintf(Frpt.file,
-"\n  Name                      Area     Width   %%Imperv    %%Slope    Rain Gage            Outlet          ");
+"\n  Name                       Area     Width   %%Imperv    %%Slope Rain Gage            Outlet              ");
         fprintf(Frpt.file,
-"\n  -------------------------------------------------------------------------------------------------------");
+"\n  -----------------------------------------------------------------------------------------------------------");
         for (i = 0; i < Nobjects[SUBCATCH]; i++)
         {
-            fprintf(Frpt.file,"\n  %-20s%10.2f%10.2f%10.2f%10.4f    %-20s",
+            fprintf(Frpt.file,"\n  %-20s %10.2f%10.2f%10.2f%10.4f %-20s ",
                 Subcatch[i].ID, Subcatch[i].area*UCF(LANDAREA),
                 Subcatch[i].width*UCF(LENGTH),  Subcatch[i].fracImperv*100.0,
                 Subcatch[i].slope*100.0, Gage[Subcatch[i].gage].ID);
             if ( Subcatch[i].outNode >= 0 )
             {
-                fprintf(Frpt.file, " %-20s", Node[Subcatch[i].outNode].ID);
+                fprintf(Frpt.file, "%-20s", Node[Subcatch[i].outNode].ID);
             }
             else if ( Subcatch[i].outSubcatch >= 0 )
             {
-                fprintf(Frpt.file, " %-20s", Subcatch[Subcatch[i].outSubcatch].ID);
+                fprintf(Frpt.file, "%-20s", Subcatch[Subcatch[i].outSubcatch].ID);
             }
-            if ( Subcatch[i].lidArea ) lidCount++;                             //(5.0.019 - LR)
+            if ( Subcatch[i].lidArea ) lidCount++;
         }
     }
-    if ( lidCount > 0 ) lid_writeSummary();                                    //(5.0.019 - LR)
+    if ( lidCount > 0 ) lid_writeSummary();
 
     if ( Nobjects[NODE] > 0 )
     {
@@ -153,14 +154,14 @@ void inputrpt_writeInput()
         WRITE("Node Summary");
         WRITE("************");
         fprintf(Frpt.file,
-"\n                                          Invert      Max.    Ponded    External");
+"\n                                           Invert      Max.    Ponded    External");
         fprintf(Frpt.file,
-"\n  Name                Type                 Elev.     Depth      Area    Inflow  ");
+"\n  Name                 Type                 Elev.     Depth      Area    Inflow  ");
         fprintf(Frpt.file,
-"\n  ------------------------------------------------------------------------------");
+"\n  -------------------------------------------------------------------------------");
         for (i = 0; i < Nobjects[NODE]; i++)
         {
-            fprintf(Frpt.file, "\n  %-20s%-16s%10.2f%10.2f%10.1f", Node[i].ID,
+            fprintf(Frpt.file, "\n  %-20s %-16s%10.2f%10.2f%10.1f", Node[i].ID,
                 NodeTypeWords[Node[i].type-JUNCTION],
                 Node[i].invertElev*UCF(LENGTH),
                 Node[i].fullDepth*UCF(LENGTH),
@@ -180,13 +181,20 @@ void inputrpt_writeInput()
         WRITE("Link Summary");
         WRITE("************");
         fprintf(Frpt.file,
-"\n  Name            From Node       To Node         Type            Length    %%Slope Roughness");
+"\n  Name             From Node        To Node          Type            Length    %%Slope Roughness");
         fprintf(Frpt.file,
-"\n  ------------------------------------------------------------------------------------------");
+"\n  ---------------------------------------------------------------------------------------------");
         for (i = 0; i < Nobjects[LINK]; i++)
         {
-            fprintf(Frpt.file, "\n  %-16s%-16s%-16s",
-                Link[i].ID, Node[Link[i].node1].ID, Node[Link[i].node2].ID);
+            // --- list end nodes in their original orientation
+            if ( Link[i].direction == 1 )
+                fprintf(Frpt.file, "\n  %-16s %-16s %-16s ",
+                    Link[i].ID, Node[Link[i].node1].ID, Node[Link[i].node2].ID);
+            else
+                fprintf(Frpt.file, "\n  %-16s %-16s %-16s ",
+                    Link[i].ID, Node[Link[i].node2].ID, Node[Link[i].node1].ID);
+
+            // --- list link type
             if ( Link[i].type == PUMP )
             {
                 k = Link[i].subIndex;
@@ -195,11 +203,14 @@ void inputrpt_writeInput()
             }
             else fprintf(Frpt.file, "%-12s",
                 LinkTypeWords[Link[i].type-CONDUIT]);
+
+            // --- list length, slope and roughness for conduit links
             if (Link[i].type == CONDUIT)
             {
                 k = Link[i].subIndex;
                 fprintf(Frpt.file, "%10.1f%10.4f%10.4f",
-                    Conduit[k].length*UCF(LENGTH), Conduit[k].slope*100.0,
+                    Conduit[k].length*UCF(LENGTH),
+                    Conduit[k].slope*100.0*Link[i].direction,
                     Conduit[k].roughness);
             }
         }
@@ -220,16 +231,15 @@ void inputrpt_writeInput()
             if (Link[i].type == CONDUIT)
             {
                 k = Link[i].subIndex;
-                fprintf(Frpt.file, "\n  %-16s", Link[i].ID);
+                fprintf(Frpt.file, "\n  %-16s ", Link[i].ID);
                 if ( Link[i].xsect.type == CUSTOM )
-                    fprintf(Frpt.file, " %-16s",
-                    Curve[Link[i].xsect.transect].ID);
+                    fprintf(Frpt.file, "%-16s ", Curve[Link[i].xsect.transect].ID);
                 else if ( Link[i].xsect.type == IRREGULAR )
-                    fprintf(Frpt.file, " %-16s",
+                    fprintf(Frpt.file, "%-16s ",
                     Transect[Link[i].xsect.transect].ID);
-                else fprintf(Frpt.file, " %-16s",
+                else fprintf(Frpt.file, "%-16s ",
                     XsectTypeWords[Link[i].xsect.type]);
-                fprintf(Frpt.file, " %8.2f %8.2f %8.2f %8.2f   %3d    %8.2f",
+                fprintf(Frpt.file, "%8.2f %8.2f %8.2f %8.2f      %3d %8.2f",
                     Link[i].xsect.yFull*UCF(LENGTH),
                     Link[i].xsect.aFull*UCF(LENGTH)*UCF(LENGTH),
                     Link[i].xsect.rFull*UCF(LENGTH),

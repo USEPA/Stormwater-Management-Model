@@ -2,10 +2,8 @@
 //   table.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
-//             1/21/09   (Build 5.0.014)
-//             6/22/09   (Build 5.0.016)
+//   Version:  5.1
+//   Date:     03/20/09   (Build 5.1.001)
 //   Author:   L. Rossman
 //
 //   Table (curve and time series) functions.
@@ -17,7 +15,7 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include <string.h>                                                            //(5.0.014 - LR)
+#include <string.h>
 #include "headers.h"
 
 //-----------------------------------------------------------------------------
@@ -118,7 +116,7 @@ int table_readTimeseries(char* tok[], int ntoks)
     if ( Tseries[j].ID == NULL )
         Tseries[j].ID = project_findID(TSERIES, tok[0]);
 
-    // --- check if time series data is in an external file                    //(5.0.014 - LR)
+    // --- check if time series data is in an external file
     if ( strcomp(tok[1], w_FILE ) )
     {
         sstrncpy(Tseries[j].file.name, tok[2], MAXFNAME);
@@ -127,7 +125,7 @@ int table_readTimeseries(char* tok[], int ntoks)
     }
 
     // --- parse each token of input line
-	x = 0.0;
+    x = 0.0;
     k = 1;
     state = 1;               // start off looking for a date
     while ( k < ntoks )
@@ -226,7 +224,7 @@ void   table_deleteEntries(TTable *table)
     table->lastEntry  = NULL;
     table->thisEntry  = NULL;
 
-    if (table->file.file)                                                      //(5.0.014 - LR)
+    if (table->file.file)
     { 
         fclose(table->file.file);
         table->file.file = NULL;
@@ -243,7 +241,7 @@ void   table_init(TTable *table)
 //
 {
     table->ID = NULL;
-    table->refersTo = -1;                                                      //(5.0.010 - LR)
+    table->refersTo = -1;
     table->firstEntry = NULL;
     table->lastEntry = NULL;
     table->thisEntry = table->firstEntry;
@@ -252,10 +250,10 @@ void   table_init(TTable *table)
     table->x2 = 0.0;
     table->y1 = 0.0;
     table->y2 = 0.0;
-    table->dxMin = 0.0;                                                        //(5.0.014 - LR)
-    table->file.mode = NO_FILE;                                                //(5.0.014 - LR)
-    table->file.file = NULL;                                                   //(5.0.014 - LR)
-    table->curveType = -1;                                                     //(5.0.014 - LR)
+    table->dxMin = 0.0;
+    table->file.mode = NO_FILE;
+    table->file.file = NULL;
+    table->curveType = -1;
 }
 
 //=============================================================================
@@ -266,9 +264,6 @@ int   table_validate(TTable *table)
 //  Output:  returns error code
 //  Purpose: checks that table's x-values are in ascending order.
 //
-
-////  This function was significantly modified for release 5.0.014.  ////      //(5.0.014 - LR)
-
 {
     int    result;
     double x1, x2, y1, y2;
@@ -293,7 +288,7 @@ int   table_validate(TTable *table)
         dx = x2 - x1;
         if ( dx <= 0.0 )
         {
-            table->x2 = x2;                                                    //(5.0.014 - LR)
+            table->x2 = x2;
             return ERR_CURVE_SEQUENCE;
         }
         dxMin = MIN(dxMin, dx);
@@ -324,7 +319,7 @@ int table_getFirstEntry(TTable *table, double *x, double *y)
     *x = 0;
     *y = 0.0;
 
-    if ( table->file.mode == USE_FILE )                                        //(5.0.014 - LR)
+    if ( table->file.mode == USE_FILE )
     {
         if ( table->file.file == NULL ) return FALSE;
         rewind(table->file.file);
@@ -344,35 +339,6 @@ int table_getFirstEntry(TTable *table, double *x, double *y)
 
 //=============================================================================
 
-////  This function has been deprecated. ////                                  //(5.0.014 - LR)
-/*
-int table_getLastEntry(TTable *table, double *x, double *y)
-//
-//  Input:   table = pointer to a TTable structure
-//  Output:  x = x-value of last table entry
-//           y = y-value of last table entry
-//           returns TRUE if successful, FALSE if not
-//  Purpose: retrieves the last x/y entry in a table.
-//
-//  NOTE: does not update the current position pointer (thisEntry).
-//
-{
-    TTableEntry *entry;
-    *x = 0;
-    *y = 0.0;
-    entry = table->lastEntry;
-    if ( entry )
-    {
-        *x = entry->x;
-        *y = entry->y;
-        return TRUE;
-    }
-    else return FALSE;
-}
-*/
-
-//=============================================================================
-
 int table_getNextEntry(TTable *table, double *x, double *y)
 //
 //  Input:   table = pointer to a TTable structure
@@ -386,7 +352,7 @@ int table_getNextEntry(TTable *table, double *x, double *y)
 {
     TTableEntry *entry;
 
-    if ( table->file.mode == USE_FILE )                                        //(5.0.014 - LR)
+    if ( table->file.mode == USE_FILE )
         return table_getNextFileEntry(table, x, y);
     
     entry = table->thisEntry->next;
@@ -429,6 +395,31 @@ double table_lookup(TTable *table, double x)
 
 //=============================================================================
 
+double table_getSlope(TTable *table, double x)
+//
+//  Input:   table = pointer to a TTable structure
+//           x = an x-value
+//  Output:  returns the slope of the curve at x
+//  Purpose: retrieves the slope of the curve at the line segment containing x.
+//
+{
+    double x1,y1,x2,y2;
+	double dx;
+
+    table_getFirstEntry(table, &x1, &y1);
+    while ( table_getNextEntry(table, &x2, &y2) )
+    {
+        if ( x <= x2 ) break;
+        x1 = x2;
+        y1 = y2;
+    }
+    dx = x2 - x1;
+    if ( dx == 0.0 ) return 0.0;
+    return (y2 - y1) / dx;
+}
+
+//=============================================================================
+
 double table_lookupEx(TTable *table, double x)
 //
 //  Input:   table = pointer to a TTable structure
@@ -454,7 +445,7 @@ double table_lookupEx(TTable *table, double x)
         x1 = x2;
         y1 = y2;
     }
-    if ( s < 0.0 ) s = 0.0;                                                    //(5.0.016 - LR)
+    if ( s < 0.0 ) s = 0.0;
     return y1 + s*(x - x1);
 }
 
@@ -504,6 +495,28 @@ double table_inverseLookup(TTable *table, double y)
         y1 = y2;
     }
     return x1;
+}
+
+//=============================================================================
+
+double  table_getMaxY(TTable *table, double x)
+//
+//  Input:   table = pointer to a TTable structure
+//           x = an x-value
+//  Output:  returns the maximum y-value for x-values below x.
+//  Purpose: finds the largest y value in the initial non-decreasing
+//           portion of a table that appear before value x.
+//
+{
+    double xx, yy, ymax;
+    table_getFirstEntry(table, &xx, &yy);
+    ymax = yy;
+    while ( x > xx && table_getNextEntry(table, &xx, &yy) )
+    {
+        if ( yy < ymax ) break;
+        ymax = yy;
+    }
+    return ymax;
 }
 
 //=============================================================================
@@ -617,10 +630,10 @@ double  table_getArea(TTable* table, double x)
         if ( x <= x2 )
         {
             if ( dx <= 0.0 ) return a;
-            y2 = table_interpolate(x, x1, y1, x2, y2);                         //(5.0.016 - LR)
-            return a + (x - x1) * (y1 + y2) / 2.0;                             //(5.0.016 - LR)
+            y2 = table_interpolate(x, x1, y1, x2, y2);
+            return a + (x - x1) * (y1 + y2) / 2.0;
         }
-        a += (y1 + y2) * dx / 2.0;                                             //(5.0.016 - LR)
+        a += (y1 + y2) * dx / 2.0;
         x1 = x2;
         y1 = y2;
     }
@@ -667,12 +680,18 @@ double  table_getInverseArea(TTable* table, double a)
         if ( a <= a2 )
         {
             if ( dx <= 0.0 ) return x1;
-            s = dy/dx;
-            if ( s > 0.0 )
+            if ( dy == 0.0 ) return x1 + dx;
+
+            // --- if y decreases with x then replace point 1 with point 2
+            if ( dy < 0.0 )
             {
-                dx = (sqrt(y1*y1 + 2.0*s*(a-a1)) - y1) / s;
+                x1 = x2;
+		y1 = y2;
+		a1 = a2;
             }
-            else dx = (a - a1) / y1;
+
+            s = dy/dx;
+            dx = (sqrt(y1*y1 + 2.0*s*(a-a1)) - y1) / s;
             return x1 + dx;
         }
         x1 = x2;
@@ -697,8 +716,6 @@ double  table_getInverseArea(TTable* table, double a)
 
 //=============================================================================
 
-////  New function added for release 5.0.014  ////                             //(5.0.014 - LR)
-
 int  table_getNextFileEntry(TTable* table, double* x, double* y)
 //
 //  Input:   table = pointer to a TTable structure
@@ -713,8 +730,7 @@ int  table_getNextFileEntry(TTable* table, double* x, double* y)
     char line[MAXLINE+1];
     int  code;
     if ( table->file.file == NULL ) return FALSE;
-    if ( feof(table->file.file) ) return FALSE;
-    while ( fgets(line, MAXLINE, table->file.file) != NULL )
+    while ( !feof(table->file.file) && fgets(line, MAXLINE, table->file.file) != NULL )
     {
         code = table_parseFileLine(line, table, x, y);
         if ( code < 0 ) continue;      //skip blank & comment lines
@@ -724,8 +740,6 @@ int  table_getNextFileEntry(TTable* table, double* x, double* y)
 }
 
 //=============================================================================
-
-////  New function added for release 5.0.014  ////                             //(5.0.014 - LR)
 
 int  table_parseFileLine(char* line, TTable* table, double* x, double* y)
 //

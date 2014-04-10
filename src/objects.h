@@ -2,17 +2,10 @@
 //   objects.h
 //
 //   Project: EPA SWMM5
-//   Version: 5.0
-//   Date:    6/19/07   (Build 5.0.010)
-//            2/4/08    (Build 5.0.012)
-//            3/11/08   (Build 5.0.013)
-//            1/21/09   (Build 5.0.014)
-//            4/10/09   (Build 5.0.015)
-//            10/7/09   (Build 5.0.017)
-//            11/18/09  (Build 5.0.018)
-//            07/30/10  (Build 5.0.019)
-//            04/20/11  (Build 5.0.022)
+//   Version: 5.1
+//   Date:    03/19/14  (Build 5.1.000)
 //   Author:  L. Rossman (EPA)
+//            M. Tryby (EPA)
 //            R. Dickinson (CDM)
 //
 //   Definitions of data structures.
@@ -60,15 +53,15 @@ typedef struct
 {
    char*         ID;              // Table/time series ID
    int           curveType;       // type of curve tabulated
-   int           refersTo;        // reference to some other object            //(5.0.010 - LR)
-   double        dxMin;           // smallest x-value interval                 //(5.0.014 - LR)
+   int           refersTo;        // reference to some other object
+   double        dxMin;           // smallest x-value interval
    double        lastDate;        // last input date for time series
    double        x1, x2;          // current bracket on x-values
    double        y1, y2;          // current bracket on y-values
    TTableEntry*  firstEntry;      // first data point
    TTableEntry*  lastEntry;       // last data point
    TTableEntry*  thisEntry;       // current data point
-   TFile         file;            // external data file                        //(5.0.014 - LR)
+   TFile         file;            // external data file
 }  TTable;
 
 
@@ -102,7 +95,7 @@ typedef struct
    double        reportRainfall;  // rainfall value used for reported results
    int           coGage;          // index of gage with same rain timeseries
    int           isUsed;          // TRUE if gage used by any subcatchment
-   int           isCurrent;       // TRUE if gage's rainfall is current        //(5.0.012 - RD)
+   int           isCurrent;       // TRUE if gage's rainfall is current 
 }  TGage;
 
 
@@ -163,16 +156,13 @@ typedef struct
     int          tSeries;         // time series index
     double       monthlyEvap[12]; // monthly evaporation values
     double       panCoeff[12];    // monthly pan coeff. values
-    int          recoveryPattern; // soil recovery factor pattern              //(5.0.014 - LR)
-    int          dryOnly;         // true if evaporation only in dry periods   //(5.0.019 - LR)
+    int          recoveryPattern; // soil recovery factor pattern 
+    int          dryOnly;         // true if evaporation only in dry periods
 
     double       rate;            // current evaporation rate (ft/sec)
-    double       recoveryFactor;  // current soil recovery factor              //(5.0.014 - LR) 
+    double       recoveryFactor;  // current soil recovery factor 
 }   TEvap;
 
-//--------------------------------------------------------  
-//  Infiltration objects are now declared in infil.h                           //(5.0.019 - LR)
-//--------------------------------------------------------  
 
 //-------------------
 // AQUIFER OBJECT
@@ -192,6 +182,7 @@ typedef struct
     double      bottomElev;       // elevation of bottom of aquifer (ft)
     double      waterTableElev;   // initial water table elevation (ft)
     double      upperMoisture;    // initial moisture content of unsat. zone
+    int         upperEvapPat;     // monthly upper evap. adjustment factors
 }   TAquifer;
 
 
@@ -208,12 +199,16 @@ typedef struct
     double        a3;             // surf./ground water interaction coeff.
     double        fixedDepth;     // fixed surface water water depth (ft)
     double        nodeElev;       // elevation of receiving node invert (ft)
+    double        bottomElev;     // bottom elevation of lower GW zone (ft)
+    double        waterTableElev; // initial water table elevation (ft)
+    double        upperMoisture;  // initial moisture content of unsat. zone
 
     double        theta;          // upper zone moisture content
     double        lowerDepth;     // depth of saturated zone (ft)
     double        oldFlow;        // gw outflow from previous time period (cfs)
     double        newFlow;        // gw outflow from current time period (cfs)
-    double        maxInfilVol;    // max. infil. upper zone can accept (ft)    //(5.0.019 - LR)
+    double        evapLoss;       // evaporation loss rate (ft/sec)
+    double        maxInfilVol;    // max. infil. upper zone can accept (ft)
 } TGroundwater;
 
 
@@ -318,11 +313,13 @@ typedef struct
    double*       initBuildup;     // initial pollutant buildup (mass/ft2)
    TLandFactor*  landFactor;      // array of land use factors
    TGroundwater* groundwater;     // associated groundwater data
+   MathExpr*     gwFlowExpr;      // user-supplied outflow expression
    TSnowpack*    snowpack;        // associated snow pack data
 
-   double        lidArea;         // area devoted to LIDs (ft2)                //(5.0.019 - LR)
+   double        lidArea;         // area devoted to LIDs (ft2)
    double        rainfall;        // current rainfall (ft/sec)
-   double        losses;          // current infil + evap losses (ft/sec)
+   double        evapLoss;        // current evap losses (ft/sec)
+   double        infilLoss;       // current infil losses (ft/sec) 
    double        runon;           // runon from other subcatchments (cfs)
    double        oldRunoff;       // previous runoff (cfs)
    double        newRunoff;       // current runoff (cfs)
@@ -330,7 +327,7 @@ typedef struct
    double        newSnowDepth;    // current snow depth (ft)
    double*       oldQual;         // previous runoff quality (mass/L)
    double*       newQual;         // current runoff quality (mass/L)
-   double*       pondedQual;      // ponded surface water quality (mass/ft3)
+   double*       pondedQual;      // ponded surface water quality (mass)
    double*       totalLoad;       // total washoff load (lbs or kg)
 }  TSubcatch;
 
@@ -355,7 +352,7 @@ struct ExtInflow
    int            param;         // pollutant index (flow = -1)
    int            type;          // CONCEN or MASS
    int            tSeries;       // index of inflow time series
-   int            basePat;       // baseline time pattern                      //(5.0.014 - LR)
+   int            basePat;       // baseline time pattern
    double         cFactor;       // units conversion factor for mass inflow
    double         baseline;      // constant baseline value
    double         sFactor;       // time series scaling factor
@@ -394,9 +391,9 @@ typedef struct
 {
    char*         ID;              // name of the unit hydrograph object
    int           rainGage;        // index of rain gage
-   double        iaMax[12][3];    // max. initial abstraction (IA) (in or mm)  //(5.0.015 - LR)
-   double        iaRecov[12][3];  // IA recovery rate (in/day or mm/day)       //(5.0.015 - LR)
-   double        iaInit[12][3];   // starting IA (in or mm)                    //(5.0.015 - LR)
+   double        iaMax[12][3];    // max. initial abstraction (IA) (in or mm)
+   double        iaRecov[12][3];  // IA recovery rate (in/day or mm/day)
+   double        iaInit[12][3];   // starting IA (in or mm)
    double        r[12][3];        // fraction of rainfall becoming I&I
    long          tBase[12][3];    // time base of each UH in each month (sec)
    long          tPeak[12][3];    // time to peak of each UH in each month (sec)
@@ -409,7 +406,7 @@ typedef struct
 typedef struct
 {
     int          treatType;       // treatment equation type: REMOVAL/CONCEN
-    MathExpr*    equation;        // treatment eqn. as tokenized math terms    //(5.0.010 - LR)
+    MathExpr*    equation;        // treatment eqn. as tokenized math terms
 } TTreatment;
 
 
@@ -447,9 +444,6 @@ typedef struct
    double        newLatFlow;      // current lateral inflow (cfs)
    double*       oldQual;         // previous quality state
    double*       newQual;         // current quality state
-
-   //double*       wStored;                                                    //(5.0.018 - LR)
-
    double        oldFlowInflow;   // previous flow inflow
    double        oldNetInflow;    // previous net inflow
 }  TNode;
@@ -474,15 +468,15 @@ typedef struct
 typedef struct
 {
    double      fEvap;             // fraction of evaporation realized
+   double      seepRate;          // seepage rate (ft/sec) 
    double      aConst;            // surface area at zero height (ft2)
    double      aCoeff;            // coeff. of area v. height curve
    double      aExpon;            // exponent of area v. height curve
    int         aCurve;            // index of tabulated area v. height curve
-   TGrnAmpt*   infil;             // ptr. to infiltration object               //(5.0.015 - LR)
 
    double      hrt;               // hydraulic residence time (sec)
-   double      evapLoss;          // evaporation loss (ft3)                    //(5.0.019 - LR)
-   double      losses;            // evap + infil losses (ft3)                 //(5.0.018 - LR)
+   double      evapLoss;          // evaporation loss (ft3) 
+   double      seepLoss;          // seepage loss (ft3)
 }  TStorage;
 
 
@@ -507,10 +501,11 @@ typedef struct
 typedef struct
 {
    int           type;            // type code of cross section shape
-   int           culvertCode;     // type of culvert (if any)                  //(5.0.014 - LR)
-   int           transect;        // index of transect/shape (if applicable)   //(5.0.010 - LR)
+   int           culvertCode;     // type of culvert (if any)
+   int           transect;        // index of transect/shape (if applicable)
    double        yFull;           // depth when full (ft)
    double        wMax;            // width at widest point (ft)
+   double        ywMax;           // depth at widest point (ft)
    double        aFull;           // area when full (ft2)
    double        rFull;           // hyd. radius when full (ft)
    double        sFull;           // section factor when full (ft^4/3)
@@ -527,7 +522,7 @@ typedef struct
 //--------------------------------------
 // CROSS SECTION TRANSECT DATA STRUCTURE
 //--------------------------------------
-#define  N_TRANSECT_TBL  51       // size of transect geometry tables          //(5.0.010 - LR)
+#define  N_TRANSECT_TBL  51       // size of transect geometry tables
 typedef struct
 {
     char*        ID;                        // section ID
@@ -535,9 +530,10 @@ typedef struct
     double       aFull;                     // area when full (ft2)
     double       rFull;                     // hyd. radius when full (ft)
     double       wMax;                      // width at widest point (ft)
+    double       ywMax;                     // depth at max width (ft) 
     double       sMax;                      // section factor at max. flow (ft^4/3)
     double       aMax;                      // area at max. flow (ft2)
-    double       lengthFactor;              // floodplain / channel length     //(5.0.015 - LR)
+    double       lengthFactor;              // floodplain / channel length 
 
     double       roughness;                 // Manning's n
     double       areaTbl[N_TRANSECT_TBL];   // table of area v. depth
@@ -547,23 +543,23 @@ typedef struct
 }   TTransect;
 
 
-//-------------------------------------                                        //(5.0.010 - LR)
-// CUSTOM CROSS SECTION SHAPE STRUCTURE                                        //(5.0.010 - LR)
-//-------------------------------------                                        //(5.0.010 - LR)
-#define N_SHAPE_TBL  51           // size of shape geometry tables             //(5.0.010 - LR)
-typedef struct                                                                 //(5.0.010 - LR)
-{                                                                              //(5.0.010 - LR)
-    int          curve;                     // index of shape curve            //(5.0.010 - LR) 
-    int          nTbl;                      // size of geometry tables         //(5.0.010 - LR)
-    double       aFull;                     // area when full                  //(5.0.010 - LR)
-    double       rFull;                     // hyd. radius when full           //(5.0.010 - LR)
-    double       wMax;                      // max. width                      //(5.0.010 - LR)
-    double       sMax;                      // max. section factor             //(5.0.010 - LR)
-    double       aMax;                      // area at max. section factor     //(5.0.010 - LR)
-    double       areaTbl[N_SHAPE_TBL];      // table of area v. depth          //(5.0.010 - LR)
-    double       hradTbl[N_SHAPE_TBL];      // table of hyd. radius v. depth   //(5.0.010 - LR)
-    double       widthTbl[N_SHAPE_TBL];     // table of top width v. depth     //(5.0.010 - LR)
-}   TShape;                                                                    //(5.0.010 - LR)
+//-------------------------------------
+// CUSTOM CROSS SECTION SHAPE STRUCTURE
+//-------------------------------------
+#define N_SHAPE_TBL  51           // size of shape geometry tables
+typedef struct
+{
+    int          curve;                     // index of shape curve
+    int          nTbl;                      // size of geometry tables
+    double       aFull;                     // area when full 
+    double       rFull;                     // hyd. radius when full
+    double       wMax;                      // max. width
+    double       sMax;                      // max. section factor
+    double       aMax;                      // area at max. section factor
+    double       areaTbl[N_SHAPE_TBL];      // table of area v. depth
+    double       hradTbl[N_SHAPE_TBL];      // table of hyd. radius v. depth
+    double       widthTbl[N_SHAPE_TBL];     // table of top width v. depth
+}   TShape;
 
 
 //------------
@@ -577,14 +573,15 @@ typedef struct
    char          rptFlag;         // reporting flag
    int           node1;           // start node index
    int           node2;           // end node index
-   double        offset1;         // ht. above start node invert (ft)          //(5.0.012 - LR)
-   double        offset2;         // ht. above end node invert (ft)            //(5.0.012 - LR)
+   double        offset1;         // ht. above start node invert (ft)
+   double        offset2;         // ht. above end node invert (ft)
    TXsect        xsect;           // cross section data
    double        q0;              // initial flow (cfs)
    double        qLimit;          // constraint on max. flow (cfs)
    double        cLossInlet;      // inlet loss coeff.
    double        cLossOutlet;     // outlet loss coeff.
    double        cLossAvg;        // avg. loss coeff.
+   double        seepRate;        // seepage rate (ft/sec)
    int           hasFlapGate;     // true if flap gate present
 
    double        oldFlow;         // previous flow rate (cfs)
@@ -593,16 +590,21 @@ typedef struct
    double        newDepth;        // current flow depth (ft)
    double        oldVolume;       // previous flow volume (ft3)
    double        newVolume;       // current flow volume (ft3)
+   double        surfArea1;       // upstream surface area (ft2)
+   double        surfArea2;       // downstream surface area (ft2)
    double        qFull;           // flow when full (cfs)
-   double        setting;         // current control setting                   //(5.0.010 - LR)
-   double        targetSetting;   // target control setting                    //(5.0.010 - LR)
+   double        setting;         // current control setting
+   double        targetSetting;   // target control setting
    double        froude;          // Froude number
    double*       oldQual;         // previous quality state
    double*       newQual;         // current quality state
+   double*       totalLoad;       // total quality mass loading
    int           flowClass;       // flow classification
    double        dqdh;            // change in flow w.r.t. head (ft2/sec)
    signed char   direction;       // flow direction flag
-   char          isClosed;        // flap gate closed flag
+   char          bypassed;        // bypass dynwave calc. flag
+   char          normalFlow;      // normal flow limited flag
+   char          inletControl;    // culvert inlet control flag
 }  TLink;
 
 
@@ -623,8 +625,9 @@ typedef struct
    double        a1, a2;          // upstream & downstream areas (ft2)
    double        q1, q2;          // upstream & downstream flows per barrel (cfs)
    double        q1Old, q2Old;    // previous values of q1 & q2 (cfs)
-// double        aMid;            // average flow area (ft2)                   //(5.0.013 - LR)
-   char          capacityLimited; // capacity limited flag                     //(5.0.012 - LR)
+   double        evapLossRate;    // evaporation rate (cfs)
+   double        seepLossRate;    // seepage rate (cfs)
+   char          capacityLimited; // capacity limited flag
    char          superCritical;   // super-critical flow flag
    char          hasLosses;       // local losses flag
 }  TConduit;
@@ -637,11 +640,11 @@ typedef struct
 {
    int           type;            // pump type
    int           pumpCurve;       // pump curve table index
-   double        initSetting;     // initial speed setting                     //(5.0.010 - LR)
-   double        yOn;             // startup depth (ft)                        //(5.0.010 - LR)
-   double        yOff;            // shutoff depth (ft)                        //(5.0.010 - LR)
-   double        xMin;            // minimum pt. on pump curve                 //(5.0.012 - LR)
-   double        xMax;            // maximum pt. on pump curve                 //(5.0.012 - LR)
+   double        initSetting;     // initial speed setting 
+   double        yOn;             // startup depth (ft)
+   double        yOff;            // shutoff depth (ft)
+   double        xMin;            // minimum pt. on pump curve 
+   double        xMax;            // maximum pt. on pump curve
 }  TPump;
 
 
@@ -655,9 +658,9 @@ typedef struct
    double        cDisch;          // discharge coeff.
    double        orate;           // time to open/close (sec)
 
-   double        cOrif;           // coeff. for orifice flow (ft^2.5/sec)      //(5.0.012 - LR)
-   double        hCrit;           // inlet depth where weir flow begins (ft)   //(5.0.012 - LR)
-   double        cWeir;           // coeff. for weir flow (cfs)                //(5.0.012 - LR)
+   double        cOrif;           // coeff. for orifice flow (ft^2.5/sec)
+   double        hCrit;           // inlet depth where weir flow begins (ft)
+   double        cWeir;           // coeff. for weir flow (cfs)
    double        length;          // equivalent length (ft)
    double        surfArea;        // equivalent surface area (ft2)
 }  TOrifice;
@@ -670,12 +673,10 @@ typedef struct
 {
    int           type;            // weir type code
    int           shape;           // weir shape code
-   //double        crestHt;         // crest height above node invert (ft)     //(5.0.012 - LR)
    double        cDisch1;         // discharge coeff.
    double        cDisch2;         // discharge coeff. for ends
    double        endCon;          // end contractions
 
-   double        cSurcharge;      // cDisch for equiv. orifice under surcharge
    double        length;          // equivalent length (ft)
    double        slope;           // slope for Vnotch & Trapezoidal weirs
    double        surfArea;        // equivalent surface area (ft2)
@@ -687,11 +688,10 @@ typedef struct
 //---------------------
 typedef struct
 {
-    //double       crestHt;         // crest ht. above node invert (ft)        //(5.0.012 - LR)
     double       qCoeff;          // discharge coeff.
     double       qExpon;          // discharge exponent
     int          qCurve;          // index of discharge rating curve
-    int          curveType;       // rating curve type                         //(5.0.014 - LR)
+    int          curveType;       // rating curve type
 }   TOutlet;
 
 
@@ -703,10 +703,11 @@ typedef struct
    char*         ID;              // Pollutant ID
    int           units;           // units
    double        mcf;             // mass conversion factor
-   double        dwfConcen;       // dry weather sanitary flow concen.         //(5.0.017 - LR)
+   double        dwfConcen;       // dry weather sanitary flow concen.
    double        pptConcen;       // precip. concen.
    double        gwConcen;        // groundwater concen.
    double        rdiiConcen;      // RDII concen.
+   double        initConcen;      // initial concen. in conveyance network
    double        kDecay;          // decay constant (1/sec)
    int           coPollut;        // co-pollutant index
    double        coFraction;      // co-pollutant fraction
@@ -834,6 +835,8 @@ typedef struct
    double        exInflow;         // direct inflow
    double        flooding;         // internal flooding
    double        outflow;          // external outflow
+   double        evapLoss;         // evaporation loss
+   double        seepLoss;         // seepage loss
    double        reacted;          // reaction losses
    double        initStorage;      // initial storage volume
    double        finalStorage;     // final storage volume
@@ -889,16 +892,16 @@ typedef struct
    double        avgDepth;
    double        maxDepth;
    DateTime      maxDepthDate;
-   double        maxDepthChange;                                               //(5.0.012 - LR)
+   double        maxDepthChange;
    double        volFlooded;
    double        timeFlooded;
-   double        timeSurcharged;                                               //(5.0.012 - LR)
+   double        timeSurcharged;
    double        timeCourantCritical;
-   double        totLatFlow;                                                   //(5.0.012 - LR)
+   double        totLatFlow;
    double        maxLatFlow;
    double        maxInflow;
    double        maxOverflow;
-   double        maxPondedVol;                                                 //(5.0.012 - LR)
+   double        maxPondedVol;
    DateTime      maxInflowDate;
    DateTime      maxOverflowDate;
 }  TNodeStats;
@@ -909,10 +912,12 @@ typedef struct
 //-------------------
 typedef struct
 {
+   double        initVol;
    double        avgVol;
    double        maxVol;
    double        maxFlow;
-   double        losses;                                                       //(5.0.018 - LR)
+   double        evapLosses;
+   double        seepLosses;
    DateTime      maxVolDate;
 }  TStorageStats;
 
@@ -929,21 +934,21 @@ typedef struct
 }  TOutfallStats;
 
 
-//----------------                                                             //(5.0.012 - LR)
-// PUMP STATISTICS                                                             //(5.0.012 - LR)
-//----------------                                                             //(5.0.012 - LR)
-typedef struct                                                                 //(5.0.012 - LR)
-{                                                                              //(5.0.012 - LR)
-   double       utilized;                                                      //(5.0.012 - LR)
-   double       minFlow;                                                       //(5.0.022 - LR)
-   double       avgFlow;                                                       //(5.0.012 - LR)
-   double       maxFlow;                                                       //(5.0.012 - LR)
-   double       volume;                                                        //(5.0.012 - LR)
-   double       energy;                                                        //(5.0.012 - LR)
-   double       offCurveLow;                                                   //(5.0.022 - LR)
-   double       offCurveHigh;                                                  //(5.0.022 - LR)
-   int          startUps;                                                      //(5.0.022 - LR)
-   int          totalPeriods;                                                  //(5.0.012 - LR)
+//---------------- 
+// PUMP STATISTICS
+//----------------
+typedef struct
+{
+   double       utilized;
+   double       minFlow;
+   double       avgFlow;
+   double       maxFlow;
+   double       volume;
+   double       energy;
+   double       offCurveLow;
+   double       offCurveHigh;
+   int          startUps;
+   int          totalPeriods;
 }  TPumpStats;
 
 
@@ -957,17 +962,17 @@ typedef struct
    double        maxVeloc;
    DateTime      maxVelocDate;
    double        maxDepth;
-   double        avgFlowChange;
-   double        avgFroude;
+   double        timeNormalFlow;
+   double        timeInletControl;
    double        timeSurcharged;
-   double        timeFullUpstream;                                             //(5.0.012 - LR)
-   double        timeFullDnstream;                                             //(5.0.012 - LR)
-   double        timeFullFlow;                                                 //(5.0.012 - LR)
-   double        timeCapacityLimited;                                          //(5.0.012 - LR)
+   double        timeFullUpstream;
+   double        timeFullDnstream;
+   double        timeFullFlow;
+   double        timeCapacityLimited;
    double        timeInFlowClass[MAX_FLOW_CLASSES];
    double        timeCourantCritical;
-   long          flowTurns;                                                    //(5.0.010 - LR)
-   int           flowTurnSign;                                                 //(5.0.010 - LR)
+   long          flowTurns;
+   int           flowTurnSign;
 }  TLinkStats;
 
 
@@ -992,4 +997,3 @@ typedef struct
    char          Enabled;         // TRUE if appears in report table
    int           Precision;       // number of decimal places when reported
 }  TRptField;
-

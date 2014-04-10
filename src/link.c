@@ -2,24 +2,13 @@
 //   link.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
-//             7/16/07   (Build 5.0.011)
-//             2/4/08    (Build 5.0.012)
-//             3/11/08   (Build 5.0.013)
-//             1/21/09   (Build 5.0.014)
-//             4/10/09   (Build 5.0.015)
-//             6/22/09   (Build 5.0.016)
-//             10/7/09   (Build 5.0.017)
-//             11/18/09  (Build 5.0.018)
-//             07/30/10  (Build 5.0.019)
-//             04/20/11  (Build 5.0.022)
-//   Author:   L. Rossman
+//   Version:  5.1
+//   Date:     03/20/14   (Build 5.1.001)
+//   Author:   L. Rossman (EPA)
+//             M. Tryby (EPA)
 //
 //   Conveyance system link functions
 //
-//   Note: The Link offset properties z1 and z2 have been renamed to
-//         offset1 and offset2 for build 5.0.012.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -44,34 +33,36 @@ static const double MIN_DELTA_Z = 0.001; // minimum elevation change for conduit
 //  link_initState         (called by initObjects in swmm5.c)
 //  link_setOldHydState    (called by routing_execute in routing.c)
 //  link_setOldQualState   (called by routing_execute in routing.c)            
-//  link_setTargetSetting  (called by routing_execute in routing.c)            //(5.0.010 - LR)
-//  link_setSetting        (called by routing_execute in routing.c)            //(5.0.010 - LR)
+//  link_setTargetSetting  (called by routing_execute in routing.c)
+//  link_setSetting        (called by routing_execute in routing.c)
 //  link_getResults        (called by output_saveLinkResults)
-//  link_getLength                                                             //(5.0.015 - LR)
+//  link_getLength
 //  link_getFroude
 //  link_getInflow
 //  link_setOutfallDepth
 //  link_getYcrit
 //  link_getYnorm
 //  link_getVelocity
-//  link_getPower          (called by stats_updateLinkStats in stats.c)        //(5.0.012 - LR)
+//  link_getPower          (called by stats_updateLinkStats in stats.c) 
+//  link_getLossRate
 
 //-----------------------------------------------------------------------------
 //  Local functions
 //-----------------------------------------------------------------------------
 static void   link_setParams(int j, int type, int n1, int n2, int k, double x[]);
-static void   link_convertOffsets(int j);                                      //(5.0.012 - LR)
-static double link_getOffsetHeight(int j, double offset, double elev);         //(5.0.016 - LR)
+static void   link_convertOffsets(int j);
+static double link_getOffsetHeight(int j, double offset, double elev);
 
 static int    conduit_readParams(int j, int k, char* tok[], int ntoks);
 static void   conduit_validate(int j, int k);
 static void   conduit_initState(int j, int k);
 static void   conduit_reverse(int j, int k);
-static double conduit_getLength(int j);                                        //(5.0.015 - LR)
-static double conduit_getLengthFactor(int j, int k, double roughness);         //(5.0.010 - LR)
-static double conduit_getSlope(int j);                                         //(5.0.015 - LR)
+static double conduit_getLength(int j);
+static double conduit_getLengthFactor(int j, int k, double roughness);
+static double conduit_getSlope(int j);
 static double conduit_getInflow(int j);
 static void   conduit_updateStats(int j, double dt, DateTime aDate);
+static double conduit_getLossRate(int j, double tstep);
 
 static int    pump_readParams(int j, int k, char* tok[], int ntoks);
 static void   pump_validate(int j, int k);
@@ -80,20 +71,18 @@ static double pump_getInflow(int j);
 
 static int    orifice_readParams(int j, int k, char* tok[], int ntoks);
 static void   orifice_validate(int j, int k);
-static void   orifice_setSetting(int j, double tstep);                         //(5.0.010 - LR)
-static double orifice_getWeirCoeff(int j, int k, double h);                    //(5.0.012 - LR)
+static void   orifice_setSetting(int j, double tstep);
+static double orifice_getWeirCoeff(int j, int k, double h);
 static double orifice_getInflow(int j);
-static double orifice_getFlow(int j, int k, double head, double f,             //(5.0.012 - LR)
-              int hasFlapGate);                                                //(5.0.012 - LR)
+static double orifice_getFlow(int j, int k, double head, double f,
+              int hasFlapGate);
 
 static int    weir_readParams(int j, int k, char* tok[], int ntoks);
 static void   weir_validate(int j, int k);
-static void   weir_setSetting(int j);                                          //(5.0.011 - LR)
 static double weir_getInflow(int j);
 static double weir_getOpenArea(int j, double y);
 static void   weir_getFlow(int j, int k, double head, double dir,
               int hasFlapGate, double* q1, double* q2);
-static double weir_getOrificeFlow(int j, double head, double y, double cOrif); //(5.0.012 - LR)
 static double weir_getdqdh(int k, double dir, double h, double q1, double q2);
 
 static int    outlet_readParams(int j, int k, char* tok[], int ntoks);
@@ -152,8 +141,8 @@ int link_readXsectParams(char* tok[], int ntoks)
     // --- assign default number of barrels to conduit
     if ( Link[j].type == CONDUIT ) Conduit[Link[j].subIndex].barrels = 1;
     
-    // --- assume link is not a culvert                                        //(5.0.014 - LR)
-    Link[j].xsect.culvertCode = 0;                                             //(5.0.014 - LR)
+    // --- assume link is not a culvert 
+    Link[j].xsect.culvertCode = 0;
 
     // --- for irregular shape, find index of transect object
     if ( k == IRREGULAR )
@@ -165,20 +154,20 @@ int link_readXsectParams(char* tok[], int ntoks)
     }
     else
     {
-        // --- parse max. depth & shape curve for a custom shape               //(5.0.010 - LR)
-        if ( k == CUSTOM )                                                     //(5.0.010 - LR)
-        {                                                                      //(5.0.010 - LR)
-            if ( !getDouble(tok[2], &x[0]) || x[0] <= 0.0 )                    //(5.0.010 - LR) 
-               return error_setInpError(ERR_NUMBER, tok[2]);                   //(5.0.010 - LR)
-            i = project_findObject(CURVE, tok[3]);                             //(5.0.010 - LR)
-            if ( i < 0 ) return error_setInpError(ERR_NAME, tok[3]);           //(5.0.010 - LR)
-            Link[j].xsect.type = k;                                            //(5.0.010 - LR)
-            Link[j].xsect.transect = i;                                        //(5.0.010 - LR)
-            Link[j].xsect.yFull = x[0] / UCF(LENGTH);                          //(5.0.010 - LR) 
-        }                                                                      //(5.0.010 - LR)
+        // --- parse max. depth & shape curve for a custom shape 
+        if ( k == CUSTOM )
+        {
+            if ( !getDouble(tok[2], &x[0]) || x[0] <= 0.0 )
+               return error_setInpError(ERR_NUMBER, tok[2]);
+            i = project_findObject(CURVE, tok[3]);
+            if ( i < 0 ) return error_setInpError(ERR_NAME, tok[3]);
+            Link[j].xsect.type = k;
+            Link[j].xsect.transect = i;
+            Link[j].xsect.yFull = x[0] / UCF(LENGTH);
+        }
 
         // --- parse and save geometric parameters
-        else for (i = 2; i <= 5; i++)                                          //(5.0.010 - LR)
+        else for (i = 2; i <= 5; i++)
         {
             if ( !getDouble(tok[i], &x[i-2]) )
                 return error_setInpError(ERR_NUMBER, tok[i]);
@@ -196,7 +185,7 @@ int link_readXsectParams(char* tok[], int ntoks)
             else Conduit[Link[j].subIndex].barrels = (char)i;
         }
 
-        // --- parse culvert code if present                                   //(5.0.014 - LR)
+        // --- parse culvert code if present
         if ( Link[j].type == CONDUIT && ntoks >= 8 )
         {
             i = atoi(tok[7]);
@@ -221,13 +210,14 @@ int link_readLossParams(char* tok[], int ntoks)
 {
     int    i, j, k;
     double x[3];
+    double seepRate = 0.0;
 
     if ( ntoks < 4 ) return error_setInpError(ERR_ITEMS, "");
     j = project_findObject(LINK, tok[0]);
     if ( j < 0 ) return error_setInpError(ERR_NAME, tok[0]);
     for (i=1; i<=3; i++)
     {
-        if ( ! getDouble(tok[i], &x[i-1]) || x[i-1] < 0.0 )                    //(5.0.019 - LR)
+        if ( ! getDouble(tok[i], &x[i-1]) || x[i-1] < 0.0 )
         return error_setInpError(ERR_NUMBER, tok[i]);
     }
     k = 0;
@@ -236,10 +226,16 @@ int link_readLossParams(char* tok[], int ntoks)
         k = findmatch(tok[4], NoYesWords);             
         if ( k < 0 ) return error_setInpError(ERR_KEYWORD, tok[4]);
     }
+    if ( ntoks >= 6 )
+    {
+        if ( ! getDouble(tok[5], &seepRate) )
+        return error_setInpError(ERR_NUMBER, tok[5]);
+    }
     Link[j].cLossInlet   = x[0];
     Link[j].cLossOutlet  = x[1];
     Link[j].cLossAvg     = x[2];
     Link[j].hasFlapGate  = k;
+    Link[j].seepRate     = seepRate / UCF(RAINFALL);
     return 0;
 }
 
@@ -266,7 +262,7 @@ void  link_setParams(int j, int type, int n1, int n2, int k, double x[])
     Link[j].q0          = 0.0;
     Link[j].qFull       = 0.0;
     Link[j].setting     = 1.0;
-    Link[j].targetSetting = 1.0;                                               //(5.0.010 - LR)
+    Link[j].targetSetting = 1.0;
     Link[j].hasFlapGate = 0;
     Link[j].qLimit      = 0.0;         // 0 means that no limit is defined
     Link[j].direction   = 1;
@@ -286,11 +282,11 @@ void  link_setParams(int j, int type, int n1, int n2, int k, double x[])
       case PUMP:
         Pump[k].pumpCurve    = (int)x[0];
         Link[j].hasFlapGate  = FALSE;
-        Pump[k].initSetting  = x[1];                                           //(5.0.010 - LR)
-        Pump[k].yOn          = x[2] / UCF(LENGTH);                             //(5.0.012 - LR)
-        Pump[k].yOff         = x[3] / UCF(LENGTH);                             //(5.0.012 - LR)
-        Pump[k].xMin         = 0.0;                                            //(5.0.014 - LR)
-        Pump[k].xMax         = 0.0;                                            //(5.0.014 - LR)
+        Pump[k].initSetting  = x[1];
+        Pump[k].yOn          = x[2] / UCF(LENGTH);
+        Pump[k].yOff         = x[3] / UCF(LENGTH);
+        Pump[k].xMin         = 0.0;
+        Pump[k].xMax         = 0.0;
         break;
 
       case ORIFICE:
@@ -299,7 +295,7 @@ void  link_setParams(int j, int type, int n1, int n2, int k, double x[])
         Link[j].offset2      = Link[j].offset1;
         Orifice[k].cDisch    = x[2];
         Link[j].hasFlapGate  = (x[3] > 0.0) ? 1 : 0;
-        Orifice[k].orate     = x[4] * 3600.0;                                  //(5.0.010 - LR) 
+        Orifice[k].orate     = x[4] * 3600.0;
         break;
 
       case WEIR:
@@ -319,7 +315,7 @@ void  link_setParams(int j, int type, int n1, int n2, int k, double x[])
         Outlet[k].qExpon     = x[2];
         Outlet[k].qCurve     = (int)x[3];
         Link[j].hasFlapGate  = (x[4] > 0.0) ? 1 : 0;
-        Outlet[k].curveType  = (int)x[5];                                      //(5.0.014 - LR)
+        Outlet[k].curveType  = (int)x[5];
 
         xsect_setParams(&Link[j].xsect, DUMMY, NULL, 0.0);
         break;
@@ -338,7 +334,7 @@ void  link_validate(int j)
 {
     int   n;
 
-    if ( LinkOffsets == ELEV_OFFSET ) link_convertOffsets(j);                  //(5.0.012 - LR)
+    if ( LinkOffsets == ELEV_OFFSET ) link_convertOffsets(j);
     switch ( Link[j].type )
     {
       case CONDUIT: conduit_validate(j, Link[j].subIndex); break;
@@ -347,33 +343,43 @@ void  link_validate(int j)
       case WEIR:    weir_validate(j, Link[j].subIndex);    break;
     }
 
-////  The following code segment was revised in release 5.0.019  ////          //(5.0.019 - LR)
+    // --- check if crest of regulator opening < invert of downstream node
+    switch ( Link[j].type )
+    {
+      case ORIFICE: 
+      case WEIR:
+      case OUTLET:
+          if ( Node[Link[j].node1].invertElev + Link[j].offset1 <
+               Node[Link[j].node2].invertElev )
+               report_writeWarningMsg(WARN10, Link[j].ID);
+    }
 
     // --- force max. depth of end nodes to be >= link crown height
-    //     at non-storage nodes (except for bottom orifices)
-    if ( Link[j].type != ORIFICE ||
-         Orifice[Link[j].subIndex].type != BOTTOM_ORIFICE )
+    //     at non-storage nodes
+
+    // --- skip pumps and bottom orifices
+    if ( Link[j].type == PUMP ||
+         (Link[j].type == ORIFICE && 
+          Orifice[Link[j].subIndex].type == BOTTOM_ORIFICE) ) return;
+
+    // --- extend upstream node's full depth to link's crown elevation
+    n = Link[j].node1;
+    if ( Node[n].type != STORAGE )
     {
-        n = Link[j].node1;
-        if ( Node[n].type != STORAGE )
-        {
-            Node[n].fullDepth = MAX(Node[n].fullDepth,
-                                Link[j].offset1 + Link[j].xsect.yFull);
-        }
-        n = Link[j].node2;
-        if ( Node[n].type != STORAGE )
-        {
-            Node[n].fullDepth = MAX(Node[n].fullDepth,
-                                Link[j].offset2 + Link[j].xsect.yFull);
-        }
+        Node[n].fullDepth = MAX(Node[n].fullDepth,
+                            Link[j].offset1 + Link[j].xsect.yFull);
     }
-////  End of revisions  ////
+
+    // --- do same for downstream node only for conduit links
+    n = Link[j].node2;
+    if ( Node[n].type != STORAGE && Link[j].type == CONDUIT )
+    {
+        Node[n].fullDepth = MAX(Node[n].fullDepth,
+                            Link[j].offset2 + Link[j].xsect.yFull);
+    }
 }
 
 //=============================================================================
-
-////  New function added  ////                                                 //(5.0.012 - LR)
-////  Function modified   ////                                                 //(5.0.016 - LR)
 
 void link_convertOffsets(int j)
 //
@@ -396,8 +402,6 @@ void link_convertOffsets(int j)
 
 //=============================================================================
 
-////  New function added  ////                                                 //(5.0.012 - LR)
-
 double link_getOffsetHeight(int j, double offset, double elev)
 //
 //  Input:   j = link index
@@ -407,7 +411,7 @@ double link_getOffsetHeight(int j, double offset, double elev)
 //  Purpose: finds offset height for one end of a link.
 //
 {
-    if ( offset == MISSING ) return 0.0;
+    if ( offset <= MISSING || Link[j].type == PUMP) return 0.0;
     offset -= elev;
     if ( offset >= 0.0 ) return offset;
     if ( offset >= -MIN_DELTA_Z ) return 0.0;
@@ -433,9 +437,10 @@ void link_initState(int j)
     Link[j].newDepth  = 0.0;
     Link[j].oldVolume = 0.0;
     Link[j].newVolume = 0.0;
-    Link[j].isClosed  = FALSE;
-    Link[j].setting   = 1.0;                                                   //(5.0.010 - LR)
-    Link[j].targetSetting = 1.0;                                               //(5.0.010 - LR)
+    Link[j].setting   = 1.0;
+    Link[j].targetSetting = 1.0;
+    Link[j].inletControl  = FALSE;
+    Link[j].normalFlow    = FALSE;
     if ( Link[j].type == CONDUIT ) conduit_initState(j, Link[j].subIndex);
     if ( Link[j].type == PUMP    ) pump_initState(j, Link[j].subIndex);
     
@@ -444,6 +449,7 @@ void link_initState(int j)
     {
         Link[j].oldQual[p] = 0.0;
         Link[j].newQual[p] = 0.0;
+		Link[j].totalLoad[p] = 0.0;
     }
 }
 
@@ -456,8 +462,7 @@ double  link_getInflow(int j)
 //  Purpose: finds total flow entering a link during current time step.
 //
 {
-    if ( Link[j].setting == 0 ||
-         Link[j].isClosed ) return 0.0;
+    if ( Link[j].setting == 0 ) return 0.0;
     switch ( Link[j].type )
     {
       case CONDUIT: return conduit_getInflow(j);
@@ -509,50 +514,43 @@ void link_setOldQualState(int j)
 
 //=============================================================================
 
-void link_setTargetSetting(int j)                                              //(5.0.010 - LR)
-//                                                                             //(5.0.010 - LR)
-//  Input:   j = link index                                                    //(5.0.010 - LR)
-//  Output:  none                                                              //(5.0.010 - LR)
-//  Purpose: updates a link's target setting.                                  //(5.0.010 - LR)
-//                                                                             //(5.0.010 - LR)
-{                                                                              //(5.0.010 - LR)
-    int k, n1;                                                                 //(5.0.010 - LR)
-    if ( Link[j].type == PUMP )                                                //(5.0.010 - LR)
-    {                                                                          //(5.0.010 - LR)
-        k = Link[j].subIndex;                                                  //(5.0.010 - LR)
-        n1 = Link[j].node1;                                                    //(5.0.010 - LR)
-        Link[j].targetSetting = Link[j].setting;                               //(5.0.010 - LR)
-        if ( Pump[k].yOff > 0.0 &&                                             //(5.0.010 - LR)
-             Link[j].setting > 0.0 &&                                          //(5.0.010 - LR)
-             Node[n1].newDepth < Pump[k].yOff ) Link[j].targetSetting = 0.0;   //(5.0.010 - LR)
-        if ( Pump[k].yOn > 0.0 &&                                              //(5.0.010 - LR)
-             Link[j].setting == 0.0 &&                                         //(5.0.010 - LR)
-             Node[n1].newDepth > Pump[k].yOn )  Link[j].targetSetting = 1.0;   //(5.0.010 - LR)
-    }                                                                          //(5.0.010 - LR)
-}                                                                              //(5.0.010 - LR)
+void link_setTargetSetting(int j)
+// 
+//  Input:   j = link index
+//  Output:  none
+//  Purpose: updates a link's target setting.
+//
+{
+    int k, n1;
+    if ( Link[j].type == PUMP )
+    {
+        k = Link[j].subIndex;
+        n1 = Link[j].node1;
+        Link[j].targetSetting = Link[j].setting;
+        if ( Pump[k].yOff > 0.0 &&
+             Link[j].setting > 0.0 &&
+             Node[n1].newDepth < Pump[k].yOff ) Link[j].targetSetting = 0.0;
+        if ( Pump[k].yOn > 0.0 &&
+             Link[j].setting == 0.0 &&
+             Node[n1].newDepth > Pump[k].yOn )  Link[j].targetSetting = 1.0;
+    }
+}
 
 //=============================================================================
 
-void link_setSetting(int j, double tstep)                                      //(5.0.010 - LR)
-//                                                                             //(5.0.010 - LR)
-//  Input:   j = link index                                                    //(5.0.010 - LR)
-//           tstep = time step over which setting is adjusted                  //(5.0.010 - LR)
-//  Output:  none                                                              //(5.0.010 - LR)
-//  Purpose: updates a link's setting as a result of a control action.         //(5.0.010 - LR)
-//                                                                             //(5.0.010 - LR)
-{                                                                              //(5.0.010 - LR) 
-    switch ( Link[j].type )                                                    //(5.0.010 - LR)
-    {                                                                          //(5.0.010 - LR)
-      case PUMP:    Link[j].setting = Link[j].targetSetting; break;            //(5.0.010 - LR)
-      case ORIFICE: orifice_setSetting(j, tstep); break;                       //(5.0.011 - LR)
-      case WEIR:    weir_setSetting(j); break;                                 //(5.0.011 - LR)
-      default:      Link[j].setting = Link[j].targetSetting;                   //(5.0.011 - LR)
-    }                                                                          //(5.0.010 - LR)
-}                                                                              //(5.0.010 - LR)
+void link_setSetting(int j, double tstep)
+// 
+//  Input:   j = link index
+//           tstep = time step over which setting is adjusted 
+//  Output:  none
+//  Purpose: updates a link's setting as a result of a control action.
+//
+{
+    if ( Link[j].type == ORIFICE ) orifice_setSetting(j, tstep);
+    else Link[j].setting = Link[j].targetSetting; 
+}
 
 //=============================================================================
-
-////  This function was re-named and re-written for release 5.0.014.  ////     //(5.0.014 - LR)
 
 int link_setFlapGate(int j, int n1, int n2, double q)
 //
@@ -596,31 +594,41 @@ void link_getResults(int j, double f, float x[])
     int    p;                     // pollutant index
     double y,                     // depth
            q,                     // flow
-           v,                     // velocity
-           fr,                    // Froude no.
-           c;                     // capacity or concentration
+           u,                     // velocity
+           v,                     // volume
+           c;                     // capacity, setting or concentration
     double f1 = 1.0 - f;
 
     y = f1*Link[j].oldDepth + f*Link[j].newDepth;
     q = f1*Link[j].oldFlow + f*Link[j].newFlow;
-    v = link_getVelocity(j, q, y);
-    fr = link_getFroude(j, v, y);
+    v = f1*Link[j].oldVolume + f*Link[j].newVolume;
+    u = link_getVelocity(j, q, y);
     c = 0.0;
-    if ( Link[j].type != PUMP && Link[j].xsect.type != DUMMY)                  //(5.0.022 - LR)
-    {                                                                          //(5.0.022 - LR)
-         if (Link[j].setting == 0.0 ) y = 0.0;                                 //(5.0.022 - LR)
-         else c = y / (Link[j].xsect.yFull * Link[j].setting);                 //(5.0.022 - LR)
-    }                                                                          //(5.0.022 - LR)
+    if (Link[j].type == CONDUIT)
+    {
+        if (Link[j].xsect.type != DUMMY)
+            c = xsect_getAofY(&Link[j].xsect, y) / Link[j].xsect.aFull;
+    }
+    else c = Link[j].setting;
+
+    // --- override time weighting for pump flow between on/off states
+    if (Link[j].type == PUMP && Link[j].oldFlow*Link[j].newFlow == 0.0)
+    {
+        if ( f >= f1 ) q = Link[j].newFlow;
+        else           q = Link[j].oldFlow;
+    }
 
     y *= UCF(LENGTH);
+    v *= UCF(VOLUME);
     q *= UCF(FLOW) * (double)Link[j].direction;
-    v *= UCF(LENGTH) * (double)Link[j].direction;
+    u *= UCF(LENGTH) * (double)Link[j].direction;
     x[LINK_DEPTH]    = (float)y;
     x[LINK_FLOW]     = (float)q;
-    x[LINK_VELOCITY] = (float)v;
-    x[LINK_FROUDE]   = (float)fr;
+    x[LINK_VELOCITY] = (float)u;
+    x[LINK_VOLUME]   = (float)v;
     x[LINK_CAPACITY] = (float)c;
-    for (p = 0; p < Nobjects[POLLUT]; p++)
+
+    if ( !IgnoreQuality ) for (p = 0; p < Nobjects[POLLUT]; p++)
     {
         c = f1*Link[j].oldQual[p] + f*Link[j].newQual[p];
         x[LINK_QUAL+p] = (float)c;
@@ -698,9 +706,9 @@ double  link_getYnorm(int j, double q)
     if ( Link[j].type != CONDUIT ) return 0.0;
     if ( Link[j].xsect.type == DUMMY ) return 0.0;
     q = fabs(q);
-    if ( q <= 0.0 ) return 0.0;
     k = Link[j].subIndex;
-    if ( q > Conduit[k].qMax ) return Link[j].xsect.yFull;
+    if ( q > Conduit[k].qMax ) q = Conduit[k].qMax;
+    if ( q <= 0.0 ) return 0.0;
     s = q / Conduit[k].beta;
     a = xsect_getAofS(&Link[j].xsect, s);
     y = xsect_getYofA(&Link[j].xsect, a);
@@ -708,8 +716,6 @@ double  link_getYnorm(int j, double q)
 }
 
 //=============================================================================
-
-////  New function added to release 5.0.015  ////                              //(5.0.015 - LR)
 
 double link_getLength(int j)
 //
@@ -750,8 +756,6 @@ double link_getVelocity(int j, double flow, double depth)
 
 //=============================================================================
 
-////  ------  This function was completely re-written.  ------  ////           //(5.0.014 - LR)
-
 double link_getFroude(int j, double v, double y)
 //
 //  Input:   j = link index
@@ -780,7 +784,6 @@ double link_getFroude(int j, double v, double y)
 
 //=============================================================================
 
-////  New function added to compute power consumption ////                     //(5.0.012 - LR)
 double link_getPower(int j)
 //
 //  Input:   j = link index
@@ -795,6 +798,21 @@ double link_getPower(int j)
                 (Node[n2].invertElev + Node[n2].newDepth);
     double q =  fabs(Link[j].newFlow);
     return fabs(dh) * q / 8.814 * KWperHP;
+}
+
+//=============================================================================
+
+double link_getLossRate(int j, double tStep)
+//
+//  Input:   j = link index
+//           tstep = time step (sec)
+//  Output:  returns uniform loss rate in link (ft3/sec)
+//  Purpose: computes volume lost in link due to evaporation and infiltration
+//           over a time step.
+//
+{
+    if ( Link[j].type == CONDUIT ) return conduit_getLossRate(j, tStep);
+    else return 0.0;
 }
 
 
@@ -812,7 +830,6 @@ int  conduit_readParams(int j, int k, char* tok[], int ntoks)
 //  Purpose: reads conduit parameters from a tokenzed line of input.
 //
 {
-    //int    i;                                                                //(5.0.012 - LR)
     int    n1, n2;
     double x[6];
     char*  id;
@@ -826,7 +843,6 @@ int  conduit_readParams(int j, int k, char* tok[], int ntoks)
     n2 = project_findObject(NODE, tok[2]);            // dwnstrm. node
     if ( n2 < 0 ) return error_setInpError(ERR_NAME, tok[2]);
 
-////   Modified for possibility of elevation offsets   ////                    //(5.0.012 - LR)
     // --- parse length & Mannings N
     if ( !getDouble(tok[3], &x[0]) )
         return error_setInpError(ERR_NUMBER, tok[3]);
@@ -840,7 +856,6 @@ int  conduit_readParams(int j, int k, char* tok[], int ntoks)
     if ( LinkOffsets == ELEV_OFFSET && *tok[6] == '*' ) x[3] = MISSING;
     else if ( !getDouble(tok[6], &x[3]) )
         return error_setInpError(ERR_NUMBER, tok[6]);
-////////////////////////////////////////////////////////////
 
    // --- parse optional parameters
     x[4] = 0.0;                                       // init. flow
@@ -873,11 +888,21 @@ void  conduit_validate(int j, int k)
 //
 {
     double aa;
-    double lengthFactor, roughness, slope;                                     //(5.0.018 - LR)
+    double lengthFactor, roughness, slope;
 
-    // --- if custom xsection, then set its parameters                         //(5.0.010 - LR)
-    if ( Link[j].xsect.type == CUSTOM )                                        //(5.0.010 - LR)
-        xsect_setCustomXsectParams(&Link[j].xsect);                            //(5.0.010 - LR)
+    // --- a storage node cannot have a dummy outflow link
+    if ( Link[j].xsect.type == DUMMY )
+    {
+        if ( Node[Link[j].node1].type == STORAGE )
+        {
+            report_writeErrorMsg(ERR_DUMMY_LINK, Node[Link[j].node1].ID);
+            return;
+        }
+    }
+
+    // --- if custom xsection, then set its parameters
+    if ( Link[j].xsect.type == CUSTOM )
+        xsect_setCustomXsectParams(&Link[j].xsect);
 
     // --- if irreg. xsection, assign transect roughness to conduit
     if ( Link[j].xsect.type == IRREGULAR )
@@ -886,13 +911,13 @@ void  conduit_validate(int j, int k)
         Conduit[k].roughness = Transect[Link[j].xsect.transect].roughness;
     }
 
-    // --- if force main xsection, adjust units on D-W roughness height        //(5.0.010 - LR)
-    if ( Link[j].xsect.type == FORCE_MAIN )                                    //(5.0.010 - LR)
-    {                                                                          //(5.0.010 - LR)
-        if ( ForceMainEqn == D_W ) Link[j].xsect.rBot /= UCF(RAINDEPTH);       //(5.0.010 - LR)
-        if ( Link[j].xsect.rBot <= 0.0 )                                       //(5.0.010 - LR)
-            report_writeErrorMsg(ERR_XSECT, Link[j].ID);                       //(5.0.010 - LR)
-    }                                                                          //(5.0.010 - LR)
+    // --- if force main xsection, adjust units on D-W roughness height
+    if ( Link[j].xsect.type == FORCE_MAIN )
+    {
+        if ( ForceMainEqn == D_W ) Link[j].xsect.rBot /= UCF(RAINDEPTH);
+        if ( Link[j].xsect.rBot <= 0.0 )
+            report_writeErrorMsg(ERR_XSECT, Link[j].ID);
+    }
 
     // --- check for valid length & roughness
     if ( Conduit[k].length <= 0.0 )
@@ -912,16 +937,16 @@ void  conduit_validate(int j, int k)
     }
     if ( ErrorCode ) return;
 
-    // --- check for negative offsets                                          //(5.0.012 - LR)
+    // --- check for negative offsets
     if ( Link[j].offset1 < 0.0 )
     {
-        report_writeWarningMsg(WARN03, Link[j].ID);                            //(5.0.015 - LR)
-        Link[j].offset1 = 0.0;                                                 //(5.0.012 - LR)
+        report_writeWarningMsg(WARN03, Link[j].ID);
+        Link[j].offset1 = 0.0;
     }
 	if ( Link[j].offset2 < 0.0 )
     {
-        report_writeWarningMsg(WARN03, Link[j].ID);                            //(5.0.015 - LR)
-        Link[j].offset2 = 0.0;                                                 //(5.0.012 - LR)
+        report_writeWarningMsg(WARN03, Link[j].ID);
+        Link[j].offset2 = 0.0;
     }
 
     // --- adjust conduit offsets for partly filled circular xsection
@@ -932,27 +957,27 @@ void  conduit_validate(int j, int k)
     }
 
     // --- compute conduit slope 
-    slope = conduit_getSlope(j);                                               //(5.0.018 - LR)
-    Conduit[k].slope = slope;                                                  //(5.0.018 - LR)
+    slope = conduit_getSlope(j);
+    Conduit[k].slope = slope;
 
     // --- reverse orientation of conduit if using dynamic wave routing 
     //     and slope is negative
     if ( RouteModel == DW &&
-         slope < 0.0 &&                                                        //(5.0.018 - LR)
+         slope < 0.0 &&
          Link[j].xsect.type != DUMMY )
     {
         conduit_reverse(j, k);
     }
 
-    // --- get equivalent Manning roughness for Force Mains                    //(5.0.010 - LR)
-    //     for use when pipe is partly full                                    //(5.0.010 - LR)
-    roughness = Conduit[k].roughness;                                          //(5.0.010 - LR)
-    if ( RouteModel == DW && Link[j].xsect.type == FORCE_MAIN )                //(5.0.010 - LR)
-    {                                                                          //(5.0.010 - LR)
-        roughness = forcemain_getEquivN(j, k);                                 //(5.0.010 - LR)
-    }                                                                          //(5.0.010 - LR)
+    // --- get equivalent Manning roughness for Force Mains
+    //     for use when pipe is partly full
+    roughness = Conduit[k].roughness;
+    if ( RouteModel == DW && Link[j].xsect.type == FORCE_MAIN )
+    {
+        roughness = forcemain_getEquivN(j, k);
+    }
 
-    // --- adjust roughness for meandering natural channels                    //(5.0.015 - LR)
+    // --- adjust roughness for meandering natural channels
     if ( Link[j].xsect.type == IRREGULAR )
     {
         lengthFactor = Transect[Link[j].xsect.transect].lengthFactor;
@@ -960,45 +985,44 @@ void  conduit_validate(int j, int k)
     }
 
     // --- lengthen conduit if lengthening option is in effect
-    lengthFactor = 1.0;                                                        //(5.0.015 - LR)
+    lengthFactor = 1.0;
     if ( RouteModel == DW &&
          LengtheningStep > 0.0 &&
          Link[j].xsect.type != DUMMY )
     {
-        lengthFactor = conduit_getLengthFactor(j, k, roughness);               //(5.0.010 - LR)
+        lengthFactor = conduit_getLengthFactor(j, k, roughness);
     }
         
-    if ( lengthFactor != 1.0 )                                                 //(5.0.015 - LR)
-    {                                                                          //(5.0.015 - LR)
-        //Conduit[k].modLength = lengthFactor * Conduit[k].length;             //(5.0.015 - LR)
-        Conduit[k].modLength = lengthFactor * conduit_getLength(j);            //(5.0.015 - LR)
-        slope /= lengthFactor;                                                 //(5.0.018 - LR)
-        roughness = roughness / sqrt(lengthFactor);                            //(5.0.015 - LR)
-    }                                                                          //(5.0.015 - LR)
+    if ( lengthFactor != 1.0 )
+    {
+        Conduit[k].modLength = lengthFactor * conduit_getLength(j);
+        slope /= lengthFactor;
+        roughness = roughness / sqrt(lengthFactor);
+    }
 
-    // --- compute roughness factor used when computing friction               //(5.0.010 - LR)
-    //     slope term in Dynamic Wave flow routing                             //(5.0.010 - LR)
+    // --- compute roughness factor used when computing friction
+    //     slope term in Dynamic Wave flow routing
 
-    // --- special case for non-Manning Force Mains                            //(5.0.010 - LR)
-    //     (roughness factor for full flow is saved in xsect.sBot)             //(5.0.010 - LR)     
-    if ( RouteModel == DW && Link[j].xsect.type == FORCE_MAIN )                //(5.0.010 - LR)
-    {                                                                          //(5.0.010 - LR)
-        Link[j].xsect.sBot =                                                   //(5.0.010 - LR)
-            forcemain_getRoughFactor(j, lengthFactor);                         //(5.0.010 - LR)
-    }                                                                          //(5.0.010 - LR)
-    Conduit[k].roughFactor = GRAVITY * SQR(roughness/PHI);                     //(5.0.010 - LR)
+    // --- special case for non-Manning Force Mains
+    //     (roughness factor for full flow is saved in xsect.sBot)  
+    if ( RouteModel == DW && Link[j].xsect.type == FORCE_MAIN )
+    {
+        Link[j].xsect.sBot =
+            forcemain_getRoughFactor(j, lengthFactor);
+    }
+    Conduit[k].roughFactor = GRAVITY * SQR(roughness/PHI);
 
     // --- compute full flow through cross section
     if ( Link[j].xsect.type == DUMMY ) Conduit[k].beta = 0.0;
-    else Conduit[k].beta = PHI * sqrt(fabs(slope)) / roughness;                //(5.0.018 - LR)
+    else Conduit[k].beta = PHI * sqrt(fabs(slope)) / roughness;
     Link[j].qFull = Link[j].xsect.sFull * Conduit[k].beta;
     Conduit[k].qMax = Link[j].xsect.sMax * Conduit[k].beta;
 
     // --- see if flow is supercritical most of time
     //     by comparing normal & critical velocities.
     //     (factor of 0.3 is for circular pipe 95% full)
-    // NOTE: this factor was used in the past for a modified version of        //(5.0.014 - LR)
-    //       Kinematic Wave routing but is now deprecated.                     //(5.0.014 - LR)
+    // NOTE: this factor was used in the past for a modified version of
+    //       Kinematic Wave routing but is now deprecated.
     aa = Conduit[k].beta / sqrt(32.2) *
          pow(Link[j].xsect.yFull, 0.1666667) * 0.3;
     if ( aa >= 1.0 ) Conduit[k].superCritical = TRUE;
@@ -1051,8 +1075,6 @@ void conduit_reverse(int j, int k)
 
 //=============================================================================
 
-////  New function added to release 5.0.015  ////                              //(5.0.015 - LR)
-
 double conduit_getLength(int j)
 //
 //  Input:   j = link index
@@ -1075,7 +1097,7 @@ double conduit_getLength(int j)
 
 //=============================================================================
 
-double conduit_getLengthFactor(int j, int k, double roughness)                 //(5.0.010 - LR)
+double conduit_getLengthFactor(int j, int k, double roughness)
 //
 //  Input:   j = link index
 //           k = conduit index
@@ -1101,13 +1123,13 @@ double conduit_getLengthFactor(int j, int k, double roughness)                 /
     {
         yFull = Link[j].xsect.aFull / xsect_getWofY(&Link[j].xsect, yFull);
     }
-    vFull = PHI / roughness * Link[j].xsect.sFull *                            //(5.0.010 - LR)
-            sqrt(fabs(Conduit[k].slope)) / Link[j].xsect.aFull;                //(5.0.010 - LR)
+    vFull = PHI / roughness * Link[j].xsect.sFull *
+            sqrt(fabs(Conduit[k].slope)) / Link[j].xsect.aFull;
 
     // --- determine ratio of Courant length to actual length
     if ( LengtheningStep == 0.0 ) tStep = RouteStep;
     else                          tStep = MIN(RouteStep, LengtheningStep);
-    ratio = (sqrt(GRAVITY*yFull) + vFull) * tStep / conduit_getLength(j);      //(5.0.015 - LR)
+    ratio = (sqrt(GRAVITY*yFull) + vFull) * tStep / conduit_getLength(j);
 
     // --- return max. of 1.0 and ratio
     if ( ratio > 1.0 ) return ratio;
@@ -1116,9 +1138,7 @@ double conduit_getLengthFactor(int j, int k, double roughness)                 /
 
 //=============================================================================
 
-//// --- New function added for release 5.0.014 --- ////                       //(5.0.014 - LR)
-
-double conduit_getSlope(int j)                                                 //(5.0.015 - LR)
+double conduit_getSlope(int j) 
 //
 //  Input:   j = link index
 //  Output:  returns conduit slope
@@ -1126,7 +1146,7 @@ double conduit_getSlope(int j)                                                 /
 //
 {
     double elev1, elev2, delta, slope;
-    double length = conduit_getLength(j);                                      //(5.0.015 - LR)
+    double length = conduit_getLength(j);
 
     // --- check that elevation drop > minimum allowable drop
     elev1 = Link[j].offset1 + Node[Link[j].node1].invertElev;
@@ -1134,25 +1154,27 @@ double conduit_getSlope(int j)                                                 /
     delta = fabs(elev1 - elev2);
     if ( delta < MIN_DELTA_Z )
     {
-        report_writeWarningMsg(WARN04, Link[j].ID);                            //(5.0.015 - LR)
+        report_writeWarningMsg(WARN04, Link[j].ID);
         delta = MIN_DELTA_Z;
     }
 
     // --- elevation drop cannot exceed conduit length
-    if ( delta >= length )                                                     //(5.0.015 - LR)
+    if ( delta >= length )
     {
-        report_writeWarningMsg(WARN08, Link[j].ID);                            //(5.0.017 - LR)
-        slope = delta / length;                                                //(5.0.017 - LR)
+        report_writeWarningMsg(WARN08, Link[j].ID);
+        slope = delta / length;
     }
 
     // --- slope = elev. drop / horizontal distance
-    else slope = delta / sqrt(SQR(length) - SQR(delta));                       //(5.0.015 - LR)
+    else slope = delta / sqrt(SQR(length) - SQR(delta));
 
     // -- check that slope exceeds minimum allowable slope
     if ( MinSlope > 0.0 && slope < MinSlope )
     {
-        report_writeWarningMsg(WARN05, Link[j].ID);                            //(5.0.015 - LR)
+        report_writeWarningMsg(WARN05, Link[j].ID);
         slope = MinSlope;
+        // keep min. slope positive for SF or KW routing 
+        if (RouteModel == SF || RouteModel == KW) return slope;
     }
 
     // --- change sign for adverse slope
@@ -1184,8 +1206,78 @@ double conduit_getInflow(int j)
 //
 {
     double qIn = node_getOutflow(Link[j].node1, j);
-    if ( Link[j].qLimit > 0.0 ) qIn = MIN(qIn, Link[j].qLimit);                //(5.0.012 - LR)
+    if ( Link[j].qLimit > 0.0 ) qIn = MIN(qIn, Link[j].qLimit);
     return qIn;
+}
+
+//=============================================================================
+
+double conduit_getLossRate(int j, double tStep)
+//
+//  Input:   j = link index
+//           tStep = time step (sec)
+//  Output:  returns rate of evaporation & infiltration losses (ft3/sec)
+//  Purpose: computes rate of water evaporation & infiltration from a conduit.
+//
+{
+	TXsect *xsect;
+	double depth = 0.5 * (Link[j].oldDepth + Link[j].newDepth);
+    double length;
+    double topWidth;
+    double wettedPerimeter;
+    double maxLossRate;
+	double evapLossRate = 0.0,
+           seepLossRate = 0.0, 
+           totalLossRate = 0.0;
+
+    if ( depth > FUDGE )
+    {
+	    xsect = &Link[j].xsect;
+        length = conduit_getLength(j);
+
+        // --- find evaporation rate for open conduits
+        if ( xsect_isOpen(xsect->type) && Evap.rate > 0.0 )
+        {
+            topWidth = xsect_getWofY(xsect, depth);
+            evapLossRate = topWidth * length * Evap.rate;
+        }
+
+        // --- compute seepage loss rate
+        if ( Link[j].seepRate > 0.0 )
+        {
+            // limit depth to depth at max width
+            if ( depth >= xsect->ywMax ) depth = xsect->ywMax;
+
+            // get wetted perimeter
+            wettedPerimeter = 0.0;
+            if ( depth > 0.0 )
+            {
+                wettedPerimeter = xsect_getAofY(xsect, depth) / 
+                                  xsect_getRofY(xsect, depth);
+            }
+
+            // compute seepage loss rate across length of conduit
+            seepLossRate = Link[j].seepRate * wettedPerimeter * length;
+        }
+
+        // --- compute total loss rate
+        totalLossRate = evapLossRate + seepLossRate;
+
+        // --- total loss rate cannot exceed volume stored in conduit
+        if ( totalLossRate > 0.0 )
+        {
+            maxLossRate = 0.5 * (Link[j].oldVolume + Link[j].newVolume) / tStep;
+            if ( totalLossRate > maxLossRate )
+            {
+                evapLossRate = evapLossRate * maxLossRate / totalLossRate;
+                seepLossRate = seepLossRate * maxLossRate / totalLossRate;
+                totalLossRate = maxLossRate;
+            }
+        }
+    }
+    Conduit[Link[j].subIndex].evapLossRate = evapLossRate;
+    Conduit[Link[j].subIndex].seepLossRate = seepLossRate;
+    return totalLossRate;
 }
 
 
@@ -1205,11 +1297,11 @@ int  pump_readParams(int j, int k, char* tok[], int ntoks)
 {
     int    m;
     int    n1, n2;
-    double x[4];                                                               //(5.0.010 - LR)
+    double x[4]; 
     char*  id;
 
     // --- check for valid ID and end node IDs
-    if ( ntoks < 3 ) return error_setInpError(ERR_ITEMS, "");                  //(5.0.010 - LR)
+    if ( ntoks < 3 ) return error_setInpError(ERR_ITEMS, ""); 
     id = project_findID(LINK, tok[0]);
     if ( id == NULL ) return error_setInpError(ERR_NAME, tok[0]);
     n1 = project_findObject(NODE, tok[1]);
@@ -1218,16 +1310,16 @@ int  pump_readParams(int j, int k, char* tok[], int ntoks)
     if ( n2 < 0 ) return error_setInpError(ERR_NAME, tok[2]);
 
     // --- parse curve name
-    x[0] = -1.;                                                                //(5.0.010 - LR)
-    if ( ntoks >= 4 )                                                          //(5.0.010 - LR)
-    {                                                                          //(5.0.010 - LR) 
-        if ( !strcomp(tok[3],"*") )                                            //(5.0.010 - LR)
-        {                                                                      //(5.0.010 - LR)
+    x[0] = -1.; 
+    if ( ntoks >= 4 )
+    {
+        if ( !strcomp(tok[3],"*") )
+        {
             m = project_findObject(CURVE, tok[3]);
             if ( m < 0 ) return error_setInpError(ERR_NAME, tok[3]);
             x[0] = m;
-        }                                                                      //(5.0.010 - LR)
-    }                                                                          //(5.0.010 - LR)
+        }
+    }
 
     // --- parse init. status if present
     x[1] = 1.0;
@@ -1238,19 +1330,19 @@ int  pump_readParams(int j, int k, char* tok[], int ntoks)
         x[1] = m;
     }
 
-    // --- parse startup/shutoff depths if present                             //(5.0.010 - LR)
-    x[2] = 0.0;                                                                //(5.0.010 - LR)
-    if ( ntoks >= 6 )                                                          //(5.0.010 - LR)
-    {                                                                          //(5.0.010 - LR)
-        if ( !getDouble(tok[5], &x[2]) )                                       //(5.0.010 - LR)
-        return error_setInpError(ERR_NUMBER, tok[5]);                          //(5.0.010 - LR)
-    }                                                                          //(5.0.010 - LR)
-    x[3] = 0.0;                                                                //(5.0.010 - LR)
-    if ( ntoks >= 7 )                                                          //(5.0.010 - LR)
-    {                                                                          //(5.0.010 - LR)
-        if ( !getDouble(tok[6], &x[3]) )                                       //(5.0.010 - LR)
-        return error_setInpError(ERR_NUMBER, tok[6]);                          //(5.0.010 - LR)
-    }                                                                          //(5.0.010 - LR)
+    // --- parse startup/shutoff depths if present 
+    x[2] = 0.0; 
+    if ( ntoks >= 6 )
+    {
+        if ( !getDouble(tok[5], &x[2]) || x[2] < 0.0)
+        return error_setInpError(ERR_NUMBER, tok[5]);
+    }
+    x[3] = 0.0;
+    if ( ntoks >= 7 )
+    {
+        if ( !getDouble(tok[6], &x[3]) || x[3] < 0.0 )
+        return error_setInpError(ERR_NUMBER, tok[6]);
+    }
 
     // --- add parameters to pump object
     Link[j].ID = id;
@@ -1268,19 +1360,18 @@ void  pump_validate(int j, int k)
 //  Purpose: validates a pump's properties
 //
 {
-    int    m, n1;                                                              //(5.0.014 - LR)
+    int    m, n1;
     double x, y;
 
     Link[j].xsect.yFull = 0.0;
 
     // --- check for valid curve type
     m = Pump[k].pumpCurve;
-    //if ( m < 0 ) report_writeErrorMsg(ERR_NO_CURVE, Link[j].ID);             //(5.0.010 - LR)
-    if ( m < 0 )                                                               //(5.0.010 - LR)
-    {                                                                          //(5.0.010 - LR)
-        Pump[k].type = IDEAL_PUMP;                                             //(5.0.010 - LR)
-    }                                                                          //(5.0.010 - LR) 
-    else                                                                       //(5.0.010 - LR)
+    if ( m < 0 )
+    {
+        Pump[k].type = IDEAL_PUMP;
+    }
+    else 
     {
         if ( Curve[m].curveType < PUMP1_CURVE ||
              Curve[m].curveType > PUMP4_CURVE )
@@ -1289,36 +1380,38 @@ void  pump_validate(int j, int k)
         // --- store pump curve type with pump's parameters
         else 
         {
-            Pump[k].type = Curve[m].curveType - PUMP1_CURVE;                   //(5.0.010 - LR)
+            Pump[k].type = Curve[m].curveType - PUMP1_CURVE;
             if ( table_getFirstEntry(&Curve[m], &x, &y) )
             {
                 Link[j].qFull = y;
-                Pump[k].xMin = x;                                              //(5.0.012 - LR)
-                Pump[k].xMax = x;                                              //(5.0.012 - LR)       
+                Pump[k].xMin = x;
+                Pump[k].xMax = x;
                 while ( table_getNextEntry(&Curve[m], &x, &y) )
                 {
                     Link[j].qFull = MAX(y, Link[j].qFull);
-                    Pump[k].xMax = x;                                          //(5.0.012 - LR)
+                    Pump[k].xMax = x;
                 }
             }
             Link[j].qFull /= UCF(FLOW);
        }
     }
 
-    // --- assign wet well volume to inlet node of Type 1 pump                 //(5.0.014 - LR)
-    if ( Pump[k].type == TYPE1_PUMP )                                          //(5.0.014 - LR)
-    {                                                                          //(5.0.014 - LR)
-        n1 = Link[j].node1;                                                    //(5.0.014 - LR)
-        if ( Node[n1].type != STORAGE )                                        //(5.0.014 - LR)
-            Node[n1].fullVolume = MAX(Node[n1].fullVolume,                     //(5.0.014 - LR)
-                                      Pump[k].xMax / UCF(VOLUME));             //(5.0.014 - LR)
-    }                                                                          //(5.0.014 - LR)
+    // --- check that shutoff depth < startup depth
+    if ( Pump[k].yOn > 0.0 && Pump[k].yOn <= Pump[k].yOff )
+        report_writeErrorMsg(ERR_PUMP_LIMITS, Link[j].ID);
+
+    // --- assign wet well volume to inlet node of Type 1 pump 
+    if ( Pump[k].type == TYPE1_PUMP )
+    {
+        n1 = Link[j].node1;
+        if ( Node[n1].type != STORAGE )
+            Node[n1].fullVolume = MAX(Node[n1].fullVolume,
+                                      Pump[k].xMax / UCF(VOLUME));
+    }
 
 }
 
 //=============================================================================
-
-////  --- This function was completely re-written. ---  ////                   //(5.0.014 - LR)
 
 void  pump_initState(int j, int k)
 //
@@ -1351,66 +1444,67 @@ double pump_getInflow(int j)
     n1 = Link[j].node1;
     n2 = Link[j].node2;
 
-    // --- no flow if setting is closed                                        //(5.0.010 - LR)
-    Link[j].flowClass = NO;                                                    //(5.0.012 - LR)
-    Link[j].setting = Link[j].targetSetting;                                   //(5.0.010 - LR)
-    if ( Link[j].setting == 0.0 ) return 0.0;                                  //(5.0.010 - LR)
+    // --- no flow if setting is closed 
+    Link[j].flowClass = NO;
+    Link[j].setting = Link[j].targetSetting;
+    if ( Link[j].setting == 0.0 ) return 0.0;
 
-    // --- no flow if inlet node < startup depth or > 
-
-    // --- pump flow = node inflow for IDEAL_PUMP                              //(5.0.010 - LR)
-    if ( Pump[k].type == IDEAL_PUMP )                                          //(5.0.010 - LR)
-        qIn = Node[n1].inflow + Node[n1].overflow;                             //(5.0.010 - LR)
+    // --- pump flow = node inflow for IDEAL_PUMP
+    if ( Pump[k].type == IDEAL_PUMP )
+        qIn = Node[n1].inflow + Node[n1].overflow;
 
     // --- pumping rate depends on pump curve type
-    else switch(Curve[m].curveType)                                            //(5.0.010 - LR)
+    else switch(Curve[m].curveType)
     {
       case PUMP1_CURVE:
         vol = Node[n1].newVolume * UCF(VOLUME);
         qIn = table_intervalLookup(&Curve[m], vol) / UCF(FLOW);
 
-        // --- check if off of pump curve                                      //(5.0.012 - LR)
-        if ( vol < Pump[k].xMin || vol > Pump[k].xMax )                        //(5.0.012 - LR)     
-            Link[j].flowClass = YES;                                           //(5.0.012 - LR)
+        // --- check if off of pump curve
+        if ( vol < Pump[k].xMin || vol > Pump[k].xMax )    
+            Link[j].flowClass = YES;
         break;
 
       case PUMP2_CURVE:
         depth = Node[n1].newDepth * UCF(LENGTH);
         qIn = table_intervalLookup(&Curve[m], depth) / UCF(FLOW);
 
-        // --- check if off of pump curve                                      //(5.0.012 - LR)
-        if ( depth < Pump[k].xMin || depth > Pump[k].xMax )                    //(5.0.012 - LR)     
-            Link[j].flowClass = YES;                                           //(5.0.012 - LR)
+        // --- check if off of pump curve
+        if ( depth < Pump[k].xMin || depth > Pump[k].xMax )  
+            Link[j].flowClass = YES;
         break;
 
       case PUMP3_CURVE:
         head = ( (Node[n2].newDepth + Node[n2].invertElev) -
-                 (Node[n1].newDepth + Node[n1].invertElev) );                  //(5.0.012 - LR)
-        qIn = table_lookup(&Curve[m], head*UCF(LENGTH)) / UCF(FLOW);           //(5.0.012 - LR)
+                 (Node[n1].newDepth + Node[n1].invertElev) );
+
+		head = MAX(head, 0.0);
+
+        qIn = table_lookup(&Curve[m], head*UCF(LENGTH)) / UCF(FLOW);
 
         // --- compute dQ/dh (slope of pump curve) and
         //     reverse sign since flow decreases with increasing head
-        qIn1 = table_lookup(&Curve[m], (head+dh)*UCF(LENGTH)) / UCF(FLOW);
-        Link[j].dqdh = -(qIn1 - qIn) / dh;
+    	Link[j].dqdh = -table_getSlope(&Curve[m], head*UCF(LENGTH)) * 
+                       UCF(LENGTH) / UCF(FLOW);
 
-        // --- check if off of pump curve                                      //(5.0.012 - LR)
-        head *= UCF(LENGTH);                                                   //(5.0.012 - LR)
-        if ( head < Pump[k].xMin || head > Pump[k].xMax )                      //(5.0.012 - LR)     
-            Link[j].flowClass = YES;                                           //(5.0.012 - LR)
+        // --- check if off of pump curve
+        head *= UCF(LENGTH);
+        if ( head < Pump[k].xMin || head > Pump[k].xMax )   
+            Link[j].flowClass = YES;
         break;
 
       case PUMP4_CURVE:
-        depth = Node[n1].newDepth;                                             //(5.0.012 - LR)
-        qIn = table_lookup(&Curve[m], depth*UCF(LENGTH)) / UCF(FLOW);          //(5.0.012 - LR)
+        depth = Node[n1].newDepth;
+        qIn = table_lookup(&Curve[m], depth*UCF(LENGTH)) / UCF(FLOW);
 
         // --- compute dQ/dh (slope of pump curve)
         qIn1 = table_lookup(&Curve[m], (depth+dh)*UCF(LENGTH)) / UCF(FLOW);
         Link[j].dqdh = (qIn1 - qIn) / dh;
 
-        // --- check if off of pump curve                                      //(5.0.012 - LR)
-        depth *= UCF(LENGTH);                                                  //(5.0.012 - LR)
-        if ( depth < Pump[k].xMin ) Link[j].flowClass = DN_DRY;                //(5.0.022 - LR)
-        if ( depth > Pump[k].xMax ) Link[j].flowClass = UP_DRY;                //(5.0.022 - LR)
+        // --- check if off of pump curve
+        depth *= UCF(LENGTH);
+        if ( depth < Pump[k].xMin ) Link[j].flowClass = DN_DRY;
+        if ( depth > Pump[k].xMax ) Link[j].flowClass = UP_DRY;
         break;
 
       default: qIn = 0.0;
@@ -1438,7 +1532,7 @@ int  orifice_readParams(int j, int k, char* tok[], int ntoks)
 {
     int    m;
     int    n1, n2;
-    double x[5];                                                               //(5.0.010 - LR)
+    double x[5];
     char*  id;
 
     // --- check for valid ID and end node IDs
@@ -1454,8 +1548,8 @@ int  orifice_readParams(int j, int k, char* tok[], int ntoks)
     m = findmatch(tok[3], OrificeTypeWords);
     if ( m < 0 ) return error_setInpError(ERR_KEYWORD, tok[3]);
     x[0] = m;                                              // type
-    if ( LinkOffsets == ELEV_OFFSET && *tok[4] == '*' ) x[1] = MISSING;        //(5.0.012 - LR)
-    else if ( ! getDouble(tok[4], &x[1]) )                 // crest height     //(5.0.012 - LR)
+    if ( LinkOffsets == ELEV_OFFSET && *tok[4] == '*' ) x[1] = MISSING;
+    else if ( ! getDouble(tok[4], &x[1]) )                 // crest height
         return error_setInpError(ERR_NUMBER, tok[4]);
     if ( ! getDouble(tok[5], &x[2]) || x[2] < 0.0 )        // cDisch
         return error_setInpError(ERR_NUMBER, tok[5]);
@@ -1466,12 +1560,12 @@ int  orifice_readParams(int j, int k, char* tok[], int ntoks)
         if ( m < 0 ) return error_setInpError(ERR_KEYWORD, tok[6]);
         x[3] = m;                                          // flap gate
     }
-    x[4] = 0.0;                                                                //(5.0.010 - LR)
-    if ( ntoks >= 8 )                                                          //(5.0.010 - LR)
-    {                                                                          //(5.0.010 - LR)
-        if ( ! getDouble(tok[7], &x[4]) || x[4] < 0.0 )    // orate            //(5.0.010 - LR)
-            return error_setInpError(ERR_NUMBER, tok[7]);                      //(5.0.010 - LR)
-    }                                                                          //(5.0.010 - LR)
+    x[4] = 0.0;
+    if ( ntoks >= 8 )
+    {
+        if ( ! getDouble(tok[7], &x[4]) || x[4] < 0.0 )    // orate
+            return error_setInpError(ERR_NUMBER, tok[7]);
+    }
 
     // --- add parameters to orifice object
     Link[j].ID = id;
@@ -1500,11 +1594,11 @@ void  orifice_validate(int j, int k)
         return;
     }
 
-    // --- check for negative offset                                           //(5.0.012 - LR)
-    if ( Link[j].offset1 < 0.0 ) Link[j].offset1 = 0.0;                        //(5.0.012 - LR)
+    // --- check for negative offset
+    if ( Link[j].offset1 < 0.0 ) Link[j].offset1 = 0.0;
 
     // --- compute partial flow adjustment
-    orifice_setSetting(j, 0.0);                                                //(5.0.010 - LR)
+    orifice_setSetting(j, 0.0);
 
     // --- compute an equivalent length
     Orifice[k].length = 2.0 * RouteStep * sqrt(GRAVITY * Link[j].xsect.yFull);
@@ -1514,44 +1608,42 @@ void  orifice_validate(int j, int k)
 
 //=============================================================================
 
-void  orifice_setSetting(int j, double tstep)                                  //(5.0.010 - LR)
-//                                                                             //(5.0.010 - LR)
-//  Input:   j = link index                                                    //(5.0.010 - LR)
-//           tstep = time step over which setting is adjusted (sec)            //(5.0.010 - LR)
-//  Output:  none                                                              //(5.0.010 - LR)
-//  Purpose: updates an orifice's setting as a result of a control action.     //(5.0.010 - LR)
-//                                                                             //(5.0.010 - LR)
-{                                                                              //(5.0.010 - LR)
-    int    k = Link[j].subIndex;                                               //(5.0.010 - LR)
-    double delta, step;                                                        //(5.0.010 - LR)
-    double h, f;                                                               //(5.0.012 - LR)
+void  orifice_setSetting(int j, double tstep)
+//
+//  Input:   j = link index
+//           tstep = time step over which setting is adjusted (sec)
+//  Output:  none
+//  Purpose: updates an orifice's setting as a result of a control action.
+//
+{
+    int    k = Link[j].subIndex;
+    double delta, step;
+    double h, f;
 
-    // --- case where adjustment rate is instantaneous                         //(5.0.010 - LR)
-    if ( Orifice[k].orate == 0.0 || tstep == 0.0)                              //(5.0.013 - LR)
-        Link[j].setting = Link[j].targetSetting;                               //(5.0.013 - LR)
+    // --- case where adjustment rate is instantaneous
+    if ( Orifice[k].orate == 0.0 || tstep == 0.0)
+        Link[j].setting = Link[j].targetSetting;
 
-    // --- case where orifice setting depends on time step                     //(5.0.010 - LR)
-    else                                                                       //(5.0.010 - LR)
-    {                                                                          //(5.0.010 - LR) 
-        delta = Link[j].targetSetting - Link[j].setting;                       //(5.0.010 - LR)  
-        step = tstep / Orifice[k].orate;                                       //(5.0.010 - LR)
-        if ( step + 0.001 >= fabs(delta) )                                     //(5.0.010 - LR)
-            Link[j].setting = Link[j].targetSetting;                           //(5.0.010 - LR)
-        else Link[j].setting += SGN(delta) * step;                             //(5.0.010 - LR)
+    // --- case where orifice setting depends on time step
+    else
+    {
+        delta = Link[j].targetSetting - Link[j].setting;
+        step = tstep / Orifice[k].orate;
+        if ( step + 0.001 >= fabs(delta) )
+            Link[j].setting = Link[j].targetSetting;
+        else Link[j].setting += SGN(delta) * step;
     }
 
-    // --- find effective orifice discharge coeff.                             //(5.0.012 - LR)
-    h = Link[j].setting * Link[j].xsect.yFull;                                 //(5.0.012 - LR)
-    f = xsect_getAofY(&Link[j].xsect, h) * sqrt(2.0 * GRAVITY);                //(5.0.012 - LR)
-    Orifice[k].cOrif = Orifice[k].cDisch * f;                                  //(5.0.012 - LR)
+    // --- find effective orifice discharge coeff.
+    h = Link[j].setting * Link[j].xsect.yFull;
+    f = xsect_getAofY(&Link[j].xsect, h) * sqrt(2.0 * GRAVITY);
+    Orifice[k].cOrif = Orifice[k].cDisch * f;
 
-    // --- find equiv. discharge coeff. for when weir flow occurs              //(5.0.012 - LR)
-    Orifice[k].cWeir = orifice_getWeirCoeff(j, k, h) * f;                      //(5.0.012 - LR)
-}                                                                              //(5.0.010 - LR)
+    // --- find equiv. discharge coeff. for when weir flow occurs
+    Orifice[k].cWeir = orifice_getWeirCoeff(j, k, h) * f;
+}
 
 //=============================================================================
-
-////  New function added for orifice acting as weir.  ////                     //(5.0.012 - LR)
 
 double orifice_getWeirCoeff(int j, int k, double h)
 //
@@ -1599,8 +1691,6 @@ double orifice_getWeirCoeff(int j, int k, double h)
 
 //=============================================================================
 
-////  Function re-written to better handle bottom orifices.  ////              //(5.0.012 - LR)
-
 double orifice_getInflow(int j)
 //
 //  Input:   j = link index
@@ -1611,10 +1701,10 @@ double orifice_getInflow(int j)
     int    k, n1, n2;
     double head, h1, h2, y1, dir;
     double f;
-	double hcrest = 0.0;
-	double hcrown = 0.0;
+    double hcrest = 0.0;
+    double hcrown = 0.0;
     double hmidpt;
-    double q, ratio;                                                           //(5.0.019 - LR)
+    double q, ratio;
 
     // --- get indexes of end nodes and link's orifice
     n1 = Link[j].node1;
@@ -1681,7 +1771,7 @@ double orifice_getInflow(int j)
 
     // --- return if head is negligible or flap gate closed
     if ( head <= FUDGE || y1 <= FUDGE || 
-         link_setFlapGate(j, n1, n2, dir) )                                    //(5.0.014 - LR)
+         link_setFlapGate(j, n1, n2, dir) )
     {
         Link[j].newDepth = 0.0;
         Link[j].flowClass = DRY;
@@ -1713,7 +1803,6 @@ double orifice_getInflow(int j)
         Orifice[k].surfArea = xsect_getAofY(&Link[j].xsect, y1);
     }
 
-////  Following segment modified for release 5.0.019.  ////                    //(5.0.019 - LR)
     // --- find flow through the orifice
     q = dir * orifice_getFlow(j, k, head, f, Link[j].hasFlapGate);
 
@@ -1727,8 +1816,6 @@ double orifice_getInflow(int j)
 }
 
 //=============================================================================
-
-////  Function re-written to incorporate flap gate head loss.  ////            //(5.0.012 - LR)
 
 double orifice_getFlow(int j, int k,  double head, double f, int hasFlapGate)
 //
@@ -1745,7 +1832,7 @@ double orifice_getFlow(int j, int k,  double head, double f, int hasFlapGate)
     double veloc, hLoss;
 
     // --- case where orifice is closed
-    if ( head == 0.0 || f <= 0.0  )                                            //(5.0.013 - LR)
+    if ( head == 0.0 || f <= 0.0  )
     {
         Link[j].dqdh = 0.0;
         return 0.0;
@@ -1830,8 +1917,8 @@ int   weir_readParams(int j, int k, char* tok[], int ntoks)
     m = findmatch(tok[3], WeirTypeWords);
     if ( m < 0 ) return error_setInpError(ERR_KEYWORD, tok[3]);
     x[0] = m;                                              // type
-    if ( LinkOffsets == ELEV_OFFSET && *tok[4] == '*' ) x[1] = MISSING;        //(5.0.012 - LR)
-    else if ( ! getDouble(tok[4], &x[1]) )                 // height           //(5.0.012 - LR)
+    if ( LinkOffsets == ELEV_OFFSET && *tok[4] == '*' ) x[1] = MISSING;
+    else if ( ! getDouble(tok[4], &x[1]) )                 // height
         return error_setInpError(ERR_NUMBER, tok[4]);
     if ( ! getDouble(tok[5], &x[2]) || x[2] < 0.0 )        // cDisch1
         return error_setInpError(ERR_NUMBER, tok[5]);
@@ -1872,7 +1959,6 @@ void  weir_validate(int j, int k)
 //
 {
     int    err = 0;
-    double q, q1, q2, head;
  
     // --- check for valid cross section
     switch ( Weir[k].type)
@@ -1887,7 +1973,7 @@ void  weir_validate(int j, int k)
         if ( Link[j].xsect.type != TRIANGULAR ) err = ERR_REGULATOR_SHAPE;
         else
         {
-            Weir[k].slope = Link[j].xsect.sBot;                                //(5.0.010 - LR)
+            Weir[k].slope = Link[j].xsect.sBot;
         }
         break;
 
@@ -1895,7 +1981,7 @@ void  weir_validate(int j, int k)
         if ( Link[j].xsect.type != TRAPEZOIDAL ) err = ERR_REGULATOR_SHAPE;
         else
         {
-            Weir[k].slope = Link[j].xsect.sBot;                                //(5.0.010 - LR)
+            Weir[k].slope = Link[j].xsect.sBot;
         }
         break;
     }
@@ -1905,51 +1991,14 @@ void  weir_validate(int j, int k)
         return;
     }
 
-    // --- check for negative offset                                           //(5.0.012 - LR)
-    if ( Link[j].offset1 < 0.0 ) Link[j].offset1 = 0.0;                        //(5.0.012 - LR)
+    // --- check for negative offset 
+    if ( Link[j].offset1 < 0.0 ) Link[j].offset1 = 0.0;
 
     // --- compute an equivalent length
     Weir[k].length = 2.0 * RouteStep * sqrt(GRAVITY * Link[j].xsect.yFull);
     Weir[k].length = MAX(200.0, Weir[k].length);
     Weir[k].surfArea = 0.0;
-
-    // --- find flow through weir when water level equals weir height
-    head = Link[j].xsect.yFull;
-    weir_getFlow(j, k, head, 1.0, FALSE, &q1, &q2);                            //(5.0.012 - LR)
-    q = q1 + q2;
-
-    // --- compute equivalent orifice coeff. (for CFS flow units)
-    head = head / 2.0;  // head seen by equivalent orifice
-    Weir[k].cSurcharge = q / sqrt(head);                                       //(5.0.012 - LR)
 }
-
-//=============================================================================
-
-static void weir_setSetting(int j)                                             //(5.0.011 - LR)
-//                                                                             //(5.0.011 - LR)
-//  Input:   j = link index                                                    //(5.0.011 - LR)
-//  Output:  none                                                              //(5.0.011 - LR)
-//  Purpose: updates a weir's setting as a result of a control action.         //(5.0.011 - LR)
-//                                                                             //(5.0.011 - LR)
-{                                                                              //(5.0.011 - LR)
-    int    k = Link[j].subIndex;                                               //(5.0.011 - LR)
-    double h, q, q1, q2;                                                       //(5.0.012 - LR)
-
-    // --- adjust weir setting                                                 //(5.0.011 - LR)
-    Link[j].setting = Link[j].targetSetting;                                   //(5.0.011 - LR)
-    if ( Link[j].setting == 0.0 ) Weir[k].cSurcharge = 0.0;                    //(5.0.011 - LR)
-    else                                                                       //(5.0.011 - LR)
-    {                                                                          //(5.0.011 - LR)
-        // --- find flow through weir when water level equals weir height      //(5.0.011 - LR)
-        h = Link[j].setting * Link[j].xsect.yFull;                             //(5.0.011 - LR)
-        weir_getFlow(j, k, h, 1.0, FALSE, &q1, &q2);                           //(5.0.011 - LR)
-        q = q1 + q2;                                                           //(5.0.011 - LR)
-
-        // --- compute equivalent orifice coeff. (for CFS flow units)          //(5.0.011 - LR)
-        h = h / 2.0;  // head seen by equivalent orifice                       //(5.0.011 - LR)
-        Weir[k].cSurcharge = q / sqrt(h);                                      //(5.0.012 - LR)
-    }                                                                          //(5.0.011 - LR)
-}                                                                              //(5.0.011 - LR)
 
 //=============================================================================
 
@@ -2002,7 +2051,7 @@ double weir_getInflow(int j)
     }
 
     // --- find head of weir's crest and crown
-    hcrest = Node[n1].invertElev + Link[j].offset1;                            //(5.0.012 - LR)
+    hcrest = Node[n1].invertElev + Link[j].offset1;
     hcrown = hcrest + Link[j].xsect.yFull;
 
     // --- adjust crest ht. for partially open weir
@@ -2014,7 +2063,7 @@ double weir_getInflow(int j)
     // --- return if head is negligible or flap gate closed
     Link[j].dqdh = 0.0;
     if ( head <= FUDGE || hcrest >= hcrown ||
-         link_setFlapGate(j, n1, n2, dir) )                                    //(5.0.014 - LR)
+         link_setFlapGate(j, n1, n2, dir) )
     {
         Link[j].newDepth = 0.0;
         Link[j].flowClass = DRY;
@@ -2033,21 +2082,13 @@ double weir_getInflow(int j)
     y = Link[j].xsect.yFull - (hcrown - MIN(h1, hcrown));
     Weir[k].surfArea = xsect_getWofY(&Link[j].xsect, y) * Weir[k].length;
 
-    // --- if under surcharge condition then use equiv. orifice eqn.
-    if ( h1 >= hcrown )
-    {
-        y = (hcrest + hcrown) / 2.0;                                           //(5.0.010 - LR)
-        if ( h2 < y ) head = h1 - y;                                           //(5.0.010 - LR)
-        else          head = h1 - h2;                                          //(5.0.010 - LR)
-        y = hcrown - hcrest;                                                   //(5.0.012 - LR)
-        q1 = weir_getOrificeFlow(j, head, y, Weir[k].cSurcharge);              //(5.0.012 - LR)
-        Link[j].newDepth = y;                                                  //(5.0.012 - LR)
-        return dir * q1;
-    }
+//// Since weirs can't physically surcharge (because they have open tops)
+///  the 5.0 code that applied an equivalent orifice eqn. when h1 > hcrown
+///  was removed.
 
-    // --- otherwise use weir eqn. to find flows through central (q1)
+    // --- use weir eqn. to find flows through central (q1)
     //     and end sections (q2) of weir
-    weir_getFlow(j, k, head, dir, Link[j].hasFlapGate, &q1, &q2);              //(5.0.012 - LR)
+    weir_getFlow(j, k, head, dir, Link[j].hasFlapGate, &q1, &q2);
 
     // --- apply Villemonte eqn. to correct for submergence
     if ( h2 > hcrest )
@@ -2059,7 +2100,7 @@ double weir_getInflow(int j)
     }
 
     // --- return total flow through weir
-    Link[j].newDepth = h1 - hcrest;                                             //(5.0.011 - LR)
+    Link[j].newDepth = MIN((h1 - hcrest), Link[j].xsect.yFull);
     return dir * (q1 + q2);
 }
 
@@ -2084,14 +2125,14 @@ void weir_getFlow(int j, int k,  double head, double dir, int hasFlapGate,
     double hLoss;
     double area;
     double veloc;
-    int    wType;                                                              //(5.0.011 - LR)
+    int    wType;
 
     // --- q1 = flow through central portion of weir,
     //     q2 = flow through end sections of trapezoidal weir
     *q1 = 0.0;
     *q2 = 0.0;
-    Link[j].dqdh = 0.0;                                                        //(5.0.012 - LR)
-    if ( head <= 0.0 ) return;                                                 //(5.0.012 - LR)
+    Link[j].dqdh = 0.0;
+    if ( head <= 0.0 ) return;
 
     // --- convert weir length & head to original units
     length = Link[j].xsect.wMax * UCF(LENGTH);
@@ -2102,10 +2143,10 @@ void weir_getFlow(int j, int k,  double head, double dir, int hasFlapGate,
     length = MAX(length, 0.0);
 
     // --- use appropriate formula for weir flow
-    wType = Weir[k].type;                                                      //(5.0.011 - LR)
-    if ( wType == VNOTCH_WEIR &&                                               //(5.0.011 - LR)
-         Link[j].setting < 1.0 ) wType = TRAPEZOIDAL_WEIR;                     //(5.0.011 - LR)
-    switch (wType)                                                             //(5.0.011 - LR)
+    wType = Weir[k].type;
+    if ( wType == VNOTCH_WEIR &&
+         Link[j].setting < 1.0 ) wType = TRAPEZOIDAL_WEIR;
+    switch (wType)
     {
       case TRANSVERSE_WEIR:
         *q1 = Weir[k].cDisch1 * length * pow(h, 1.5);
@@ -2126,8 +2167,8 @@ void weir_getFlow(int j, int k,  double head, double dir, int hasFlapGate,
       case TRAPEZOIDAL_WEIR:
         y = (1.0 - Link[j].setting) * Link[j].xsect.yFull;
         length = xsect_getWofY(&Link[j].xsect, y) * UCF(LENGTH);
-        length -= 0.1 * Weir[k].endCon * h;                                    //(5.0.010 - LR)
-        length = MAX(length, 0.0);                                             //(5.0.010 - LR)
+        length -= 0.1 * Weir[k].endCon * h;
+        length = MAX(length, 0.0);
         *q1 = Weir[k].cDisch1 * length * pow(h, 1.5);
         *q2 = Weir[k].cDisch2 * Weir[k].slope * pow(h, 2.5);
     }
@@ -2143,63 +2184,27 @@ void weir_getFlow(int j, int k,  double head, double dir, int hasFlapGate,
     if ( hasFlapGate )
     {
         // --- compute flow area & velocity for current weir flow
-        area = weir_getOpenArea(j, head);                                      //(5.0.012 - LR)
-        veloc = (*q1 + *q2) / area;
-
-        // --- compute headloss and subtract from original head
-        hLoss = (4.0 / GRAVITY) * veloc * veloc *
-                 exp(-1.15 * veloc / sqrt(head) );
-        head = head - hLoss;
-        if ( head < 0.0 ) head = 0.0;
-
-        // --- make recursive call to this function, with hasFlapGate
-        //     set to false, to find flow values at adjusted head value
-        weir_getFlow(j, k, head, dir, FALSE, q1, q2);
-    }
-    Link[j].dqdh = weir_getdqdh(k, dir, head, *q1, *q2);                       //(5.0.012 - LR)
-}
-
-//=============================================================================
-
-////  New function added to compute flow thru surcharged weir. ////            //(5.0.012 - LR)
-
-double weir_getOrificeFlow(int j, double head, double y, double cOrif)
-//
-//  Input:   j = link index
-//           head = head across weir (ft)
-//           y = height of upstream water level above weir crest (ft)
-//           cOrif = orifice flow coefficient
-//  Output:  returns flow through weir
-//  Purpose: finds flow through a surcharged weir using the orifice equation.
-//
-{
-    double a, q, v, hloss;
-
-    // --- evaluate the orifice flow equation
-    q = cOrif * sqrt(head);
-
-    // --- apply Armco adjustment if weir has a flap gate
-    if ( Link[j].hasFlapGate )
-    {
-        a = weir_getOpenArea(j, y);
-        if ( a > 0.0 )
+        area = weir_getOpenArea(j, head);
+        if ( area > TINY )
         {
-            v = q / a;
-            hloss = (4.0 / GRAVITY) * v * v * exp(-1.15 * v / sqrt(y) );
-            head -= hloss;
-            head = MAX(head, 0.0);
-            q = cOrif * sqrt(head);
+            veloc = (*q1 + *q2) / area;
+
+            // --- compute headloss and subtract from original head
+            hLoss = (4.0 / GRAVITY) * veloc * veloc *
+                     exp(-1.15 * veloc / sqrt(head) );
+            head = head - hLoss;
+            if ( head < 0.0 ) head = 0.0;
+
+            // --- make recursive call to this function, with hasFlapGate
+            //     set to false, to find flow values at adjusted head value
+            weir_getFlow(j, k, head, dir, FALSE, q1, q2);
         }
     }
-    if ( head > 0.0 ) Link[j].dqdh = q / (2.0 * head);
-    else Link[j].dqdh = 0.0;
-    return q;
+    Link[j].dqdh = weir_getdqdh(k, dir, head, *q1, *q2);
 }
 
 
 //=============================================================================
-
-////  Function generalized to apply to all water depths.  ////                 //(5.0.012 - LR)
 
 double weir_getOpenArea(int j, double y)
 //
@@ -2209,14 +2214,18 @@ double weir_getOpenArea(int j, double y)
 //  Purpose: finds flow area through a weir.
 //
 {
-    double z;
+    double z, zy;
 
     // --- find offset of weir crest due to control setting
     z = (1.0 - Link[j].setting) * Link[j].xsect.yFull;
 
+    // --- ht. of crest + ht of water above crest
+    zy = z + y;
+    zy = MIN(zy, Link[j].xsect.yFull);
+
     // --- return difference between area of offset + water depth
     //     and area of just the offset
-    return xsect_getAofY(&Link[j].xsect, z+y) -
+    return xsect_getAofY(&Link[j].xsect, zy) -
            xsect_getAofY(&Link[j].xsect, z);
 }
 
@@ -2241,8 +2250,8 @@ double  weir_getdqdh(int k, double dir, double h, double q1, double q2)
         else return 5./3. * q1h;
 
       case VNOTCH_WEIR: 
-        if ( q2h == 0.0 ) return 2.5 * q1h;  // Fully open                     //(5.0.011 - LR)
-        else return 1.5 * q1h + 2.5 * q2h;   // Partly open                    //(5.0.011 - LR)
+        if ( q2h == 0.0 ) return 2.5 * q1h;  // Fully open
+        else return 1.5 * q1h + 2.5 * q2h;   // Partly open
 
       case TRAPEZOIDAL_WEIR: return 1.5 * q1h + 2.5 * q2h;
     }
@@ -2266,9 +2275,9 @@ int outlet_readParams(int j, int k, char* tok[], int ntoks)
 {
     int    i, m, n;
     int    n1, n2;
-    double x[6];                                                               //(5.0.014 - LR)
+    double x[6];
     char*  id;
-    char*  s;                                                                  //(5.0.014 - LR)
+    char*  s;
 
     // --- check for valid ID and end node IDs
     if ( ntoks < 6 ) return error_setInpError(ERR_ITEMS, "");
@@ -2279,16 +2288,14 @@ int outlet_readParams(int j, int k, char* tok[], int ntoks)
     n2 = project_findObject(NODE, tok[2]);
     if ( n2 < 0 ) return error_setInpError(ERR_NAME, tok[2]);
 
-////   Modified for possibility of elevation offsets   ////                    //(5.0.012 - LR)
     // --- get height above invert
     if ( LinkOffsets == ELEV_OFFSET && *tok[3] == '*' ) x[0] = MISSING;
     else
-	{
-		if ( ! getDouble(tok[3], &x[0]) )
+    {
+        if ( ! getDouble(tok[3], &x[0]) )
             return error_setInpError(ERR_NUMBER, tok[3]);
-		if ( LinkOffsets == DEPTH_OFFSET && x[0] < 0.0 ) x[0] = 0.0;
-	}
-///////////////////////////////////////////////////////////
+	if ( LinkOffsets == DEPTH_OFFSET && x[0] < 0.0 ) x[0] = 0.0;
+    }
 
     // --- see if outlet flow relation is tabular or functional
     m = findmatch(tok[4], RelationWords);
@@ -2298,7 +2305,6 @@ int outlet_readParams(int j, int k, char* tok[], int ntoks)
     x[3] = -1.0;
     x[4] = 0.0;
 
-////  This code segment was added for release 5.0.014  ////                    //(5.0.014 - LR)
     // --- see if rating curve is head or depth based
     x[5] = NODE_DEPTH;                                //default is depth-based
     s = strtok(tok[4], "/");                          //parse token for
@@ -2373,22 +2379,24 @@ double outlet_getInflow(int j)
     y1 = Node[n1].newDepth;
     if ( dir < 0.0 )
     {
+        y1 = h1;
         h1 = h2;
+        h2 = y1;
         y1 = Node[n2].newDepth;
     }
 
     // --- for a NODE_DEPTH rating curve the effective head across the
     //     outlet is the depth above the crest elev. while for a NODE_HEAD
     //     curve it is the difference between upstream & downstream heads
-    hcrest = Node[n1].invertElev + Link[j].offset1;                            //(5.0.012 - LR)
-    if ( Outlet[k].curveType == NODE_HEAD && RouteModel == DW )                //(5.0.014 - LR)
-        head = h1 - MAX(h2, hcrest);                                           //(5.0.014 - LR)
-    else head = h1 - hcrest;                                                   //(5.0.014 - LR)
+    hcrest = Node[n1].invertElev + Link[j].offset1;
+    if ( Outlet[k].curveType == NODE_HEAD && RouteModel == DW )
+        head = h1 - MAX(h2, hcrest);
+    else head = h1 - hcrest;
 
     // --- no flow if either no effective head difference,
     //     no upstream water available, or closed flap gate
     if ( head <= FUDGE || y1 <= FUDGE ||
-         link_setFlapGate(j, n1, n2, dir) )                                    //(5.0.014 - LR)
+         link_setFlapGate(j, n1, n2, dir) )
     {
         Link[j].newDepth = 0.0;
         Link[j].flowClass = DRY;

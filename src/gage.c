@@ -2,13 +2,8 @@
 //   gage.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
-//             1/21/09   (Build 5.0.014)
-//             4/10/09   (Build 5.0.015)
-//             11/18/09  (Build 5.0.018)
-//             07/30/10  (Build 5.0.019)
-//             08/23/10  (Build 5.0.020)
+//   Version:  5.1
+//   Date:     03/20/10  (Build 5.1.001)
 //   Author:   L. Rossman
 //
 //   Rain gage functions.
@@ -22,13 +17,13 @@
 //-----------------------------------------------------------------------------
 //  Constants
 //-----------------------------------------------------------------------------
-const double OneSecond = 1.1574074e-5;                                         //(5.0.010 - LR)
+const double OneSecond = 1.1574074e-5;
 
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
 //-----------------------------------------------------------------------------
 //  gage_readParams        (called by input_readLine)
-//  gage_validate          (called by project_validate)                        //(5.0.018 - LR)
+//  gage_validate          (called by project_validate)
 //  gage_initState         (called by project_init)
 //  gage_setState          (called by runoff_execute & getRainfall in rdii.c)
 //  gage_getPrecip         (called by subcatch_getRunoff)
@@ -134,7 +129,7 @@ int readGageSeriesFormat(char* tok[], int ntoks, double x[])
     x[1] = (double)m;
 
     // --- get data time interval & convert to seconds
-    if ( getDouble(tok[2], &x[2]) ) x[2] = floor(x[2]*3600 + 0.5);             //(5.0.018 - LR)
+    if ( getDouble(tok[2], &x[2]) ) x[2] = floor(x[2]*3600 + 0.5);
     else if ( datetime_strToTime(tok[2], &aTime) )
     {
         x[2] = floor(aTime*SECperDAY + 0.5);
@@ -197,8 +192,6 @@ int readGageFileFormat(char* tok[], int ntoks, double x[])
 
 //=============================================================================
 
-////  New function added for release 5.0.018.  ////                            //(5.0.018 - LR)
-
 void  gage_validate(int j)
 //
 //  Input:   j = rain gage index
@@ -255,8 +248,6 @@ void  gage_validate(int j)
 }
 
 //=============================================================================
-
-////  This function was heavily modified for release 5.0.018.  ////            //(5.0.018 - LR)
 
 void  gage_initState(int j)
 //
@@ -414,7 +405,7 @@ double gage_getPrecip(int j, double *rainfall, double *snowfall)
 {
     *rainfall = 0.0;
     *snowfall = 0.0;
-    if ( !IgnoreSnowmelt && Temp.ta <= Snow.snotmp )                           //(5.0.019 - LR)
+    if ( !IgnoreSnowmelt && Temp.ta <= Snow.snotmp )
     {
        *snowfall = Gage[j].rainfall * Gage[j].snowFactor / UCF(RAINFALL);
     }
@@ -517,8 +508,6 @@ int getFirstRainfall(int j)
 
 //=============================================================================
 
-////  This function was re-written for release 5.0.019.  ////                  //(5.0.019 - LR)
-
 int getNextRainfall(int j)
 //
 //  Input:   j = rain gage index
@@ -548,7 +537,7 @@ int getNextRainfall(int j)
                 Gage[j].currentFilePos = ftell(Frain.file);
                 rNext = convertRainfall(j, (double)vNext);
             }
-            else return 0;                                                     //(5.0.020 - LR)
+            else return 0;
         }
 
         else

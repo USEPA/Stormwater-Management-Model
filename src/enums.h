@@ -2,13 +2,8 @@
 //   enums.h
 //
 //   Project: EPA SWMM5
-//   Version: 5.0
-//   Date:    6/19/07   (Build 5.0.010)
-//            2/8/08    (Build 5.0.012)
-//            3/11/08   (Build 5.0.013)
-//            1/21/09   (Build 5.0.014)
-//            6/22/09   (Build 5.0.016)
-//            07/30/10  (Build 5.0.019)
+//   Version: 5.1
+//   Date:    03/20/14  (Build 5.1.001)
 //   Author:  L. Rossman
 //
 //   Enumerated variables
@@ -32,9 +27,9 @@
       AQUIFER,                         // groundwater aquifer
       UNITHYD,                         // RDII unit hydrograph
       SNOWMELT,                        // snowmelt parameter set
-      SHAPE,                           // custom conduit shape                 //(5.0.010 - LR)
-      LID,                             // LID treatment units                  //(5.0.019 - LR)
-      MAX_OBJ_TYPES};                                                          //(5.0.019 - LR)
+      SHAPE,                           // custom conduit shape
+      LID,                             // LID treatment units
+      MAX_OBJ_TYPES};
 
 //-------------------------------------
 // Names of Node sub-types
@@ -111,8 +106,8 @@
       BASKETHANDLE,                    // 20     closed
       SEMICIRCULAR,                    // 21     closed
       IRREGULAR,                       // 22
-      CUSTOM,                          // 23     closed                        //(5.0.010 - LR)
-      FORCE_MAIN};                     // 24     closed                        //(5.0.010 - LR)
+      CUSTOM,                          // 23     closed
+      FORCE_MAIN};                     // 24     closed
 
 //-------------------------------------
 // Measurement units types
@@ -147,20 +142,22 @@
       WINDSPEED,
       TEMPERATURE,
       MASS,
-      GWFLOW,                                                                  //(5.0.010 - LR)
+      GWFLOW,
       FLOW};                           // Flow must always be listed last
 
 //-------------------------------------
 // Computed subcatchment quantities
 //-------------------------------------
- #define MAX_SUBCATCH_RESULTS 7
+ #define MAX_SUBCATCH_RESULTS 9
  enum SubcatchResultType {
       SUBCATCH_RAINFALL,               // rainfall intensity
       SUBCATCH_SNOWDEPTH,              // snow depth
-      SUBCATCH_LOSSES,                 // total losses (evap + infil)
+      SUBCATCH_EVAP,                   // evap loss
+      SUBCATCH_INFIL,                  // infil loss
       SUBCATCH_RUNOFF,                 // runoff flow rate
       SUBCATCH_GW_FLOW,                // groundwater flow rate to node
       SUBCATCH_GW_ELEV,                // elevation of saturated gw table
+      SUBCATCH_SOIL_MOIST,             // soil moisture
       SUBCATCH_WASHOFF};               // pollutant washoff concentration
 
 //-------------------------------------
@@ -184,19 +181,19 @@
       LINK_FLOW,                       // flow rate
       LINK_DEPTH,                      // flow depth
       LINK_VELOCITY,                   // flow velocity
-      LINK_FROUDE,                     // Froude number
-      LINK_CAPACITY,                   // ratio of depth to full depth
+      LINK_VOLUME,                     // link volume
+      LINK_CAPACITY,                   // ratio of area to full area
       LINK_QUAL};                      // concentration of each pollutant
 
 //-------------------------------------
 // System-wide flow quantities
 //-------------------------------------
-#define MAX_SYS_RESULTS 14                                                     //(5.0.016 - LR)
+#define MAX_SYS_RESULTS 14
 enum SysFlowType {
      SYS_TEMPERATURE,                  // air temperature
      SYS_RAINFALL,                     // rainfall intensity
      SYS_SNOWDEPTH,                    // snow depth
-     SYS_LOSSES,                       // evap + infil
+     SYS_INFIL,                        // infil
      SYS_RUNOFF,                       // runoff flow
      SYS_DWFLOW,                       // dry weather inflow
      SYS_GWFLOW,                       // ground water inflow
@@ -206,7 +203,7 @@ enum SysFlowType {
      SYS_FLOODING,                     // flooding outflow
      SYS_OUTFLOW,                      // outfall outflow
      SYS_STORAGE,                      // storage volume
-     SYS_EVAPORATION};                 // evaporation                          //(5.0.016 - LR)
+     SYS_EVAP};                        // evaporation
 
 //-------------------------------------
 // Conduit flow classifications
@@ -230,7 +227,8 @@ enum SysFlowType {
       SWEEPING_LOAD,                   // load removed by sweeping
       BMP_REMOVAL_LOAD,                // load removed by BMPs
       INFIL_LOAD,                      // runon load removed by infiltration
-      RUNOFF_LOAD};                    // load removed by runoff
+      RUNOFF_LOAD,                     // load removed by runoff
+      FINAL_LOAD};                     // load remaining on surface
 
 //-------------------------------------
 // Input data options
@@ -253,10 +251,10 @@ enum  WindType {
       CONSTANT_EVAP,                   // constant evaporation rate
       MONTHLY_EVAP,                    // evaporation rate varies by month
       TIMESERIES_EVAP,                 // evaporation supplied by time series
-      TEMPERATURE_EVAP,                // evaporation from daily temperature   //(5.0.016 - LR)
+      TEMPERATURE_EVAP,                // evaporation from daily temperature
       FILE_EVAP,                       // evaporation comes from file
-      RECOVERY,                        // soil recovery pattern                //(5.0.014 - LR)
-      DRYONLY};                        // evap. allowed only in dry periods    //(5.0.019 - LR)
+      RECOVERY,                        // soil recovery pattern
+      DRYONLY};                        // evap. allowed only in dry periods
 
  enum NormalizerType {
       PER_AREA,                        // buildup is per unit or area
@@ -267,15 +265,13 @@ enum  WindType {
       POWER_BUILDUP,                   // power function buildup equation
       EXPON_BUILDUP,                   // exponential function buildup equation
       SATUR_BUILDUP,                   // saturation function buildup equation
-      EXTERNAL_BUILDUP};               // external time series buildup         //(5.0.019 - LR)
+      EXTERNAL_BUILDUP};               // external time series buildup
 
  enum WashoffType {
       NO_WASHOFF,                      // no washoff
       EXPON_WASHOFF,                   // exponential washoff equation
       RATING_WASHOFF,                  // rating curve washoff equation
       EMC_WASHOFF};                    // event mean concentration washoff
-
- ////  InfilType now defined in infil.h  ////                                  //(5.0.019 - LR)
 
 enum  SubAreaType {
       IMPERV0,                         // impervious w/o depression storage
@@ -288,19 +284,19 @@ enum  SubAreaType {
       TO_PERV};                        // imperv runoff goes to perv subarea
 
  enum RouteModelType {
-      NO_ROUTING,                      // no routing                           //(5.0.010 - LR)
+      NO_ROUTING,                      // no routing
       SF,                              // steady flow model
       KW,                              // kinematic wave model
       EKW,                             // extended kin. wave model
       DW};                             // dynamic wave model
 
- enum ForceMainType {                                                          //(5.0.010 - LR)
-      H_W,                             // Hazen-Williams eqn.                  //(5.0.010 - LR)
-      D_W};                            // Darcy-Weisbach eqn.                  //(5.0.010 - LR)
+ enum ForceMainType {
+      H_W,                             // Hazen-Williams eqn.
+      D_W};                            // Darcy-Weisbach eqn.
 
- enum OffsetType {                                                             //(5.0.012 - LR)
-      DEPTH_OFFSET,                    // offset measured as depth             //(5.0.012 - LR)
-      ELEV_OFFSET};                    // offset measured as elevation         //(5.0.012 - LR)
+ enum OffsetType {
+      DEPTH_OFFSET,                    // offset measured as depth
+      ELEV_OFFSET};                    // offset measured as elevation
 
  enum KinWaveMethodType {
       NORMAL,                          // normal method
@@ -311,15 +307,15 @@ enum  CompatibilityType {
       SWMM3,                           // SWMM 3 weighting
       SWMM4};                          // SWMM 4 weighting
 
- enum NormalFlowType {                                                         //(5.0.010 - LR)
-      SLOPE,                           // based on slope only                  //(5.0.010 - LR)
-      FROUDE,                          // based on Fr only                     //(5.0.010 - LR)
-      BOTH};                           // based on slope & Fr                  //(5.0.010 - LR)
+ enum NormalFlowType {
+      SLOPE,                           // based on slope only
+      FROUDE,                          // based on Fr only
+      BOTH};                           // based on slope & Fr
 
  enum InertialDampingType {
-      NO_DAMPING,                      // no inertial damping                  //(5.0.013 - LR)
-      PARTIAL_DAMPING,                 // partial damping                      //(5.0.013 - LR)
-      FULL_DAMPING};                   // full damping                         //(5.0.013 - LR) 
+      NO_DAMPING,                      // no inertial damping
+      PARTIAL_DAMPING,                 // partial damping
+      FULL_DAMPING};                   // full damping
 
  enum InflowType {
       EXTERNAL_INFLOW,                 // user-supplied external inflow
@@ -367,7 +363,7 @@ enum  CompatibilityType {
       TYPE2_PUMP,                      // flow varies stepwise with inlet depth 
       TYPE3_PUMP,                      // flow varies with head delivered
       TYPE4_PUMP,                      // flow varies with inlet depth
-      IDEAL_PUMP};                     // outflow equals inflow                //(5.0.010 - LR)
+      IDEAL_PUMP};                     // outflow equals inflow
 
  enum OrificeType {
       SIDE_ORIFICE,                    // side orifice
@@ -385,7 +381,7 @@ enum  CompatibilityType {
       TIDAL_CURVE,                     // water elev. v. hour of day for outfall
       RATING_CURVE,                    // flow rate v. head for outlet link
       CONTROL_CURVE,                   // control setting v. controller variable
-      SHAPE_CURVE,                     // width v. depth for custom x-section  //(5.0.010 - LR)
+      SHAPE_CURVE,                     // width v. depth for custom x-section
       PUMP1_CURVE,                     // flow v. wet well volume for pump
       PUMP2_CURVE,                     // flow v. depth for pump (discrete)
       PUMP3_CURVE,                     // flow v. head for pump (continuous)
@@ -404,7 +400,7 @@ enum  CompatibilityType {
       s_TREATMENT,    s_CURVE,        s_TIMESERIES,   s_REPORT,
       s_COORDINATE,   s_VERTICES,     s_POLYGON,      s_LABEL,
       s_SYMBOL,       s_BACKDROP,     s_TAG,          s_PROFILE,
-      s_MAP,          s_LID_CONTROL,  s_LID_USAGE};                            //(5.0.019 - LR)
+      s_MAP,          s_LID_CONTROL,  s_LID_USAGE,    s_GWFLOW};
 
  enum InputOptionType {
       FLOW_UNITS,        INFIL_MODEL,       ROUTE_MODEL, 
@@ -415,10 +411,11 @@ enum  CompatibilityType {
       REPORT_STEP,       ALLOW_PONDING,     INERT_DAMPING,
       SLOPE_WEIGHTING,   VARIABLE_STEP,     NORMAL_FLOW_LTD,
       LENGTHENING_STEP,  MIN_SURFAREA,      COMPATIBILITY,
-      SKIP_STEADY_STATE, TEMPDIR,           IGNORE_RAINFALL,                   //(5.0.010 - LR)
-      FORCE_MAIN_EQN,    LINK_OFFSETS,      MIN_SLOPE,                         //(5.0.014 - LR)
-      IGNORE_SNOWMELT,   IGNORE_GWATER,     IGNORE_ROUTING,                    //(5.0.014 - LR)
-      IGNORE_QUALITY};                                                         //(5.0.014 - LR)
+      SKIP_STEADY_STATE, TEMPDIR,           IGNORE_RAINFALL,
+      FORCE_MAIN_EQN,    LINK_OFFSETS,      MIN_SLOPE,
+      IGNORE_SNOWMELT,   IGNORE_GWATER,     IGNORE_ROUTING,
+      IGNORE_QUALITY,    MAX_TRIALS,        HEAD_TOL,
+      SYS_FLOW_TOL,      LAT_FLOW_TOL};
 
 enum  NoYesType {
       NO,

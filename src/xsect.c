@@ -2,12 +2,10 @@
 //   xsect.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
-//             2/4/08    (Build 5.0.012)
-//             1/21/09   (Build 5.0.014)
-//             04/20/11  (Build 5.0.022)
-//   Author:   L. Rossman
+//   Version:  5.1
+//   Date:     03/20/14   (Build 5.1.001)
+//   Author:   L. Rossman (EPA)
+//             M. Tryby (EPA) 
 //
 //   Cross section geometry functions.
 //
@@ -67,15 +65,18 @@ double  Amax[] = {
                      0.96,    //  BASKETHANDLE
                      0.96,    //  SEMICIRCULAR
                      1.0,     //  IRREGULAR
-                     0.96,    //  CUSTOM                                       //(5.0.010 - LR)
-                     0.9756}; //  FORCE_MAIN                                   //(5.0.010 - LR)
+                     0.96,    //  CUSTOM 
+                     0.9756}; //  FORCE_MAIN
 
 //-----------------------------------------------------------------------------
 //  Shared variables
 //-----------------------------------------------------------------------------
-static double  Sstar;                // section factor 
-static TXsect* Xstar;                // pointer to a cross section object        
-static double  Qcritical;            // critical flow
+typedef struct
+{
+    double  s;                // section factor
+    double  qc;               // critical flow
+    TXsect* xsect;            // pointer to a cross section object
+} TXsectStar;
 
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
@@ -83,7 +84,7 @@ static double  Qcritical;            // critical flow
 //  xsect_isOpen
 //  xsect_setParams
 //  xsect_setIrregXsectParams
-//  xsect_setCustomXsectParams                                                 //(5.0.010 - LR)
+//  xsect_setCustomXsectParams
 //  xsect_getAmax
 //  xsect_getSofA
 //  xsect_getYofA
@@ -99,7 +100,7 @@ static double  Qcritical;            // critical flow
 //  Local functions
 //-----------------------------------------------------------------------------
 static double generic_getAofS(TXsect* xsect, double s);
-static void   evalSofA(double a, double* f, double* df);
+static void   evalSofA(double a, double* f, double* df, void* p);
 static double tabular_getdSdA(TXsect* xsect, double a, double *table, int nItems);
 static double generic_getdSdA(TXsect* xsect, double a);
 static double lookup(double x, double *table, int nItems);
@@ -179,7 +180,7 @@ static double getAcircular(double psi);
 static double getThetaOfAlpha(double alpha);
 static double getThetaOfPsi(double psi);
 
-static double getQcritical(double yc);
+static double getQcritical(double yc, void* p);
 static double getYcritEnum(TXsect* xsect, double q, double y0);
 static double getYcritRidder(TXsect* xsect, double q, double y0);
 
@@ -230,19 +231,21 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         xsect->rFull = 0.2500 * xsect->yFull;
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = 1.08 * xsect->sFull;
+        xsect->ywMax = 0.5 * xsect->yFull;
         break;
 
-    case FORCE_MAIN:                                                           //(5.0.010 - LR)
-        xsect->yFull = p[0]/ucf;                                               //(5.0.010 - LR)
-        xsect->wMax  = xsect->yFull;                                           //(5.0.010 - LR)
-        xsect->aFull = PI / 4.0 * xsect->yFull * xsect->yFull;                 //(5.0.010 - LR)
-        xsect->rFull = 0.2500 * xsect->yFull;                                  //(5.0.010 - LR)
-        xsect->sFull = xsect->aFull * pow(xsect->rFull, 0.63);                 //(5.0.010 - LR)
-        xsect->sMax  = 1.06949 * xsect->sFull;                                 //(5.0.010 - LR)
+    case FORCE_MAIN:
+        xsect->yFull = p[0]/ucf;
+        xsect->wMax  = xsect->yFull;
+        xsect->aFull = PI / 4.0 * xsect->yFull * xsect->yFull;
+        xsect->rFull = 0.2500 * xsect->yFull;
+        xsect->sFull = xsect->aFull * pow(xsect->rFull, 0.63);
+        xsect->sMax  = 1.06949 * xsect->sFull;
+        xsect->ywMax = 0.5 * xsect->yFull;
 
-        // --- save C-factor or roughness in rBot position                     //(5.0.010 - LR)
-        xsect->rBot  = p[1];                                                   //(5.0.010 - LR)
-        break;                                                                 //(5.0.010 - LR)
+        // --- save C-factor or roughness in rBot position
+        xsect->rBot  = p[1];
+        break;
 
     case FILLED_CIRCULAR:
         if ( p[1] >= p[0] ) return FALSE;
@@ -271,6 +274,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = 1.08 * xsect->sFull;
         xsect->yFull -= xsect->yBot;
+        xsect->ywMax = 0.5 * xsect->yFull;
         break;
 
     case EGGSHAPED:
@@ -280,6 +284,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = 1.065 * xsect->sFull;
         xsect->wMax  = 2./3. * xsect->yFull;
+        xsect->ywMax = 0.64 * xsect->yFull;
         break;
 
     case HORSESHOE:
@@ -289,6 +294,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = 1.077 * xsect->sFull;
         xsect->wMax  = 1.0 * xsect->yFull;
+        xsect->ywMax = 0.5 * xsect->yFull;
         break;
 
     case GOTHIC:
@@ -298,6 +304,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = 1.065 * xsect->sFull;
         xsect->wMax  = 0.84 * xsect->yFull;
+        xsect->ywMax = 0.45 * xsect->yFull; 
         break;
 
     case CATENARY:
@@ -307,6 +314,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = 1.05 * xsect->sFull;
         xsect->wMax  = 0.9 * xsect->yFull;
+        xsect->ywMax = 0.25 * xsect->yFull;
         break;
 
     case SEMIELLIPTICAL:
@@ -316,6 +324,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = 1.045 * xsect->sFull;
         xsect->wMax  = 1.0 * xsect->yFull;
+        xsect->ywMax = 0.15 * xsect->yFull;
         break;
 
     case BASKETHANDLE:
@@ -325,6 +334,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = 1.06078 * xsect->sFull;
         xsect->wMax  = 0.944 * xsect->yFull;
+        xsect->ywMax = 0.2 * xsect->yFull;       
         break;
 
     case SEMICIRCULAR:
@@ -334,6 +344,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = 1.06637 * xsect->sFull;
         xsect->wMax  = 1.64 * xsect->yFull;
+        xsect->ywMax = 0.15 * xsect->yFull;
         break;
 
     case RECT_CLOSED:
@@ -345,16 +356,21 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         aMax = RECT_ALFMAX * xsect->aFull;
         xsect->sMax = aMax * pow(rect_closed_getRofA(xsect, aMax), 2./3.);
+        xsect->ywMax = xsect->yFull;
         break;
 
     case RECT_OPEN:
         if ( p[1] <= 0.0 ) return FALSE;
         xsect->yFull = p[0]/ucf;
         xsect->wMax  = p[1]/ucf;
+        if (p[2] < 0.0 || p[2] > 2.0) return FALSE;   //# sides to ignore
+        xsect->sBot = p[2];
         xsect->aFull = xsect->yFull * xsect->wMax;
-        xsect->rFull = xsect->aFull / (2.0 * xsect->yFull + xsect->wMax);
+        xsect->rFull = xsect->aFull / ((2.0 - xsect->sBot) *
+                       xsect->yFull + xsect->wMax);
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = xsect->sFull;
+        xsect->ywMax = xsect->yFull;
         break;
 
     case RECT_TRIANG:
@@ -362,6 +378,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         xsect->yFull = p[0]/ucf;
         xsect->wMax  = p[1]/ucf;
         xsect->yBot  = p[2]/ucf;
+        xsect->ywMax = xsect->yFull;
 
         // --- area of bottom triangle
         xsect->aBot  = xsect->yBot * xsect->wMax / 2.0;
@@ -381,8 +398,8 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         break;
 
     case RECT_ROUND:
-        if ( p[1] <= 0.0 ) return FALSE;                                       //(5.0.014 - LR)
-        if ( p[2] < p[1]/2.0 ) p[2] = p[1]/2.0;                                //(5.0.014 - LR)
+        if ( p[1] <= 0.0 ) return FALSE;
+        if ( p[2] < p[1]/2.0 ) p[2] = p[1]/2.0;
         xsect->yFull = p[0]/ucf;
         xsect->wMax  = p[1]/ucf;
         xsect->rBot  = p[2]/ucf;
@@ -400,6 +417,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
 
         // --- depth of circular bottom
         xsect->yBot  = xsect->rBot * (1.0 - cos(theta/2.0));
+        xsect->ywMax = xsect->yFull;
 
         xsect->aFull = xsect->wMax * (xsect->yFull - xsect->yBot) + xsect->aBot;
         xsect->rFull = xsect->aFull / (xsect->rBot * theta + 2.0 *
@@ -410,10 +428,6 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         break;
 
     case MOD_BASKET:
-
-//// --- The code below was modified to accommodate a more                     //(5.0.014 - LR)
-////     general type of modified baskethandle cross-section. 
-
         if ( p[1] <= 0.0 ) return FALSE;
         if ( p[2] < p[1]/2.0 ) p[2] = p[1]/2.0;
         xsect->yFull = p[0]/ucf;
@@ -428,6 +442,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
 
         // --- height of circular arc
         xsect->yBot = xsect->rBot * (1.0 - cos(theta/2.0));
+        xsect->ywMax = xsect->yBot;
 
         // --- area of circular arc
         xsect->aBot = xsect->rBot * xsect->rBot /
@@ -449,12 +464,14 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
     case TRAPEZOIDAL:
         if ( p[1] < 0.0 || p[2] < 0.0 || p[3] < 0.0 ) return FALSE;
         xsect->yFull = p[0]/ucf;
-
+        xsect->ywMax = xsect->yFull;
+ 
         // --- bottom width
         xsect->yBot = p[1]/ucf;
 
         // --- avg. slope of side walls
         xsect->sBot  = ( p[2] + p[3] )/2.0;
+        if ( xsect->yBot == 0.0 && xsect->sBot == 0.0 ) return FALSE;
 
         // --- length of side walls per unit of depth
         xsect->rBot  = sqrt( 1.0 + p[2]*p[2] ) + sqrt( 1.0 + p[3]*p[3] );
@@ -471,7 +488,8 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
     case TRIANGULAR:
         if ( p[1] <= 0.0 ) return FALSE;
         xsect->yFull = p[0]/ucf;
-        xsect->wMax  = p[1]/ucf;
+		xsect->wMax  = p[1]/ucf;
+        xsect->ywMax = xsect->yFull;
 
         // --- slope of side walls
         xsect->sBot  = xsect->wMax / xsect->yFull / 2.;
@@ -489,6 +507,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         if ( p[1] <= 0.0 ) return FALSE;
         xsect->yFull = p[0]/ucf;
         xsect->wMax  = p[1]/ucf;
+        xsect->ywMax = xsect->yFull;
 
         // --- rBot :: 1/c^.5, where y = c*x^2 is eqn. of parabolic shape
         xsect->rBot  = xsect->wMax / 2.0 / sqrt(xsect->yFull);
@@ -503,6 +522,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         if ( p[1] <= 0.0 || p[2] <= 0.0 ) return FALSE;
         xsect->yFull = p[0]/ucf;
         xsect->wMax  = p[1]/ucf;
+        xsect->ywMax = xsect->yFull;
         xsect->sBot  = 1.0 / p[2];
         xsect->rBot  = xsect->wMax / (xsect->sBot + 1) /
                        pow(xsect->yFull, xsect->sBot);
@@ -536,6 +556,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         }
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = xsect->sFull;
+        xsect->ywMax = 0.48 * xsect->yFull;
         break;
 
     case VERT_ELLIPSE:
@@ -562,6 +583,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         }
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = xsect->sFull;
+        xsect->ywMax = 0.48 * xsect->yFull;
         break;
 
     case ARCH:
@@ -585,6 +607,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         }
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = xsect->sFull;
+        xsect->ywMax = 0.28 * xsect->yFull;
         break;
     }
     return TRUE;
@@ -600,6 +623,10 @@ void xsect_setIrregXsectParams(TXsect *xsect)
 //
 {
     int index = xsect->transect;
+    int     i, iMax;
+    double  wMax;
+    double* wTbl = Transect[index].widthTbl;
+
     xsect->yFull = Transect[index].yFull;
     xsect->wMax  = Transect[index].wMax;
     xsect->aFull = Transect[index].aFull;
@@ -607,25 +634,56 @@ void xsect_setIrregXsectParams(TXsect *xsect)
     xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
     xsect->sMax = Transect[index].sMax;
     xsect->aBot = Transect[index].aMax;
+    
+    // Search transect's width table up to point where width decreases
+    iMax = 0;
+    wMax = wTbl[0];
+    for (i = 1; i < N_TRANSECT_TBL; i++)
+    {
+	if ( wTbl[i] < wMax ) break;
+	wMax = wTbl[i];
+	iMax = i;
+    }
+
+    // Determine height at lowest widest point
+    xsect->ywMax = xsect->yFull * (double)iMax / (double)(N_TRANSECT_TBL-1);
 }
+
 //=============================================================================
 
-void xsect_setCustomXsectParams(TXsect *xsect)                                 //(5.0.010 - LR)
-//                                                                             //(5.0.010 - LR)
-//  Input:   xsect = ptr. to a cross section data structure                    //(5.0.010 - LR)
-//  Output:  none                                                              //(5.0.010 - LR)
-//  Purpose: assigns parameters to a custom-shaped cross section.              //(5.0.010 - LR)
-//                                                                             //(5.0.010 - LR)
-{                                                                              //(5.0.010 - LR)
-    int    index = Curve[xsect->transect].refersTo;                            //(5.0.010 - LR)
-    double yFull = xsect->yFull;                                               //(5.0.010 - LR)
-    xsect->wMax  = Shape[index].wMax * yFull;                                  //(5.0.010 - LR)
-    xsect->aFull = Shape[index].aFull * yFull * yFull;                         //(5.0.010 - LR)
-    xsect->rFull = Shape[index].rFull * yFull;                                 //(5.0.010 - LR)
-    xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);                    //(5.0.010 - LR)
-    xsect->sMax  = Shape[index].sMax * yFull * yFull * pow(yFull, 2./3.);      //(5.0.010 - LR)
-    xsect->aBot  = Shape[index].aMax * yFull * yFull;                          //(5.0.010 - LR)
-}                                                                              //(5.0.010 - LR)
+void xsect_setCustomXsectParams(TXsect *xsect)
+//
+//  Input:   xsect = ptr. to a cross section data structure
+//  Output:  none
+//  Purpose: assigns parameters to a custom-shaped cross section.
+//
+{
+    int     index = Curve[xsect->transect].refersTo;
+    double  yFull = xsect->yFull;
+    int     i, iMax;
+    double  wMax;
+    double* wTbl = Shape[index].widthTbl;
+
+    xsect->wMax  = Shape[index].wMax * yFull;
+    xsect->aFull = Shape[index].aFull * yFull * yFull;
+    xsect->rFull = Shape[index].rFull * yFull;
+    xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
+    xsect->sMax  = Shape[index].sMax * yFull * yFull * pow(yFull, 2./3.);
+    xsect->aBot  = Shape[index].aMax * yFull * yFull;
+
+    // Search shape's width table up to point where width decreases
+    iMax = 0;
+    wMax = wTbl[0];
+    for (i = 1; i < N_SHAPE_TBL; i++)
+    {
+	if ( wTbl[i] < wMax ) break;
+	wMax = wTbl[i];
+	iMax = i;
+    }
+
+    // Determine height at lowest widest point
+    xsect->ywMax = yFull * (double)iMax / (double)(N_SHAPE_TBL-1);
+}
 
 //=============================================================================
 
@@ -636,16 +694,8 @@ double xsect_getAmax(TXsect* xsect)
 //  Purpose: finds xsection area at maximum flow depth.
 //
 {
-/*
-    if ( xsect->type == MOD_BASKET )
-    {
-        return xsect->yBot*xsect->wMax +
-            PI / 4.0 * xsect->wMax * xsect->wMax * (0.96-0.5);
-    }
-    else
-*/
     if ( xsect->type == IRREGULAR ) return xsect->aBot;
-    else if ( xsect->type == CUSTOM ) return xsect->aBot;                      //(5.0.010 - LR)
+    else if ( xsect->type == CUSTOM ) return xsect->aBot;
     else return Amax[xsect->type] * xsect->aFull;
 }
 
@@ -663,7 +713,7 @@ double xsect_getSofA(TXsect *xsect, double a)
     double r;
     switch ( xsect->type )
     {
-      case FORCE_MAIN:                                                         //(5.0.01 - LR)
+      case FORCE_MAIN:
       case CIRCULAR:
         return circ_getSofA(xsect, a);
 
@@ -721,7 +771,7 @@ double xsect_getYofA(TXsect *xsect, double a)
     double alpha = a / xsect->aFull;
     switch ( xsect->type )
     {
-      case FORCE_MAIN:                                                         //(5.0.010 - LR)
+      case FORCE_MAIN:
       case CIRCULAR: return circ_getYofA(xsect, a);
 
       case FILLED_CIRCULAR:
@@ -758,9 +808,9 @@ double xsect_getYofA(TXsect *xsect, double a)
         return xsect->yFull * invLookup(alpha,
             Transect[xsect->transect].areaTbl, N_TRANSECT_TBL);
 
-      case CUSTOM:                                                             //(5.0.010 - LR)
-        return xsect->yFull * invLookup(alpha,                                 //(5.0.010 - LR)
-            Shape[Curve[xsect->transect].refersTo].areaTbl, N_SHAPE_TBL);      //(5.0.010 - LR)
+      case CUSTOM:
+        return xsect->yFull * invLookup(alpha,
+            Shape[Curve[xsect->transect].refersTo].areaTbl, N_SHAPE_TBL);
 
       case ARCH:
         return xsect->yFull * invLookup(alpha, A_Arch, N_A_Arch);
@@ -801,7 +851,7 @@ double xsect_getAofY(TXsect *xsect, double y)
     if ( y <= 0.0 ) return 0.0;
     switch ( xsect->type )
     {
-      case FORCE_MAIN:                                                         //(5.0.010 - LR)
+      case FORCE_MAIN:
       case CIRCULAR:
         return xsect->aFull * lookup(yNorm, A_Circ, N_A_Circ);
 
@@ -842,11 +892,11 @@ double xsect_getAofY(TXsect *xsect, double y)
         return xsect->aFull * lookup(yNorm,
             Transect[xsect->transect].areaTbl, N_TRANSECT_TBL);
  
-      case CUSTOM:                                                             //(5.0.010 - LR)
-        return xsect->aFull * lookup(yNorm,                                    //(5.0.010 - LR)
-            Shape[Curve[xsect->transect].refersTo].areaTbl, N_SHAPE_TBL);      //(5.0.010 - LR)
+      case CUSTOM:
+        return xsect->aFull * lookup(yNorm,
+            Shape[Curve[xsect->transect].refersTo].areaTbl, N_SHAPE_TBL);
 
-     case RECT_CLOSED: return y * xsect->wMax;
+     case RECT_CLOSED:  return y * xsect->wMax;
 
       case RECT_TRIANG: return rect_triang_getAofY(xsect, y);
 
@@ -881,7 +931,7 @@ double xsect_getWofY(TXsect *xsect, double y)
     double yNorm = y / xsect->yFull;
     switch ( xsect->type )
     {
-      case FORCE_MAIN:                                                         //(5.0.010 - LR)
+      case FORCE_MAIN:
       case CIRCULAR:
         return xsect->wMax * lookup(yNorm, W_Circ, N_W_Circ);
 
@@ -923,9 +973,9 @@ double xsect_getWofY(TXsect *xsect, double y)
         return xsect->wMax * lookup(yNorm,
             Transect[xsect->transect].widthTbl, N_TRANSECT_TBL);
 
-      case CUSTOM:                                                             //(5.0.010 - LR)
-        return xsect->wMax * lookup(yNorm,                                     //(5.0.010 - LR)
-            Shape[Curve[xsect->transect].refersTo].widthTbl, N_SHAPE_TBL);     //(5.0.010 - LR) 
+      case CUSTOM:
+        return xsect->wMax * lookup(yNorm,
+            Shape[Curve[xsect->transect].refersTo].widthTbl, N_SHAPE_TBL);
 
       case RECT_CLOSED: return xsect->wMax;
 
@@ -962,13 +1012,13 @@ double xsect_getRofY(TXsect *xsect, double y)
     double yNorm = y / xsect->yFull;
     switch ( xsect->type )
     {
-      case FORCE_MAIN:                                                         //(5.0.010 - LR)
+      case FORCE_MAIN:
       case CIRCULAR:
         return xsect->rFull * lookup(yNorm, R_Circ, N_R_Circ);
 
       case FILLED_CIRCULAR:
-        if ( xsect->yBot == 0.0 )                                              //(5.0.022 - LR)
-            return xsect->rFull * lookup(yNorm, R_Circ, N_R_Circ);             //(5.0.022 - LR)
+        if ( xsect->yBot == 0.0 ) 
+            return xsect->rFull * lookup(yNorm, R_Circ, N_R_Circ);
         return filled_circ_getRofY(xsect, y);
 
       case EGGSHAPED:
@@ -993,9 +1043,9 @@ double xsect_getRofY(TXsect *xsect, double y)
         return xsect->rFull * lookup(yNorm,
             Transect[xsect->transect].hradTbl, N_TRANSECT_TBL);
 
-      case CUSTOM:                                                             //(5.0.010 - LR)
-        return xsect->rFull * lookup(yNorm,                                    //(5.0.010 - LR)
-            Shape[Curve[xsect->transect].refersTo].hradTbl, N_SHAPE_TBL);      //(5.0.010 - LR)
+      case CUSTOM:
+        return xsect->rFull * lookup(yNorm,
+            Shape[Curve[xsect->transect].refersTo].hradTbl, N_SHAPE_TBL);
 
       case RECT_TRIANG:  return rect_triang_getRofY(xsect, y);
 
@@ -1032,12 +1082,13 @@ double xsect_getRofA(TXsect *xsect, double a)
       case ARCH:
       case IRREGULAR:
       case FILLED_CIRCULAR:
-      case CUSTOM:                                                             //(5.0.010 - LR)
+      case CUSTOM:
         return xsect_getRofY( xsect, xsect_getYofA(xsect, a) );
 
       case RECT_CLOSED:  return rect_closed_getRofA(xsect, a);
 
-      case RECT_OPEN:    return a / (xsect->wMax + 2. * a / xsect->wMax);
+      case RECT_OPEN:    return a / (xsect->wMax + 
+                             (2. - xsect->sBot) * a / xsect->wMax);
 
       case RECT_TRIANG:  return rect_triang_getRofA(xsect, a);
 
@@ -1072,11 +1123,12 @@ double xsect_getAofS(TXsect* xsect, double s)
 {
     double psi = s / xsect->sFull;
     if ( s <= 0.0 ) return 0.0;
+    if ( s > xsect->sMax ) s = xsect->sMax;
     switch ( xsect->type )
     {
       case DUMMY:     return 0.0;
       
-      case FORCE_MAIN:                                                         //(5.0.010 - LR)
+      case FORCE_MAIN:
       case CIRCULAR:  return circ_getAofS(xsect, s);
   
       case EGGSHAPED:
@@ -1117,7 +1169,7 @@ double xsect_getdSdA(TXsect* xsect, double a)
 {
     switch ( xsect->type )
     {
-      case FORCE_MAIN:                                                         //(5.0.010 - LR)
+      case FORCE_MAIN:
       case CIRCULAR:
         return circ_getdSdA(xsect, a);
 
@@ -1148,20 +1200,20 @@ double xsect_getdSdA(TXsect* xsect, double a)
       case RECT_OPEN:
         return rect_open_getdSdA(xsect, a);
 
-	  case RECT_TRIANG:
-		return rect_triang_getdSdA(xsect, a);
+      case RECT_TRIANG:
+	return rect_triang_getdSdA(xsect, a);
 
-	  case RECT_ROUND:
-		return rect_round_getdSdA(xsect, a);
+      case RECT_ROUND:
+	return rect_round_getdSdA(xsect, a);
 
-	  case MOD_BASKET:
-		return mod_basket_getdSdA(xsect, a);
+      case MOD_BASKET:
+	return mod_basket_getdSdA(xsect, a);
 
-	  case TRAPEZOIDAL:
-		return trapez_getdSdA(xsect, a);
+      case TRAPEZOIDAL:
+	return trapez_getdSdA(xsect, a);
 
-	  case TRIANGULAR:
-		return triang_getdSdA(xsect, a);
+      case TRIANGULAR:
+	return triang_getdSdA(xsect, a);
 
       default: return generic_getdSdA(xsect, a);
     }
@@ -1245,6 +1297,7 @@ double generic_getAofS(TXsect* xsect, double s)
 //
 {
     double a, a1, a2, tol;
+    TXsectStar xsectStar;
 
     if (s <= 0.0) return 0.0;
 
@@ -1264,22 +1317,22 @@ double generic_getAofS(TXsect* xsect, double s)
         a2 = xsect_getAmax(xsect);
     }
 
-    // --- save S & xsect in global variables for access by evalSofA function
-    Xstar = xsect;
-    Sstar = s;
+    // --- place S & xsect in xsectStar for access by evalSofA function
+    xsectStar.xsect = xsect;
+    xsectStar.s = s;
 
     // --- compute starting guess for A
     a = 0.5 * (a1 + a2);
 
     // use the Newton-Raphson root finder function to find A
     tol = 0.0001 * xsect->aFull;
-    findroot_Newton(a1, a2, &a, tol, evalSofA);
+    findroot_Newton(a1, a2, &a, tol, evalSofA, &xsectStar);
     return a;
 }
 
 //=============================================================================
 
-void evalSofA(double a, double* f, double* df)
+void evalSofA(double a, double* f, double* df, void* p)
 //
 //  Input:   a = area
 //  Output:  f = root finding function
@@ -1288,9 +1341,13 @@ void evalSofA(double a, double* f, double* df)
 //           f = S(a) - s and df = dS(a)/dA.
 //
 {
-    double s = xsect_getSofA(Xstar, a);
-    *f = s - Sstar;
-    *df = xsect_getdSdA(Xstar, a);
+    TXsectStar* xsectStar;
+    double s;
+	
+    xsectStar = (TXsectStar *)p;
+    s = xsect_getSofA(xsectStar->xsect, a);
+    *f = s - xsectStar->s;
+    *df = xsect_getdSdA(xsectStar->xsect, a);
 }
 
 //=============================================================================
@@ -1391,63 +1448,116 @@ double invLookup(double y, double *table, int nItems)
 //  Purpose: performs inverse lookup in a geometry table (i.e., finds
 //           x given y).
 //
+//  Notes:   This function assumes that the geometry table has either strictly
+//           increasing entries or that the maximum entry is always third
+//           from the last (which is true for all section factor tables). In
+//           the latter case, the location of a large y can be ambiguous
+//           -- it can be both below and above the location of the maximum.
+//           In such cases this routine searches only the interval above
+//           the maximum (i.e., the last 2 segments of the table).
+//
+//           nItems-1 is the highest subscript for the table's data.
+//
+//           The x value's in a geometry table lie between 0 and 1.
+//
 {
-    double delta, x, x0, x1;
-    int    i;
+    double dx;               // x-increment of table
+    double x, x0, x1, dy;    // interpolation variables
+    int    n;                // # items in increasing portion of table
+    int    i;                // lower table index that brackets y
 
-    // --- locate table segment that contains y
-    i = locate(y, table, nItems);
-    if ( i >= nItems - 1 ) return 1.0;
+    // --- compute table's uniform x-increment
+    dx = 1.0 / (double)(nItems-1);
+
+    // --- truncate item count if last 2 table entries are decreasing
+    n = nItems;
+    if ( table[n-3] > table[n-1] ) n = n - 2;
+
+    // --- check if y falls in decreasing portion of table
+    if ( n < nItems && y > table[nItems-1])
+    {
+        if ( y >= table[nItems-3] ) return (n-1) * dx;
+	    if ( y <= table[nItems-2] ) i = nItems - 2;
+	    else i = nItems - 3;
+    }
+
+    // --- otherwise locate the interval where y falls in the table
+    else i = locate(y, table, n-1);
+    if ( i >= n - 1 ) return (n-1) * dx;
 
     // --- compute x at start and end of segment
-    delta = 1.0 / (nItems-1);
-    x0 = i * delta;
-    x1 = x0 + delta;
+    x0 = i * dx;
+    x1 = x0 + dx;
 
     // --- linearly interpolate an x value
-    x = x0 + (y - table[i]) * (x1 - x0) / (table[i+1] - table[i]) ;
+    dy = table[i+1] - table[i];
+    if ( dy == 0.0 ) x = x0;
+    else x = x0 + (y - table[i]) * dx / dy;
     if ( x < 0.0 ) x = 0.0;
+    if ( x > 1.0 ) x = 1.0;
     return x;
 }
 
 //=============================================================================
 
-int locate(double y, double *table, int nItems)
+int locate(double y, double *table, int jLast)
 //
-//  Input:   y = value of dependent variable in a geometry table
-//           table = ptr. to geometry table
-//           nItems = number of equally spaced items in table
-//  Output:  returns index j of table such that table[j-1] <= y <= table[j]
-//  Purpose: uses bisection method to locate the lowest table index whose
-//           value does not exceed a given value.
+//  Input:   y      = value being located in table
+//           table  = ptr. to table with monotonically increasing entries
+//           jLast  = highest table entry index to search over
+//  Output:  returns index j of table such that table[j] <= y <= table[j+1]
+//  Purpose: uses bisection method to locate the highest table index whose
+//           table entry does not exceed a given value.
+//
+//  Notes:   This function is only used in conjunction with invLookup().
 //
 {
-    int j = 1;
+    int j;
     int j1 = 0;
-    int j2 = nItems;
+    int j2 = jLast;
+
+    // Check if value <= first table entry
+    if ( y <= table[0] ) return 0;
+
+    // Check if value >= the last entry
+    if ( y >= table[jLast] ) return jLast;
+
+    // While a portion of the table still remains
     while ( j2 - j1 > 1)
     {
+	// Find midpoint of remaining portion of table
         j = (j1 + j2) >> 1;
-        if ( y > table[j] ) j1 = j;
-        else                j2 = j;
+
+	// Value is greater or equal to midpoint: search from midpoint to j2
+        if ( y >= table[j] ) j1 = j;
+
+	// Value is less than midpoint: search from j1 to midpoint
+        else j2 = j;
     }
-    return j - 1;
+
+    // Return the lower index of the remaining interval,
+    return j1;
 }
 
 //=============================================================================
 
-double getQcritical(double yc)
+double getQcritical(double yc, void* p)
 //
 //  Input:   yc = critical depth (ft)
+//           p = pointer to a TXsectStar object
 //  Output:  returns flow difference value (cfs)
 //  Purpose: finds difference between critical flow at depth yc and 
-//           target value Qcritical
+//           some target value.
 //
 {
-    double a = xsect_getAofY(Xstar, yc);
-    double w = xsect_getWofY(Xstar, yc);
-    double qc = -Qcritical;
-    if ( w > 0.0 )  qc = a * sqrt(GRAVITY * a / w) - Qcritical;
+    double a, w, qc;
+    TXsectStar* xsectStar;
+
+    xsectStar = (TXsectStar *)p;
+    a = xsect_getAofY(xsectStar->xsect, yc);
+    w = xsect_getWofY(xsectStar->xsect, yc);
+    qc = -xsectStar->qc;
+    if ( w > 0.0 )  qc = a * sqrt(GRAVITY * a / w) - xsectStar->qc;
     return qc;
 }
 
@@ -1463,11 +1573,9 @@ double getYcritEnum(TXsect* xsect, double q, double y0)
 //           enumeration with starting guess of y0.
 //
 {
-    double  q0, dy, qc, yc;
-    int     i1, i;
-
-    // --- store reference to cross section in global pointer
-    Xstar = xsect;
+    double     q0, dy, qc, yc;
+    int        i1, i;
+    TXsectStar xsectStar;
 
     // --- divide cross section depth into 25 increments and
     //     locate increment corresponding to initial guess y0
@@ -1475,19 +1583,20 @@ double getYcritEnum(TXsect* xsect, double q, double y0)
     i1 = (int)(y0 / dy);
 
     // --- evaluate critical flow at this increment
-    Qcritical = 0.0;
-    q0 = getQcritical(i1*dy);
+    xsectStar.xsect = xsect;
+    xsectStar.qc = 0.0;
+    q0 = getQcritical(i1*dy, &xsectStar);
 
     // --- initial flow lies below target flow 
     if ( q0 < q )
     {
         // --- search each successive higher depth increment
         yc = xsect->yFull;
-        for ( i=i1+1; i<=25; i++)
+        for ( i = i1+1; i <= 25; i++)
         {
             // --- if critical flow at current depth is above target
             //     then use linear interpolation to compute critical depth
-            qc = getQcritical(i*dy);
+            qc = getQcritical(i*dy, &xsectStar);
             if ( qc >= q )
             {
                 yc = ( (q-q0) / (qc - q0) + (double)(i-1) ) * dy;
@@ -1502,11 +1611,11 @@ double getYcritEnum(TXsect* xsect, double q, double y0)
     {
         // --- search each successively lower depth increment
         yc = 0.0;
-        for ( i=i1-1; i>=0; i--)
+        for ( i = i1-1; i >= 0; i--)
         {
             // --- if critical flow at current depth is below target
             //     then use linear interpolation to compute critical depth
-            qc = getQcritical(i*dy);
+            qc = getQcritical(i*dy, &xsectStar);
             if ( qc < q )
             {
                 yc = ( (q-qc) / (q0-qc) + (double)i ) * dy;
@@ -1534,19 +1643,20 @@ double getYcritRidder(TXsect* xsect, double q, double y0)
     double  y2 = 0.99 * xsect->yFull;
     double  yc;
     double q0, q1, q2;
+    TXsectStar xsectStar;
 
     // --- store reference to cross section in global pointer
-    Xstar = xsect;
+    xsectStar.xsect = xsect;
+    xsectStar.qc = 0.0;
 
     // --- check if critical flow at (nearly) full depth < target flow
-    Qcritical = 0.0;
-    q2 = getQcritical(y2);
+    q2 = getQcritical(y2, &xsectStar);
     if (q2 < q ) return xsect->yFull;
 
     // --- evaluate critical flow at initial depth guess y0
     //     and at 1/2 of full depth
-    q0 = getQcritical(y0);
-    q1 = getQcritical(0.5*xsect->yFull);
+    q0 = getQcritical(y0, &xsectStar);
+    q1 = getQcritical(0.5*xsect->yFull, &xsectStar);
 
     // --- adjust search interval on depth so it contains flow q
     if ( q0 > q )
@@ -1561,11 +1671,11 @@ double getYcritRidder(TXsect* xsect, double q, double y0)
     }
 
     // --- save value of target critical flow in global variable
-    Qcritical = q;
+    xsectStar.qc = q;
 
     // --- call Ridder root finding procedure with error tolerance
     //     of 0.001 ft. to find critical depth yc
-    yc = findroot_Ridder(y1, y2, 0.001, getQcritical);
+    yc = findroot_Ridder(y1, y2, 0.001, getQcritical, &xsectStar);
     return yc;
 }
 
@@ -1621,7 +1731,6 @@ double rect_closed_getRofA(TXsect* xsect, double a)
     {
         p += (a/xsect->aFull - RECT_ALFMAX) / (1.0 - RECT_ALFMAX) * xsect->wMax;
     }
-
     return a / p;
 }
 
@@ -1633,7 +1742,7 @@ double rect_closed_getRofA(TXsect* xsect, double a)
 double rect_open_getSofA(TXsect* xsect, double a)
 {
     double y = a / xsect->wMax;
-    double r = a / (2.0*y + xsect->wMax);
+    double r = a / ((2.0-xsect->sBot)*y + xsect->wMax);
     return a * pow(r, 2./3.);
 }
 
@@ -1648,7 +1757,7 @@ double rect_open_getdSdA(TXsect* xsect, double a)
     // --- otherwise evaluate dSdA = [5/3 - (2/3)(dP/dA)R]R^(2/3)
     //     (where P = wetted perimeter)
     r = xsect_getRofA(xsect, a);
-    dPdA = 2.0 / xsect->wMax;      // since P = geom2 + 2a/geom2
+    dPdA = (2.0 - xsect->sBot) / xsect->wMax; // since P = geom2 + 2a/geom2
     return  (5./3. - (2./3.) * dPdA * r) * pow(r, 2./3.);
 }
 
@@ -1730,16 +1839,21 @@ double rect_triang_getAofY(TXsect* xsect, double y)
 
 double rect_triang_getRofY(TXsect* xsect, double y)
 {
-    double y1, p;
-    y1 = y - xsect->yBot;
-    if ( y1 <= 0.0 )                             // below upper section
-        return xsect->sBot / (2. * xsect->rBot);
-    else                                         // above bottom section
-    {
-        p = (2. * xsect->yBot * xsect->rBot) + (2. * y1);
-        if ( y >= xsect->yFull ) p += xsect->wMax;
-        return (xsect->aBot + y1 * xsect->wMax) / p;
-    }
+    double p, a, alf;
+
+    // y is below upper rectangular section
+    if ( y <= xsect->yBot ) return y * xsect->sBot / (2. * xsect->rBot);
+
+    // area
+    a = xsect->aBot + (y - xsect->yBot) * xsect->wMax;
+
+    // wetted perimeter without contribution of top surface
+    p = 2. * xsect->yBot * xsect->rBot + 2. * (y - xsect->yBot);
+
+    // top-surface contribution
+    alf = (a / xsect->aFull) - RECT_TRIANG_ALFMAX;
+    if ( alf > 0.0 ) p += alf / (1.0 - RECT_TRIANG_ALFMAX) * xsect->wMax;
+    return a / p;
 }
 
 double rect_triang_getWofY(TXsect* xsect, double y)
@@ -1753,10 +1867,6 @@ double rect_triang_getWofY(TXsect* xsect, double y)
 //  RECT_ROUND fuctions
 //=============================================================================
 
-//// --- The functions below were re-written to correctly account              //(5.0.014 - LR)
-////     for the case where the bottom curvature is less than that
-////     of a half circle.
-
 double rect_round_getYofA(TXsect* xsect, double a)
 {
     double alpha;
@@ -1767,7 +1877,7 @@ double rect_round_getYofA(TXsect* xsect, double a)
 
     // --- otherwise use circular xsection method to find height
     alpha = a / (PI * xsect->rBot * xsect->rBot);
-    if ( alpha < 0.04 ) return (2.0 * xsect->rBot) * getYcircular(alpha);      //5.0.014 - LR)
+    if ( alpha < 0.04 ) return (2.0 * xsect->rBot) * getYcircular(alpha);
     return (2.0 * xsect->rBot) * lookup(alpha, Y_Circ, N_Y_Circ);
 }
 
@@ -1898,11 +2008,6 @@ double rect_round_getWofY(TXsect* xsect, double y)
 //  MOD_BASKETHANDLE fuctions
 //=============================================================================
 
-//// --- The functions below were modified to accommodate a more               //(5.0.014 - LR)
-////     general type of modified baskethandle cross section
-////     that is the same as an upside down round rectangular shape.
-
-
 // Note: the variables rBot, yBot, and aBot refer to properties of the
 //       circular top portion of the cross-section (not the bottom)
 
@@ -2010,7 +2115,7 @@ double mod_basket_getWofY(TXsect* xsect, double y)
 
 double trapez_getYofA(TXsect* xsect, double a)
 {
-    if ( xsect->sBot == 0.0 ) return a / xsect->yBot;                          //(5.0.012 - LR)
+    if ( xsect->sBot == 0.0 ) return a / xsect->yBot;
     return ( sqrt( xsect->yBot*xsect->yBot + 4.*xsect->sBot*a )
              - xsect->yBot )/(2. * xsect->sBot);
 }
@@ -2041,7 +2146,7 @@ double trapez_getAofY(TXsect* xsect, double y)
 
 double trapez_getRofY(TXsect* xsect, double y)
 {
-    if ( y == 0.0 ) return 0.0;                                                //(5.0.022 - LR)
+    if ( y == 0.0 ) return 0.0;
     return trapez_getAofY(xsect, y) / (xsect->yBot + y * xsect->rBot);
 }
 
@@ -2068,7 +2173,7 @@ double triang_getRofA(TXsect* xsect, double a)
 double triang_getdSdA(TXsect* xsect, double a)
 {
     double r, dPdA;
-    // --- use generic finite difference method for very small a
+    // --- use generic finite difference method for very small 'a'
     if ( a/xsect->aFull <= 1.0e-30 ) return generic_getdSdA(xsect, a);
 
     // --- evaluate dSdA = [5/3 - (2/3)(dP/dA)R]R^(2/3)
@@ -2263,7 +2368,7 @@ double circ_getdSdA(TXsect* xsect, double a)
     a2 = alpha + 0.001;
     if ( a1 < 0.0 )
     {
-	    a1 = 0.0;
+        a1 = 0.0;
     	da = alpha + 0.001;
     }
     s1 = getScircular(a1);

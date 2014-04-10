@@ -2,12 +2,13 @@
 //   kinwave.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
-//             2/4/08    (Build 5.0.012)
-//   Author:   L. Rossman
+//   Version:  5.1
+//   Date:     03/20/14  (Build 5.1.001)
+//   Author:   L. Rossman (EPA)
+//             M. Tryby (EPA)
 //
 //   Kinematic wave flow routing functions.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -41,7 +42,7 @@ static TXsect*  pXsect;
 //  Local functions
 //-----------------------------------------------------------------------------
 static int   solveContinuity(double qin, double ain, double* aout);
-static void  evalContinuity(double a, double* f, double* df);
+static void  evalContinuity(double a, double* f, double* df, void* p);
 
 //=============================================================================
 
@@ -55,7 +56,9 @@ int kinwave_execute(int j, double* qinflow, double* qoutflow, double tStep)
 //  Purpose: finds outflow over time step tStep given flow entering a
 //           conduit using Kinematic Wave flow routing.
 //
-//  t
+//
+//                               ^ q3 
+//  t                            |   
 //  |          qin, ain |-------------------| qout, aout
 //  |                   |  Flow --->        |
 //  |----> x     q1, a1 |-------------------| q2, a2
@@ -67,7 +70,7 @@ int kinwave_execute(int j, double* qinflow, double* qoutflow, double tStep)
     double dxdt, dq;
     double ain, aout;
     double qin, qout;
-    double a1, a2, q1, q2;
+    double a1, a2, q1, q2, q3;
 
     // --- no routing for non-conduit link
     (*qoutflow) = (*qinflow); 
@@ -83,15 +86,22 @@ int kinwave_execute(int j, double* qinflow, double* qoutflow, double tStep)
     k = Link[j].subIndex;
     Beta1 = Conduit[k].beta / Qfull;
  
-    // --- normalize flows and areas
+    // --- normalize previous flows
     q1 = Conduit[k].q1 / Qfull;
     q2 = Conduit[k].q2 / Qfull;
+
+    // --- compute evaporation and infiltration loss rate
+	q3 = link_getLossRate(j, tStep) / Qfull;
+
+    // --- normalize previous areas
     a1 = Conduit[k].a1 / Afull;
     a2 = Conduit[k].a2 / Afull;
+
+    // --- normalize inflow 
     qin = (*qinflow) / Conduit[k].barrels / Qfull;
 
-    // --- use full area when inlet flow >= full flow                          //(5.0.012 - LR)
-    if ( qin >= 1.0 ) ain = 1.0;                                               //(5.0.012 - LR)
+    // --- use full area when inlet flow >= full flow
+    if ( qin >= 1.0 ) ain = 1.0;
 
     // --- get normalized inlet area corresponding to inlet flow
     else ain = xsect_getAofS(pXsect, qin/Beta1) / Afull;
@@ -114,7 +124,8 @@ int kinwave_execute(int j, double* qinflow, double* qoutflow, double tStep)
         C2   = C2 - WT * a2;
         C2   = C2 * dxdt / WX;
         C2   = C2 + (1.0 - WX) / WX * dq - qin;
-    
+        C2   = C2 + q3 / WX;
+
         // --- starting guess for aout is value from previous time step
         aout = a2;
 
@@ -152,7 +163,7 @@ int solveContinuity(double qin, double ain, double* aout)
 //           ain = upstream normalized area
 //           aout = downstream normalized area
 //  Output:  new value for aout; returns an error code
-//  Purpose: solves continuity equation  f(a) = Beta1*S(a) + C1*a + C2 = 0
+//  Purpose: solves continuity equation f(a) = Beta1*S(a) + C1*a + C2 = 0
 //           for 'a' using the Newton-Raphson root finder function.
 //           Return code has the following meanings:
 //           >= 0 number of function evaluations used
@@ -161,8 +172,8 @@ int solveContinuity(double qin, double ain, double* aout)
 //           -3   flow always below zero
 //
 //     Note: pXsect (pointer to conduit's cross-section), and constants Beta1,
-//           C1, and C2 are module-level shared variables assigned values in
-//           kinwave_execute().
+//           C1, and C2 are module-level shared variables assigned values
+//           in kinwave_execute().
 //
 {
     int    n;                          // # evaluations or error code
@@ -211,7 +222,7 @@ int solveContinuity(double qin, double ain, double* aout)
         // --- call the Newton root finder method passing it the 
         //     evalContinuity function to evaluate the function
         //     and its derivatives
-        n = findroot_Newton(aLo, aHi, aout, tol, evalContinuity);
+        n = findroot_Newton(aLo, aHi, aout, tol, evalContinuity, NULL);
 
         // --- check if root finder succeeded
         if ( n <= 0 ) n = -1;
@@ -237,7 +248,7 @@ int solveContinuity(double qin, double ain, double* aout)
 
 //=============================================================================
 
-void evalContinuity(double a, double* f, double* df)
+void evalContinuity(double a, double* f, double* df, void* p)
 //
 //  Input:   a = outlet normalized area
 //  Output:  f = value of continuity eqn.

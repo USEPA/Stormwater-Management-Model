@@ -2,9 +2,8 @@
 //   infil.h
 //
 //   Project: EPA SWMM5
-//   Version: 5.0
-//   Date:    07/30/10   (Build 5.0.019)
-//            04/20/11   (Build 5.0.022)
+//   Version: 5.1
+//   Date:    03/20/14   (Build 5.1.001)
 //   Author:  L. Rossman (US EPA)
 //
 //   Public interface for infiltration functions.
@@ -18,6 +17,7 @@
 //---------------------
 enum InfilType {
      HORTON,                      // Horton infiltration
+     MOD_HORTON,                  // Modified Horton infiltration
      GREEN_AMPT,                  // Green-Ampt infiltration
      CURVE_NUMBER};               // SCS Curve Number infiltration
 
@@ -26,13 +26,14 @@ enum InfilType {
 //---------------------
 typedef struct
 {
+   double        f0;              // initial infil. rate (ft/sec)
    double        fmin;            // minimum infil. rate (ft/sec)
    double        Fmax;            // maximum total infiltration (ft);
    double        decay;           // decay coeff. of infil. rate (1/sec)
    double        regen;           // regeneration coeff. of infil. rate (1/sec)
    //-----------------------------
    double        tp;              // present time on infiltration curve (sec)
-   double        f0;              // initial infil. rate (ft/sec)
+   double        Fe;              // cumulative infiltration (ft)
 }  THorton;
 
 
@@ -87,8 +88,10 @@ void    infil_create(int subcatchCount, int model);
 void    infil_delete(void);
 int     infil_readParams(int model, char* tok[], int ntoks);
 void    infil_initState(int area, int model);
+void    infil_getState(int j, int m, double x[]);
+void    infil_setState(int j, int m, double x[]);
 double  infil_getInfil(int area, int model, double tstep, double rainfall,
-        double runon, double depth);                                           //(5.0.022 - LR)
+        double runon, double depth);
 
 int     grnampt_setParams(TGrnAmpt *infil, double p[]);
 void    grnampt_initState(TGrnAmpt *infil);

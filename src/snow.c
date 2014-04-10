@@ -2,10 +2,8 @@
 //   snow.c
 //
 //   Project: EPA SWMM5
-//   Version: 5.0
-//   Date:    6/19/07   (Build 5.0.010)
-//            2/4/08    (Build 5.0.012)
-//            1/21/09   (Build 5.0.014)
+//   Version: 5.1
+//   Date:    03/20/14   (Build 5.1.001)
 //   Author:  L. Rossman
 //
 //   Models snow melt processes.
@@ -14,6 +12,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "headers.h"
 
 //-----------------------------------------------------------------------------
@@ -28,7 +27,7 @@ enum SnowKeywords {SNOW_PLOWABLE, SNOW_IMPERV, SNOW_PERV, SNOW_REMOVAL};
 //  snow_createSnowpack  (called from subcatch_setParams)
 //  snow_initSnowpack    (called from subcatch_initState)
 //  snow_initSnowmelt    (called from createObjects in project.c)
-//  snow_validateSnowmelt(called from project_validate)                        //(5.0.012 - LR)
+//  snow_validateSnowmelt(called from project_validate)
 //  snow_readMeltParams  (called from parseLine in input.c)
 //  snow_setMeltCoeffs   (called from setTemp in climate.c)
 //  snow_plowSnow        (called from runoff_execute)
@@ -153,12 +152,12 @@ void snow_initSnowpack(int j)
 
     // --- find fractional area of each snow surface
     f = Snowmelt[k].snn;
-    snowpack->fArea[SNOW_PLOWABLE] = f * Subcatch[j].fracImperv;               //(5.0.012 - LR)
-    snowpack->fArea[SNOW_IMPERV]   = (1.0 - f) * Subcatch[j].fracImperv;       //(5.0.012 - LR)
-    snowpack->fArea[SNOW_PERV]     = 1.0 - Subcatch[j].fracImperv;             //(5.0.012 - LR)
+    snowpack->fArea[SNOW_PLOWABLE] = f * Subcatch[j].fracImperv;
+    snowpack->fArea[SNOW_IMPERV]   = (1.0 - f) * Subcatch[j].fracImperv;
+    snowpack->fArea[SNOW_PERV]     = 1.0 - Subcatch[j].fracImperv;
 
     // --- initialize state of snow pack on each snow surface
-    for (i=SNOW_PLOWABLE; i<=SNOW_PERV; i++)                                   //(5.0.012 - LR)
+    for (i=SNOW_PLOWABLE; i<=SNOW_PERV; i++)
     {
         if ( snowpack->fArea[i] > 0.0 )
         {
@@ -206,8 +205,12 @@ void  snow_initSnowmelt(int j)
 
 //=============================================================================
 
-////   This is a new function added for 5.0.012  ////                          //(5.0.012 - LR)
 void snow_validateSnowmelt(int j)
+//
+//  Input:   j = snowmelt parameter set index
+//  Output:  none
+//  Purpose: checks for valid values in a snow melt parameter set.
+//
 {
     int    k;
     char   err = FALSE;
@@ -230,6 +233,45 @@ void snow_validateSnowmelt(int j)
     for ( k=0; k<5; k++ ) sum += Snowmelt[j].sfrac[k];
     if ( sum > 1.01 ) err = TRUE;
     if ( err ) report_writeErrorMsg(ERR_SNOWPACK_PARAMS, Snowmelt[j].ID);
+}
+
+//=============================================================================
+
+void snow_getState(int i, int j, double x[])
+//
+//  Input:   i = subcatchment index
+//           j = snow pack sub-area index
+//  Output:  updates array of snow pack state variables x
+//  Purpose: retrieves the current state of a snow pack object.
+//
+{
+    TSnowpack* snowpack = Subcatch[i].snowpack;
+    if ( snowpack == NULL ) return;
+    x[0] = snowpack->wsnow[j];
+    x[1] = snowpack->fw[j];
+    x[2] = snowpack->coldc[j];
+    x[3] = snowpack->ati[j];
+    x[4] = snowpack->awe[j];
+}
+
+//=============================================================================
+
+void snow_setState(int i, int j, double x[])
+//
+//  Input:   i = subcatchment index
+//           j = snow pack sub-area index
+//           x = array of snow pack state variables
+//  Output:  none
+//  Purpose: sets the current state of a snow pack object.
+//
+{
+    TSnowpack* snowpack = Subcatch[i].snowpack;
+    if ( snowpack == NULL ) return;
+    snowpack->wsnow[j] = x[0];
+    snowpack->fw[j]    = x[1];
+    snowpack->coldc[j] = x[2];
+    snowpack->ati[j]   = x[3];
+    snowpack->awe[j]   = x[4];
 }
 
 //=============================================================================
@@ -262,7 +304,7 @@ void setMeltParams(int j, int k, double x[])
 
         // --- initial snow depth & free water depth
         Snowmelt[j].wsnow[k]     = x[4] / UCF(RAINDEPTH);
-        x[5] = MIN(x[5], (x[3]*x[4]));                                         //(5.0.012 - LR)
+        x[5] = MIN(x[5], (x[3]*x[4]));
         Snowmelt[j].fwnow[k]     = x[5] / UCF(RAINDEPTH);
 
         // --- fraction of impervious area that is plowable
@@ -276,7 +318,7 @@ void setMeltParams(int j, int k, double x[])
     // --- removal parameters
     else if ( k == SNOW_REMOVAL )
     {
-        Snowmelt[j].weplow = x[0] / UCF(RAINDEPTH);                            //(5.0.014 - LR)
+        Snowmelt[j].weplow = x[0] / UCF(RAINDEPTH);
         for (i=0; i<=4; i++) Snowmelt[j].sfrac[i] = x[i+1];
         if ( x[6] >= 0.0 ) Snowmelt[j].toSubcatch = (int)(x[6] + 0.01);
         else               Snowmelt[j].toSubcatch = -1;
@@ -342,9 +384,9 @@ void snow_plowSnow(int j, double tStep)
     if ( snowpack->fArea[SNOW_PLOWABLE] > 0.0 )
     {
         k = snowpack->snowmeltIndex;
-        if ( snowpack->wsnow[SNOW_PLOWABLE] >= Snowmelt[k].weplow )            //(5.0.014 - LR)
+        if ( snowpack->wsnow[SNOW_PLOWABLE] >= Snowmelt[k].weplow ) 
         {
-            // --- excess snow to be reomoved                                  //(5.0.014 - LR)
+            // --- excess snow to be reomoved
             exc = snowpack->wsnow[SNOW_PLOWABLE];
 
             // --- plow out of system
@@ -378,12 +420,12 @@ void snow_plowSnow(int j, double tStep)
             if ( Snowmelt[k].sfrac[4] > 0.0 )
             {
                 m = Snowmelt[k].toSubcatch;
-                if ( Subcatch[m].snowpack )                                    //(5.0.014 - LR)
-                {                                                              //(5.0.014 - LR)
-                    f = Subcatch[m].snowpack->fArea[SNOW_PERV];                //(5.0.014 - LR)
-                }                                                              //(5.0.014 - LR)
-                else f = 0.0;                                                  //(5.0.014 - LR)
-                if ( f > 0.0 )                                                 //(5.0.014 - LR)
+                if ( Subcatch[m].snowpack )
+                {
+                    f = Subcatch[m].snowpack->fArea[SNOW_PERV];
+                } 
+                else f = 0.0; 
+                if ( f > 0.0 )
                 {
                     f = snowpack->fArea[SNOW_PLOWABLE] / f;
                     Subcatch[m].snowpack->wsnow[SNOW_PERV] +=
@@ -393,8 +435,8 @@ void snow_plowSnow(int j, double tStep)
             }
 
             // --- reduce snow depth by amount plowed
-            sfracTotal = MIN(sfracTotal, 1.0);                                 //(5.0.014 - LR)
-            snowpack->wsnow[SNOW_PLOWABLE] = exc * (1.0 - sfracTotal);         //(5.0.014 - LR)
+            sfracTotal = MIN(sfracTotal, 1.0);
+            snowpack->wsnow[SNOW_PLOWABLE] = exc * (1.0 - sfracTotal);
         }
     }
 }
@@ -673,7 +715,7 @@ double getRainmelt(double rainfall)
 
     rainfall = rainfall * 43200.0;     // convert rain to in/hr
     if ( rainfall > 0.02 )
-   {
+    {
         uadj = 0.006 * Wind.ws;
         t1 = Temp.ta - 32.0;
         t2 = 7.5 * Temp.gamma * uadj;
@@ -702,14 +744,22 @@ void updateColdContent(TSnowpack* snowpack, int i, double asc, double snowfall,
     double ati;                        // antecdent temperature index (deg F)
     double cc;                         // snow pack cold content (ft)
     double ccMax;                      // max. possible cold content (ft)
-
+    double tipm;                       // adjusted ATI weighting factor
+	
     // --- retrieve ATI & CC from snowpack object
     ati = snowpack->ati[i];
     cc = snowpack->coldc[i];
 
     // --- if snowing, ATI = snow (air) temperature
     if ( snowfall * 43200.0 > 0.02) ati = Temp.ta;
-    else ati += Snow.tipm * (Temp.ta - ati);
+	else
+	{
+	    // convert ATI weighting factor from 6-hr to tStep time basis
+	    tipm = 1.0 - pow(1.0 - Snow.tipm, tStep / (6.0*3600.0));
+		
+		// update ATI
+		ati += tipm * (Temp.ta - ati);
+	}
 
     // --- ATI cannot exceed snow melt base temperature
     k = snowpack->snowmeltIndex;

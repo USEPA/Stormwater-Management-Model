@@ -2,13 +2,8 @@
 //   project.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
-//             2/4/08    (Build 5.0.012)
-//             1/21/09   (Build 5.0.014)
-//             4/10/09   (Build 5.0.015)
-//             11/18/09  (Build 5.0.018)
-//             07/30/10  (Build 5.0.019)
+//   Version:  5.1
+//   Date:     03/19/14  (Build 5.1.000)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -26,9 +21,17 @@
 #include <string.h>
 #include <malloc.h>
 #include "headers.h"
-#include "lid.h"                                                               //(5.0.019 - LR)
+#include "lid.h" 
 #include "hash.h"
 #include "mempool.h"
+
+//-----------------------------------------------------------------------------
+//  Constants
+//-----------------------------------------------------------------------------
+//  These are defaults for DYNWAVE flow routing
+const double DEFAULT_SURFAREA  = 12.566;  // Min. nodal surface area (~4 ft diam.)
+const double DEFAULT_HEADTOL   = 0.005;   // Default head tolerance (ft)
+const int    DEFAULT_MAXTRIALS = 8;       // Max. trials per time step
 
 //-----------------------------------------------------------------------------
 //  Shared variables
@@ -135,8 +138,6 @@ void project_readInput()
 
 //=============================================================================
 
-////  This function was significantly modified for release 5.0.018.  ////      //(5.0.018 - LR)
-
 void project_validate()
 //
 //  Input:   none
@@ -157,15 +158,15 @@ void project_validate()
     for ( i=0; i<Nobjects[TSERIES]; i++ )
     {
         err = table_validate(&Tseries[i]);
-        if ( err ) report_writeTseriesErrorMsg(&Tseries[i]);
+        if ( err ) report_writeTseriesErrorMsg(err, &Tseries[i]);
     }
 
     // --- validate hydrology objects
-    //     (NOTE: order is important !!!!)                                     //(5.0.019 - LR)
+    //     (NOTE: order is important !!!!)
     climate_validate();
-    lid_validate();                                                            //(5.0.019 - LR)
-    if ( Nobjects[SNOWMELT] == 0 ) IgnoreSnowmelt = TRUE;                      //(5.0.019 - LR)
-    if ( Nobjects[AQUIFER]  == 0 ) IgnoreGwater   = TRUE;                      //(5.0.019 - LR)
+    lid_validate();
+    if ( Nobjects[SNOWMELT] == 0 ) IgnoreSnowmelt = TRUE;
+    if ( Nobjects[AQUIFER]  == 0 ) IgnoreGwater   = TRUE;
     for ( i=0; i<Nobjects[GAGE]; i++ )     gage_validate(i);
     for ( i=0; i<Nobjects[AQUIFER]; i++ )  gwater_validateAquifer(i);
     for ( i=0; i<Nobjects[SUBCATCH]; i++ ) subcatch_validate(i);
@@ -210,6 +211,13 @@ void project_validate()
         for (i=0; i<Nobjects[NODE]; i++) Node[i].rptFlag = TRUE;
     if ( RptFlags.links == ALL )
         for (i=0; i<Nobjects[LINK]; i++) Link[i].rptFlag = TRUE;
+
+    // --- adjust DYNWAVE options
+	if ( MinSurfArea == 0.0 ) MinSurfArea = DEFAULT_SURFAREA;
+	else                      MinSurfArea /= UCF(LENGTH) * UCF(LENGTH);
+    if ( HeadTol == 0.0 ) HeadTol = DEFAULT_HEADTOL;
+	else                  HeadTol /= UCF(LENGTH);
+	if ( MaxTrials == 0 ) MaxTrials = DEFAULT_MAXTRIALS;
 }
 
 //=============================================================================
@@ -236,7 +244,7 @@ int  project_init(void)
 {
     int j;
     climate_initState();
-    lid_initState();                                                           //(5.0.019 - LR)
+    lid_initState();
     for (j=0; j<Nobjects[TSERIES]; j++)  table_tseriesInit(&Tseries[j]);
     for (j=0; j<Nobjects[GAGE]; j++)     gage_initState(j);
     for (j=0; j<Nobjects[SUBCATCH]; j++) subcatch_initState(j);
@@ -392,45 +400,57 @@ int project_readOption(char* s1, char* s2)
         m = findmatch(s2, RouteModelWords);
         if ( m < 0 ) m = findmatch(s2, OldRouteModelWords);
         if ( m < 0 ) return error_setInpError(ERR_KEYWORD, s2);
-        if ( m == NO_ROUTING ) IgnoreRouting = TRUE;                           //(5.0.014 - LR)
-        else RouteModel = m;                                                   //(5.0.014 - LR)
-        if ( RouteModel == EKW ) RouteModel = KW;                              //(5.0.010 - LR)
+        if ( m == NO_ROUTING ) IgnoreRouting = TRUE;
+        else RouteModel = m;
+        if ( RouteModel == EKW ) RouteModel = KW;
         break;
 
       // --- simulation start date
       case START_DATE:
         if ( !datetime_strToDate(s2, &StartDate) )
+        {
             return error_setInpError(ERR_DATETIME, s2);
+        }
         break;
 
       // --- simulation start time of day
       case START_TIME:
         if ( !datetime_strToTime(s2, &StartTime) )
+        {
             return error_setInpError(ERR_DATETIME, s2);
+        }
         break;
 
       // --- simulation ending date
       case END_DATE:
         if ( !datetime_strToDate(s2, &EndDate) ) 
+        {
             return error_setInpError(ERR_DATETIME, s2);
+        }
         break;
 
       // --- simulation ending time of day
       case END_TIME:
         if ( !datetime_strToTime(s2, &EndTime) )
+        {
             return error_setInpError(ERR_DATETIME, s2);
+        }
         break;
 
       // --- reporting start date
       case REPORT_START_DATE:
         if ( !datetime_strToDate(s2, &ReportStartDate) )
+        {
             return error_setInpError(ERR_DATETIME, s2);
+        }
         break;
 
       // --- reporting start time of day
       case REPORT_START_TIME:
         if ( !datetime_strToTime(s2, &ReportStartTime) )
+        {
             return error_setInpError(ERR_DATETIME, s2);
+        }
         break;
 
       // --- day of year when street sweeping begins or when it ends
@@ -441,7 +461,9 @@ int project_readOption(char* s1, char* s2)
         strcpy(strDate, s2);
         strcat(strDate, "/1947");
         if ( !datetime_strToDate(strDate, &aDate) )
+        {
             return error_setInpError(ERR_DATETIME, s2);
+        }
         m = datetime_dayOfYear(aDate);
         if ( k == SWEEP_START ) SweepStart = m;
         else SweepEnd = m;
@@ -451,7 +473,9 @@ int project_readOption(char* s1, char* s2)
       case START_DRY_DAYS:
         StartDryDays = atof(s2);
         if ( StartDryDays < 0.0 )
+        {
             return error_setInpError(ERR_NUMBER, s2);
+        }
         break;
 
       // --- runoff or reporting time steps
@@ -460,7 +484,9 @@ int project_readOption(char* s1, char* s2)
       case DRY_STEP:
       case REPORT_STEP:
         if ( !datetime_strToTime(s2, &aTime) )
+        {
             return error_setInpError(ERR_DATETIME, s2);
+        }
         datetime_decodeTime(aTime, &h, &m, &s);
         h += 24*(int)aTime;
         s = s + 60*m + 3600*h;
@@ -480,15 +506,15 @@ int project_readOption(char* s1, char* s2)
         else InertDamping = m;
         break;
 
-      // --- Yes/No options (NO = 0, YES = 1)                                  //(5.0.014 - LR)
+      // --- Yes/No options (NO = 0, YES = 1)
       case ALLOW_PONDING:
       case SLOPE_WEIGHTING:
       case SKIP_STEADY_STATE:
       case IGNORE_RAINFALL:
-      case IGNORE_SNOWMELT:                                                    //(5.0.014 - LR)
-      case IGNORE_GWATER:                                                      //(5.0.014 - LR)
-      case IGNORE_ROUTING:                                                     //(5.0.014 - LR)
-      case IGNORE_QUALITY:                                                     //(5.0.014 - LR)
+      case IGNORE_SNOWMELT:
+      case IGNORE_GWATER:
+      case IGNORE_ROUTING:
+      case IGNORE_QUALITY:
         m = findmatch(s2, NoYesWords);
         if ( m < 0 ) return error_setInpError(ERR_KEYWORD, s2);
         switch ( k )
@@ -497,31 +523,31 @@ int project_readOption(char* s1, char* s2)
           case SLOPE_WEIGHTING:   SlopeWeighting  = m;  break;
           case SKIP_STEADY_STATE: SkipSteadyState = m;  break;
           case IGNORE_RAINFALL:   IgnoreRainfall  = m;  break;
-          case IGNORE_SNOWMELT:   IgnoreSnowmelt  = m;  break;                 //(5.0.014 - LR)
-          case IGNORE_GWATER:     IgnoreGwater    = m;  break;                 //(5.0.014 - LR)
-          case IGNORE_ROUTING:    IgnoreRouting   = m;  break;                 //(5.0.014 - LR)
-          case IGNORE_QUALITY:    IgnoreQuality   = m;  break;                 //(5.0.014 - LR)
+          case IGNORE_SNOWMELT:   IgnoreSnowmelt  = m;  break;
+          case IGNORE_GWATER:     IgnoreGwater    = m;  break;
+          case IGNORE_ROUTING:    IgnoreRouting   = m;  break;
+          case IGNORE_QUALITY:    IgnoreQuality   = m;  break;
         }
         break;
 
-      case NORMAL_FLOW_LTD:                                                    //(5.0.010 - LR)
-        m = findmatch(s2, NormalFlowWords);                                    //(5.0.010 - LR)
-        if ( m < 0 ) m = findmatch(s2, NoYesWords);                            //(5.0.010 - LR)
-        if ( m < 0 ) return error_setInpError(ERR_KEYWORD, s2);                //(5.0.010 - LR)
-        NormalFlowLtd = m;                                                     //(5.0.010 - LR)
-        break;                                                                 //(5.0.010 - LR)
+      case NORMAL_FLOW_LTD: 
+        m = findmatch(s2, NormalFlowWords); 
+        if ( m < 0 ) m = findmatch(s2, NoYesWords);
+        if ( m < 0 ) return error_setInpError(ERR_KEYWORD, s2);
+        NormalFlowLtd = m;
+        break;
 
-      case FORCE_MAIN_EQN:                                                     //(5.0.010 - LR)
-        m = findmatch(s2, ForceMainEqnWords);                                  //(5.0.010 - LR)
-        if ( m < 0 ) return error_setInpError(ERR_KEYWORD, s2);                //(5.0.010 - LR)
-        ForceMainEqn = m;                                                      //(5.0.010 - LR)
-        break;                                                                 //(5.0.010 - LR)
+      case FORCE_MAIN_EQN:
+        m = findmatch(s2, ForceMainEqnWords);
+        if ( m < 0 ) return error_setInpError(ERR_KEYWORD, s2);
+        ForceMainEqn = m;
+        break;
 
-      case LINK_OFFSETS:                                                       //(5.0.012 - LR)
-        m = findmatch(s2, LinkOffsetWords);                                    //(5.0.012 - LR)
-        if ( m < 0 ) return error_setInpError(ERR_KEYWORD, s2);                //(5.0.012 - LR)
-        LinkOffsets = m;                                                       //(5.0.012 - LR)
-        break;                                                                 //(5.0.012 - LR)
+      case LINK_OFFSETS:
+        m = findmatch(s2, LinkOffsetWords);
+        if ( m < 0 ) return error_setInpError(ERR_KEYWORD, s2);
+        LinkOffsets = m;
+        break;
 
       // --- compatibility option for selecting solution method for
       //     dynamic wave flow routing (NOT CURRENTLY USED)
@@ -576,17 +602,50 @@ int project_readOption(char* s1, char* s2)
         MinSurfArea = atof(s2);
         break;
 
-      // --- minimum conduit slope (%)                                         //(5.0.014 - LR)
-      case MIN_SLOPE:                                                          //(5.0.014 - LR)
-        if ( !getDouble(s2, &MinSlope) )                                       //(5.0.014 - LR)
-            return error_setInpError(ERR_NUMBER, s2);                          //(5.0.014 - LR)
-        if ( MinSlope < 0.0 || MinSlope >= 100 )                               //(5.0.014 - LR)
-            return error_setInpError(ERR_NUMBER, s2);                          //(5.0.014 - LR)
-        MinSlope /= 100.0;                                                     //(5.0.014 - LR)
-        break;                                                                 //(5.0.014 - LR)
+      // --- minimum conduit slope (%)
+      case MIN_SLOPE:
+        if ( !getDouble(s2, &MinSlope) )
+            return error_setInpError(ERR_NUMBER, s2);
+        if ( MinSlope < 0.0 || MinSlope >= 100 )
+            return error_setInpError(ERR_NUMBER, s2);
+        MinSlope /= 100.0;
+        break;
+
+      // --- maximum trials / time step for dynamic wave routing
+      case MAX_TRIALS:
+        m = atoi(s2);
+        if ( m < 0 ) return error_setInpError(ERR_NUMBER, s2);
+        MaxTrials = m;
+        break;
+
+      // --- head convergence tolerance for dynamic wave routing
+      case HEAD_TOL:
+        if ( !getDouble(s2, &HeadTol) )
+        {
+            return error_setInpError(ERR_NUMBER, s2);
+        }
+        break;
+
+      // --- steady state tolerance on system inflow - outflow
+      case SYS_FLOW_TOL:
+        if ( !getDouble(s2, &SysFlowTol) )
+        {
+            return error_setInpError(ERR_NUMBER, s2);
+        }
+        SysFlowTol /= 100.0;
+        break;
+
+      // --- steady state tolerance on nodal lateral inflow
+      case LAT_FLOW_TOL:
+        if ( !getDouble(s2, &LatFlowTol) )
+        {
+            return error_setInpError(ERR_NUMBER, s2);
+        }
+        LatFlowTol /= 100.0;
+        break;
 
       case TEMPDIR: // Temporary Directory
-        sstrncpy(TmpDir, s2, MAXFNAME);
+        sstrncpy(TempDir, s2, MAXFNAME);
         break;
 
     }
@@ -620,10 +679,7 @@ void initPointers()
     Curve    = NULL;
     Tseries  = NULL;
     Transect = NULL;
-    Shape    = NULL;                                                           //(5.0.010 - LR)  
-//    HortInfil  = NULL;                                                       //(5.0.019 - LR)
-//    GAInfil    = NULL;                                                       //(5.0.019 - LR)
-//    CNInfil    = NULL;                                                       //(5.0.019 - LR)
+    Shape    = NULL;
     Aquifer    = NULL;
     UnitHyd    = NULL;
     Snowmelt   = NULL;
@@ -643,7 +699,7 @@ void setDefaults()
 
    // Project title & temp. file path
    for (i = 0; i < MAXTITLE; i++) strcpy(Title[i], "");
-   strcpy(TmpDir, "");
+   strcpy(TempDir, "");
 
    // Interface files
    Frain.mode      = SCRATCH_FILE;     // Use scratch rainfall file
@@ -672,34 +728,38 @@ void setDefaults()
    RouteModel      = KW;               // Kin. wave flow routing method
    AllowPonding    = FALSE;            // No ponding at nodes
    InertDamping    = SOME;             // Partial inertial damping
-   NormalFlowLtd   = BOTH;             // Default normal flow limitation       //(5.0.010 - LR)
-   ForceMainEqn    = H_W;              // Hazen-Williams eqn. for force mains  //(5.0.010 - LR)
-   LinkOffsets     = DEPTH_OFFSET;     // Use depth for link offsets           //(5.0.012 - LR)
+   NormalFlowLtd   = BOTH;             // Default normal flow limitation
+   ForceMainEqn    = H_W;              // Hazen-Williams eqn. for force mains
+   LinkOffsets     = DEPTH_OFFSET;     // Use depth for link offsets
    LengtheningStep = 0;                // No lengthening of conduits
    CourantFactor   = 0.0;              // No variable time step 
-   MinSurfArea     = 0.0;              // Use default min. nodal surface area
+   MinSurfArea     = 0.0;              // Force use of default min. surface area
    SkipSteadyState = FALSE;            // Do flow routing in steady state periods 
    IgnoreRainfall  = FALSE;            // Analyze rainfall/runoff
-   IgnoreSnowmelt  = FALSE;            // Analyze snowmelt                     //(5.0.014 - LR)
-   IgnoreGwater    = FALSE;            // Analyze groundwater                  //(5.0.014 - LR)
-   IgnoreRouting   = FALSE;            // Analyze flow routing                 //(5.0.014 - LR)
-   IgnoreQuality   = FALSE;            // Analyze water quality                //(5.0.014 - LR)
+   IgnoreSnowmelt  = FALSE;            // Analyze snowmelt 
+   IgnoreGwater    = FALSE;            // Analyze groundwater 
+   IgnoreRouting   = FALSE;            // Analyze flow routing
+   IgnoreQuality   = FALSE;            // Analyze water quality
    WetStep         = 300;              // Runoff wet time step (secs)
    DryStep         = 3600;             // Runoff dry time step (secs)
    RouteStep       = 300.0;            // Routing time step (secs)
    ReportStep      = 900;              // Reporting time step (secs)
    StartDryDays    = 0.0;              // Antecedent dry days
+   MaxTrials       = 0;                // Force use of default max. trials 
+   HeadTol         = 0.0;              // Force use of default head tolerance
+   SysFlowTol      = 0.05;             // System flow tolerance for steady state
+   LatFlowTol      = 0.05;             // Lateral flow tolerance for steady state
 
-   // Deprecated options                                                       //(5.0.010 - LR)
-   SlopeWeighting  = TRUE;             // Use slope weighting                  //(5.0.010 - LR)
-   Compatibility   = SWMM4;            // Use SWMM 4 up/dn weighting method    //(5.0.010 - LR)
+   // Deprecated options
+   SlopeWeighting  = TRUE;             // Use slope weighting 
+   Compatibility   = SWMM4;            // Use SWMM 4 up/dn weighting method
 
    // Starting & ending date/time
    StartDate       = datetime_encodeDate(2004, 1, 1);
    StartTime       = datetime_encodeTime(0,0,0);
    StartDateTime   = StartDate + StartTime;
    EndDate         = StartDate;
-   EndTime         = 0.0;                                                      //(5.0.012 - LR)
+   EndTime         = 0.0;
    ReportStartDate = NO_DATE;
    ReportStartTime = NO_DATE;
    SweepStart      = 1;
@@ -746,10 +806,10 @@ void setDefaults()
        Evap.monthlyEvap[i] = 0.0;
        Evap.panCoeff[i]    = 1.0;
    }
-   Evap.recoveryPattern = -1;                                                  //(5.0.014 - LR)
-   Evap.recoveryFactor  = 1.0;                                                 //(5.0.014 - LR)
-   Evap.tSeries = -1;                                                          //(5.0.019 - LR)
-   Evap.dryOnly = FALSE;                                                       //(5.0.019 - LR)
+   Evap.recoveryPattern = -1;
+   Evap.recoveryFactor  = 1.0; 
+   Evap.tSeries = -1;
+   Evap.dryOnly = FALSE;
 }
 
 //=============================================================================
@@ -833,10 +893,10 @@ void createObjects()
     Aquifer  = (TAquifer *)  calloc(Nobjects[AQUIFER],  sizeof(TAquifer));
     UnitHyd  = (TUnitHyd *)  calloc(Nobjects[UNITHYD],  sizeof(TUnitHyd));
     Snowmelt = (TSnowmelt *) calloc(Nobjects[SNOWMELT], sizeof(TSnowmelt));
-    Shape    = (TShape *)    calloc(Nobjects[SHAPE],    sizeof(TShape));       //(5.0.010 - LR)
+    Shape    = (TShape *)    calloc(Nobjects[SHAPE],    sizeof(TShape));
 
-    // --- create LID objects                                                  //(5.0.019 - LR)
-    lid_create(Nobjects[LID], Nobjects[SUBCATCH]);                             //(5.0.019 - LR)
+    // --- create LID objects
+    lid_create(Nobjects[LID], Nobjects[SUBCATCH]);
 
     // --- create control rules
     ErrorCode = controls_create(Nobjects[CONTROL]);
@@ -847,7 +907,7 @@ void createObjects()
     if ( ErrorCode ) return;
 
     // --- allocate memory for infiltration data
-    infil_create(Nobjects[SUBCATCH], InfilModel);                              //(5.0.019 - LR)
+    infil_create(Nobjects[SUBCATCH], InfilModel);
 
     // --- allocate memory for water quality state variables
     for (j = 0; j < Nobjects[SUBCATCH]; j++)
@@ -863,9 +923,6 @@ void createObjects()
     {
         Node[j].oldQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
         Node[j].newQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
-
-        //Node[j].wStored = (double *) calloc(Nobjects[POLLUT], sizeof(double)); //(5.0.018 - LR)
-
         Node[j].extInflow = NULL;
         Node[j].dwfInflow = NULL;
         Node[j].rdiiInflow = NULL;
@@ -875,6 +932,7 @@ void createObjects()
     {
         Link[j].oldQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
         Link[j].newQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
+	    Link[j].totalLoad = (double *) calloc(Nobjects[POLLUT], sizeof(double));
     }
 
     // --- allocate memory for land use buildup/washoff functions
@@ -923,8 +981,9 @@ void createObjects()
         Subcatch[j].outNode     = -1;
         Subcatch[j].infil       = -1;
         Subcatch[j].groundwater = NULL;
+	    Subcatch[j].gwFlowExpr  = NULL;
         Subcatch[j].snowpack    = NULL;
-        Subcatch[j].lidArea     = 0.0;                                         //(5.0.019 - LR)
+        Subcatch[j].lidArea     = 0.0;
         for (k = 0; k < Nobjects[POLLUT]; k++)
         {
             Subcatch[j].initBuildup[k] = 0.0;
@@ -936,9 +995,6 @@ void createObjects()
 
     // --- initialize snowmelt properties
     for ( j = 0; j < Nobjects[SNOWMELT]; j++ ) snow_initSnowmelt(j);
-
-    // --- initialize storage node properties                                  //(5.0.015 - LR)
-    for (j = 0; j < Nnodes[STORAGE]; j++) Storage[j].infil = NULL;             //(5.0.015 - LR)
 
     // --- initialize link properties
     for (j = 0; j < Nobjects[LINK]; j++)
@@ -986,7 +1042,8 @@ void deleteObjects()
         }
         FREE(Subcatch[j].landFactor);
         FREE(Subcatch[j].groundwater);
-        FREE(Subcatch[j].snowpack);                                            //(5.0.015 - LR)
+		gwater_deleteFlowExpression(j);
+        FREE(Subcatch[j].snowpack);
     }
 
     // --- free memory for buildup/washoff functions
@@ -1014,11 +1071,11 @@ void deleteObjects()
     {
         FREE(Link[j].oldQual);
         FREE(Link[j].newQual);
+	    FREE(Link[j].totalLoad);
     }
 
-    // --- free memory used for infiltration                                   //(5.0.019 - LR)
-    infil_delete();                                                            //(5.0.019 - LR)
-    if ( Node ) for (j = 0; j < Nnodes[STORAGE]; j++) FREE(Storage[j].infil);  //(5.0.015 - LR)
+    // --- free memory used for infiltration
+    infil_delete();
 
     // --- free memory used for nodal inflows & treatment functions
     if ( Node ) for (j = 0; j < Nobjects[NODE]; j++)
@@ -1041,8 +1098,8 @@ void deleteObjects()
     // --- delete control rules
     controls_delete();
 
-    // --- delete LIDs                                                         //(5.0.019 - LR)
-    lid_delete();                                                              //(5.0.019 - LR)
+    // --- delete LIDs
+    lid_delete();
 
     // --- now free each major category of object
     FREE(Gage);
@@ -1062,15 +1119,10 @@ void deleteObjects()
     FREE(Pattern);
     FREE(Curve);
     FREE(Tseries);
-
-//    FREE(HortInfil);                                                         //(5.0.019 - LR)
-//    FREE(GAInfil);                                                           //(5.0.019 - LR)
-//    FREE(CNInfil);                                                           //(5.0.019 - LR)
-
     FREE(Aquifer);
     FREE(UnitHyd);
     FREE(Snowmelt);
-    FREE(Shape);                                                               //(5.0.010 - LR)
+    FREE(Shape);
 }
 
 //=============================================================================

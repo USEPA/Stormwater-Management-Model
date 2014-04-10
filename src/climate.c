@@ -2,13 +2,8 @@
 //   climate.c
 //
 //   Project: EPA SWMM5
-//   Version: 5.0
-//   Date:    6/19/07  (Build 5.0.010)
-//            2/4/08   (Build 5.0.012)
-//            3/11/08  (Build 5.0.013)
-//            1/21/09  (Build 5.0.014)
-//            6/22/09  (Build 5.0.016)
-//            07/30/10 (Build 5.0.019)
+//   Version: 5.1
+//   Date:    03/20/10 (Build 5.1.001)
 //   Author:  L. Rossman
 //
 //   Climate related functions.
@@ -51,9 +46,9 @@ static double    Dhrdy;                // hrs. between min. & max. temp. times
 static double    Dydif;                // hrs. between max. & min. temp. times
 static DateTime  LastDay;              // date of last day with temp. data
 
-// Evaporation variables                                                       //(5.0.019 - LR)
-static DateTime  NextEvapDate;         // next date when evap. rate changes    //(5.0.019 - LR)
-static double    NextEvapRate;         // next evaporation rate (user units)   //(5.0.019 - LR)
+// Evaporation variables
+static DateTime  NextEvapDate;         // next date when evap. rate changes
+static double    NextEvapRate;         // next evaporation rate (user units)
 
 // Climate file variables
 static int      FileFormat;            // file format (see ClimateFileFormats)
@@ -91,7 +86,7 @@ static void setEvap(DateTime theDate);
 static void setTemp(DateTime theDate);
 static void setWind(DateTime theDate);
 static void updateTempTimes(int day);
-static double getTempEvap(int day);                                            //(5.0.016 - LR)
+static double getTempEvap(int day);
 static void updateFileValues(DateTime theDate);
 static void parseUserFileLine(void);
 static void parseTD3200FileLine(void);
@@ -135,7 +130,7 @@ int  climate_readParams(char* tok[], int ntoks)
         // --- record the time series as being the data source for temperature
         Temp.dataSource = TSERIES_TEMP;
         Temp.tSeries = i;
-        Tseries[i].refersTo = TSERIES_TEMP;                                    //(5.0.019 - LR)
+        Tseries[i].refersTo = TSERIES_TEMP;
         break;
 
       case 1: // Climate file
@@ -230,31 +225,29 @@ int climate_readEvapParams(char* tok[], int ntoks)
 //    CONSTANT  value
 //    MONTHLY   v1 ... v12
 //    TIMESERIES name
-//    TEMPERATURE                                                              //(5.0.016 - LR)
+//    TEMPERATURE 
 //    FILE      (v1 ... v12)
-//    RECOVERY   name                                                          //(5.0.014 - LR)
-//    DRY_ONLY   YES/NO                                                        //(5.0.019 - LR)
+//    RECOVERY   name
+//    DRY_ONLY   YES/NO
 //
 {
     int i, k;
     double x;
 
     // --- find keyword indicating what form the evaporation data is in
-    //if ( ntoks < 2 ) return error_setInpError(ERR_ITEMS, "");                //(5.0.016 - LR)
     k = findmatch(tok[0], EvapTypeWords);
     if ( k < 0 ) return error_setInpError(ERR_KEYWORD, tok[0]);
 
-    // --- check for RECOVERY pattern data                                     //(5.0.014 - LR)
-    if ( k == RECOVERY )                                                       //(5.0.014 - LR)
-    {                                                                          //(5.0.014 - LR)
-        if ( ntoks < 2 ) return error_setInpError(ERR_ITEMS, "");              //(5.0.014 - LR)
-        i = project_findObject(TIMEPATTERN, tok[1]);                           //(5.0.014 - LR)
-        if ( i < 0 ) return error_setInpError(ERR_NAME, tok[1]);               //(5.0.014 - LR)
-        Evap.recoveryPattern = i;                                              //(5.0.014 - LR)
-        return 0;                                                              //(5.0.014 - LR)
-    }                                                                          //(5.0.014 - LR)
+    // --- check for RECOVERY pattern data
+    if ( k == RECOVERY )
+    {
+        if ( ntoks < 2 ) return error_setInpError(ERR_ITEMS, "");
+        i = project_findObject(TIMEPATTERN, tok[1]);
+        if ( i < 0 ) return error_setInpError(ERR_NAME, tok[1]);
+        Evap.recoveryPattern = i;
+        return 0;
+    }
 
-////  The following code segment was added for release 5.0.019  ////           //(5.0.019 - LR)
     // --- check for no evaporation in wet periods
     if ( k == DRYONLY )
     {
@@ -264,12 +257,11 @@ int climate_readEvapParams(char* tok[], int ntoks)
         else return error_setInpError(ERR_KEYWORD, tok[1]);
         return 0;
     }
-////  End of new code segment  ////
 
     // --- process data depending on its form
     Evap.type = k;
-    if ( k != TEMPERATURE_EVAP && ntoks < 2 )                                  //(5.0.016 - LR)
-        return error_setInpError(ERR_ITEMS, "");                               //(5.0.016 - LR)
+    if ( k != TEMPERATURE_EVAP && ntoks < 2 )
+        return error_setInpError(ERR_ITEMS, "");
     switch ( k )
     {
       case CONSTANT_EVAP:
@@ -292,7 +284,7 @@ int climate_readEvapParams(char* tok[], int ntoks)
         i = project_findObject(TSERIES, tok[1]);
         if ( i < 0 ) return error_setInpError(ERR_NAME, tok[1]);
         Evap.tSeries = i;
-        Tseries[i].refersTo = TIMESERIES_EVAP;                                 //(5.0.019 - LR)
+        Tseries[i].refersTo = TIMESERIES_EVAP;
         break;
 
       case FILE_EVAP:
@@ -325,8 +317,8 @@ void climate_validate()
 
     // --- check if climate file was specified when used 
     //     to supply wind speed or evap rates
-    if ( Wind.type == FILE_WIND || Evap.type == FILE_EVAP ||                   //(5.0.016 - LR)
-         Evap.type == TEMPERATURE_EVAP )                                       //(5.0.016 - LR)
+    if ( Wind.type == FILE_WIND || Evap.type == FILE_EVAP ||
+         Evap.type == TEMPERATURE_EVAP )
     {
         if ( Fclimate.mode == NO_FILE )
         {
@@ -335,16 +327,16 @@ void climate_validate()
     }
 
     // --- snow melt parameters tipm & rnm must be fractions
-    if ( Snow.tipm < 0.0 ||                                                    //(5.0.012 - LR)
-         Snow.tipm > 1.0 ||                                                    //(5.0.012 - LR)
-         Snow.rnm  < 0.0 ||                                                    //(5.0.012 - LR)
-         Snow.rnm  > 1.0 ) report_writeErrorMsg(ERR_SNOWMELT_PARAMS, "");      //(5.0.012 - LR)
+    if ( Snow.tipm < 0.0 ||
+         Snow.tipm > 1.0 ||
+         Snow.rnm  < 0.0 ||
+         Snow.rnm  > 1.0 ) report_writeErrorMsg(ERR_SNOWMELT_PARAMS, "");
 
-    // --- latitude should be between -90 & 90 degrees                         //(5.0.013 - LR)
+    // --- latitude should be between -90 & 90 degrees
     a = Temp.anglat;
-    if ( a <= -89.99 ||                                                        //(5.0.013 - LR)
-         a >= 89.99  ) report_writeErrorMsg(ERR_SNOWMELT_PARAMS, "");          //(5.0.013 - LR)
-    else Temp.tanAnglat = tan(a * PI / 180.0);                                 //(5.0.012 - LR)
+    if ( a <= -89.99 ||
+         a >= 89.99  ) report_writeErrorMsg(ERR_SNOWMELT_PARAMS, "");
+    else Temp.tanAnglat = tan(a * PI / 180.0); 
 
     // --- compute psychrometric constant
     z = Temp.elev / 1000.0;
@@ -461,7 +453,7 @@ void climate_setState(DateTime theDate)
 
 DateTime climate_getNextEvap(DateTime days)
 //
-//  Input:   days = current simulation date                                    //(5.0.019 - LR)
+//  Input:   days = current simulation date
 //  Output:  returns date (in whole days) when evaporation rate next changes
 //  Purpose: finds date for next change in evaporation.
 //
@@ -469,7 +461,7 @@ DateTime climate_getNextEvap(DateTime days)
     int    yr, mon, day, k;
     double d, e;
 
-    days = floor(days);                                                        //(5.0.019 - LR)
+    days = floor(days);
     switch ( Evap.type )
     {
       case CONSTANT_EVAP:
@@ -486,8 +478,6 @@ DateTime climate_getNextEvap(DateTime days)
         return datetime_encodeDate(yr, mon, 1);
 
       case TIMESERIES_EVAP:
-
-////  Following section modified for release 5.0.019  ////                     //(5.0.019 - LR)
         if ( NextEvapDate > days ) return NextEvapDate;
         k = Evap.tSeries;
         if ( k >= 0 )
@@ -503,7 +493,6 @@ DateTime climate_getNextEvap(DateTime days)
                 }
             }
         }
-//////////////////////////////////////////////////////////
         return days + 365.;
 
       case FILE_EVAP:
@@ -575,7 +564,7 @@ void setTemp(DateTime theDate)
     int      day;                      // day of year
     DateTime theDay;                   // calendar day
     double   hour;                     // hour of day
-    double   tmp;                      // temporary temperature                //(5.0.019 - LR)
+    double   tmp;                      // temporary temperature
 
     // --- see if a new day has started
     theDay = floor(theDate);
@@ -587,15 +576,15 @@ void setTemp(DateTime theDate)
         {
             Tmin = FileValue[TMIN];
             Tmax = FileValue[TMAX];
-            if ( Tmin > Tmax )                                                 //(5.0.019 - LR)
-            {                                                                  //(5.0.019 - LR)
-                tmp = Tmin;                                                    //(5.0.019 - LR)
-                Tmin = Tmax;                                                   //(5.0.019 - LR)
-                Tmax = tmp;                                                    //(5.0.019 - LR)
-            }                                                                  //(5.0.019 - LR)
+            if ( Tmin > Tmax )
+            {
+                tmp = Tmin;
+                Tmin = Tmax;
+                Tmax = tmp;
+            } 
             updateTempTimes(day);
-            if ( Evap.type == TEMPERATURE_EVAP )                               //(5.0.016 - LR)
-                FileValue[EVAP] = getTempEvap(day);                            //(5.0.016 - LR)
+            if ( Evap.type == TEMPERATURE_EVAP )
+                FileValue[EVAP] = getTempEvap(day); 
         }
 
         // --- compute snow melt coefficients based on day of year
@@ -644,8 +633,6 @@ void setTemp(DateTime theDate)
 }
 
 //=============================================================================
-
-////  This function was re-written for release 5.0.019  ////                   //(5.0.019 - LR)
 
 void setEvap(DateTime theDate)
 //
@@ -755,8 +742,6 @@ void updateTempTimes(int day)
 
 //=============================================================================
 
-////  New function added.  ////                                                //(5.0.016 - LR)
-
 double getTempEvap(int day)
 //
 //  Input:   day = day of year
@@ -777,7 +762,7 @@ double getTempEvap(int day)
                 (omega*sin(phi)*sin(del) +
                  cos(phi)*cos(del)*sin(omega));
     double e = 0.0023*ra/lamda*sqrt(tr)*(ta+17.8);    //evap. rate (mm/day)
-    if ( e < 0.0 ) e = 0.0;                                                    //(5.0.019 - LR)
+    if ( e < 0.0 ) e = 0.0; 
     if ( UnitSystem == US ) e /= MMperINCH;
     return e;
 }
@@ -809,11 +794,11 @@ int  getFileFormat()
          strcmp(filler, "9999")  == 0 ) return TD3200;
 
     // --- check for DLY0204 format
-    if ( strlen(line) >= 233 )                                                 //(5.0.019 - LR)
+    if ( strlen(line) >= 233 )
     { 
         sstrncpy(elemType, &line[13], 3);
         n = atoi(elemType);
-        if ( n == 1 || n == 2 || n == 151 ) return DLY0204;                    //(5.0.019 - LR)
+        if ( n == 1 || n == 2 || n == 151 ) return DLY0204;
     }
     
     // --- check for USER_PREPARED format
@@ -833,10 +818,10 @@ void readFileLine(int *y, int *m)
 //
 {
     // --- read next line from climate data file
-    while ( strlen(FileLine) == 0 )                                            //(5.0.012 - LR)
+    while ( strlen(FileLine) == 0 )
     {
         if ( fgets(FileLine, MAXLINE, Fclimate.file) == NULL ) return;
-     	if ( FileLine[0] == '\n' ) FileLine[0] = '\0';                         //(5.0.012 - LR)
+     	if ( FileLine[0] == '\n' ) FileLine[0] = '\0'; 
     }
 
     // --- parse year & month from line
@@ -1093,8 +1078,8 @@ void setTD3200FileValues(int i)
                 {
                     x /= 100.0;
 
-                    // --- convert to mm if using SI units                     //(5.0.014 - LR)
-                    if ( UnitSystem == SI ) x *= MMperINCH;                    //(5.0.014 - LR)
+                    // --- convert to mm if using SI units
+                    if ( UnitSystem == SI ) x *= MMperINCH;
                 }
                 
                 // --- convert wind speed from miles/day to miles/hour
@@ -1125,20 +1110,20 @@ void parseDLY0204FileLine()
     double x;
 
     // --- parse parameter name
-    sstrncpy(param, &FileLine[13], 3);                                         //(5.0.019 - LR)
+    sstrncpy(param, &FileLine[13], 3);
 
     // --- see if parameter is min or max temperature
     p = atoi(param);
     if ( p == 1 ) p = TMAX;
     else if ( p == 2 ) p = TMIN;
-    else if ( p == 151 ) p = EVAP;                                             //(5.0.014 - LR)
+    else if ( p == 151 ) p = EVAP;
     else return;
 
     // --- check for 233 characters on line
     if ( strlen(FileLine) < 233 ) return;
 
     // --- for each of 31 days
-    k = 16;                                                                    //(5.0.019 - LR)
+    k = 16;
     for (j=1; j<=31; j++)
     {
         // --- parse value & flag from file line
@@ -1151,8 +1136,6 @@ void parseDLY0204FileLine()
 
         if ( strcmp(value, "99999") != 0 && strcmp(value, "     ") != 0 )
         {
-
-////  Following code modified to consider evaporation data (5.0.014). ////     //(5.0.014 - LR)
             switch (p)
             {
             case TMAX:

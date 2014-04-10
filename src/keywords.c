@@ -2,13 +2,8 @@
 //   keywords.c
 //
 //   Project: EPA SWMM5
-//   Version: 5.0
-//   Date:    6/19/07   (Build 5.0.010)
-//            2/4/08    (Build 5.0.012)
-//            3/11/08   (Build 5.0.013)
-//            1/21/09   (Build 5.0.014)
-//            4/10/09   (Build 5.0.015)
-//            07/30/10  (Build 5.0.019)
+//   Version: 5.1
+//   Date:    03/20/14  (Build 5.1.000)
 //   Author:  L. Rossman
 //
 //   Exportable keyword dictionary
@@ -26,14 +21,14 @@
 char* FileTypeWords[]      = { w_RAINFALL, w_RUNOFF, w_HOTSTART, w_RDII,
                                w_INFLOWS, w_OUTFLOWS, NULL};
 char* FileModeWords[]      = { w_NO, w_SCRATCH, w_USE, w_SAVE, NULL};
-char* BuildupTypeWords[]   = { w_NONE, w_POW, w_EXP, w_SAT, w_EXT, NULL};  //(5.0.019 - LR)
+char* BuildupTypeWords[]   = { w_NONE, w_POW, w_EXP, w_SAT, w_EXT, NULL};
 char* NormalizerWords[]    = { w_PER_AREA, w_PER_CURB, NULL};
 char* WashoffTypeWords[]   = { w_NONE, w_EXP, w_RC, w_EMC, NULL};
 char* TreatTypeWords[]     = { w_REMOVAL, w_CONCEN, NULL};
 char* ProcessVarWords[]    = { w_HRT, w_DT, w_FLOW, w_DEPTH, w_AREA, NULL};
 char* PatternTypeWords[]   = { w_MONTHLY, w_DAILY, w_HOURLY, w_WEEKEND, NULL};
 char* CurveTypeWords[]     = { w_STORAGE, w_DIVERSION, w_TIDAL, w_RATING,
-                               w_CONTROLS, w_SHAPE,                            //(5.0.010 - LR)
+                               w_CONTROLS, w_SHAPE,
                                w_PUMP1, w_PUMP2, w_PUMP3, w_PUMP4, NULL}; 
 char* RuleKeyWords[]       = { w_RULE, w_IF, w_AND, w_OR, w_THEN, w_ELSE, 
                                w_PRIORITY, NULL};
@@ -45,9 +40,9 @@ char* NoneAllWords[]       = { w_NONE, w_ALL, NULL};
 char* QualUnitsWords[]     = { w_MGperL, w_UGperL, w_COUNTperL, NULL};
 char* TempKeyWords[]       = { w_TIMESERIES, w_FILE, w_WINDSPEED, w_SNOWMELT,
                                w_ADC, NULL};
-char* EvapTypeWords[]      = { w_CONSTANT, w_MONTHLY, w_TIMESERIES,            //(5.0.016 - LR)
-                               w_TEMPERATURE, w_FILE, w_RECOVERY,              //(5.0.016 - LR)
-                               w_DRYONLY, NULL};                               //(5.0.019 - LR)
+char* EvapTypeWords[]      = { w_CONSTANT, w_MONTHLY, w_TIMESERIES,
+                               w_TEMPERATURE, w_FILE, w_RECOVERY,
+                               w_DRYONLY, NULL};
 char* SnowmeltWords[]      = { w_PLOWABLE, w_IMPERV, w_PERV, w_REMOVAL, NULL};
 char* GageDataWords[]      = { w_TIMESERIES, w_FILE, NULL};
 char* RainTypeWords[]      = { w_INTENSITY, w_VOLUME, w_CUMULATIVE, NULL};
@@ -59,7 +54,7 @@ char* OutfallTypeWords[]   = { w_FREE, w_NORMAL, w_FIXED, w_TIDAL,
 char* OrificeTypeWords[]   = { w_SIDE, w_BOTTOM, NULL};
 char* WeirTypeWords[]      = { w_TRANSVERSE, w_SIDEFLOW, w_VNOTCH,
                                w_TRAPEZOIDAL, NULL};
-char* NormalFlowWords[]    = { w_SLOPE, w_FROUDE, w_BOTH, NULL};               //(5.0.010 - LR)
+char* NormalFlowWords[]    = { w_SLOPE, w_FROUDE, w_BOTH, NULL};
 char* RelationWords[]      = { w_TABULAR, w_FUNCTIONAL, NULL};
 char* OptionWords[]        = { w_FLOW_UNITS,        w_INFIL_MODEL,
                                w_ROUTE_MODEL,       w_START_DATE,
@@ -74,19 +69,22 @@ char* OptionWords[]        = { w_FLOW_UNITS,        w_INFIL_MODEL,
                                w_NORMAL_FLOW_LTD,   w_LENGTHENING_STEP,
                                w_MIN_SURFAREA,      w_COMPATIBILITY,
                                w_SKIP_STEADY_STATE, w_TEMPDIR,
-                               w_IGNORE_RAINFALL,   w_FORCE_MAIN_EQN,          //(5.0.010 - LR)
-                               w_LINK_OFFSETS,      w_MIN_SLOPE,               //(5.0.014 - LR)
-                               w_IGNORE_SNOWMELT,   w_IGNORE_GWATER,           //(5.0.014 - LR)
-                               w_IGNORE_ROUTING,    w_IGNORE_QUALITY,          //(5.0.014 - LR)
-                               NULL};                                          //(5.0.014 - LR)
+                               w_IGNORE_RAINFALL,   w_FORCE_MAIN_EQN,
+                               w_LINK_OFFSETS,      w_MIN_SLOPE,
+                               w_IGNORE_SNOWMELT,   w_IGNORE_GWATER,
+                               w_IGNORE_ROUTING,    w_IGNORE_QUALITY,
+                               w_MAX_TRIALS,        w_HEAD_TOL,
+                               w_SYS_FLOW_TOL,      w_LAT_FLOW_TOL,
+                               NULL};
 char* FlowUnitWords[]      = { w_CFS, w_GPM, w_MGD, w_CMS, w_LPS, w_MLD, NULL};
-char* ForceMainEqnWords[]  = { w_H_W, w_D_W, NULL};                            //(5.0.010 - LR)
-char* LinkOffsetWords[]    = { w_DEPTH, w_ELEVATION, NULL};                    //(5.0.012 - LR)
-char* OldRouteModelWords[] = { w_NONE, w_NF, w_KW, w_EKW, w_DW, NULL};         //(5.0.010 - LR)
-char* RouteModelWords[]    = { w_NONE, w_STEADY, w_KINWAVE, w_XKINWAVE,        //(5.0.010 - LR)
+char* ForceMainEqnWords[]  = { w_H_W, w_D_W, NULL};
+char* LinkOffsetWords[]    = { w_DEPTH, w_ELEVATION, NULL};
+char* OldRouteModelWords[] = { w_NONE, w_NF, w_KW, w_EKW, w_DW, NULL};
+char* RouteModelWords[]    = { w_NONE, w_STEADY, w_KINWAVE, w_XKINWAVE,
                                w_DYNWAVE, NULL};
-char* InfilModelWords[]    = { w_HORTON, w_GREEN_AMPT, w_CURVE_NUMEBR, NULL};
-char* InertDampingWords[]  = { w_NONE, w_PARTIAL, w_FULL, NULL};               //(5.0.013 - LR)
+char* InfilModelWords[]    = { w_HORTON, w_MOD_HORTON, w_GREEN_AMPT,
+                               w_CURVE_NUMEBR, NULL};
+char* InertDampingWords[]  = { w_NONE, w_PARTIAL, w_FULL, NULL};
 char* TransectKeyWords[]   = { w_NC, w_X1, w_GR, NULL};
 char* XsectTypeWords[]     = { w_DUMMY,           w_CIRCULAR,
                                w_FILLED_CIRCULAR, w_RECT_CLOSED,
@@ -99,8 +97,8 @@ char* XsectTypeWords[]     = { w_DUMMY,           w_CIRCULAR,
                                w_HORSESHOE,       w_GOTHIC,
                                w_CATENARY,        w_SEMIELLIPTICAL,
                                w_BASKETHANDLE,    w_SEMICIRCULAR,
-                               w_IRREGULAR,       w_CUSTOM,                    //(5.0.010 - LR)
-                               w_FORCE_MAIN,      NULL};                       //(5.0.010 - LR)
+                               w_IRREGULAR,       w_CUSTOM,
+                               w_FORCE_MAIN,      NULL};
 char* SectWords[]          = { ws_TITLE,          ws_OPTION,
                                ws_FILE,           ws_RAINGAGE,
                                ws_TEMP,           ws_EVAP, 
@@ -125,17 +123,19 @@ char* SectWords[]          = { ws_TITLE,          ws_OPTION,
                                ws_POLYGON,        ws_LABEL,
                                ws_SYMBOL,         ws_BACKDROP, 
                                ws_TAG,            ws_PROFILE,
-                               ws_MAP,            ws_LID_CONTROL,              //(5.0.019 - LR)
-                               ws_LID_USAGE,      NULL};                       //(5.0.019 - LR)
+                               ws_MAP,            ws_LID_CONTROL,
+                               ws_LID_USAGE,      ws_GW_FLOW,
+                               NULL};
 
-char* LoadUnitsWords[]     = { w_LBS, w_KG, w_LOGN };                          //(5.0.012 - LR)
-char* NodeTypeWords[]      = { w_JUNCTION, w_OUTFALL,                          //(5.0.012 - LR)
-                               w_STORAGE, w_DIVIDER };                         //(5.0.012 - LR)
-char* LinkTypeWords[]      = { w_CONDUIT, w_PUMP, w_ORIFICE,                   //(5.0.012 - LR)
-                               w_WEIR, w_OUTLET };                             //(5.0.012 - LR)
-char* PumpTypeWords[]      = { w_TYPE1, w_TYPE2, w_TYPE3, w_TYPE4, w_IDEAL };  //(5.0.012 - LR)
-char* VolUnitsWords[]      = { w_MGAL, w_MLTRS };                              //(5.0.012 - LR)
-char* PondingUnitsWords[]  = { w_PONDED_FEET, w_PONDED_METERS };               //(5.0.019 - LR)
+char* LoadUnitsWords[]     = { w_LBS, w_KG, w_LOGN };
+char* NodeTypeWords[]      = { w_JUNCTION, w_OUTFALL,
+                               w_STORAGE, w_DIVIDER };
+char* LinkTypeWords[]      = { w_CONDUIT, w_PUMP, w_ORIFICE,
+                               w_WEIR, w_OUTLET };
+char* PumpTypeWords[]      = { w_TYPE1, w_TYPE2, w_TYPE3, w_TYPE4, w_IDEAL };
+char* VolUnitsWords[]      = { w_MGAL, w_MLTRS };
+char* VolUnitsWords2[]     = { w_GAL, w_LTR };
+char* PondingUnitsWords[]  = { w_PONDED_FEET, w_PONDED_METERS };
 
-char* UHTypeWords[]        = { w_SHORT, w_MEDIUM, w_LONG, NULL};               //(5.0.015 - LR)
+char* UHTypeWords[]        = { w_SHORT, w_MEDIUM, w_LONG, NULL};
 

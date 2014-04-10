@@ -2,14 +2,14 @@
 //   error.c
 //
 //   Project: EPA SWMM5
-//   Version: 5.0
-//   Date:    04/20/11  (Build 5.0.022)
+//   Version: 5.1
+//   Date:    03/20/14  (Build 5.1.001)
 //   Author:  L. Rossman
 //
 //   Error messages
 //
 //   NOTE: The error message listings were re-ordered sequentially for
-//         release 5.0.022 and all previous update comments were removed.
+//         release 5.0.023 and all previous update comments were removed.
 
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -36,6 +36,8 @@
 #define ERR119 "\n  ERROR 119: invalid cross section for Link %s."
 #define ERR121 \
 "\n  ERROR 121: missing or invalid pump curve assigned to Pump %s."
+#define ERR122 \
+"\n  ERROR 122: startup depth not higher than shutoff depth for Pump %s."
 
 #define ERR131 \
 "\n  ERROR 131: the following links form cyclic loops in the drainage system:"
@@ -58,7 +60,7 @@
 "\n  ERROR 153: a Unit Hydrograph in set %s has invalid response ratios."
 #define ERR155 "\n  ERROR 155: invalid sewer area for RDII at node %s."
 
-#define ERR156 "\n  ERROR 156: inconsistent data file name for Rain Gage %s."
+#define ERR156 "\n  ERROR 156: ambiguous station ID for Rain Gage %s."
 #define ERR157 "\n  ERROR 157: inconsistent rainfall format for Rain Gage %s."
 #define ERR158 \
 "\n  ERROR 158: time series for Rain Gage %s is also used by another object."
@@ -116,7 +118,8 @@
 #define ERR315 "\n  ERROR 315: cannot open rainfall interface file %s."
 #define ERR317 "\n  ERROR 317: cannot open rainfall data file %s."
 #define ERR318 "\n  ERROR 318: date out of sequence in rainfall data file %s."
-#define ERR319 "\n  ERROR 319: invalid format for rainfall interface file."
+#define ERR319 "\n  ERROR 319: unknown format for rainfall data file %s."
+#define ERR320 "\n  ERROR 320: invalid format for rainfall interface file."
 #define ERR321 "\n  ERROR 321: no data in rainfall interface file for gage %s."
 
 #define ERR323 "\n  ERROR 323: cannot open runoff interface file %s."
@@ -167,31 +170,31 @@
 
 char* ErrorMsgs[] =
     { "",     ERR101, ERR103, ERR105, ERR107, ERR108, ERR109, ERR110, ERR111,
-      ERR112, ERR113, ERR114, ERR115, ERR117, ERR119, ERR121, ERR131, ERR133,
-      ERR134, ERR135, ERR136, ERR137, ERR138, ERR139, ERR141, ERR143, ERR145,
-      ERR151, ERR153, ERR155, ERR156, ERR157, ERR158, ERR159, ERR161, ERR171,
-      ERR173, ERR181, ERR182, ERR183, ERR184, ERR185, ERR186, ERR187, ERR188, 
-      ERR191, ERR193, ERR195, ERR200, ERR201, ERR203, ERR205, ERR207, ERR209,
-      ERR211, ERR213, ERR217, ERR219, ERR221, ERR223, ERR225, ERR227, ERR229,
-      ERR231, ERR233, ERR301, ERR303, ERR305, ERR307, ERR309, ERR311, ERR313,
-      ERR315, ERR317, ERR318, ERR319, ERR321, ERR323, ERR325, ERR327, ERR329,
-      ERR330, ERR331, ERR333, ERR335, ERR336, ERR337, ERR338, ERR339, ERR341,
-      ERR343, ERR345, ERR351, ERR353, ERR355, ERR357, ERR361, ERR363, ERR401,
-      ERR402, ERR403, ERR405};
+      ERR112, ERR113, ERR114, ERR115, ERR117, ERR119, ERR121, ERR122, ERR131,
+      ERR133, ERR134, ERR135, ERR136, ERR137, ERR138, ERR139, ERR141, ERR143,
+      ERR145, ERR151, ERR153, ERR155, ERR156, ERR157, ERR158, ERR159, ERR161,
+      ERR171, ERR173, ERR181, ERR182, ERR183, ERR184, ERR185, ERR186, ERR187,
+      ERR188, ERR191, ERR193, ERR195, ERR200, ERR201, ERR203, ERR205, ERR207,
+      ERR209, ERR211, ERR213, ERR217, ERR219, ERR221, ERR223, ERR225, ERR227,
+      ERR229, ERR231, ERR233, ERR301, ERR303, ERR305, ERR307, ERR309, ERR311,
+      ERR313, ERR315, ERR317, ERR318, ERR319, ERR320, ERR321, ERR323, ERR325,
+      ERR327, ERR329, ERR330, ERR331, ERR333, ERR335, ERR336, ERR337, ERR338,
+      ERR339, ERR341, ERR343, ERR345, ERR351, ERR353, ERR355, ERR357, ERR361,
+      ERR363, ERR401, ERR402, ERR403, ERR405};
 
 int ErrorCodes[] =
     { 0,      101,    103,    105,    107,    108,    109,    110,    111,
-      112,    113,    114,    115,    117,    119,    121,    131,    133,
-      134,    135,    136,    137,    138,    139,    141,    143,    145,
-      151,    153,    155,    156,    157,    158,    159,    161,    171,
-      173,    181,    182,    183,    184,    185,    186,    187,    188,
-      191,    193,    195,    200,    201,    203,    205,    207,    209,
-      211,    213,    217,    219,    221,    223,    225,    227,    229,
-      231,    233,    301,    303,    305,    307,    309,    311,    313,
-      315,    317,    318,    319,    321,    323,    325,    327,    329,
-      330,    331,    333,    335,    336,    337,    338,    339,    341,
-      343,    345,    351,    353,    355,    357,    361,    363,    401,
-      402,    403,    405};
+      112,    113,    114,    115,    117,    119,    121,    122,    131,
+      133,    134,    135,    136,    137,    138,    139,    141,    143,
+      145,    151,    153,    155,    156,    157,    158,    159,    161,
+      171,    173,    181,    182,    183,    184,    185,    186,    187,
+      188,    191,    193,    195,    200,    201,    203,    205,    207,
+      209,    211,    213,    217,    219,    221,    223,    225,    227,
+      229,    231,    233,    301,    303,    305,    307,    309,    311,
+      313,    315,    317,    318,    319,    320,    321,    323,    325,
+      327,    329,    330,    331,    333,    335,    336,    337,    338,
+      339,    341,    343,    345,    351,    353,    355,    357,    361,
+      363,    401,    402,    403,    405};
 
 char  ErrString[256];
 

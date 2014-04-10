@@ -2,17 +2,11 @@
 //   qualrout.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
-//             1/21/09   (Build 5.0.014)
-//             10/7/09   (Build 5.0.017)
+//   Version:  5.1
+//   Date:     03/20/14   (Build 5.1.001)
 //   Author:   L. Rossman
 //
 //   Water quality routing functions.
-//
-//   ===============================================================
-//   NOTE: This module was completely re-written for release 5.0.014
-//   ===============================================================
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -25,22 +19,59 @@
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
 //-----------------------------------------------------------------------------
+//  qualrout_init            (called by swmm_start)
 //  qualrout_execute         (called by routing_execute)
-//  qualrout_getCstrQual     (called by getPondedQual in subcatch.c) 
 
 //-----------------------------------------------------------------------------
 //  Function declarations
 //-----------------------------------------------------------------------------
-static void  findLinkMassFlow(int i);
+static void  findLinkMassFlow(int i, double tStep);
 static void  findNodeQual(int j);
 static void  findLinkQual(int i, double tStep);
-static void  findSFLinkQual(int i, double tStep);                              //(5.0.017 - LR)
+static void  findSFLinkQual(int i, double tStep);
 static void  findStorageQual(int j, double tStep);
 static void  updateHRT(int j, double v, double q, double tStep);
-static double getReactedQual(int p, double c, double v1, double tStep);        //(5.0.017 - LR)
-static double getMixedQual(double c, double v1, double wIn, double qIn,        //(5.0.017 - LR)
-              double tStep);                                                   //(5.0.017 - LR)
+static double getReactedQual(int p, double c, double v1, double tStep);
+static double getMixedQual(double c, double v1, double wIn, double qIn,
+              double tStep);
 
+
+//=============================================================================
+
+void    qualrout_init()
+//
+//  Input:   none
+//  Output:  none
+//  Purpose: initializes water quality concentrations in all nodes and links.
+//
+{
+    int     i, p, isWet;
+    double  c;
+
+    for (i = 0; i < Nobjects[NODE]; i++)
+    {
+	    isWet = ( Node[i].newDepth > FUDGE );
+        for (p = 0; p < Nobjects[POLLUT]; p++)
+        {
+            c = 0.0;
+            if ( isWet ) c = Pollut[p].initConcen;
+            Node[i].oldQual[p] = c;
+            Node[i].newQual[p] = c;
+        }
+    }
+
+    for (i = 0; i < Nobjects[LINK]; i++)
+    {
+        isWet = ( Link[i].newDepth > FUDGE );
+        for (p = 0; p < Nobjects[POLLUT]; p++)
+        {
+            c = 0.0;
+            if ( isWet ) c = Pollut[p].initConcen;
+            Link[i].oldQual[p] = c;
+            Link[i].newQual[p] = c;
+        }
+    }
+}
 
 //=============================================================================
 
@@ -56,7 +87,7 @@ void qualrout_execute(double tStep)
     double qIn, vAvg;
 
     // --- find mass flow each link contributes to its downstream node
-    for ( i=0; i<Nobjects[LINK]; i++ ) findLinkMassFlow(i);
+    for ( i = 0; i < Nobjects[LINK]; i++ ) findLinkMassFlow(i, tStep);
 
     // --- find new water quality concentration at each node  
     for (j = 0; j < Nobjects[NODE]; j++)
@@ -74,12 +105,13 @@ void qualrout_execute(double tStep)
        
         // --- find new quality at the node 
         if ( Node[j].type == STORAGE || Node[j].oldVolume > FUDGE )
+        {
             findStorageQual(j, tStep);
+        }
         else findNodeQual(j);
 
         // --- apply treatment to new quality values
-        if ( Node[j].treatment && Node[j].newDepth > FUDGE )                   //(5.0.017 - LR)
-           treatmnt_treat(j, qIn, vAvg, tStep);
+        if ( Node[j].treatment ) treatmnt_treat(j, qIn, vAvg, tStep);
     }
 
     // --- find new water quality in each link
@@ -87,32 +119,6 @@ void qualrout_execute(double tStep)
 }
 
 //=============================================================================
-
-double qualrout_getCstrQual(double c, double v, double wIn, double qIn, 
-                            double kDecay, double tStep)
-//
-//  Input:   c = pollutant concentration at start of time step (mass/ft3)
-//           v = average volume over time step (ft3)
-//           wIn = mass inflow rate (mass/sec)
-//           qIn = inflow rate (cfs)
-//           kDecay = first-order decay coeff. (1/sec)
-//           tStep = time step (sec)
-//  Output:  returns pollutant concentration at end of time step (mass/ft3)
-//  Purpose: finds pollutant concentration within a CSTR volume
-{
-    double f;
-    if ( v < ZERO ) return 0.0;
-    f = (qIn/v + kDecay)*tStep;
-    if ( f <= ZERO || f > 15.0 ) return c;
-    else f = exp(-f);
-    c = c*f;
-    if ( qIn > ZERO ) c = c + wIn/qIn*(1.0-f);
-    return c; 
-}
-
-//=============================================================================
-
-////  New function added to release 5.0.017. ////                              //(5.0.017 - LR)
 
 double getMixedQual(double c, double v1, double wIn, double qIn, double tStep)
 //
@@ -145,9 +151,10 @@ double getMixedQual(double c, double v1, double wIn, double qIn, double tStep)
 
 //=============================================================================
 
-void findLinkMassFlow(int i)
+void findLinkMassFlow(int i, double tStep)
 //
 //  Input:   i = link index
+//           tStep = time step (sec)
 //  Output:  none
 //  Purpose: adds constituent mass flow out of link to the total
 //           accumulation at the link's downstream node.
@@ -157,7 +164,7 @@ void findLinkMassFlow(int i)
 //           calculations made in routing_execute().
 {
     int    j, p;
-    double qLink;
+    double qLink, w;
 
     // --- find inflow to downstream node
     qLink = Link[i].newFlow;
@@ -170,7 +177,9 @@ void findLinkMassFlow(int i)
     // --- add mass inflow from link to total at downstream node
     for (p = 0; p < Nobjects[POLLUT]; p++)
     {
-        Node[j].newQual[p] += qLink * Link[i].oldQual[p];
+	    w = qLink * Link[i].oldQual[p];
+        Node[j].newQual[p] += w;
+	    Link[i].totalLoad[p] += w * tStep;
     }
 }
 
@@ -202,8 +211,6 @@ void findNodeQual(int j)
 
 //=============================================================================
 
-////  This function was significantly modified for release 5.0.017. ////       //(5.0.017 - LR)
-
 void findLinkQual(int i, double tStep)
 //
 //  Input:   i = link index
@@ -218,8 +225,8 @@ void findLinkQual(int i, double tStep)
     double wIn,              // pollutant mass inflow rate (mass/sec)
            qIn,              // inflow rate (cfs)
            qOut,             // outflow rate (cfs)
-           v1,             // link volume at start of time step (ft3)
-           v2,             // link volume at end of time step (ft3)
+           v1,               // link volume at start of time step (ft3)
+           v2,               // link volume at end of time step (ft3)
            c1,               // current concentration within link (mass/ft3)
            c2;               // new concentration within link (mass/ft3)
 
@@ -289,8 +296,6 @@ void findLinkQual(int i, double tStep)
 
 //=============================================================================
 
-////  New function added to release 5.0.017. ////                              //(5.0.017 - LR)
-
 void  findSFLinkQual(int i, double tStep)
 //
 //  Input:   i = link index
@@ -304,13 +309,7 @@ void  findSFLinkQual(int i, double tStep)
     int p;
     double c1, c2;
     double lossRate;
-    double u;
-    double t;
-
-    // --- find time of travel through conduit
-    u = link_getVelocity(i, Link[i].newFlow, Link[i].newDepth);
-    if ( u > ZERO ) t = link_getLength(i) / u;
-    else t = tStep;
+    double t = tStep;
 
     // --- for each pollutant
     for (p = 0; p < Nobjects[POLLUT]; p++)
@@ -332,8 +331,6 @@ void  findSFLinkQual(int i, double tStep)
 }
 
 //=============================================================================
-
-////  This function was significantly modified for release 5.0.017. ////       //(5.0.017 - LR)
 
 void  findStorageQual(int j, double tStep)
 //
@@ -371,9 +368,8 @@ void  findStorageQual(int j, double tStep)
         if ( Node[j].treatment == NULL ||
              Node[j].treatment[p].equation == NULL )
         {
-            c2 = getReactedQual(p, c1, v1, tStep);
+            c1 = getReactedQual(p, c1, v1, tStep);
         }
-        else c2 = c1;
 
         // --- mix inflow with current contents (mass inflow rate was
         //     temporarily saved in Node[j].newQual)
@@ -400,15 +396,12 @@ void updateHRT(int j, double v, double q, double tStep)
 {
     int    k = Node[j].subIndex;
     double hrt = Storage[k].hrt;
-
     if ( v < ZERO ) hrt = 0.0;
     else hrt = (hrt + tStep) * v / (v + q*tStep);
     Storage[k].hrt = MAX(hrt, 0.0);
 }
 
 //=============================================================================
-
-////  New function added to release 5.0.017. ////                              //(5.0.017 - LR)
 
 double getReactedQual(int p, double c, double v1, double tStep)
 //

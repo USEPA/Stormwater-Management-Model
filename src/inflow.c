@@ -2,10 +2,8 @@
 //   inflow.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
-//             1/21/09   (Build 5.0.014)
-//             07/30/10  (Build 5.0.019)
+//   Version:  5.1
+//   Date:     03/20/14  (Build 5.1.001)
 //   Author:   L. Rossman
 //
 //   Manages any Direct External or Dry Weather Flow inflows
@@ -47,7 +45,7 @@ int inflow_readExtInflow(char* tok[], int ntoks)
     int    param;                      // FLOW (-1) or pollutant index
     int    type = CONCEN_INFLOW;       // FLOW, CONCEN or MASS inflow
     int    tseries = -1;               // time series index
-    int    basePat = -1;               // baseline pattern                     //(5.0.014 - LR)
+    int    basePat = -1;               // baseline pattern
     double cf = 1.0;                   // units conversion factor
     double sf = 1.0;                   // scaling factor
     double baseline = 0.0;             // baseline value
@@ -71,7 +69,7 @@ int inflow_readExtInflow(char* tok[], int ntoks)
     {
         tseries = project_findObject(TSERIES, tok[2]);
         if ( tseries < 0 ) return error_setInpError(ERR_NAME, tok[2]);
-        Tseries[tseries].refersTo = EXTERNAL_INFLOW;                           //(5.0.019 - LR)
+        Tseries[tseries].refersTo = EXTERNAL_INFLOW;
     }
 
     // --- assign type & cf values for a FLOW inflow
@@ -113,12 +111,12 @@ int inflow_readExtInflow(char* tok[], int ntoks)
         }
     }
 
-    // --- get baseline time pattern                                           //(5.0.014 - LR)
-    if ( ntoks >= 8 )                                                          //(5.0.014 - LR)
-    {                                                                          //(5.0.014 - LR)
-        basePat = project_findObject(TIMEPATTERN, tok[7]);                     //(5.0.014 - LR)
-        if ( basePat < 0 ) return error_setInpError(ERR_NAME, tok[7]);         //(5.0.014 - LR)
-    }                                                                          //(5.0.014 - LR)
+    // --- get baseline time pattern
+    if ( ntoks >= 8 )
+    {
+        basePat = project_findObject(TIMEPATTERN, tok[7]);
+        if ( basePat < 0 ) return error_setInpError(ERR_NAME, tok[7]);
+    } 
 
     // --- include LperFT3 term in conversion factor for MASS_INFLOW
     if ( type == MASS_INFLOW ) cf /= LperFT3;
@@ -147,7 +145,7 @@ int inflow_readExtInflow(char* tok[], int ntoks)
     inflow->cFactor  = cf;
     inflow->sFactor  = sf;
     inflow->baseline = baseline;
-    inflow->basePat  = basePat;                                                //(5.0.014 - LR)
+    inflow->basePat  = basePat;
     return 0;
 }
 
@@ -182,21 +180,21 @@ double inflow_getExtInflow(TExtInflow* inflow, DateTime aDate)
 //           date and time.
 //
 {
-    int    month, day, hour;                                                   //(5.0.014 - LR)
-    int    p = inflow->basePat;      // baseline pattern                       //(5.0.014 - LR)
+    int    month, day, hour;
+    int    p = inflow->basePat;      // baseline pattern
     int    k = inflow->tSeries;      // time series index
     double cf = inflow->cFactor;     // units conversion factor
     double sf = inflow->sFactor;     // scaling factor
     double blv = inflow->baseline;   // baseline value
     double tsv = 0.0;                // time series value
 
-    if ( p >= 0 )                                                              //(5.0.014 - LR)
-    {                                                                          //(5.0.014 - LR)
-        month = datetime_monthOfYear(aDate) - 1;                               //(5.0.014 - LR)
-        day   = datetime_dayOfWeek(aDate) - 1;                                 //(5.0.014 - LR)
-        hour  = datetime_hourOfDay(aDate);                                     //(5.0.014 - LR)
-        blv  *= inflow_getPatternFactor(p, month, day, hour);                  //(5.0.019 - LR)
-    }                                                                          //(5.0.014 - LR)
+    if ( p >= 0 )
+    {
+        month = datetime_monthOfYear(aDate) - 1;
+        day   = datetime_dayOfWeek(aDate) - 1;
+        hour  = datetime_hourOfDay(aDate);
+        blv  *= inflow_getPatternFactor(p, month, day, hour);
+    }
     if ( k >= 0 ) tsv = table_tseriesLookup(&Tseries[k], aDate, FALSE) * sf;
     return cf * (tsv + blv);
 }
@@ -297,6 +295,36 @@ void inflow_deleteDwfInflows(int j)
 
 //=============================================================================
 
+void   inflow_initDwfInflow(TDwfInflow* inflow)
+//
+//  Input:   inflow = dry weather inflow data structure
+//  Output:  none
+//  Purpose: initialzes a dry weather inflow by ordering its time patterns.
+//
+//  This function sorts the user-supplied time patterns for a dry weather
+//  inflow in the order of the PatternType enumeration (monthly, daily,
+//  weekday hourly, weekend hourly) to help speed up pattern processing.
+//
+{
+    int i, p;
+    int tmpPattern[4];  // index of each type of DWF pattern
+
+    // --- assume no patterns were supplied
+    for (i=0; i<4; i++) tmpPattern[i] = -1;
+
+    // --- assign supplied patterns to proper position (by type) in tmpPattern
+    for (i=0; i<4; i++)
+    {
+        p = inflow->patterns[i];
+        if ( p >= 0 ) tmpPattern[Pattern[p].type] = p;
+    }
+
+    // --- re-fill inflow pattern array by pattern type
+    for (i=0; i<4; i++) inflow->patterns[i] = tmpPattern[i];
+}
+
+//=============================================================================
+
 double inflow_getDwfInflow(TDwfInflow* inflow, int month, int day, int hour)
 //
 //  Input:   inflow = dry weather inflow data structure
@@ -307,16 +335,25 @@ double inflow_getDwfInflow(TDwfInflow* inflow, int month, int day, int hour)
 //  Purpose: computes dry weather inflow value at a specific point in time.
 //
 {
-    int    i,                          // pattern type index
-           p;                          // pattern index
+    int    p1, p2;                     // pattern index
     double f = 1.0;                    // pattern factor
 
-    for (i=0; i<4; i++)
+    p1 = inflow->patterns[MONTHLY_PATTERN];
+    if ( p1 >= 0 ) f *= inflow_getPatternFactor(p1, month, day, hour);
+    p1 = inflow->patterns[DAILY_PATTERN];
+    if ( p1 >= 0 ) f *= inflow_getPatternFactor(p1, month, day, hour);
+    p1 = inflow->patterns[HOURLY_PATTERN];
+    p2 = inflow->patterns[WEEKEND_PATTERN];
+    if ( p2 >= 0 )
     {
-        p = inflow->patterns[i];
-        if ( p >= 0 ) f *= inflow_getPatternFactor(p, month, day, hour);       //(5.0.019 - LR)
+        if ( day == 0 || day == 6 )
+            f *= inflow_getPatternFactor(p2, month, day, hour);
+        else if ( p1 >= 0 )
+            f *= inflow_getPatternFactor(p1, month, day, hour);
     }
+    else if ( p1 >= 0 ) f *= inflow_getPatternFactor(p1, month, day, hour);
     return f * inflow->avgValue;
+
 }
 
 //=============================================================================
@@ -383,7 +420,7 @@ int inflow_readDwfPattern(char* tok[], int ntoks)
 
 //=============================================================================
 
-double inflow_getPatternFactor(int p, int month, int day, int hour)            //(5.0.019 - LR)
+double inflow_getPatternFactor(int p, int month, int day, int hour)
 //
 //  Input:   p = time pattern index
 //           month = current month of year of simulation

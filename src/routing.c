@@ -2,19 +2,13 @@
 //   routing.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
-//             2/4/08    (Build 5.0.012)
-//             3/11/08   (Build 5.0.013)
-//             1/21/09   (Build 5.0.014)
-//             4/10/09   (Build 5.0.015)
-//             10/7/09   (Build 5.0.017)
-//             11/18/09  (Build 5.0.018)
-//             07/30/10  (Build 5.0.019)
-//             04/20/11  (Build 5.0.022)
-//   Author:   L. Rossman
+//   Version:  5.1
+//   Date:     03/19/14  (Build 5.1.000)
+//   Author:   L. Rossman (EPA)
+//             M. Tryby (EPA)
 //
 //   Conveyance system routing functions.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -25,16 +19,9 @@
 #include "headers.h"
 
 //-----------------------------------------------------------------------------
-//     Constants 
-//-----------------------------------------------------------------------------
-static const double LATERAL_FLOW_TOL = 0.5;  // for steady state (cfs)         //(5.0.012 - LR)
-static const double FLOW_ERR_TOL = 0.05;     // for steady state               //(5.0.012 - LR)
-
-//-----------------------------------------------------------------------------
 // Shared variables
 //-----------------------------------------------------------------------------
 static int* SortedLinks;
-static int  InSteadyState;
 
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
@@ -47,33 +34,26 @@ static int  InSteadyState;
 //-----------------------------------------------------------------------------
 // Function declarations
 //-----------------------------------------------------------------------------
-static int  openHotstartFile1(void);
-static int  openHotstartFile2(void);
-static void saveHotstartFile(void);
-static void readHotstartFile(int fileVersion);                                 //(5.0.018 - LR)
 static void addExternalInflows(DateTime currentDate);
 static void addDryWeatherInflows(DateTime currentDate);
 static void addWetWeatherInflows(double routingTime);
 static void addGroundwaterInflows(double routingTime);
 static void addRdiiInflows(DateTime currentDate);
 static void addIfaceInflows(DateTime currentDate);
-static void removeStorageLosses(void);                                         //(5.0.019 - LR)
+static void removeStorageLosses(double tStep);
 static void removeOutflows(void);
-static int  systemHasChanged(int routingModel);
-static int  readFloat(float *x);                                               //(5.0.013 - LR)
+static void removeConduitLosses(void); 
+static int  inflowHasChanged(void);
 
 //=============================================================================
 
-int routing_open(int routingModel)
+int routing_open()
 //
-//  Input:   routingModel = routing method code
+//  Input:   none
 //  Output:  returns an error code
 //  Purpose: initializes the routing analyzer.
 //
 {
-    //  --- initialize steady state indicator
-    InSteadyState = FALSE;
-
     // --- open treatment system
     if ( !treatmnt_open() ) return ErrorCode;
 
@@ -93,14 +73,6 @@ int routing_open(int routingModel)
 
     // --- open any routing interface files
     iface_openRoutingFiles();
-    if ( ErrorCode ) return ErrorCode;
-
-    // --- open hot start files
-    if ( !openHotstartFile1() ) return ErrorCode;
-    if ( !openHotstartFile2() ) return ErrorCode;
-
-    // --- initialize the flow routing model
-    flowrout_init(routingModel);
     return ErrorCode;
 }
 
@@ -113,14 +85,6 @@ void routing_close(int routingModel)
 //  Purpose: closes down the routing analyzer.
 //
 {
-    // --- close hotstart file if in use
-    if ( Fhotstart2.file )
-    {
-        // --- save latest results if called for
-        if ( Fhotstart2.mode == SAVE_FILE ) saveHotstartFile();
-        fclose(Fhotstart2.file);
-    }
-
     // --- close any routing interface files
     iface_closeRoutingFiles();
 
@@ -156,9 +120,10 @@ void routing_execute(int routingModel, double routingStep)
 {
     int      j;
     int      stepCount = 1;
-    int      actionCount = 0;                                                  //(5.0.010 - LR)
+    int      actionCount = 0;
+    int      inSteadyState = FALSE;
     DateTime currentDate;
-    double   stepFlowError;                                                    //(5.0.012 - LR)
+    double   stepFlowError;
 
     // --- update continuity with current state
     //     applied over 1/2 of time step
@@ -167,17 +132,17 @@ void routing_execute(int routingModel, double routingStep)
 
     // --- evaluate control rules at current date and elapsed time
     currentDate = getDateTime(NewRoutingTime);
-    for (j=0; j<Nobjects[LINK]; j++) link_setTargetSetting(j);                 //(5.0.010 - LR)
-    controls_evaluate(currentDate, currentDate - StartDateTime,                //(5.0.010 - LR)
-                      routingStep/SECperDAY);                                  //(5.0.010 - LR)
-    for (j=0; j<Nobjects[LINK]; j++)                                           //(5.0.010 - LR)
-    {                                                                          //(5.0.010 - LR)
-        if ( Link[j].targetSetting != Link[j].setting )                        //(5.0.010 - LR)
-        {                                                                      //(5.0.010 - LR)
-            link_setSetting(j, routingStep);                                   //(5.0.010 - LR)
-            actionCount++;                                                     //(5.0.010 - LR)
-        }                                                                      //(5.0.010 - LR)
-    }                                                                          //(5.0.010 - LR)
+    for (j=0; j<Nobjects[LINK]; j++) link_setTargetSetting(j);
+    controls_evaluate(currentDate, currentDate - StartDateTime,
+                      routingStep/SECperDAY);
+    for (j=0; j<Nobjects[LINK]; j++)
+    {
+        if ( Link[j].targetSetting != Link[j].setting )
+        {
+            link_setSetting(j, routingStep);
+            actionCount++;
+        } 
+    }
 
     // --- update value of elapsed routing time (in milliseconds)
     OldRoutingTime = NewRoutingTime;
@@ -185,7 +150,7 @@ void routing_execute(int routingModel, double routingStep)
     currentDate = getDateTime(NewRoutingTime);
 
     // --- initialize mass balance totals for time step
-    stepFlowError = massbal_getStepFlowError();                                //(5.0.012 - LR)
+    stepFlowError = massbal_getStepFlowError();
     massbal_initTimeStepTotals();
 
     // --- replace old water quality state with new state
@@ -213,13 +178,13 @@ void routing_execute(int routingModel, double routingStep)
     {
         if ( OldRoutingTime == 0.0
         ||   actionCount > 0
-        ||   fabs(stepFlowError) > FLOW_ERR_TOL                                //(5.0.012 - LR)
-        ||   systemHasChanged(routingModel) ) InSteadyState = FALSE;
-        else InSteadyState = TRUE;
+        ||   fabs(stepFlowError) > SysFlowTol
+        ||   inflowHasChanged() ) inSteadyState = FALSE;
+        else inSteadyState = TRUE;
     }
 
     // --- find new hydraulic state if system has changed
-    if ( InSteadyState == FALSE )
+    if ( inSteadyState == FALSE )
     {
         // --- replace old hydraulic state values with current ones
         for (j = 0; j < Nobjects[LINK]; j++) link_setOldHydState(j);
@@ -237,13 +202,14 @@ void routing_execute(int routingModel, double routingStep)
     }
 
     // --- route quality through the drainage network
-    if ( Nobjects[POLLUT] > 0 && !IgnoreQuality )                              //(5.0.014 - LR)
+    if ( Nobjects[POLLUT] > 0 && !IgnoreQuality ) 
     {
         qualrout_execute(routingStep);
     }
 
-    // --- remove evaporation, infiltration & system outflows from nodes       //(5.0.015 - LR)
-    removeStorageLosses();                                                     //(5.0.019 - LR)
+    // --- remove evaporation, infiltration & outflows from system
+    removeStorageLosses(routingStep);
+    removeConduitLosses();
     removeOutflows();
 	
     // --- update continuity with new totals
@@ -253,7 +219,7 @@ void routing_execute(int routingModel, double routingStep)
     // --- update summary statistics
     if ( RptFlags.flowStats && Nobjects[LINK] > 0 )
     {
-        stats_updateFlowStats(routingStep, currentDate, stepCount, InSteadyState);
+        stats_updateFlowStats(routingStep, currentDate, stepCount, inSteadyState);
     }
 }
 
@@ -293,11 +259,11 @@ void addExternalInflows(DateTime currentDate)
         Node[j].newLatFlow += q;
         massbal_addInflowFlow(EXTERNAL_INFLOW, q);
 
-        // --- add on any inflow (i.e., reverse flow) through an outfall       //(5.0.014 - LR)
-        if ( Node[j].type == OUTFALL && Node[j].oldNetInflow < 0.0 )           //(5.0.014 - LR)
-        {                                                                      //(5.0.014 - LR)
-            q = q - Node[j].oldNetInflow;                                      //(5.0.014 - LR)
-        }                                                                      //(5.0.014 - LR)
+        // --- add on any inflow (i.e., reverse flow) through an outfall
+        if ( Node[j].type == OUTFALL && Node[j].oldNetInflow < 0.0 ) 
+        {
+            q = q - Node[j].oldNetInflow;
+        }
 
         // --- get pollutant mass inflows
         inflow = Node[j].extInflow;
@@ -359,7 +325,6 @@ void addDryWeatherInflows(DateTime currentDate)
         Node[j].newLatFlow += q;
         massbal_addInflowFlow(DRY_WEATHER_INFLOW, q);
 
-////  Following code segment added to release 5.0.017.  ////                   //(5.0.017 - LR)
         // --- add default DWF pollutant inflows
         for ( p = 0; p < Nobjects[POLLUT]; p++)
         {
@@ -370,7 +335,6 @@ void addDryWeatherInflows(DateTime currentDate)
                 massbal_addInflowQual(DRY_WEATHER_INFLOW, p, w);
             }
         }
-////  End of new code segment  ////                                            //(5.0.017 - LR)
 
         // --- get pollutant mass inflows
         inflow = Node[j].dwfInflow;
@@ -383,7 +347,6 @@ void addDryWeatherInflows(DateTime currentDate)
                 Node[j].newQual[p] += w;
                 massbal_addInflowQual(DRY_WEATHER_INFLOW, p, w);
 
-////  Following code segment added to release 5.0.017.  ////                   //(5.0.017 - LR)
                 // --- subtract off any default inflow
                 if ( Pollut[p].dwfConcen > 0.0 )
                 {
@@ -391,7 +354,6 @@ void addDryWeatherInflows(DateTime currentDate)
                     Node[j].newQual[p] -= w;
                     massbal_addInflowQual(DRY_WEATHER_INFLOW, p, -w);
                 }
-////  End of new code segment  ////                                            //(5.0.017 - LR)
             }
             inflow = inflow->next;
         }
@@ -426,14 +388,13 @@ void addWetWeatherInflows(double routingTime)
         {
             // add runoff flow to lateral inflow
             q = subcatch_getWtdOutflow(i, f);     // current runoff flow
-//          if ( fabs(q) < FLOW_TOL ) q = 0.0;                                 //(5.0.014 - LR)
             Node[j].newLatFlow += q;
             massbal_addInflowFlow(WET_WEATHER_INFLOW, q);
 
             // add pollutant load
             for (p = 0; p < Nobjects[POLLUT]; p++)
             {
-                w = q * subcatch_getWtdWashoff(i, p, f);
+                w = subcatch_getWtdWashoff(i, p, f);
                 Node[j].newQual[p] += w;
                 massbal_addInflowQual(WET_WEATHER_INFLOW, p, w);
             }
@@ -524,7 +485,7 @@ void addRdiiInflows(DateTime currentDate)
         {
             for (p = 0; p < Nobjects[POLLUT]; p++)
             {
-                w = q * Pollut[p].rdiiConcen;                                  //(5.0.012 - LR)
+                w = q * Pollut[p].rdiiConcen;
                 Node[j].newQual[p] += w;
                 massbal_addInflowQual(RDII_INFLOW, p, w);
             }
@@ -574,107 +535,64 @@ void addIfaceInflows(DateTime currentDate)
 
 //=============================================================================
 
-int  systemHasChanged(int routingModel)
+int  inflowHasChanged()
 //
 //  Input:   none
-//  Output:  returns TRUE if external inflows or hydraulics have changed
+//  Output:  returns TRUE if external inflows or outfall flows have changed
 //           from the previous time step
 //  Purpose: checks if the hydraulic state of the system has changed from
 //           the previous time step.
 //
 {
-    int    j;                                                                  //(5.0.012 - LR)
-    double diff;
+    int    j;
+    double diff, qOld, qNew;
 
-    // --- check if external inflows or outflows have changed                  //(5.0.012 - LR)
-    for (j=0; j<Nobjects[NODE]; j++)
+    // --- check if external inflows or outfall flows have changed 
+    for (j = 0; j < Nobjects[NODE]; j++)
     {
-        diff = Node[j].oldLatFlow - Node[j].newLatFlow;
-        if ( fabs(diff) > LATERAL_FLOW_TOL ) return TRUE;                      //(5.0.012 - LR)
-        if ( Node[j].type == OUTFALL || Node[j].degree == 0 )                  //(5.0.012 - LR)
-        {                                                                      //(5.0.012 - LR)
-            diff = Node[j].oldFlowInflow - Node[j].inflow;                     //(5.0.012 - LR)
-            if ( fabs(diff) > LATERAL_FLOW_TOL ) return TRUE;                  //(5.0.012 - LR)
-        }                                                                      //(5.0.012 - LR)
-    }
-
-//// Start of deprecated code block.  ////                                     //(5.0.012 - LR)
-/*
-    // --- if system was already in steady state & there are no changes
-    //     in inflows, then system must remain in steady state
-    if ( InSteadyState ) return FALSE;
-
-    // --- check for changes in node volume
-    for (j=0; j<Nobjects[NODE]; j++)
-    {
-        diff = Node[j].newVolume - Node[j].oldVolume;
-        if ( fabs(diff) > VOLUME_TOL ) return TRUE;
-    }
-
-    // --- check for other routing changes
-    switch (routingModel)
-    {
-    // --- for dynamic wave routing, check if node depths have changed
-    case DW:
-        for (j=0; j<Nobjects[NODE]; j++)
+        qOld = Node[j].oldLatFlow;
+        qNew = Node[j].newLatFlow;
+        if      ( fabs(qOld) > TINY ) diff = (qNew / qOld) - 1.0;
+        else if ( fabs(qNew) > TINY ) diff = 1.0;
+        else                    diff = 0.0;
+        if ( fabs(diff) > LatFlowTol ) return TRUE;
+        if ( Node[j].type == OUTFALL || Node[j].degree == 0 )
         {
-            diff = Node[j].oldDepth - Node[j].newDepth;
-            if ( fabs(diff) > DEPTH_TOL ) return TRUE;
+            qOld = Node[j].oldFlowInflow;
+            qNew = Node[j].inflow;
+            if      ( fabs(qOld) > TINY ) diff = (qNew / qOld) - 1.0;
+            else if ( fabs(qNew) > TINY ) diff = 1.0;
+            else                          diff = 0.0;
+            if ( fabs(diff) > LatFlowTol ) return TRUE;
         }
-        break;
-
-    // --- for other routing methods, check if flows have changed
-    case SF:
-    case KW:
-        for (j=0; j<Nobjects[LINK]; j++)
-        {
-            if ( Link[j].type == CONDUIT )
-            {
-                k = Link[j].subIndex;
-                diff = Conduit[k].q1Old - Conduit[k].q1;
-                if ( fabs(diff) > FLOW_TOL ) return TRUE;
-                diff = Conduit[k].q2Old - Conduit[k].q2;
-                if ( fabs(diff) > FLOW_TOL ) return TRUE;
-            }
-            else
-            {
-                diff = Link[j].oldFlow - Link[j].newFlow;
-                if ( fabs(diff) > FLOW_TOL ) return TRUE;
-            }
-        }
-        break;
-    default: return TRUE;
     }
-*/
-////  End of deprecated code block.  ////                                      //(5.0.012 - LR)
     return FALSE;
 }
 
 //=============================================================================
 
-////  This function replaces removeLosses from earlier releases.  ////         //(5.0.019 - LR)
-
-void removeStorageLosses()
+void removeStorageLosses(double tStep)
 //
-//  Input:   routingStep = routing time step (sec)
+//  Input:   tStep = routing time step (sec)
 //  Output:  none
-//  Purpose: adds mass lost from storage nodes to evaporation & infiltration
-//           over current time step to overall mass balance.
+//  Purpose: adds rate of mass lost from all storage nodes due to evaporation
+//           & seepage in current time step to overall mass balance.
 //
 {
-    int i, j, p;
+    int    i, j, p;
+ 	double evapLoss = 0.0,
+		   seepLoss = 0.0;
     double vRatio;
-    double losses = 0.0;
 
     // --- check each storage node
     for ( i = 0; i < Nobjects[NODE]; i++ )
     {
         if (Node[i].type == STORAGE)
         {
-
             // --- update total system storage losses
-            losses += Storage[Node[i].subIndex].losses;
-
+            evapLoss += Storage[Node[i].subIndex].evapLoss;
+            seepLoss += Storage[Node[i].subIndex].seepLoss;
+  
             // --- adjust storage concentrations for any evaporation loss
             if ( Nobjects[POLLUT] > 0 && Node[i].newVolume > FUDGE )
             {
@@ -687,7 +605,35 @@ void removeStorageLosses()
             }
         }
     }
-    massbal_addNodeLosses(losses);
+
+    // --- add loss rates (ft3/sec) to time step's mass balance 
+    massbal_addNodeLosses(evapLoss/tStep, seepLoss/tStep);
+}
+
+//=============================================================================
+
+void removeConduitLosses()
+//
+//  Input:   none
+//  Output:  none
+//  Purpose: adds rate of mass lost from all conduits due to evaporation
+//           & seepage over current time step to overall mass balance.
+//
+{
+	int i;
+	double evapLoss = 0.0,
+		   seepLoss = 0.0;
+
+	for ( i = 0; i < Nobjects[LINK]; i++ )
+	{
+		if (Link[i].type == CONDUIT)
+        {
+			// --- update conduit losses
+			evapLoss += Conduit[Link[i].subIndex].evapLossRate;
+            seepLoss += Conduit[Link[i].subIndex].seepLossRate;
+		}
+	}
+    massbal_addLinkLosses(evapLoss, seepLoss);
 }
 
 //=============================================================================
@@ -718,292 +664,6 @@ void removeOutflows()
             }
         }
     }
-}
-
-//=============================================================================
-
-////  Function re-written to read groundwater states.                ////      //(5.0.018 - LR)
-
-int openHotstartFile1()
-//
-//  Input:   none
-//  Output:  none
-//  Purpose: opens a previously saved hotstart file.
-//
-{
-    int   nSubcatch;
-    int   nNodes;
-    int   nLinks;
-    int   nPollut;
-    int   flowUnits;
-    char  fileStamp[] = "SWMM5-HOTSTART";
-    char  fStamp[] = "SWMM5-HOTSTART";
-    char  fileStamp2[] = "SWMM5-HOTSTART2";
-    char  fStamp2[] = "SWMM5-HOTSTART2";
-    int   fileVersion;
-
-    // --- try to open the file
-    if ( Fhotstart1.mode != USE_FILE ) return TRUE;
-    if ( (Fhotstart1.file = fopen(Fhotstart1.name, "r+b")) == NULL)
-    {
-        report_writeErrorMsg(ERR_HOTSTART_FILE_OPEN, Fhotstart1.name);
-        return FALSE;
-    }
-
-    // --- check that file contains proper header records
-    fread(fStamp2, sizeof(char), strlen(fileStamp2), Fhotstart1.file);
-    if ( strcmp(fStamp2, fileStamp2) == 0 ) fileVersion = 2;
-    else 
-    {
-        rewind(Fhotstart1.file);
-        fread(fStamp, sizeof(char), strlen(fileStamp), Fhotstart1.file);
-        if ( strcmp(fStamp, fileStamp) != 0 )
-        {
-            report_writeErrorMsg(ERR_HOTSTART_FILE_FORMAT, "");
-            return FALSE;
-        }
-        fileVersion = 1;
-    }
-    nSubcatch = -1;
-    nNodes = -1;
-    nLinks = -1;
-    nPollut = -1;
-    flowUnits = -1;
-    if ( fileVersion == 2 )
-    {    
-        fread(&nSubcatch, sizeof(int), 1, Fhotstart1.file);
-    }
-    else nSubcatch = Nobjects[SUBCATCH];
-    fread(&nNodes, sizeof(int), 1, Fhotstart1.file);
-    fread(&nLinks, sizeof(int), 1, Fhotstart1.file);
-    fread(&nPollut, sizeof(int), 1, Fhotstart1.file);
-    fread(&flowUnits, sizeof(int), 1, Fhotstart1.file);
-    if ( nSubcatch != Nobjects[SUBCATCH] 
-    ||   nNodes != Nobjects[NODE]
-    ||   nLinks != Nobjects[LINK]
-    ||   nPollut   != Nobjects[POLLUT]
-    ||   flowUnits != FlowUnits )
-    {
-         report_writeErrorMsg(ERR_HOTSTART_FILE_FORMAT, "");
-         return FALSE;
-    }
-
-    // --- read contents of the file and close it
-    readHotstartFile(fileVersion);
-    fclose(Fhotstart1.file);
-    if ( ErrorCode ) return FALSE;
-    else return TRUE;
-}
-
-//=============================================================================
-
-////  Function re-written to save groundwater states.                ////      //(5.0.018 - LR)
-
-int openHotstartFile2()
-//
-//  Input:   none
-//  Output:  none
-//  Purpose: opens a new hotstart file to save results to.
-//
-{
-    int   nSubcatch;
-    int   nNodes;
-    int   nLinks;
-    int   nPollut;
-    int   flowUnits;
-    char  fileStamp[] = "SWMM5-HOTSTART2";
-
-    // --- try to open file
-    if ( Fhotstart2.mode != SAVE_FILE ) return TRUE;
-    if ( (Fhotstart2.file = fopen(Fhotstart2.name, "w+b")) == NULL)
-    {
-        report_writeErrorMsg(ERR_HOTSTART_FILE_OPEN, Fhotstart2.name);
-        return FALSE;
-    }
-
-    // --- write file stamp & number of objects to file
-    nSubcatch = Nobjects[SUBCATCH];
-    nNodes = Nobjects[NODE];
-    nLinks = Nobjects[LINK];
-    nPollut = Nobjects[POLLUT];
-    flowUnits = FlowUnits;
-    fwrite(fileStamp, sizeof(char), strlen(fileStamp), Fhotstart2.file);
-    fwrite(&nSubcatch, sizeof(int), 1, Fhotstart2.file);
-    fwrite(&nNodes, sizeof(int), 1, Fhotstart2.file);
-    fwrite(&nLinks, sizeof(int), 1, Fhotstart2.file);
-    fwrite(&nPollut, sizeof(int), 1, Fhotstart2.file);
-    fwrite(&flowUnits, sizeof(int), 1, Fhotstart2.file);
-    return TRUE;
-}
-
-//=============================================================================
-
-////  Function re-written to save groundwater states.                ////      //(5.0.018 - LR)
-
-void  saveHotstartFile(void)
-//
-//  Input:   none
-//  Output:  none
-//  Purpose: saves current state of all nodes and links to hotstart file.
-//
-{
-    int   i, j;
-    float zero = 0.0f;
-    float x[3];
-    TGroundwater* gw;
-
-    for (i = 0; i < Nobjects[SUBCATCH]; i++)
-    {
-        gw = Subcatch[i].groundwater;
-        if ( gw == NULL )
-        {
-            x[0] = -1.0f;
-            x[1] = -1.0f;
-        }
-        else
-        {
-            x[0] = (float)Subcatch[i].groundwater->theta;
-            x[1] = (float)(Aquifer[gw->aquifer].bottomElev + gw->lowerDepth);
-        }
-        fwrite(x, sizeof(float), 2, Fhotstart2.file);
-    }
-
-    for (i = 0; i < Nobjects[NODE]; i++)
-    {
-        x[0] = (float)Node[i].newDepth;
-        x[1] = (float)Node[i].newLatFlow;
-        fwrite(x, sizeof(float), 2, Fhotstart2.file);
-        for (j = 0; j < Nobjects[POLLUT]; j++)
-        {
-            x[0] = (float)Node[i].newQual[j];
-            fwrite(&x[0], sizeof(float), 1, Fhotstart2.file);
-        }
-
-        // --- write out 0 here for back compatibility
-        for (j = 0; j < Nobjects[POLLUT]; j++ )
-            fwrite(&zero, sizeof(float), 1, Fhotstart2.file);
-    }
-    for (i = 0; i < Nobjects[LINK]; i++)
-    {
-        x[0] = (float)Link[i].newFlow;
-        x[1] = (float)Link[i].newDepth;
-        x[2] = (float)Link[i].setting;
-        fwrite(x, sizeof(float), 3, Fhotstart2.file);
-        for (j = 0; j < Nobjects[POLLUT]; j++)
-        {
-            x[0] = (float)Link[i].newQual[j];
-            fwrite(&x[0], sizeof(float), 1, Fhotstart2.file);
-        }
-    }
-}
-
-//=============================================================================
-
-////  Function re-written to trap invalid numbers in hotstart file.  ////      //(5.0.013 - LR)
-////  Function re-written to read groundwater states.                ////      //(5.0.018 - LR)
-
-void readHotstartFile(int fileVersion)
-//
-//  Input:   fileVersion = hot start file version 
-//  Output:  none
-//  Purpose: reads initial state of all nodes, links and groundwater objects
-//           from hotstart file.
-//
-{
-    int   i, j;
-    long  pos, size, size1;
-    float x;
-    float theta, elev;
-    TGroundwater* gw;
-
-    // --- check that file has correct size
-    pos = ftell(Fhotstart1.file);
-    fseek(Fhotstart1.file, 0L, SEEK_END);
-    size = ( ftell(Fhotstart1.file) - pos ) / sizeof(float);
-    size1 = Nobjects[NODE] * (2 + 2*Nobjects[POLLUT]) +
-                Nobjects[LINK] * (3 + Nobjects[POLLUT]);
-    if ( fileVersion == 2 ) size1 += Nobjects[SUBCATCH] * 2; 
-    if ( size < size1 )
-    {
-         report_writeErrorMsg(ERR_HOTSTART_FILE_READ, "");
-         return;
-    }
-    fseek(Fhotstart1.file, pos, SEEK_SET);
-
-    // --- read in subcatchment groundwater states
-    if ( fileVersion == 2 )
-    {
-        for ( i = 0; i < Nobjects[SUBCATCH]; i++)
-        {
-            if ( !readFloat(&theta) ) return;
-            if ( !readFloat(&elev) ) return;
-            gw = Subcatch[i].groundwater;
-            if ( gw == NULL ) continue;
-            if ( theta >= 0.0 ) gw->theta = theta;                             //(5.0.022 - LR)
-            if ( elev != MISSING )                                             //(5.0.022 - LR)
-                gw->lowerDepth = elev - Aquifer[gw->aquifer].bottomElev;
-        }
-    }
-
-    // --- read node states
-    for (i = 0; i < Nobjects[NODE]; i++)
-    {
-        if ( !readFloat(&x) ) return;
-        Node[i].newDepth = x;
-        if ( !readFloat(&x) ) return;
-        Node[i].newLatFlow = x;
-        for (j = 0; j < Nobjects[POLLUT]; j++)
-        {
-            if ( !readFloat(&x) ) return;
-            Node[i].newQual[j] = x;
-        }
-
-        // --- read in zero here for back compatibility
-        for (j = 0; j < Nobjects[POLLUT]; j++)
-        {
-            if ( !readFloat(&x) ) return;
-        }
-    }
-
-    // --- read link states
-    for (i = 0; i < Nobjects[LINK]; i++)
-    {
-        if ( !readFloat(&x) ) return;
-        Link[i].newFlow = x;
-        if ( !readFloat(&x) ) return;
-        Link[i].newDepth = x;
-        if ( !readFloat(&x) ) return;
-        Link[i].setting = x;
-        for (j = 0; j < Nobjects[POLLUT]; j++)
-        {
-            if ( !readFloat(&x) ) return;
-            Link[i].newQual[j] = x;
-        }
-    }
-}
-
-//=============================================================================
-
-////  New function added.  ////                                                //(5.0.013 - LR)
-
-int  readFloat(float *x)
-//
-//  Input:   none
-//  Output:  x  = pointer to a float variable
-//  Purpose: reads a floating point value from the hotstart file
-//
-{
-    // --- read a value from the file
-    fread(x, sizeof(float), 1, Fhotstart1.file);
-
-    // --- test if the value is NaN (not a number)
-    if ( *(x) != *(x) )
-    {
-        report_writeErrorMsg(ERR_HOTSTART_FILE_READ, "");
-        *(x) = 0.0;
-        return FALSE;
-    }
-    return TRUE;
 }
 
 //=============================================================================

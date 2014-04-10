@@ -2,16 +2,8 @@
 //   swmm5.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.0
-//   Date:     6/19/07   (Build 5.0.010)
-//             7/16/07   (Build 5.0.011)
-//             2/4/08    (Build 5.0.012)
-//             1/21/09   (Build 5.0.014)
-//             4/10/09   (Build 5.0.015)
-//             6/22/09   (Build 5.0.016)
-//             10/7/09   (Build 5.0.017)
-//             11/18/09  (Build 5.0.018)
-//             07/30/10  (Build 5.0.019)
+//   Version:  5.1
+//   Date:     03/19/14  (Build 5.1.001)
 //   Author:   L. Rossman
 //
 //   This is the main module of the computational engine for Version 5 of
@@ -29,9 +21,9 @@
 //  Leave only one of the following 3 lines un-commented,
 //  depending on the choice of compilation target
 //**********************************************************
-//#define CLE     /* Compile as a command line executable */                   //(5.0.014 - LR)
-//#define SOL     /* Compile as a shared object library */                     //(5.0.014 - LR)
-#define DLL     /* Compile as a Windows DLL */                                 //(5.0.014 - LR)
+//#define CLE     /* Compile as a command line executable */
+//#define SOL     /* Compile as a shared object library */
+#define DLL     /* Compile as a Windows DLL */
 
 // --- define WINDOWS
 #undef WINDOWS
@@ -48,6 +40,7 @@
 #include <excpt.h>
 #endif
 
+#include <direct.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -79,7 +72,7 @@
 //-----------------------------------------------------------------------------
 //  Unit conversion factors
 //-----------------------------------------------------------------------------
-const double Ucf[10][2] =                                                      //(5.0.010 - LR)
+const double Ucf[10][2] = 
       {//  US      SI
       {43200.0,   1097280.0 },         // RAINFALL (in/hr, mm/hr --> ft/sec)
       {12.0,      304.8     },         // RAINDEPTH (in, mm --> ft)
@@ -90,7 +83,7 @@ const double Ucf[10][2] =                                                      /
       {1.0,       1.608     },         // WINDSPEED (mph, km/hr --> mph)
       {1.0,       1.8       },         // TEMPERATURE (deg F, deg C --> deg F)
       {2.203e-6,  1.0e-6    },         // MASS (lb, kg --> mg)
-      {43560.0,   3048.0    }          // GWFLOW (cfs/ac, cms/ha --> ft/sec)   //(5.0.010 - LR)
+      {43560.0,   3048.0    }          // GWFLOW (cfs/ac, cms/ha --> ft/sec)
       };
 const double Qcf[6] =                  // Flow Conversion Factors:
       { 1.0,     448.831, 0.64632,     // cfs, gpm, mgd --> cfs
@@ -103,8 +96,8 @@ static int  IsOpenFlag;           // TRUE if a project has been opened
 static int  IsStartedFlag;        // TRUE if a simulation has been started
 static int  SaveResultsFlag;      // TRUE if output to be saved to binary file
 static int  ExceptionCount;       // number of exceptions handled
-static int  DoRunoff;             // TRUE if runoff is computed                //(5.0.018 - LR)
-static int  DoRouting;            // TRUE if flow routing is computed          //(5.0.018 - LR)
+static int  DoRunoff;             // TRUE if runoff is computed
+static int  DoRouting;            // TRUE if flow routing is computed
 
 //-----------------------------------------------------------------------------
 //  External functions (prototyped in swmm5.h)
@@ -132,7 +125,7 @@ static int  xfilter(int xc, DateTime elapsedTime, long step);
 //-----------------------------------------------------------------------------
 //  Entry point used to compile a stand-alone executable.
 //-----------------------------------------------------------------------------
-#ifdef CLE                                                                     //(5.0.014 - LR)
+#ifdef CLE 
 int  main(int argc, char *argv[])
 //
 //  Input:   argc = number of command line arguments
@@ -244,7 +237,7 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
     }
 
     // --- report results
-    if ( Fout.mode == SCRATCH_FILE ) swmm_report();                            //(5.0.016 - LR)
+    if ( Fout.mode == SCRATCH_FILE ) swmm_report();
 
     // --- close the system
     swmm_close();
@@ -280,7 +273,7 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
         ExceptionCount = 0;
 
         // --- open a SWMM project
-        project_open(f1, f2, f3);      
+        project_open(f1, f2, f3);
         if ( ErrorCode ) return ErrorCode;
         IsOpenFlag = TRUE;
         report_writeLogo();
@@ -293,9 +286,10 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
         // --- write project title to report file & validate data
         report_writeTitle();
         project_validate();
+	report_writeOptions();
 
         // --- write input summary to report file if requested
-        if ( RptFlags.input ) inputrpt_writeInput();                           //(5.0.012 - LR)
+        if ( RptFlags.input ) inputrpt_writeInput();
     }
 
 #ifdef WINDOWS
@@ -336,6 +330,7 @@ int DLLEXPORT swmm_start(int saveResults)
         NewRoutingTime = 0.0;
         ReportTime =   (double)(1000 * ReportStep);
         StepCount = 0;
+        NonConvergeCount = 0;
         IsStartedFlag = TRUE;
 
         // --- initialize global continuity errors
@@ -352,18 +347,26 @@ int DLLEXPORT swmm_start(int saveResults)
         // --- initialize state of each major system component
         project_init();
 
-////  Following code segment was moved to here for release 5.0.018.  ////      //(5.0.018 - LR)
         // --- see if runoff & routing needs to be computed
         if ( Nobjects[SUBCATCH] > 0 ) DoRunoff = TRUE;
         else DoRunoff = FALSE;
-        if ( Nobjects[NODE] > 0 && !IgnoreRouting )                            //(5.0.014 - LR)
-            DoRouting = TRUE;
+        if ( Nobjects[NODE] > 0 && !IgnoreRouting ) DoRouting = TRUE;
         else DoRouting = FALSE;
 
         // --- open all computing systems (order is important!)
         output_open();
-        if ( DoRunoff ) runoff_open();                                         //(5.0.018 - LR)
-        if ( DoRouting ) routing_open(RouteModel);                             //(5.0.018 - LR)
+        if ( DoRunoff ) runoff_open();
+        if ( DoRouting ) routing_open();
+        if ( !hotstart_open() ) return ErrorCode;
+
+        // --- initialize flow and quality routing 
+        if ( DoRouting )
+        {	
+            flowrout_init(RouteModel);
+            qualrout_init();
+        }
+
+        // --- initialize mass balance and statistics processors
         massbal_open();
         stats_open();
 
@@ -384,8 +387,6 @@ int DLLEXPORT swmm_start(int saveResults)
     return ErrorCode;
 }
 //=============================================================================
-
-////  This function was re-written for release 5.0.017.  ////                  (5.0.017 - LR)
 
 int DLLEXPORT swmm_step(DateTime* elapsedTime)
 //
@@ -426,7 +427,9 @@ int DLLEXPORT swmm_step(DateTime* elapsedTime)
 
         // --- update elapsed time (days)
         if ( NewRoutingTime < TotalDuration )
+        {
             *elapsedTime = NewRoutingTime / MSECperDAY;
+        }
 
         // --- otherwise end the simulation
         else *elapsedTime = 0.0;
@@ -461,7 +464,7 @@ void execRouting(DateTime elapsedTime)
     {
         // --- determine when next routing time occurs
         StepCount++;
-        if ( !DoRouting ) routingStep = MIN(WetStep, ReportStep);              //(5.0.019 - LR)
+        if ( !DoRouting ) routingStep = MIN(WetStep, ReportStep);
         else routingStep = routing_getRoutingStep(RouteModel, RouteStep);
         if ( routingStep <= 0.0 )
         {
@@ -471,15 +474,18 @@ void execRouting(DateTime elapsedTime)
         nextRoutingTime = NewRoutingTime + 1000.0 * routingStep;
 
         // --- compute runoff until next routing time reached or exceeded
-        if ( DoRunoff ) while ( NewRunoffTime < nextRoutingTime )              //(5.0.018 - LR)
+        if ( DoRunoff ) while ( NewRunoffTime < nextRoutingTime )
         {
             runoff_execute();
             if ( ErrorCode ) return;
         }
+
+        // --- if no runoff analysis, update climate state (for evaporation)
+        else climate_setState(getDateTime(NewRoutingTime));
   
         // --- route flows through drainage system over current time step
-        if ( DoRouting ) routing_execute(RouteModel, routingStep);             //(5.0.010 - LR)
-        else NewRoutingTime = nextRoutingTime;                                 //(5.0.010 - LR)
+        if ( DoRouting ) routing_execute(RouteModel, routingStep);
+        else NewRoutingTime = nextRoutingTime;
     }
 
 #ifdef WINDOWS
@@ -524,8 +530,9 @@ int DLLEXPORT swmm_end(void)
         stats_close();
         massbal_close();
         if ( !IgnoreRainfall ) rain_close();
-        if ( DoRunoff ) runoff_close();                                        //(5.0.018 - LR)
-        if ( DoRouting ) routing_close(RouteModel);                            //(5.0.018 - LR)
+        if ( DoRunoff ) runoff_close();
+        if ( DoRouting ) routing_close(RouteModel);
+        hotstart_close();
         IsStartedFlag = FALSE;
     }
     return ErrorCode;
@@ -540,7 +547,7 @@ int DLLEXPORT swmm_report()
 //  Purpose: writes simulation results to report file.
 //
 {
-    if ( Fout.mode == SCRATCH_FILE ) output_checkFileSize();                   //(5.0.015 - LR)
+    if ( Fout.mode == SCRATCH_FILE ) output_checkFileSize();
     if ( ErrorCode ) report_writeErrorCode();
     else
     {
@@ -611,7 +618,7 @@ int  DLLEXPORT swmm_getVersion(void)
 //           y = minor version number, and zzz = build number.
 //
 {
-	return VERSION;
+    return VERSION;
 }
 
 
@@ -657,55 +664,59 @@ int  strcomp(char *s1, char *s2)
 //  Purpose: does a case insensitive comparison of two strings.
 //
 {
-   int i;
-   for (i=0; UCHAR(s1[i]) == UCHAR(s2[i]); i++)
-     if (!s1[i+1] && !s2[i+1]) return(1);
-   return(0);
+    int i;
+    for (i = 0; UCHAR(s1[i]) == UCHAR(s2[i]); i++)
+    {
+        if (!s1[i+1] && !s2[i+1]) return(1);
+    }
+    return(0);
 }
 
 //=============================================================================
 
-char* getTmpName(char* fname)
+char* getTempFileName(char* fname)
 //
-//  Input:   fname = file name string
+//  Input:   fname = file name string (with max size of MAXFNAME)
 //  Output:  returns pointer to file name
 //  Purpose: creates a temporary file name with path prepended to it.
 //
 {
-    char name[MAXFNAME+1];
-    int  n;
+// For Windows systems:
+#ifdef WINDOWS
 
-    // --- for Windows systems:
-    #ifdef WINDOWS
-      // --- use system function tmpnam() to create a temporary file name
-      tmpnam(name);
+    char* name = NULL;
+    char* dir = NULL;
 
-      // --- if user supplied the name of a temporary directory,
-      //     then make it be the prefix of the full file name
-      n = strlen(TmpDir);
-      if ( n > 0 )
-      {
-          strcpy(fname, TmpDir);
-          if ( fname[n-1] != '\\' ) strcat(fname, "\\");
-      }
+    // --- set dir to user's choice of a temporary directory
+    if (strlen(TempDir) > 0)
+    {
+	_mkdir(TempDir);
+	dir = TempDir;
+    }
 
-      // --- otherwise, use the relative path notation as the file name
-      //     prefix so that the file will be placed in the current directory
-      else
-      {
-          strcpy(fname, ".\\");
-      }
+    // --- use _tempnam to get a pointer to an unused file name
+    name = _tempnam(dir, "swmm");
+    if (name == NULL) return NULL;
 
-      // --- now add the prefix to the file name
-      strcat(fname, name);
+    // --- copy the file name to fname
+    if (strlen(name) < MAXFNAME) strncpy(fname, name, MAXFNAME);
+    else fname = NULL;
 
-    // --- for non-Windows systems:
-    #else
-      // --- use system function mkstemp() to create a temporary file name
-      strcpy(fname, "swmmXXXXXX");
-      mkstemp(fname);
-    #endif
+    // --- free the pointer returned by _tempnam
+    free(name);
+
+    // --- return the new contents of fname
     return fname;
+
+// For non-Windows systems:
+#else
+
+    // --- use system function mkstemp() to create a temporary file name
+    strcpy(fname, "swmmXXXXXX");
+    mkstemp(fname);
+    return fname;
+
+#endif
 }
 
 //=============================================================================
@@ -743,7 +754,7 @@ DateTime getDateTime(double elapsedMsec)
 //           simulation time.
 //
 {
-    return datetime_addSeconds(StartDateTime, elapsedMsec/1000.0);
+    return datetime_addSeconds(StartDateTime, (elapsedMsec+1)/1000.0);
 }
 
 //=============================================================================
@@ -755,7 +766,7 @@ void  writecon(char *s)
 //  Purpose: writes string of characters to the console.
 //
 {
-#ifdef CLE                                                                     //(5.0.014 - LR)
+#ifdef CLE 
    fprintf(stdout,s);
    fflush(stdout);
 #endif
