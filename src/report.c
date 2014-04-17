@@ -239,18 +239,27 @@ void report_writeOptions()
     fprintf(Frpt.file, "\n  Flow Units ............... %s",
         FlowUnitWords[FlowUnits]);
     fprintf(Frpt.file, "\n  Process Models:");
+
     fprintf(Frpt.file, "\n    Rainfall/Runoff ........ ");
     if ( IgnoreRainfall || Nobjects[GAGE] == 0 )
         fprintf(Frpt.file, "NO");
     else fprintf(Frpt.file, "YES");
+
+    fprintf(Frpt.file, "\n    RDII ................... ");
+    if ( IgnoreRdii || IgnoreRainfall )
+            fprintf(Frpt.file, "NO");
+    else fprintf(Frpt.file, "YES");
+
     fprintf(Frpt.file, "\n    Snowmelt ............... ");
     if ( IgnoreSnowmelt || Nobjects[SNOWMELT] == 0 )
         fprintf(Frpt.file, "NO");
     else fprintf(Frpt.file, "YES");
+
     fprintf(Frpt.file, "\n    Groundwater ............ ");
     if ( IgnoreGwater || Nobjects[AQUIFER] == 0 )
         fprintf(Frpt.file, "NO");
     else fprintf(Frpt.file, "YES");
+
     fprintf(Frpt.file, "\n    Flow Routing ........... ");
     if ( IgnoreRouting || Nobjects[LINK] == 0 )
         fprintf(Frpt.file, "NO");

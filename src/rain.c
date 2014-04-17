@@ -41,6 +41,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "headers.h"
 
 //-----------------------------------------------------------------------------
@@ -164,7 +165,7 @@ void  rain_open(void)
     if ( Frain.mode != NO_FILE ) initRainFile();
 
     // --- open RDII processor (creates/opens a RDII interface file)
-    rdii_openRdii();
+    if (!IgnoreRdii) rdii_openRdii();
 }
 
 //=============================================================================
@@ -182,7 +183,7 @@ void rain_close(void)
         if ( Frain.mode == SCRATCH_FILE ) remove(Frain.name);
     }
     Frain.file = NULL;
-    rdii_closeRdii();
+    if (!IgnoreRdii) rdii_closeRdii();
 }
 
 //=============================================================================
