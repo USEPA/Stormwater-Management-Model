@@ -28,7 +28,6 @@ const double ODETOL    = 0.0001;            // acceptable error for ODE solver
 //-----------------------------------------------------------------------------
 static  double     Losses;        // subcatch evap. + infil. loss rate (ft/sec)
 static  double     Outflow;       // subcatch outflow rate (ft/sec)
-static  double     Vponded;       // subcatch ponded depth (ft)
 
 // Volumes as either total (ft3) or per unit area (ft) depending on context
 static  double     Vrain;         // subcatch rain volume over a time step
