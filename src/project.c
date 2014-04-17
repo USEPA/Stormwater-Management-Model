@@ -511,6 +511,7 @@ int project_readOption(char* s1, char* s2)
       case SLOPE_WEIGHTING:
       case SKIP_STEADY_STATE:
       case IGNORE_RAINFALL:
+      case IGNORE_RDII:
       case IGNORE_SNOWMELT:
       case IGNORE_GWATER:
       case IGNORE_ROUTING:
@@ -522,7 +523,15 @@ int project_readOption(char* s1, char* s2)
           case ALLOW_PONDING:     AllowPonding    = m;  break;
           case SLOPE_WEIGHTING:   SlopeWeighting  = m;  break;
           case SKIP_STEADY_STATE: SkipSteadyState = m;  break;
-          case IGNORE_RAINFALL:   IgnoreRainfall  = m;  break;
+          case IGNORE_RAINFALL:   
+			  if (m > 0) {
+				  IgnoreRainfall  = m;
+				  IgnoreRdii      = m;
+			  }
+			  else
+				  IgnoreRainfall  = m;
+			  break;
+          case IGNORE_RDII:       IgnoreRdii      = m;  break;
           case IGNORE_SNOWMELT:   IgnoreSnowmelt  = m;  break;
           case IGNORE_GWATER:     IgnoreGwater    = m;  break;
           case IGNORE_ROUTING:    IgnoreRouting   = m;  break;
@@ -736,6 +745,7 @@ void setDefaults()
    MinSurfArea     = 0.0;              // Force use of default min. surface area
    SkipSteadyState = FALSE;            // Do flow routing in steady state periods 
    IgnoreRainfall  = FALSE;            // Analyze rainfall/runoff
+   IgnoreRdii      = FALSE;            // Analyze RDII
    IgnoreSnowmelt  = FALSE;            // Analyze snowmelt 
    IgnoreGwater    = FALSE;            // Analyze groundwater 
    IgnoreRouting   = FALSE;            // Analyze flow routing

@@ -56,6 +56,7 @@ EXTERN int
                   Compatibility,            // SWMM 5/3/4 compatibility
                   SkipSteadyState,          // Skip over steady state periods
                   IgnoreRainfall,           // Ignore rainfall/runoff
+                  IgnoreRdii,               // Ignore rainfall derived inflow and infiltration
                   IgnoreSnowmelt,           // Ignore snowmelt
                   IgnoreGwater,             // Ignore groundwater
                   IgnoreRouting,            // Ignore flow routing
