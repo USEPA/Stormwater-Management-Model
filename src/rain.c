@@ -165,7 +165,7 @@ void  rain_open(void)
     if ( Frain.mode != NO_FILE ) initRainFile();
 
     // --- open RDII processor (creates/opens a RDII interface file)
-    if (!IgnoreRdii) rdii_openRdii();
+    rdii_openRdii();
 }
 
 //=============================================================================
@@ -183,7 +183,7 @@ void rain_close(void)
         if ( Frain.mode == SCRATCH_FILE ) remove(Frain.name);
     }
     Frain.file = NULL;
-    if (!IgnoreRdii) rdii_closeRdii();
+    rdii_closeRdii();
 }
 
 //=============================================================================
