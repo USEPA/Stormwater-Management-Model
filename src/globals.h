@@ -4,6 +4,7 @@
 //   Project: EPA SWMM5
 //   Version: 5.1
 //   Date:    03/19/14  (Build 5.1.000)
+//            04/14/14  (Build 5.1.004)
 //   Author:  L. Rossman
 //
 //   Global Variables
@@ -56,7 +57,7 @@ EXTERN int
                   Compatibility,            // SWMM 5/3/4 compatibility
                   SkipSteadyState,          // Skip over steady state periods
                   IgnoreRainfall,           // Ignore rainfall/runoff
-                  IgnoreRdii,               // Ignore rainfall derived inflow and infiltration
+                  IgnoreRDII,               // Ignore RDII                     //(5.1.004)
                   IgnoreSnowmelt,           // Ignore snowmelt
                   IgnoreGwater,             // Ignore groundwater
                   IgnoreRouting,            // Ignore flow routing

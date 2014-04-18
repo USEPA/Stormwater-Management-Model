@@ -5,6 +5,7 @@
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
 //             04/04/14   (Build 5.1.003)
+//             04/14/14   (Build 5.1.004)
 //   Author:   L. Rossman (EPA)
 //             R. Dickinson (CDM)
 //
@@ -407,6 +408,7 @@ void rdii_openRdii()
     RdiiStartDate = NO_DATE;
 
     // --- create the RDII file if existing file not being used
+    if ( IgnoreRDII ) return;                                                  //(5.1.004)
     if ( Frdii.mode != USE_FILE ) createRdiiFile();
     if ( Frdii.mode == NO_FILE || ErrorCode ) return;
 

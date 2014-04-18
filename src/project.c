@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/19/14  (Build 5.1.000)
+//             04/14/14  (Build 5.1.004)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -511,11 +512,11 @@ int project_readOption(char* s1, char* s2)
       case SLOPE_WEIGHTING:
       case SKIP_STEADY_STATE:
       case IGNORE_RAINFALL:
-      case IGNORE_RDII:
       case IGNORE_SNOWMELT:
       case IGNORE_GWATER:
       case IGNORE_ROUTING:
       case IGNORE_QUALITY:
+      case IGNORE_RDII:                                                        //(5.1.004)
         m = findmatch(s2, NoYesWords);
         if ( m < 0 ) return error_setInpError(ERR_KEYWORD, s2);
         switch ( k )
@@ -523,19 +524,12 @@ int project_readOption(char* s1, char* s2)
           case ALLOW_PONDING:     AllowPonding    = m;  break;
           case SLOPE_WEIGHTING:   SlopeWeighting  = m;  break;
           case SKIP_STEADY_STATE: SkipSteadyState = m;  break;
-          case IGNORE_RAINFALL:   
-			  if (m > 0) {
-				  IgnoreRainfall  = m;
-				  IgnoreRdii      = m;
-			  }
-			  else
-				  IgnoreRainfall  = m;
-			  break;
-          case IGNORE_RDII:       IgnoreRdii      = m;  break;
+          case IGNORE_RAINFALL:   IgnoreRainfall  = m;  break;
           case IGNORE_SNOWMELT:   IgnoreSnowmelt  = m;  break;
           case IGNORE_GWATER:     IgnoreGwater    = m;  break;
           case IGNORE_ROUTING:    IgnoreRouting   = m;  break;
           case IGNORE_QUALITY:    IgnoreQuality   = m;  break;
+          case IGNORE_RDII:       IgnoreRDII      = m;  break;                 //(5.1.004)
         }
         break;
 
@@ -745,7 +739,7 @@ void setDefaults()
    MinSurfArea     = 0.0;              // Force use of default min. surface area
    SkipSteadyState = FALSE;            // Do flow routing in steady state periods 
    IgnoreRainfall  = FALSE;            // Analyze rainfall/runoff
-   IgnoreRdii      = FALSE;            // Analyze RDII
+   IgnoreRDII      = FALSE;            // Analyze RDII                         //(5.1.004)
    IgnoreSnowmelt  = FALSE;            // Analyze snowmelt 
    IgnoreGwater    = FALSE;            // Analyze groundwater 
    IgnoreRouting   = FALSE;            // Analyze flow routing

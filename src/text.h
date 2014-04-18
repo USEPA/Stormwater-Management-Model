@@ -4,11 +4,9 @@
 //   Project: EPA SWMM5
 //   Version: 5.1
 //   Date:    03/19/14  (Build 5.1.001)
-//			  03/31/14  (Build 5.1.002)
 //            04/02/14  (Build 5.1.003)
-//            04/17/14  (Build 5.1.004)	
+//            04/14/14  (Build 5.1.004)
 //   Author:  L. Rossman
-//            M. Tryby
 //
 //   Text strings
 //-----------------------------------------------------------------------------
@@ -83,7 +81,6 @@
 #define  w_FORCE_MAIN_EQN    "FORCE_MAIN_EQUATION"
 #define  w_LINK_OFFSETS      "LINK_OFFSETS"
 #define  w_MIN_SLOPE         "MIN_SLOPE"
-#define  w_IGNORE_RDII       "IGNORE_RDII"
 #define  w_IGNORE_SNOWMELT   "IGNORE_SNOWMELT"
 #define  w_IGNORE_GWATER     "IGNORE_GROUNDWATER"
 #define  w_IGNORE_ROUTING    "IGNORE_ROUTING"
@@ -92,6 +89,7 @@
 #define  w_HEAD_TOL          "HEAD_TOLERANCE"
 #define  w_SYS_FLOW_TOL      "SYS_FLOW_TOL"
 #define  w_LAT_FLOW_TOL      "LAT_FLOW_TOL"
+#define  w_IGNORE_RDII       "IGNORE_RDII"                                     //(5.1.004)
 
 // Flow Units
 #define  w_CFS               "CFS"

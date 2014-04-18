@@ -4,6 +4,7 @@
 //   Project: EPA SWMM5
 //   Version: 5.1
 //   Date:    03/20/14  (Build 5.1.001)
+//            04/14/14  (Build 5.1.004)
 //   Author:  L. Rossman
 //
 //   Enumerated variables
@@ -413,9 +414,9 @@ enum  CompatibilityType {
       LENGTHENING_STEP,  MIN_SURFAREA,      COMPATIBILITY,
       SKIP_STEADY_STATE, TEMPDIR,           IGNORE_RAINFALL,
       FORCE_MAIN_EQN,    LINK_OFFSETS,      MIN_SLOPE,
-      IGNORE_RDII,       IGNORE_SNOWMELT,   IGNORE_GWATER,
-      IGNORE_ROUTING,    IGNORE_QUALITY,    MAX_TRIALS,
-      HEAD_TOL,          SYS_FLOW_TOL,      LAT_FLOW_TOL};
+      IGNORE_SNOWMELT,   IGNORE_GWATER,     IGNORE_ROUTING,
+      IGNORE_QUALITY,    MAX_TRIALS,        HEAD_TOL,
+      SYS_FLOW_TOL,      LAT_FLOW_TOL,      IGNORE_RDII};                      //(5.1.004)
 
 enum  NoYesType {
       NO,
