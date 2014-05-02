@@ -5,6 +5,7 @@
 //   Version:  5.1
 //   Date:     03/20/14  (Build 5.1.001)
 //             03/28/14  (Build 5.1.002)
+//             04/23/14  (Build 5.1.005)
 //   Author:   L. Rossman (EPA)
 //
 //   Hot Start file functions.
@@ -26,7 +27,7 @@ static int fileVersion;
 //  External functions (declared in funcs.h)
 //-----------------------------------------------------------------------------
 // hotstart_open                          (called by swmm_start in swmm5.c)
-// hotstart_close                         (called by swmm_close in swmm5.c)
+// hotstart_close                         (called by swmm_end in swmm5.c)      //(5.1.005)
 
 //-----------------------------------------------------------------------------
 // Function declarations
@@ -47,12 +48,15 @@ int hotstart_open()
     // --- open hot start files
     if ( !openHotstartFile1() ) return FALSE;       //input hot start file
     if ( !openHotstartFile2() ) return FALSE;       //output hot start file
-    if ( Fhotstart1.file )
-    {
-        readRunoff();
-        readRouting();
-        fclose(Fhotstart1.file);
-    }
+
+    ////  Following lines removed. ////                                            //(5.1.005)
+    //if ( Fhotstart1.file )
+    //{
+    //    readRunoff();
+    //    readRouting();
+    //    fclose(Fhotstart1.file);
+    //}
+
     return TRUE;
 }
 
@@ -112,9 +116,6 @@ int openHotstartFile1()
         }
         fileVersion = 1;
     }
-
-	sprintf(Msg, "\nfStampx = %s, fileVersion = %d", fStampx, fileVersion);
-	report_writeLine(Msg);
 
     nSubcatch = -1;
     nNodes = -1;
