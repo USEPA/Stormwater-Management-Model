@@ -49,6 +49,7 @@ void    writePumpFlows(void);
 void    writeLinkLoads(void);
 
 #define WRITE(x) (report_writeLine((x)))
+
 static char   FlowFmt[6];
 static double Vcf;
 
@@ -95,7 +96,7 @@ void statsrpt_writeReport()
         writeFlowClass();
         writeLinkSurcharge();
         writePumpFlows();
-	if ( Nobjects[POLLUT] > 0 && !IgnoreQuality) writeLinkLoads();
+	    if ( Nobjects[POLLUT] > 0 && !IgnoreQuality) writeLinkLoads();
     }
 }
 
@@ -227,8 +228,8 @@ void writeNodeDepths()
 //
 {
     int j, days, hrs, mins;
-
     if ( Nobjects[LINK] == 0 ) return;
+
     WRITE("");
     WRITE("******************");
     WRITE("Node Depth Summary");
@@ -297,17 +298,15 @@ void writeNodeFlows()
         fprintf(Frpt.file, FlowFmt, NodeStats[j].maxLatFlow * UCF(FLOW));
         fprintf(Frpt.file, FlowFmt, NodeStats[j].maxInflow * UCF(FLOW));
         fprintf(Frpt.file, "  %4d  %02d:%02d", days1, hrs1, mins1);
-		fprintf(Frpt.file, "%12.3g", NodeStats[j].totLatFlow * Vcf);           //(5.0.014 - LR)
-		fprintf(Frpt.file, "%12.3g", NodeInflow[j] * Vcf);                     //(5.0.014 - LR)
-
-////  Following code segment modified for release 5.0.023.  ////               //(5.0.014 - LR)
-	if ( fabs(NodeOutflow[j]) < 1.0 )
-            fprintf(Frpt.file, "%12.3f%s", (NodeInflow[j]-NodeOutflow[j])
-		*Vcf*1.0e6, VolUnitsWords2[UnitSystem]);
-	else
+		fprintf(Frpt.file, "%12.3g", NodeStats[j].totLatFlow * Vcf);
+		fprintf(Frpt.file, "%12.3g", NodeInflow[j] * Vcf);
+    	if ( fabs(NodeOutflow[j]) < 1.0 )
+            fprintf(Frpt.file, "%12.3f %s",
+                (NodeInflow[j]-NodeOutflow[j])*Vcf*1.0e6,
+                VolUnitsWords2[UnitSystem]);
+	    else
             fprintf(Frpt.file, "%12.3f", (NodeInflow[j]-NodeOutflow[j]) /
-		NodeOutflow[j]*100.); 
-////  End of modified section.  ////
+                                          NodeOutflow[j]*100.); 
     }
     WRITE("");
 }
@@ -349,7 +348,7 @@ void writeNodeSurcharge()
         fprintf(Frpt.file, " %-9s", NodeTypeWords[Node[j].type]);
         d1 = NodeStats[j].maxDepth + Node[j].invertElev - Node[j].crownElev;
         if ( d1 < 0.0 ) d1 = 0.0;
-        d2 = Node[j].fullDepth - NodeStats[j].maxDepth;                        //(5.0.017a - LR)
+        d2 = Node[j].fullDepth - NodeStats[j].maxDepth;
         if ( d2 < 0.0 ) d2 = 0.0;
         fprintf(Frpt.file, "  %9.2f      %9.3f    %9.3f",
                 t, d1*UCF(LENGTH), d2*UCF(LENGTH));
@@ -378,7 +377,6 @@ void writeNodeFlooding()
         if ( NodeStats[j].timeFlooded == 0.0 ) continue;
         t = MAX(0.01, (NodeStats[j].timeFlooded / 3600.0));
 
-////  Following code segment was modified for release 5.0.019.  ////           //(5.0.019 - LR)
         if ( n == 0 )
         {
             WRITE("Flooding refers to all water that overflows a node, whether it ponds or not.");
@@ -477,7 +475,6 @@ void writeStorageVolumes()
             fprintf(Frpt.file, "%10.3f    %4.0f  %4.0f  %4.0f    %10.3f    %4.0f",
                 avgVol*UCF(VOLUME)/1000.0, pctAvgVol, pctEvapLoss, pctSeepLoss,
                 maxVol*UCF(VOLUME)/1000.0, pctMaxVol);
-////  End of updated lines  ////
 
             getElapsedTime(StorageStats[k].maxVolDate, &days, &hrs, &mins);
             fprintf(Frpt.file, "    %4d  %02d:%02d  ", days, hrs, mins);
