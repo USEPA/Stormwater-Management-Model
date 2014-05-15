@@ -378,7 +378,8 @@ void greenRoofFluxRates(double x[], double f[])
 
     //... convert state variables to volumes
     SurfaceVolume = surfaceDepth * theLidProc->surface.voidFrac;
-    SoilVolume = (soilTheta - theLidProc->soil.wiltPoint)*theLidProc->soil.thickness;
+    SoilVolume = (soilTheta - theLidProc->soil.wiltPoint)*
+    		theLidProc->soil.thickness;                                        //(5.1.006 - MT)
     StorageVolume = storageDepth * theLidProc->storage.voidFrac;
 
     //... get ET rates
@@ -425,7 +426,8 @@ void biocellFluxRates(double x[], double f[])
 
     //... convert state variables to volumes
     SurfaceVolume = surfaceDepth * theLidProc->surface.voidFrac;
-    SoilVolume = (soilTheta - theLidProc->soil.wiltPoint)*theLidProc->soil.thickness;
+    SoilVolume = (soilTheta - theLidProc->soil.wiltPoint)*
+    		theLidProc->soil.thickness;                                        //(5.1.006 - MT)
     StorageVolume = storageDepth * theLidProc->storage.voidFrac;
 
     //... get ET rates
