@@ -981,7 +981,7 @@ void updatePondedQual(int j, double wRunon[], double pondedQual[], double tStep)
 		else
 		{
 			// --- find concen. of ponded water
-			w1 = pondedQual[p] + wPpt + wRunon[p] * LperFT3 * Vrunon;          //(5.1.006 - MT)
+			w1 = pondedQual[p] + wPpt + wRunon[p]*tStep;
 			c = w1 / (Vponded + vIn);
 
 			// --- mass lost to infiltration
