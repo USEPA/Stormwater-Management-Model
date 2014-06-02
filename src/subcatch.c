@@ -1001,7 +1001,7 @@ void updatePondedQual(int j, double wRunon[], double pondedQual[], double tStep)
 			OutflowLoad[p] -= bmpRemoval;
 
 			// --- update ponded mass
-			pondedQual[p] = w1;
+			pondedQual[p] = c * subcatch_getDepth(j) * Subcatch[j].area;       //(5.1.006)
 		}
 	}
 }
