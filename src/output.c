@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.1
-//   Date:     03/20/14  (Build 5.1.000)
+//   Date:     03/20/14  (Build 5.1.001)
 //   Author:   L. Rossman (EPA)
 //
 //   Binary output file access functions.
@@ -80,7 +80,6 @@ int output_open()
 //  Purpose: writes basic project data to binary output file.
 //
 {
-    //int   nPolluts = Nobjects[POLLUT];
     int   j;
     int   m;
     INT4  k;
