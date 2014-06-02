@@ -4,6 +4,8 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/19/14  (Build 5.1.000)
+//             05/15/14  (Build 5.1.006)
+//
 //   Author:   L. Rossman
 //
 //   Subcatchment runoff & quality functions.
@@ -937,11 +939,19 @@ void  subcatch_getWashoff(int j, double runoff, double tStep)
 //=============================================================================
 
 void updatePondedQual(int j, double wRunon[], double pondedQual[], double tStep)
+//
+//  Input:   j = subcatchment index
+//           wRunon[] = current runoff quality (mass/L)
+//           pondedQual[] = ponded surface water quality (mass)
+//           tStep = time step (sec)
+//  Output:  None
+//  Purpose: Updates quality of ponded water.
+//
 {
-	int    p;
-    double c;
-	double vIn;
-	double wPpt, wInfil, w1;
+	int    p;                           // Pollutent index
+    double c;                           // Concentration ponded water (mass/ft3)
+	double vIn;                         // Inflow volume (ft3)
+	double wPpt, wInfil, w1;            // Mass variables (mass)
 	double bmpRemoval;
 	int    isDry;
 
@@ -956,7 +966,7 @@ void updatePondedQual(int j, double wRunon[], double pondedQual[], double tStep)
     for (p = 0; p < Nobjects[POLLUT]; p++)
     {
         // --- update mass balance for direct deposition
-        wPpt = Pollut[p].pptConcen * Vrain;
+        wPpt = Pollut[p].pptConcen * LperFT3 * Vrain;                          //(5.1.006 - MT)
         massbal_updateLoadingTotals(DEPOSITION_LOAD, p, wPpt * Pollut[p].mcf);
 
 		// --- surface is dry and has no inflow -- add any remaining mass
@@ -991,7 +1001,7 @@ void updatePondedQual(int j, double wRunon[], double pondedQual[], double tStep)
 			OutflowLoad[p] -= bmpRemoval;
 
 			// --- update ponded mass
-			pondedQual[p] = w1;
+			pondedQual[p] = c * subcatch_getDepth(j) * Subcatch[j].area;       //(5.1.006)
 		}
 	}
 }

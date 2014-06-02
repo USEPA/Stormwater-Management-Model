@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/12   (Build 5.1.001)
+//             05/19/14   (Build 5.1.006)
 //   Author:   L. Rossman (US EPA)
 //
 //   This module computes the hydrologic performance of an LID (Low Impact
@@ -335,20 +336,20 @@ void lidproc_saveResults(TLidUnit* lidUnit, int saveResults,
         rptVars[SOIL_MOIST] = theLidUnit->soilMoisture;
         rptVars[STOR_DEPTH] = theLidUnit->storageDepth*ucf;
 
-	//... one reporting period prior to current one
-	prevReportTime = NewRunoffTime - (ReportStep*1000);
+        //... one reporting period prior to current one
+        prevReportTime = NewRunoffTime - (double)(ReportStep*1000);            //(5.1.006)
 
-	//... last reported time is prior to previous time
-	if ( theLidUnit->rptFile->lastReportTime < prevReportTime )
-
-	    //... report just the time to create a break in the time series
-            fprintf(theLidUnit->rptFile->file, "\n%7.3f\t",
-                prevReportTime/1000.0/3600.0);
+        //... if last reported time is prior to previous time
+        //    then add a blank line to break the time series                   //(5.1.006)
+        if ( theLidUnit->rptFile->lastReportTime < prevReportTime )           
+            fprintf(theLidUnit->rptFile->file, "\n");                          //(5.1.006)                   
 
         //... write results to file
         fprintf(theLidUnit->rptFile->file, "\n%7.3f\t",
                 NewRunoffTime/1000.0/3600.0);
-        for ( i = SURF_INFLOW; i <= STOR_DRAIN; i++)
+        fprintf(theLidUnit->rptFile->file, " %8.2f\t %8.4f\t",                 //(5.1.006)
+            rptVars[SURF_INFLOW], rptVars[TOTAL_EVAP]);                        //(5.1.006)
+        for ( i = SURF_INFIL; i <= STOR_DRAIN; i++)                            //(5.1.006)
                 fprintf(theLidUnit->rptFile->file, " %8.2f\t", rptVars[i]);
         for ( i = SURF_DEPTH; i <= STOR_DEPTH; i++)
                 fprintf(theLidUnit->rptFile->file, " %8.2f\t", rptVars[i]);
@@ -368,6 +369,7 @@ void greenRoofFluxRates(double x[], double f[])
     double surfaceDepth;
     double soilTheta;
     double storageDepth;
+    double availSoilVol;                                                       //(5.1.006)
 
     //... retrieve state variables from work vector
     surfaceDepth = x[SURF];
@@ -380,7 +382,9 @@ void greenRoofFluxRates(double x[], double f[])
     StorageVolume = storageDepth * theLidProc->storage.voidFrac;
 
     //... get ET rates
-    getEvapRates(SurfaceVolume, SoilVolume, StorageVolume);
+    availSoilVol = SoilVolume - theLidProc->soil.wiltPoint *
+                   theLidProc->soil.thickness;                                 //(5.1.006)
+    getEvapRates(SurfaceVolume, availSoilVol, StorageVolume);                  //(5.1.006)
 
     //... find surface layer flux rate
     SurfaceInfil = getSurfaceInfilRate(soilTheta);
@@ -415,6 +419,7 @@ void biocellFluxRates(double x[], double f[])
     double soilTheta;
     double storageDepth;
     double head;
+    double availSoilVol;                                                       //(5.1.006)
 
     //... retrieve state variables from work vector
     surfaceDepth = x[SURF];
@@ -427,7 +432,9 @@ void biocellFluxRates(double x[], double f[])
     StorageVolume = storageDepth * theLidProc->storage.voidFrac;
 
     //... get ET rates
-    getEvapRates(SurfaceVolume, SoilVolume, StorageVolume);
+    availSoilVol = SoilVolume - theLidProc->soil.wiltPoint *
+                   theLidProc->soil.thickness;                                 //(5.1.006)
+    getEvapRates(SurfaceVolume, availSoilVol, StorageVolume);                  //(5.1.006)
 
     //... find surface layer flux rate
     SurfaceInfil = getSurfaceInfilRate(soilTheta);
@@ -547,7 +554,7 @@ void pavementFluxRates(double x[], double f[])
     //    permeability, surface inflow + ponded depth, & 
     //    available pavement void space
     pavementPerm = getPavementPermRate();
-    SurfaceInfil = (SurfaceInflow + SurfaceVolume / Tstep);
+    SurfaceInfil = SurfaceInflow + (SurfaceVolume / Tstep);                    //(5.1.006)
     SurfaceInfil = MIN(SurfaceInfil, pavementPerm);
     maxValue = (theLidProc->pavement.voidFrac - pavementTheta) *
                pervVolume / Tstep;
