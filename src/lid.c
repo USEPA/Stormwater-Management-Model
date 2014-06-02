@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
+//             05/19/14   (Build 5.1.006)
 //   Author:   L. Rossman (US EPA)
 //
 //   This module handles all data processing involving LID (Low Impact
@@ -1243,10 +1244,10 @@ double lid_getRunoff(int j, double *outflow, double *evapVol,
     if ( NewRunoffTime < NextReportTime ) SaveResults = FALSE;
     else 
     {
-	SaveResults = TRUE;
-	while ( NewRunoffTime >= NextReportTime )
-	{
-	    NextReportTime += (1000 * ReportStep);
+        SaveResults = TRUE;
+        while ( NewRunoffTime > NextReportTime )                               //(5.1.006)
+        {
+            NextReportTime += (double)(1000 * ReportStep);                     //(5.1.006)
         }
     }
 
