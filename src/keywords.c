@@ -5,6 +5,7 @@
 //   Version: 5.1
 //   Date:    03/20/14  (Build 5.1.000)
 //            04/14/14  (Build 5.1.004)
+//            09/15/14  (Build 5.1.007)
 //   Author:  L. Rossman
 //
 //   Exportable keyword dictionary
@@ -125,8 +126,8 @@ char* SectWords[]          = { ws_TITLE,          ws_OPTION,
                                ws_SYMBOL,         ws_BACKDROP, 
                                ws_TAG,            ws_PROFILE,
                                ws_MAP,            ws_LID_CONTROL,
-                               ws_LID_USAGE,      ws_GW_FLOW,
-                               NULL};
+                               ws_LID_USAGE,      ws_GWF,                      //(5.1.007)
+                               ws_ADJUST,         NULL};                       //(5.1.007)
 
 char* LoadUnitsWords[]     = { w_LBS, w_KG, w_LOGN };
 char* NodeTypeWords[]      = { w_JUNCTION, w_OUTFALL,

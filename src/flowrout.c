@@ -3,7 +3,8 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.1
-//   Date:     03/19/14  (Build 5.1.00)
+//   Date:     03/19/14  (Build 5.1.001)
+//             09/15/14  (Build 5.1.007)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -540,7 +541,6 @@ void updateStorageState(int i, int j, int links[], double dt)
     double v2;                         // new volume estimate (ft3)
     double d1;                         // initial value of storage depth (ft)
     double d2;                         // updated value of storage depth (ft)
-    double outflow;                    // outflow rate from storage (cfs)
 
     // --- see if storage node needs updating
     if ( Node[i].type != STORAGE ) return;
@@ -550,7 +550,8 @@ void updateStorageState(int i, int j, int links[], double dt)
     //       v2 = v1 + (inflow - outflow)*dt
     //     that do not depend on storage depth at end of time step
     vFixed = Node[i].oldVolume + 
-             0.5 * (Node[i].oldNetInflow + Node[i].inflow) * dt;
+             0.5 * (Node[i].oldNetInflow + Node[i].inflow - 
+                    Node[i].outflow) * dt;                                     //(5.1.007)
     d1 = Node[i].newDepth;
 
     // --- iterate finding outflow (which depends on depth) and subsequent
@@ -559,11 +560,8 @@ void updateStorageState(int i, int j, int links[], double dt)
     stopped = FALSE;
     while ( iter < MAXITER && !stopped )
     {
-        // --- find total flow in all outflow links
-        outflow = getStorageOutflow(i, j, links, dt);
-
         // --- find new volume from flow balance eqn.
-        v2 = vFixed - 0.5 * outflow * dt - node_getLosses(i, dt);
+        v2 = vFixed - 0.5 * getStorageOutflow(i, j, links, dt) * dt;           //(5.1.007)
 
         // --- limit volume to full volume if no ponding
         //     and compute overflow rate
@@ -579,8 +577,7 @@ void updateStorageState(int i, int j, int links[], double dt)
 
         // --- update node's volume & depth 
         Node[i].newVolume = v2;
-        if ( v2 > Node[i].fullVolume ) d2 = node_getPondedDepth(i, v2);
-        else d2 = node_getDepth(i, v2);
+        d2 = node_getDepth(i, v2);
         Node[i].newDepth = d2;
 
         // --- use under-relaxation to estimate new depth value
@@ -640,7 +637,7 @@ void setNewNodeState(int j, double dt)
     if ( Node[j].type == STORAGE ) return; 
 
     // --- update stored volume using mid-point integration
-    newNetInflow = Node[j].inflow - Node[j].outflow;
+    newNetInflow = Node[j].inflow - Node[j].outflow - Node[j].losses;          //(5.1.007)
     Node[j].newVolume = Node[j].oldVolume +
                         0.5 * (Node[j].oldNetInflow + newNetInflow) * dt;
     if ( Node[j].newVolume < FUDGE ) Node[j].newVolume = 0.0;

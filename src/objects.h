@@ -4,6 +4,7 @@
 //   Project: EPA SWMM5
 //   Version: 5.1
 //   Date:    03/19/14  (Build 5.1.000)
+//            09/15/14  (Build 5.1.007)
 //   Author:  L. Rossman (EPA)
 //            M. Tryby (EPA)
 //            R. Dickinson (CDM)
@@ -22,6 +23,7 @@
 
 #include "mathexpr.h"
 #include "infil.h"
+#include "exfil.h"                                                             //(5.1.007)
 
 //-----------------
 // FILE INFORMATION
@@ -162,6 +164,18 @@ typedef struct
     double       rate;            // current evaporation rate (ft/sec)
     double       recoveryFactor;  // current soil recovery factor 
 }   TEvap;
+
+////  Added for release 5.1.007  ////                                          //(5.1.007)
+//-------------------
+// ADJUSTMENTS OBJECT
+//-------------------
+typedef struct
+{
+    double       temp[12];        // monthly temperature adjustments (deg F)
+    double       evap[12];        // monthly evaporation adjustments (ft/s)
+    double       rain[12];        // monthly rainfall adjustment multipliers
+    double       rainFactor;      // current rainfall adjustment multiplier
+}   TAdjust;
 
 
 //-------------------
@@ -313,7 +327,8 @@ typedef struct
    double*       initBuildup;     // initial pollutant buildup (mass/ft2)
    TLandFactor*  landFactor;      // array of land use factors
    TGroundwater* groundwater;     // associated groundwater data
-   MathExpr*     gwFlowExpr;      // user-supplied outflow expression
+   MathExpr*     gwLatFlowExpr;   // user-supplied lateral outflow expression  //(5.1.007)
+   MathExpr*     gwDeepFlowExpr;  // user-supplied deep percolation expression //(5.1.007)
    TSnowpack*    snowpack;        // associated snow pack data
 
    double        lidArea;         // area devoted to LIDs (ft2)
@@ -434,6 +449,7 @@ typedef struct
    double        crownElev;       // top of highest connecting conduit (ft)
    double        inflow;          // total inflow (cfs)
    double        outflow;         // total outflow (cfs)
+   double        losses;          // evap + exfiltration loss (ft3);           //(5.1.007)
    double        oldVolume;       // previous volume (ft3)
    double        newVolume;       // current volume (ft3)
    double        fullVolume;      // max. storage available (ft3)
@@ -468,15 +484,15 @@ typedef struct
 typedef struct
 {
    double      fEvap;             // fraction of evaporation realized
-   double      seepRate;          // seepage rate (ft/sec) 
    double      aConst;            // surface area at zero height (ft2)
    double      aCoeff;            // coeff. of area v. height curve
    double      aExpon;            // exponent of area v. height curve
    int         aCurve;            // index of tabulated area v. height curve
+   TExfil*     exfil;             // ptr. to exfiltration object               //(5.1.007)
 
    double      hrt;               // hydraulic residence time (sec)
    double      evapLoss;          // evaporation loss (ft3) 
-   double      seepLoss;          // seepage loss (ft3)
+   double      exfilLoss;         // exfiltration loss (ft3)                   //(5.1.007)
 }  TStorage;
 
 
@@ -676,7 +692,9 @@ typedef struct
    double        cDisch1;         // discharge coeff.
    double        cDisch2;         // discharge coeff. for ends
    double        endCon;          // end contractions
+   int           canSurcharge;    // true if weir can surcharge                //(5.1.007)
 
+   double        cSurcharge;      // orifice coeff. for surcharge              //(5.1.007)
    double        length;          // equivalent length (ft)
    double        slope;           // slope for Vnotch & Trapezoidal weirs
    double        surfArea;        // equivalent surface area (ft2)
@@ -917,7 +935,7 @@ typedef struct
    double        maxVol;
    double        maxFlow;
    double        evapLosses;
-   double        seepLosses;
+   double        exfilLosses;
    DateTime      maxVolDate;
 }  TStorageStats;
 

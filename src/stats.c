@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
+//             09/15/14   (Build 5.1.007)
 //   Author:   L. Rossman (EPA)
 //             R. Dickinson (CDM)
 //
@@ -170,7 +171,7 @@ int  stats_open()
             StorageStats[j].maxVol = 0.0;
             StorageStats[j].maxFlow = 0.0;
             StorageStats[j].evapLosses = 0.0;
-            StorageStats[j].seepLosses = 0.0;
+            StorageStats[j].exfilLosses = 0.0;                                 //(5.1.007)
             StorageStats[j].maxVolDate = StartDateTime;
         }
     }
@@ -438,8 +439,8 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
         StorageStats[k].avgVol += newVolume;
         StorageStats[k].evapLosses += 
             Storage[Node[j].subIndex].evapLoss; 
-        StorageStats[k].seepLosses +=
-            Storage[Node[j].subIndex].seepLoss;
+        StorageStats[k].exfilLosses +=
+            Storage[Node[j].subIndex].exfilLoss;                               //(5.1.007)
 
         newVolume = MIN(newVolume, Node[j].fullVolume);
         if ( newVolume > StorageStats[k].maxVol )
@@ -471,7 +472,8 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
     // --- update inflow statistics
     NodeStats[j].totLatFlow += ( (Node[j].oldLatFlow + Node[j].newLatFlow) * 
                                  0.5 * tStep );
-    NodeStats[j].maxLatFlow = MAX(Node[j].newLatFlow, NodeStats[j].maxLatFlow);
+    if ( fabs(Node[j].newLatFlow) > fabs(NodeStats[j].maxLatFlow) )            //(5.1.007)
+        NodeStats[j].maxLatFlow = Node[j].newLatFlow;                          //(5.1.007)
     if ( Node[j].inflow > NodeStats[j].maxInflow )
     {
         NodeStats[j].maxInflow = Node[j].inflow;

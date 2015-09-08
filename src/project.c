@@ -5,6 +5,7 @@
 //   Version:  5.1
 //   Date:     03/19/14  (Build 5.1.000)
 //             04/14/14  (Build 5.1.004)
+//             09/15/14  (Build 5.1.007)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -814,6 +815,16 @@ void setDefaults()
    Evap.recoveryFactor  = 1.0; 
    Evap.tSeries = -1;
    Evap.dryOnly = FALSE;
+
+////  Following code segment added to release 5.1.007.  ////                   //(5.1.007)
+   // Climate adjustments
+   for (i = 0; i < 12; i++)
+   {
+       Adjust.temp[i] = 0.0;   // additive adjustments
+       Adjust.evap[i] = 0.0;   // additive adjustments
+       Adjust.rain[i] = 1.0;   // multiplicative adjustments
+   }
+   Adjust.rainFactor = 1.0;
 }
 
 //=============================================================================
@@ -985,7 +996,8 @@ void createObjects()
         Subcatch[j].outNode     = -1;
         Subcatch[j].infil       = -1;
         Subcatch[j].groundwater = NULL;
-	    Subcatch[j].gwFlowExpr  = NULL;
+	    Subcatch[j].gwLatFlowExpr = NULL;                                      //(5.1.007)
+        Subcatch[j].gwDeepFlowExpr = NULL;                                     //(5.1.007)
         Subcatch[j].snowpack    = NULL;
         Subcatch[j].lidArea     = 0.0;
         for (k = 0; k < Nobjects[POLLUT]; k++)
@@ -999,6 +1011,9 @@ void createObjects()
 
     // --- initialize snowmelt properties
     for ( j = 0; j < Nobjects[SNOWMELT]; j++ ) snow_initSnowmelt(j);
+
+    // --- initialize storage node exfiltration                                //(5.1.007)
+    for (j = 0; j < Nnodes[STORAGE]; j++) Storage[j].exfil = NULL;             //(5.1.007)
 
     // --- initialize link properties
     for (j = 0; j < Nobjects[LINK]; j++)
@@ -1078,8 +1093,20 @@ void deleteObjects()
 	    FREE(Link[j].totalLoad);
     }
 
-    // --- free memory used for infiltration
+    // --- free memory used for rainfall infiltration
     infil_delete();
+
+////  Added for release 5.1.007.  ////                                         //(5.1.007)
+    // --- free memory used for storage exfiltration
+    if ( Node ) for (j = 0; j < Nnodes[STORAGE]; j++)
+    {
+        if ( Storage[j].exfil )
+        {
+            FREE(Storage[j].exfil->btmExfil);
+            FREE(Storage[j].exfil->bankExfil);
+            FREE(Storage[j].exfil);
+        }
+    }
 
     // --- free memory used for nodal inflows & treatment functions
     if ( Node ) for (j = 0; j < Nobjects[NODE]; j++)

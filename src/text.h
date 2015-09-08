@@ -8,6 +8,7 @@
 //            04/14/14  (Build 5.1.004)
 //            04/23/14  (Build 5.1.005)
 //            05/19/14  (Build 5.1.006)
+//            09/15/14  (Build 5.1.007)
 //   Author:  L. Rossman
 //
 //   Text strings
@@ -15,7 +16,7 @@
 
 #define FMT01 \
  "\n Correct syntax is:\n swmm5 <input file> <report file> <output file>\n"
-#define FMT02 "\n... EPA-SWMM 5.1 (Build 5.1.006)\n"
+#define FMT02 "\n... EPA-SWMM 5.1 (Build 5.1.007)\n"
 
 #define FMT03 " There are errors.\n"
 #define FMT04 " There are warnings.\n"
@@ -23,7 +24,7 @@
 #define FMT06 "\n o  Retrieving project data"
 #define FMT07 "\n o  Writing output report"
 #define FMT08 \
-  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build 5.1.006)"
+  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build 5.1.007)"
 #define FMT09 \
   "\n  --------------------------------------------------------------"
 #define FMT10 "\n"
@@ -418,4 +419,6 @@
 #define  ws_PROFILE          "[PROFILE"
 #define  ws_LID_CONTROL      "[LID_CONTROL"
 #define  ws_LID_USAGE        "[LID_USAGE"
-#define  ws_GW_FLOW          "[GW_FLOW"
+#define  ws_GW_FLOW          "[GW_FLOW"     //Deprecated                       //(5.1.007)
+#define  ws_GWF              "[GWF"                                            //(5.1.007)
+#define  ws_ADJUST           "[ADJUSTMENT"                                     //(5.1.007)

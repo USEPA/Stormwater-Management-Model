@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/19/14  (Build 5.1.000)
+//             09/15/14  (Build 5.1.007)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -160,11 +161,12 @@ void routing_execute(int routingModel, double routingStep)
         for (j=0; j<Nobjects[LINK]; j++) link_setOldQualState(j);
     }
 
-    // --- add lateral inflows to nodes
+    // --- add lateral inflows and evap/seepage losses at nodes                //(5.1.007)
     for (j = 0; j < Nobjects[NODE]; j++)
     {
         Node[j].oldLatFlow  = Node[j].newLatFlow;
         Node[j].newLatFlow  = 0.0;
+        Node[j].losses      = node_getLosses(j, routingStep);                  //(5.1.007)
     }
     addExternalInflows(currentDate);
     addDryWeatherInflows(currentDate);
@@ -324,6 +326,9 @@ void addDryWeatherInflows(DateTime currentDate)
         // --- add flow inflow to node's lateral inflow
         Node[j].newLatFlow += q;
         massbal_addInflowFlow(DRY_WEATHER_INFLOW, q);
+
+        // --- stop if inflow is non-positive
+        if ( q <= 0.0 ) continue;                                              //(5.1.007)
 
         // --- add default DWF pollutant inflows
         for ( p = 0; p < Nobjects[POLLUT]; p++)
@@ -576,12 +581,12 @@ void removeStorageLosses(double tStep)
 //  Input:   tStep = routing time step (sec)
 //  Output:  none
 //  Purpose: adds rate of mass lost from all storage nodes due to evaporation
-//           & seepage in current time step to overall mass balance.
+//           & infiltration in current time step to overall mass balance.
 //
 {
     int    i, j, p;
  	double evapLoss = 0.0,
-		   seepLoss = 0.0;
+		   infilLoss = 0.0;                                                    //(5.1.007)
     double vRatio;
 
     // --- check each storage node
@@ -591,7 +596,7 @@ void removeStorageLosses(double tStep)
         {
             // --- update total system storage losses
             evapLoss += Storage[Node[i].subIndex].evapLoss;
-            seepLoss += Storage[Node[i].subIndex].seepLoss;
+            infilLoss += Storage[Node[i].subIndex].exfilLoss;                   //(5.1.007)
   
             // --- adjust storage concentrations for any evaporation loss
             if ( Nobjects[POLLUT] > 0 && Node[i].newVolume > FUDGE )
@@ -607,7 +612,7 @@ void removeStorageLosses(double tStep)
     }
 
     // --- add loss rates (ft3/sec) to time step's mass balance 
-    massbal_addNodeLosses(evapLoss/tStep, seepLoss/tStep);
+    massbal_addNodeLosses(evapLoss/tStep, infilLoss/tStep);                    //(5.1.007)
 }
 
 //=============================================================================
@@ -652,7 +657,8 @@ void removeOutflows()
 
     for ( i = 0; i < Nobjects[NODE]; i++ )
     {
-        // --- determine flows leaving the system
+        // --- update mass balance with flow and mass leaving the system       //(5.1.007)
+        //     through outfalls and flooded interior nodes                     //(5.1.007)
         q = node_getSystemOutflow(i, &isFlooded);
         if ( q != 0.0 )
         {
@@ -661,6 +667,19 @@ void removeOutflows()
             {
                 w = q * Node[i].newQual[p];
                 massbal_addOutflowQual(p, w, isFlooded);
+            }
+        }
+
+////  Following code section added for release 5.1.007.  ////                  //(5.1.007)
+        // --- update mass balance with mass leaving system through negative
+        //     lateral inflows (lateral flow was previously accounted for)
+        q = Node[i].newLatFlow;
+        if ( q < 0.0 )
+        {
+            for ( p = 0; p < Nobjects[POLLUT]; p++ )
+            {
+                w = -q * Node[i].newQual[p];
+                massbal_addOutflowQual(p, w, FALSE);
             }
         }
     }

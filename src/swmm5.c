@@ -628,7 +628,7 @@ int  DLLEXPORT swmm_getVersion(void)
 
 double UCF(int u)
 //
-//  Input:   u = integer code of quantity being converetd
+//  Input:   u = integer code of quantity being converted
 //  Output:  returns a units conversion factor
 //  Purpose: computes a conversion factor from SWMM's internal
 //           units to user's units
@@ -690,8 +690,8 @@ char* getTempFileName(char* fname)
     // --- set dir to user's choice of a temporary directory
     if (strlen(TempDir) > 0)
     {
-	_mkdir(TempDir);
-	dir = TempDir;
+        _mkdir(TempDir);
+	    dir = TempDir;
     }
 
     // --- use _tempnam to get a pointer to an unused file name

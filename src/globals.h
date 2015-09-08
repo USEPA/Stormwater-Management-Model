@@ -5,6 +5,7 @@
 //   Version: 5.1
 //   Date:    03/19/14  (Build 5.1.000)
 //            04/14/14  (Build 5.1.004)
+//            09/15/14  (Build 5.1.007)
 //   Author:  L. Rossman
 //
 //   Global Variables
@@ -109,6 +110,7 @@ EXTERN TTemp      Temp;                     // Temperature data
 EXTERN TEvap      Evap;                     // Evaporation data
 EXTERN TWind      Wind;                     // Wind speed data
 EXTERN TSnow      Snow;                     // Snow melt data
+EXTERN TAdjust    Adjust;                   // Climate adjustments             //(5.1.007)
 
 EXTERN TSnowmelt* Snowmelt;                 // Array of snow melt objects
 EXTERN TGage*     Gage;                     // Array of rain gages

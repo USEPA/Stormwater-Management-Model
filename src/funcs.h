@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14  (Build 5.1.000)
+//             09/15/14  (Build 5.1.007)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -69,6 +70,7 @@ void    statsrpt_writeReport(void);
 //-----------------------------------------------------------------------------
 int      climate_readParams(char* tok[], int ntoks);
 int      climate_readEvapParams(char* tok[], int ntoks);
+int      climate_readAdjustments(char* tok[], int ntoks);                      //(5.1.007)
 void     climate_validate(void);
 void     climate_openFile(void);
 void     climate_initState(void);

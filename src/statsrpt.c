@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14 (Build 5.1.001)
+//             09/15/14 (Build 5.1.007)
 //   Author:   L. Rossman
 //
 //   Report writing functions for summary statistics.
@@ -439,7 +440,7 @@ void writeStorageVolumes()
 
         fprintf(Frpt.file,
 "\n  --------------------------------------------------------------------------------------------------"
-"\n                         Average     Avg  Evap Infil       Maximum     Max    Time of Max    Maximum"
+"\n                         Average     Avg  Evap Exfil       Maximum     Max    Time of Max    Maximum"  //(5.1.007)
 "\n                          Volume    Pcnt  Pcnt  Pcnt        Volume    Pcnt     Occurrence    Outflow");
         if ( UnitSystem == US ) fprintf(Frpt.file,
 "\n  Storage Unit          1000 ft3    Full  Loss  Loss      1000 ft3    Full    days hr:min        ");
@@ -469,7 +470,7 @@ void writeStorageVolumes()
             if ( addedVol > 0.0 )
             {
                 pctEvapLoss = StorageStats[k].evapLosses / addedVol * 100.0;
-                pctSeepLoss = StorageStats[k].seepLosses / addedVol * 100.0;
+                pctSeepLoss = StorageStats[k].exfilLosses / addedVol * 100.0;  //(5.1.007)
             }
 
             fprintf(Frpt.file, "%10.3f    %4.0f  %4.0f  %4.0f    %10.3f    %4.0f",

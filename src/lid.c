@@ -5,6 +5,7 @@
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
 //             05/19/14   (Build 5.1.006)
+//             09/15/14   (Build 5.1.007)
 //   Author:   L. Rossman (US EPA)
 //
 //   This module handles all data processing involving LID (Low Impact
@@ -802,6 +803,13 @@ void validateLidProc(int j)
             report_writeErrorMsg(ERR_LID_PARAMS, LidProcs[j].ID);
     }
 
+    //... if no storage layer adjust void fraction and drain offset            //(5.1.007)
+    else
+    {    
+        LidProcs[j].storage.voidFrac = 1.0;
+        LidProcs[j].drain.offset = 0.0;
+    }
+
     //... check underdrain parameters
     if ( LidProcs[j].drain.offset > LidProcs[j].storage.thickness )
         report_writeErrorMsg(ERR_LID_PARAMS, LidProcs[j].ID);
@@ -847,6 +855,7 @@ void validateLidProc(int j)
         LidProcs[j].storage.clogFactor *=
             LidProcs[j].storage.thickness * LidProcs[j].storage.voidFrac;
     }
+    else LidProcs[j].storage.clogFactor = 0.0;                                 //(5.1.007)
 
     //... for certain LID types, immediate overflow of excess surface water
     //    occurs if either the surface roughness or slope is zero
@@ -1245,7 +1254,7 @@ double lid_getRunoff(int j, double *outflow, double *evapVol,
     else 
     {
         SaveResults = TRUE;
-        while ( NewRunoffTime > NextReportTime )                               //(5.1.006)
+        while ( NewRunoffTime >= NextReportTime )                              //(5.1.007)
         {
             NextReportTime += (double)(1000 * ReportStep);                     //(5.1.006)
         }

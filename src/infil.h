@@ -4,6 +4,7 @@
 //   Project: EPA SWMM5
 //   Version: 5.1
 //   Date:    03/20/14   (Build 5.1.001)
+//            09/15/14   (Build 5.1.007)
 //   Author:  L. Rossman (US EPA)
 //
 //   Public interface for infiltration functions.
@@ -40,18 +41,19 @@ typedef struct
 //-------------------------
 // Green-Ampt Infiltration
 //-------------------------
+
+// ----  Some variable names changed for release 5.1.007  ----                 //(5.1.007)
 typedef struct
 {
    double        S;               // avg. capillary suction (ft)
    double        Ks;              // saturated conductivity (ft/sec)
    double        IMDmax;          // max. soil moisture deficit (ft/ft)
    //-----------------------------
-   double        IMD;             // current soil moisture deficit
-   double        F;               // current cumulative infiltration (ft)
-   double        T;               // time needed to drain upper zone (sec)
-   double        L;               // depth of upper soil zone (ft)
-   double        FU;              // current moisture content of upper zone (ft)
-   double        FUmax;           // saturated moisture content of upper zone (ft)
+   double        IMD;             // current initial soil moisture deficit
+   double        F;               // current cumulative infiltrated volume (ft)
+   double        Fu;              // current upper zone infiltrated volume (ft)
+   double        Lu;              // depth of upper soil zone (ft)
+   double        T;               // time until start of next rain event (sec)
    char          Sat;             // saturation flag
 }  TGrnAmpt;
 

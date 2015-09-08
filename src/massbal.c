@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/19/14  (Build 5.1.001)
+//             09/15/14  (Build 5.1.007)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -137,13 +138,15 @@ int massbal_open()
         FlowTotals.initStorage += Link[j].newVolume;
     StepFlowTotals = FlowTotals;
 
-    // --- add contribution of minimum surface area to initial storage
+    // --- add contribution of minimum surface area (i.e., manhole area)
+    //     to initial storage under dynamic wave routing
     if ( RouteModel == DW )
     {
 	    for (j = 0; j < Nobjects[NODE]; j++)
 	    {
-            if ( Node[j].type != STORAGE ) FlowTotals.initStorage +=
-		        Node[j].initDepth * MinSurfArea;
+            if ( Node[j].type != STORAGE &&
+                Node[j].initDepth <= Node[j].crownElev - Node[j].invertElev )  //(5.1.007)
+                FlowTotals.initStorage += Node[j].initDepth * MinSurfArea;
 	    }
     }
 
@@ -315,7 +318,7 @@ double massbal_getBuildup(int p)
         {
             load += Subcatch[j].landFactor[i].buildup[p];
         }
-	load += Subcatch[j].pondedQual[p] * Pollut[p].mcf;
+        load += Subcatch[j].pondedQual[p] * Pollut[p].mcf;
     }
     return load;
 }
@@ -461,6 +464,8 @@ void massbal_addInflowQual(int type, int p, double w)
 
 //=============================================================================
 
+////  This function was modified for release 5.1.007.  ////                    //(5.1.007)
+
 void massbal_addOutflowFlow(double q, int isFlooded)
 //
 //  Input:   q = outflow flow rate (cfs)
@@ -469,12 +474,8 @@ void massbal_addOutflowFlow(double q, int isFlooded)
 //  Purpose: adds flow outflow over current time step to routing totals.
 //
 {
-    if ( q >= 0.0 )
-    {
-        if ( isFlooded ) StepFlowTotals.flooding += q;
-        else             StepFlowTotals.outflow += q;
-    }
-    else StepFlowTotals.exInflow -= q;
+    if ( isFlooded ) StepFlowTotals.flooding += q;
+    else             StepFlowTotals.outflow += q;
 }
 
 //=============================================================================
@@ -608,12 +609,14 @@ double massbal_getStorage(char isFinalStorage)
         totalStorage += nodeStorage;
     }
 
-    // --- add contribution from minimum surface area to final storage
+    // --- add contribution from minimum surface area (i.e., manhole diameter)
+    //     to final storage under dynamic wave routing
     if ( isFinalStorage && RouteModel == DW )
     {
 	    for (j = 0; j < Nobjects[NODE]; j++)
         {
-	        if ( Node[j].type != STORAGE )
+            if ( Node[j].type != STORAGE &&
+                 Node[j].newDepth <= Node[j].crownElev - Node[j].invertElev )  //(5.1.007)
                 totalStorage +=	Node[j].newDepth * MinSurfArea;
 	    }
     }
@@ -848,11 +851,11 @@ double massbal_getFlowError()
     {
         FlowTotals.pctError = TINY;
     }
-    else if ( totalInflow > 0.0 )
+    else if ( fabs(totalInflow) > 0.0 )                                        //(5.1.007)
     {
         FlowTotals.pctError = 100.0 * (1.0 - totalOutflow / totalInflow);
     }
-    else if ( totalOutflow > 0.0 )
+    else if ( fabs(totalOutflow) > 0.0 )                                       //(5.1.007)
     {
         FlowTotals.pctError = 100.0 * (totalInflow / totalOutflow - 1.0);
     }
@@ -969,8 +972,10 @@ double massbal_getStepFlowError()
                    StepFlowTotals.evapLoss +
                    StepFlowTotals.seepLoss +
                    StepFlowTotals.reacted;
-    if ( totalInflow > 0.0 )       return 1.0 - totalOutflow / totalInflow;
-    else if ( totalOutflow > 0.0 ) return totalInflow / totalOutflow - 1.0;
+    if ( fabs(totalInflow) > 0.0 )                                             //(5.1.007)
+        return 1.0 - totalOutflow / totalInflow;
+    else if ( fabs(totalOutflow) > 0.0 )
+        return totalInflow / totalOutflow - 1.0;                               //(5.1.007)
     else return 0.0;
 }
 

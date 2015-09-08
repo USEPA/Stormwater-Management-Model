@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
+//             09/15/14   (Build 5.1.007)
 //   Author:   L. Rossman
 //
 //   Runoff analysis functions.
@@ -97,11 +98,7 @@ int runoff_open()
         break;
     }
 
-    // --- see if a climate file should be opened
-    if ( Frunoff.mode != USE_FILE && Fclimate.mode == USE_FILE )
-    {
-        climate_openFile();
-    }
+////  Call to climate_openFile() moved to climate_validate().  ////            //(5.1.007)
     return ErrorCode;
 }
 

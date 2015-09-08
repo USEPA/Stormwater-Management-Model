@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/10  (Build 5.1.001)
+//             09/15/14  (Build 5.1.007)
 //   Author:   L. Rossman
 //
 //   Rain gage functions.
@@ -586,7 +587,7 @@ double convertRainfall(int j, double r)
 
       default: r1 = r;
     }
-    return r1 * Gage[j].unitsFactor;
+    return r1 * Gage[j].unitsFactor * Adjust.rainFactor;                       //(5.1.007)
 }
 
 //=============================================================================

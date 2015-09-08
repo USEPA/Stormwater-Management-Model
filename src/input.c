@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14  (Build 5.1.001)
+//             09/15/14  (Build 5.1.007)
 //   Author:   L. Rossman
 //
 //   Input data processing functions.
@@ -452,6 +453,9 @@ int  parseLine(int sect, char *line)
       case s_EVAP:
         return climate_readEvapParams(Tok, Ntokens);
 
+      case s_ADJUST:                                                           //(5.1.007)
+        return climate_readAdjustments(Tok, Ntokens);                          //(5.1.007)
+
       case s_SUBCATCH:
         j = Mobjects[SUBCATCH];
         err = subcatch_readParams(j, Tok, Ntokens);
@@ -473,7 +477,7 @@ int  parseLine(int sect, char *line)
       case s_GROUNDWATER:
         return gwater_readGroundwaterParams(Tok, Ntokens);
 
-	  case s_GWFLOW:
+	  case s_GWF:
         return gwater_readFlowExpression(Tok, Ntokens);
 
       case s_SNOWMELT:

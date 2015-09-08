@@ -6,6 +6,7 @@
 //   Date:     03/20/14   (Build 5.1.001)
 //             04/04/14   (Build 5.1.003)
 //             04/14/14   (Build 5.1.004)
+//             09/15/14   (Build 5.1.007)
 //   Author:   L. Rossman (EPA)
 //             R. Dickinson (CDM)
 //
@@ -1178,6 +1179,7 @@ void getRainfall(DateTime currentDate)
             // --- get rainfall volume over gage's recording interval
             //     at gage'a current date (in original depth units)
             gageDate = UHGroup[j].gageDate;
+            Adjust.rainFactor = Adjust.rain[datetime_monthOfYear(gageDate)-1]; //(5.1.007)
             if (!Gage[g].isCurrent)
             {
                 gage_setState(g, gageDate);

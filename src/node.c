@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
+//             09/15/14   (Build 5.1.007)
 //   Author:   L. Rossman
 //
 //   Conveyance system node functions.
@@ -138,9 +139,8 @@ void  node_setParams(int j, int type, int k, double x[])
         Storage[k].aExpon  = x[4];
         Storage[k].aConst  = x[5];
         Storage[k].aCurve  = (int)x[6];
-        Node[j].pondedArea = x[7] / (UCF(LENGTH)*UCF(LENGTH));
+        // x[7] (ponded depth) is deprecated.                                  //(5.1.007)
         Storage[k].fEvap   = x[8];
-        Storage[k].seepRate = x[9] / UCF(RAINFALL);
         break;
 
       case DIVIDER:
@@ -199,7 +199,7 @@ void node_initState(int j)
 //  Purpose: initializes a node's state variables at start of simulation.
 //
 {
-    int p;
+    int p, k;                                                                  //(5.1.007)
 
     // --- initialize depth
     Node[j].oldDepth = Node[j].initDepth;
@@ -220,11 +220,19 @@ void node_initState(int j)
     // --- initialize any inflow
     Node[j].oldLatFlow = 0.0;
     Node[j].newLatFlow = 0.0;
+    Node[j].losses = 0.0;                                                      //(5.1.007)
 
-    // --- initialize HRT in storage nodes
+
+////  Following code section added to release 5.1.007.  ////                   //(5.1.007)
+    // --- initialize storage nodes
     if ( Node[j].type == STORAGE )
     {
-        Storage[Node[j].subIndex].hrt = 0.0;
+        // --- set hydraulic residence time to 0
+        k = Node[j].subIndex;
+        Storage[k].hrt = 0.0;
+
+        // --- initialize exfiltration properties
+        if ( Storage[k].exfil ) exfil_initState(k);
     }
 }
 
@@ -273,7 +281,7 @@ void node_initInflow(int j, double tStep)
     Node[j].oldFlowInflow = Node[j].inflow;
     Node[j].oldNetInflow  = Node[j].inflow - Node[j].outflow;
     Node[j].inflow = Node[j].newLatFlow;
-    Node[j].outflow = 0.0;
+    Node[j].outflow = Node[j].losses;                                          //(5.1.007)
 
     // --- set overflow to any excess stored volume
     if ( Node[j].newVolume > Node[j].fullVolume )
@@ -398,9 +406,14 @@ double node_getSystemOutflow(int j, int *isFlooded)
         // --- node sends flow into outfall conduit
         //     (therefore it has a negative outflow)
         else
+
+////  Following code segment modified for release 5.1.007.  ////               //(5.1.007)
         {
-            outflow = -Node[j].outflow;                      
-            Node[j].inflow = fabs(outflow);
+            if ( Node[j].inflow == 0.0 )
+            {
+                outflow = -Node[j].outflow;
+                Node[j].inflow = fabs(outflow);
+            }
         }
 
         // --- set overflow and volume to 0
@@ -624,12 +637,12 @@ int storage_readParams(int j, int k, char* tok[], int ntoks)
 //  Purpose: reads a storage unit's properties from a tokenized line of input.
 //
 //  Format of input line is:
-//     nodeID  elev  maxDepth  initDepth  FUNCTIONAL  a1  a2  a0  aPond  fEvap Seepage
-//     nodeID  elev  maxDepth  initDepth  TABULAR     curveID  aPond  fEvap  Seepage
+//     nodeID  elev  maxDepth  initDepth  FUNCTIONAL a1 a2 a0 aPond fEvap (infil)
+//     nodeID  elev  maxDepth  initDepth  TABULAR    curveID  aPond fEvap (infil)
 //
 {
     int    i, m, n;
-    double x[10];
+    double x[9];
     char*  id;
 
     // --- get ID name
@@ -653,7 +666,6 @@ int storage_readParams(int j, int k, char* tok[], int ntoks)
     x[6] = -1.0;                       // curveID
     x[7] = 0.0;                        // aPond
     x[8] = 0.0;                        // fEvap
-    x[9] = 0.0;                        // seepage
 
     // --- get surf. area function coeffs.
     if ( m == FUNCTIONAL )
@@ -678,7 +690,7 @@ int storage_readParams(int j, int k, char* tok[], int ntoks)
         n = 6;
     }
 
-    // --- get ponded area if present 
+    // --- ignore next token if present (deprecated ponded area property)      //(5.1.007) 
     if ( ntoks > n)
     {
         if ( ! getDouble(tok[n], &x[7]) )
@@ -694,18 +706,12 @@ int storage_readParams(int j, int k, char* tok[], int ntoks)
         n++;
     }
 
-    // --- get seepage rate if present (considering there might be
-    //     deprecated Green-Ampt parameters following it)
-    if ( ntoks > n )
-    {
-        if ( ntoks > n+1 ) n++;
-        if ( ! getDouble(tok[n], &x[9]) )
-            return error_setInpError(ERR_NUMBER, tok[n]);
-    }
-
     // --- add parameters to storage unit object
     Node[j].ID = id;
     node_setParams(j, STORAGE, k, x);
+
+    // --- read exfiltration parameters if present
+    if ( ntoks > n ) return exfil_readStorageParams(k, tok, ntoks, n);         //(5.1.007)
     return 0;
 }
 
@@ -882,72 +888,65 @@ double storage_getOutflow(int j, int i)
 
 //=============================================================================
 
+////  This function was re-written for release 5.1.007.  ////                  //(5.1.007)
+
 double storage_getLosses(int j, double tStep)
 //
 //  Input:   j = node index
 //           tStep = time step (sec)
-//  Output:  returns evaporation + seepage loss over a time step (ft3)
-//  Purpose: computes combined volume of water evaporated & infiltrated from
-//           a storage node over a given time step.
+//  Output:  returns evaporation + infiltration rate (cfs)
+//  Purpose: computes combined rate of water evaporated & infiltrated from
+//           a storage node.
 //
 {
-	int    i, k;
+	int    k;
     double depth;
-    double area = -1.0;
+    double area;
     double evapRate;
-    double seepRate;
-    double evapLoss = 0.0;
-    double seepLoss = 0.0;
+    double exfilRate = 0.0;
     double totalLoss = 0.0;
     double lossRatio;
+    TExfil* exfil;
 
-    // --- get evap. & seepage rates
+    // --- get evap. rate & infil. object
     k = Node[j].subIndex;
     evapRate = Evap.rate * Storage[k].fEvap;
-    seepRate = Storage[k].seepRate;
-    if ( evapRate > 0.0 || seepRate > 0.0 )
+    exfil = Storage[k].exfil;
+    if ( evapRate > 0.0 || exfil != NULL )
     {
         // --- find surface area available for evaporation
-        depth = 0.5 * (Node[j].oldDepth + Node[j].newDepth);
+        depth = Node[j].oldDepth;
         area = storage_getSurfArea(j, depth);
 
-        // --- compute evap loss over this area
-        evapLoss = area * evapRate * tStep;
+        // --- compute evap rate over this area
+        evapRate = area * evapRate;
 
-		// --- compute seepage loss through effective area
-		if ( seepRate > 0.0 )
+		// --- compute infiltration rate through bottom and side banks
+		if ( exfil != NULL )
 		{
-			// --- find effective area for seepage (the larger of the
-			//     area at the current depth and the largest area below
-			//     that depth -- for storage shapes with decreasing area
-			//     above some depth)
-            i = Storage[k].aCurve;
-			if ( i >= 0 )
-				area = MAX(area, table_getMaxY(&Curve[i], depth*UCF(LENGTH)));
-
-			// --- find seepage loss across this area
-            seepLoss = area * seepRate * tStep;
-		}
-    }
+            exfilRate = exfil_getLoss(exfil, tStep, depth, area);
+        }
+     }
 
     // --- total loss over time step cannot exceed stored volume
-    totalLoss = evapLoss + seepLoss;
+    totalLoss = (evapRate + exfilRate) * tStep;
     if ( totalLoss > 0.0 )
     {
-        lossRatio = 0.5 * (Node[j].oldVolume + Node[j].newVolume) / totalLoss;
+        lossRatio = Node[j].oldVolume / totalLoss;
         if ( lossRatio < 1.0 )
         {
-            evapLoss *= lossRatio;
-            seepLoss *= lossRatio; 
+            evapRate *= lossRatio;
+            exfilRate *= lossRatio; 
             totalLoss *= lossRatio;
         }
     }
 
     // --- save evap & infil losses at the node
-    Storage[Node[j].subIndex].evapLoss = evapLoss;
-    Storage[Node[j].subIndex].seepLoss = seepLoss;
-    return totalLoss;
+    Storage[Node[j].subIndex].evapLoss = evapRate * tStep;
+    Storage[Node[j].subIndex].exfilLoss = exfilRate * tStep;
+    return evapRate + exfilRate;
 }
+
 
 //=============================================================================
 //                   D I V I D E R   M E T H O D S

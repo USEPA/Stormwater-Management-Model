@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
+//             09/15/14   (Build 5.1.007)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -79,10 +80,12 @@ static double orifice_getFlow(int j, int k, double head, double f,
 
 static int    weir_readParams(int j, int k, char* tok[], int ntoks);
 static void   weir_validate(int j, int k);
+static void   weir_setSetting(int j);                                          //(5.1.007)
 static double weir_getInflow(int j);
 static double weir_getOpenArea(int j, double y);
 static void   weir_getFlow(int j, int k, double head, double dir,
               int hasFlapGate, double* q1, double* q2);
+static double weir_getOrificeFlow(int j, double head, double y, double cOrif); //(5.1.007)
 static double weir_getdqdh(int k, double dir, double h, double q1, double q2);
 
 static int    outlet_readParams(int j, int k, char* tok[], int ntoks);
@@ -207,6 +210,8 @@ int link_readLossParams(char* tok[], int ntoks)
 //  Purpose: reads local loss parameters for a link from a tokenized
 //           line of input data.
 //
+//  Format:  LinkID  cInlet  cOutlet  cAvg  FlapGate(YES/NO)  SeepRate         //(5.1.007)
+//
 {
     int    i, j, k;
     double x[3];
@@ -306,6 +311,7 @@ void  link_setParams(int j, int type, int n1, int n2, int k, double x[])
         Link[j].hasFlapGate  = (x[3] > 0.0) ? 1 : 0;
         Weir[k].endCon       = x[4];
         Weir[k].cDisch2      = x[5];
+        Weir[k].canSurcharge = (int)x[6];                                      //(5.1.007)
         break;
 
       case OUTLET:
@@ -547,6 +553,7 @@ void link_setSetting(int j, double tstep)
 //
 {
     if ( Link[j].type == ORIFICE ) orifice_setSetting(j, tstep);
+    else if ( Link[j].type == WEIR ) weir_setSetting(j);                       //(5.1.007)
     else Link[j].setting = Link[j].targetSetting; 
 }
 
@@ -891,7 +898,7 @@ void  conduit_validate(int j, int k)
     double lengthFactor, roughness, slope;
 
     // --- a storage node cannot have a dummy outflow link
-    if ( Link[j].xsect.type == DUMMY )
+    if ( Link[j].xsect.type == DUMMY && RouteModel == DW )                     //(5.1.007)
     {
         if ( Node[Link[j].node1].type == STORAGE )
         {
@@ -1901,7 +1908,7 @@ int   weir_readParams(int j, int k, char* tok[], int ntoks)
 {
     int    m;
     int    n1, n2;
-    double x[6];
+    double x[7];                                                               //(5.1.007)
     char*  id;
 
     // --- check for valid ID and end node IDs
@@ -1925,21 +1932,30 @@ int   weir_readParams(int j, int k, char* tok[], int ntoks)
     x[3] = 0.0;
     x[4] = 0.0;
     x[5] = 0.0;
-    if ( ntoks >= 7 )
+    x[6] = 1.0;                                                                //(5.1.007)
+    if ( ntoks >= 7 && *tok[6] != '*' )                                        //(5.1.007)
     {
         m = findmatch(tok[6], NoYesWords);             
         if ( m < 0 ) return error_setInpError(ERR_KEYWORD, tok[6]);
         x[3] = m;                                          // flap gate
     }
-    if ( ntoks >= 8 )
+    if ( ntoks >= 8 && *tok[7] != '*' )                                        //(5.1.007)
     {
         if ( ! getDouble(tok[7], &x[4]) || x[4] < 0.0 )     // endCon
             return error_setInpError(ERR_NUMBER, tok[7]);
     }
-    if ( ntoks >= 9 )
+    if ( ntoks >= 9 && *tok[8] != '*' )                                        //(5.1.007)
     {
         if ( ! getDouble(tok[8], &x[5]) || x[5] < 0.0 )     // cDisch2
             return error_setInpError(ERR_NUMBER, tok[8]);
+    }
+
+////  Following segment added for release 5.1.007.  ////                       //(5.1.007)
+    if ( ntoks >= 10 && *tok[9] != '*' )
+    {
+        m = findmatch(tok[9], NoYesWords);             
+        if ( m < 0 ) return error_setInpError(ERR_KEYWORD, tok[9]);
+        x[6] = m;                                          // canSurcharge
     }
 
     // --- add parameters to weir object
@@ -1998,6 +2014,39 @@ void  weir_validate(int j, int k)
     Weir[k].length = 2.0 * RouteStep * sqrt(GRAVITY * Link[j].xsect.yFull);
     Weir[k].length = MAX(200.0, Weir[k].length);
     Weir[k].surfArea = 0.0;
+}
+
+//=============================================================================
+
+////  New function added to release 5.1.007.  ////                             //(5.1.007)
+
+void weir_setSetting(int j)
+//
+//  Input:   j = link index
+//  Output:  none
+//  Purpose: updates a weir's setting as a result of a control action.
+//
+{
+    int    k = Link[j].subIndex;
+    double h, q, q1, q2;
+
+    // --- adjust weir setting
+    Link[j].setting = Link[j].targetSetting;
+    if ( !Weir[k].canSurcharge ) return;
+    
+    // --- find orifice coeff. for surcharged flow
+    if ( Link[j].setting == 0.0 ) Weir[k].cSurcharge = 0.0;
+    else
+    {
+        // --- find flow through weir when water level equals weir height
+        h = Link[j].setting * Link[j].xsect.yFull;
+        weir_getFlow(j, k, h, 1.0, FALSE, &q1, &q2);
+        q = q1 + q2;
+
+        // --- compute equivalent orifice coeff. (for CFS flow units)
+        h = h / 2.0;  // head seen by equivalent orifice
+        Weir[k].cSurcharge = q / sqrt(h);
+    }
 }
 
 //=============================================================================
@@ -2082,10 +2131,27 @@ double weir_getInflow(int j)
     y = Link[j].xsect.yFull - (hcrown - MIN(h1, hcrown));
     Weir[k].surfArea = xsect_getWofY(&Link[j].xsect, y) * Weir[k].length;
 
-//// Since weirs can't physically surcharge (because they have open tops)
-///  the 5.0 code that applied an equivalent orifice eqn. when h1 > hcrown
-///  was removed.
+////  New section added to release 5.1.007.  ////                              //(5.1.007)
+    // --- head is above crown
+    if ( h1 >= hcrown )
+    {
+        // --- use equivalent orifice if weir can surcharge
+        if ( Weir[k].canSurcharge )
+        {
+            y = (hcrest + hcrown) / 2.0;
+            if ( h2 < y ) head = h1 - y;
+            else          head = h1 - h2;
+            y = hcrown - hcrest;
+            q1 = weir_getOrificeFlow(j, head, y, Weir[k].cSurcharge);
+            Link[j].newDepth = y;
+            return dir * q1;
+        }
 
+        // --- otherwise limit head to height of weir opening
+        else head = hcrown - hcrest;
+    }
+//////////////////////////////////////////////////////////////////////
+ 
     // --- use weir eqn. to find flows through central (q1)
     //     and end sections (q2) of weir
     weir_getFlow(j, k, head, dir, Link[j].hasFlapGate, &q1, &q2);
@@ -2203,6 +2269,40 @@ void weir_getFlow(int j, int k,  double head, double dir, int hasFlapGate,
     Link[j].dqdh = weir_getdqdh(k, dir, head, *q1, *q2);
 }
 
+//=============================================================================
+
+double weir_getOrificeFlow(int j, double head, double y, double cOrif)
+//
+//  Input:   j = link index
+//           head = head across weir (ft)
+//           y = height of upstream water level above weir crest (ft)
+//           cOrif = orifice flow coefficient
+//  Output:  returns flow through weir
+//  Purpose: finds flow through a surcharged weir using the orifice equation.
+//
+{
+    double a, q, v, hloss;
+
+    // --- evaluate the orifice flow equation
+    q = cOrif * sqrt(head);
+
+    // --- apply Armco adjustment if weir has a flap gate
+    if ( Link[j].hasFlapGate )
+    {
+        a = weir_getOpenArea(j, y);
+        if ( a > 0.0 )
+        {
+            v = q / a;
+            hloss = (4.0 / GRAVITY) * v * v * exp(-1.15 * v / sqrt(y) );
+            head -= hloss;
+            head = MAX(head, 0.0);
+            q = cOrif * sqrt(head);
+        }
+    }
+    if ( head > 0.0 ) Link[j].dqdh = q / (2.0 * head);
+    else Link[j].dqdh = 0.0;
+    return q;
+}
 
 //=============================================================================
 

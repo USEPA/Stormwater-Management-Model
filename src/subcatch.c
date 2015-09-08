@@ -4,8 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/19/14  (Build 5.1.000)
-//             05/15/14  (Build 5.1.006)
-//
+//             04/19/14  (Build 5.1.006)
 //   Author:   L. Rossman
 //
 //   Subcatchment runoff & quality functions.
@@ -748,7 +747,7 @@ double subcatch_getDepth(int j)
     if ( Subcatch[j].lidArea > 0.0 ) 
     {
         depth = (depth * (Subcatch[j].area - Subcatch[j].lidArea) +
-            lid_getSurfaceDepth(j) * Subcatch[j].lidArea) /Subcatch[j].area;
+            lid_getSurfaceDepth(j) * Subcatch[j].lidArea) / Subcatch[j].area;
     }
     return depth;
 }
@@ -874,13 +873,13 @@ void  subcatch_getWashoff(int j, double runoff, double tStep)
 //     use washoff functions.
 //
 {
-	int    i, p;
-	double massLoad;
+    int    i, p;
+    double massLoad;
 
     // --- return if there is no area or no pollutants
     if ( Nobjects[POLLUT] == 0 || Subcatch[j].area == 0.0 ) return;
 
-	// --- intialize outflow loads to zero
+    // --- intialize outflow loads to zero
     for (p = 0; p < Nobjects[POLLUT]; p++)
     {
         WashoffLoad[p] = 0.0;      // load just from washoff function
@@ -888,21 +887,21 @@ void  subcatch_getWashoff(int j, double runoff, double tStep)
     }
 
     // --- add outflow of pollutants in ponded water to outflow loads
-	//     (Note: at this point, Subcatch.newQual contains mass inflow
-	//      from any upstream subcatchments draining to this one)
-	updatePondedQual(j, Subcatch[j].newQual, Subcatch[j].pondedQual, tStep);
+    //     (Note: at this point, Subcatch.newQual contains mass inflow
+    //      from any upstream subcatchments draining to this one)
+    updatePondedQual(j, Subcatch[j].newQual, Subcatch[j].pondedQual, tStep);
 
     // --- add washoff loads from landuses to outflow loads
     if ( runoff >= MIN_RUNOFF )
-	{
-	    for (i = 0; i < Nobjects[LANDUSE]; i++)
+    {
+        for (i = 0; i < Nobjects[LANDUSE]; i++)
         {
             if ( Subcatch[j].landFactor[i].fraction > 0.0 )
             {
-			    landuse_getWashoff(i, Subcatch[j].area, Subcatch[j].landFactor,
+                landuse_getWashoff(i, Subcatch[j].area, Subcatch[j].landFactor,
 				    runoff, tStep, WashoffLoad);
             }
-	    }
+        }
 
         // --- compute contribution from any co-pollutant
         for (p = 0; p < Nobjects[POLLUT]; p++)
@@ -911,99 +910,91 @@ void  subcatch_getWashoff(int j, double runoff, double tStep)
             OutflowLoad[p] += WashoffLoad[p];
         }
 
-	}
+    }
 
-	// --- switch from internal runoff (used in washoff functions) to
-	//     runoff that actually leaves the subcatchment
+    // --- switch from internal runoff (used in washoff functions) to
+    //     runoff that actually leaves the subcatchment
     runoff = Subcatch[j].newRunoff;
 
-	// --- for each pollutant
-	for (p = 0; p < Nobjects[POLLUT]; p++)
-	{
-	    // --- update subcatchment's total runoff load in lbs (or kg)
-		massLoad = OutflowLoad[p] * Pollut[p].mcf;
+    // --- for each pollutant
+    for (p = 0; p < Nobjects[POLLUT]; p++)
+    {
+        // --- update subcatchment's total runoff load in lbs (or kg)
+        massLoad = OutflowLoad[p] * Pollut[p].mcf;
         Subcatch[j].totalLoad[p] += massLoad;
 
         // --- update overall runoff mass balance if runoff goes to
-		//     conveyance system
+        //     conveyance system
         if ( Subcatch[j].outNode >= 0 || Subcatch[j].outSubcatch == j ) 
             massbal_updateLoadingTotals(RUNOFF_LOAD, p, massLoad);
         
         // --- save new outflow runoff concentration (in mass/L)
         if ( runoff > MIN_RUNOFF )
-			Subcatch[j].newQual[p] = OutflowLoad[p] / (runoff * tStep * LperFT3);
-		else Subcatch[j].newQual[p] = 0.0;
-	}
+            Subcatch[j].newQual[p] = OutflowLoad[p] / (runoff * tStep * LperFT3);
+        else Subcatch[j].newQual[p] = 0.0;
+    }
 }
 
 //=============================================================================
 
 void updatePondedQual(int j, double wRunon[], double pondedQual[], double tStep)
-//
-//  Input:   j = subcatchment index
-//           wRunon[] = current runoff quality (mass/L)
-//           pondedQual[] = ponded surface water quality (mass)
-//           tStep = time step (sec)
-//  Output:  None
-//  Purpose: Updates quality of ponded water.
-//
 {
-	int    p;                           // Pollutent index
-    double c;                           // Concentration ponded water (mass/ft3)
-	double vIn;                         // Inflow volume (ft3)
-	double wPpt, wInfil, w1;            // Mass variables (mass)
-	double bmpRemoval;
-	int    isDry;
+    int    p;
+    double c;
+    double vIn;
+    double wPpt, wInfil, w1;
+    double bmpRemoval;
+    int    isDry;
 
-	// --- total inflow volume
-	vIn = Vrain + Vrunon;
+    // --- total inflow volume
+    vIn = Vrain + Vrunon;
 
-	// --- for dry conditions
-	if ( Vponded + vIn == 0.0 ) isDry = 1;
-	else isDry = 0;
+    // --- for dry conditions
+    if ( Vponded + vIn == 0.0 ) isDry = 1;
+    else isDry = 0;
 
-	// --- analyze each pollutant
+    // --- analyze each pollutant
     for (p = 0; p < Nobjects[POLLUT]; p++)
     {
         // --- update mass balance for direct deposition
         wPpt = Pollut[p].pptConcen * LperFT3 * Vrain;                          //(5.1.006 - MT)
         massbal_updateLoadingTotals(DEPOSITION_LOAD, p, wPpt * Pollut[p].mcf);
 
-		// --- surface is dry and has no inflow -- add any remaining mass
-		//     to overall mass balance's FINAL_LOAD category
-		if ( isDry )
-		{
-			massbal_updateLoadingTotals(FINAL_LOAD, p,
-				pondedQual[p] * Pollut[p].mcf);
-			pondedQual[p] = 0.0;
-			OutflowLoad[p] = 0.0;
-		}
-		else
-		{
-			// --- find concen. of ponded water
-			w1 = pondedQual[p] + wPpt + wRunon[p]*tStep;
-			c = w1 / (Vponded + vIn);
+        // --- surface is dry and has no inflow -- add any remaining mass
+        //     to overall mass balance's FINAL_LOAD category
+        if ( isDry )
+        {
+            massbal_updateLoadingTotals(FINAL_LOAD, p,
+                pondedQual[p] * Pollut[p].mcf);
+            pondedQual[p] = 0.0;
+            OutflowLoad[p] = 0.0;
+        }
+        else
+        {
+            // --- find concen. of ponded water
+            w1 = pondedQual[p] + wPpt + wRunon[p]*tStep;
+            c = w1 / (Vponded + vIn);
 
-			// --- mass lost to infiltration
-			wInfil = c * Vinfil;
-			wInfil = MIN(wInfil, w1);
+            // --- mass lost to infiltration
+            wInfil = c * Vinfil;
+            wInfil = MIN(wInfil, w1);
             massbal_updateLoadingTotals(INFIL_LOAD, p, wInfil * Pollut[p].mcf);
-			w1 -= wInfil;
+            w1 -= wInfil;
 
-			// --- mass lost to outflow
-			OutflowLoad[p] = MIN(w1, (c*Voutflow));
-			w1 -= OutflowLoad[p];
+            // --- mass lost to outflow
+            OutflowLoad[p] = MIN(w1, (c*Voutflow));
+            w1 -= OutflowLoad[p];
 
-			// --- reduce outflow load by average BMP removal
+            // --- reduce outflow load by average BMP removal
             bmpRemoval = landuse_getAvgBmpEffic(j, p) * OutflowLoad[p];
             massbal_updateLoadingTotals(BMP_REMOVAL_LOAD, p,
-				bmpRemoval*Pollut[p].mcf);
-			OutflowLoad[p] -= bmpRemoval;
+                bmpRemoval*Pollut[p].mcf);
+            OutflowLoad[p] -= bmpRemoval;
 
-			// --- update ponded mass
-			pondedQual[p] = c * subcatch_getDepth(j) * Subcatch[j].area;       //(5.1.006)
-		}
-	}
+            // --- update ponded mass
+            pondedQual[p] = c * subcatch_getDepth(j) * Subcatch[j].area;       //(5.1.006)
+        }
+    }
 }
 
 //=============================================================================

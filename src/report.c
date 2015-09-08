@@ -5,6 +5,7 @@
 //   Version:  5.1
 //   Date:     03/21/2014  (Build 5.1.001)
 //             04/14/14    (Build 5.1.004)
+//             09/15/14    (Build 5.1.007)
 //   Author:   L. Rossman (EPA)
 //
 //   Report writing functions.
@@ -726,7 +727,7 @@ void report_writeFlowError(TRoutingTotals *totals)
     fprintf(Frpt.file, "\n  Evaporation Loss .........%14.3f%14.3f",
             totals->evapLoss * ucf1, totals->evapLoss * ucf2);
     
-    fprintf(Frpt.file, "\n  Seepage Loss .............%14.3f%14.3f",
+    fprintf(Frpt.file, "\n  Exfiltration Loss ........%14.3f%14.3f",           //(5.1.007)
             totals->seepLoss * ucf1, totals->seepLoss * ucf2);
 
     fprintf(Frpt.file, "\n  Initial Stored Volume ....%14.3f%14.3f",

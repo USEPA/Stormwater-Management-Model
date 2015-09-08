@@ -5,6 +5,7 @@
 //   Version:  5.1
 //   Date:     03/20/14   (5.1.001)
 //             03/28/14   (5.1.002)
+//             09/15/14   (5.1.007)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -233,9 +234,18 @@ void initNodeStates()
             Xnode[i].newSurfArea = MinSurfArea;
         }
 
+////  Following code section modified for release 5.1.007  ////                //(5.1.007)
         // --- initialize nodal inflow & outflow
-        Node[i].inflow = Node[i].newLatFlow;
-        Node[i].outflow = 0.0;
+        Node[i].inflow = 0.0;
+        Node[i].outflow = Node[i].losses;
+        if ( Node[i].newLatFlow >= 0.0 )
+        {    
+            Node[i].inflow += Node[i].newLatFlow;
+        }
+        else
+        {    
+            Node[i].outflow -= Node[i].newLatFlow;
+        }
         Xnode[i].sumdqdh = 0.0;
     }
 }
@@ -557,7 +567,7 @@ void setNodeDepth(int i, double dt)
 
     // --- determine average net flow volume into node over the time step
     dQ = Node[i].inflow - Node[i].outflow;
-    dV = 0.5 * (Node[i].oldNetInflow + dQ) * dt - node_getLosses(i, dt);
+    dV = 0.5 * (Node[i].oldNetInflow + dQ) * dt;
 
     // --- if node not surcharged, base depth change on surface area        
     if ( yLast <= yCrown || Node[i].type == STORAGE || isPonded )

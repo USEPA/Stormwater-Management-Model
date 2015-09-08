@@ -5,6 +5,7 @@
 //   Version: 5.1
 //   Date:    03/20/14  (Build 5.1.001)
 //            04/14/14  (Build 5.1.004)
+//            09/15/14  (Build 5.1.007)
 //   Author:  L. Rossman
 //
 //   Enumerated variables
@@ -401,7 +402,8 @@ enum  CompatibilityType {
       s_TREATMENT,    s_CURVE,        s_TIMESERIES,   s_REPORT,
       s_COORDINATE,   s_VERTICES,     s_POLYGON,      s_LABEL,
       s_SYMBOL,       s_BACKDROP,     s_TAG,          s_PROFILE,
-      s_MAP,          s_LID_CONTROL,  s_LID_USAGE,    s_GWFLOW};
+      s_MAP,          s_LID_CONTROL,  s_LID_USAGE,    s_GWF,                   //(5.1.007)
+      s_ADJUST};                                                               //(5.1.007)
 
  enum InputOptionType {
       FLOW_UNITS,        INFIL_MODEL,       ROUTE_MODEL, 

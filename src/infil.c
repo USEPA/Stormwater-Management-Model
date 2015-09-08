@@ -4,9 +4,12 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14  (Build 5.1.001)
+//             09/15/14  (Build 5.1.007)
 //   Author:   L. Rossman
 //
 //   Infiltration functions.
+//
+//   The Green-Ampt functions were re-written for release 5.1.007.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -23,6 +26,8 @@
 THorton*   HortInfil = NULL;
 TGrnAmpt*  GAInfil   = NULL;
 TCurveNum* CNInfil   = NULL;
+
+static double Fumax;   // saturated water volume in upper soil zone (ft)
 
 //-----------------------------------------------------------------------------
 //  External Functions (declared in infil.h)
@@ -47,18 +52,21 @@ static int    horton_setParams(THorton *infil, double p[]);
 static void   horton_initState(THorton *infil);
 static void   horton_getState(THorton *infil, double x[]);
 static void   horton_setState(THorton *infil, double x[]);
-
 static double horton_getInfil(THorton *infil, double tstep, double irate,
               double depth);
 static double modHorton_getInfil(THorton *infil, double tstep, double irate,
               double depth);
 
+////  Revised set of functions for Green-Ampt infiltration  ////               //(5.1.007)
 static void   grnampt_getState(TGrnAmpt *infil, double x[]);
 static void   grnampt_setState(TGrnAmpt *infil, double x[]);
 static double grnampt_getRate(TGrnAmpt *infil, double tstep, double F2,
               double F);
-static double grnampt_getF2(double f1, double c1, double c2, double iv2);
-static void   grnampt_setT(TGrnAmpt *infil);
+static double grnampt_getUnsatInfil(TGrnAmpt *infil, double tstep,
+              double irate, double depth);
+static double grnampt_getSatInfil(TGrnAmpt *infil, double tstep,
+              double irate, double depth);
+static double grnampt_getF2(double f1, double c1, double ks, double ts);
 
 static int    curvenum_setParams(TCurveNum *infil, double p[]);
 static void   curvenum_initState(TCurveNum *infil);
@@ -486,8 +494,7 @@ double modHorton_getInfil(THorton *infil, double tstep, double irate,
     // --- reduce cumulative infiltration for dry condition
     else if (kr > 0.0)
     {
-        infil->Fe = infil->Fe * (1.0 + (kd/kr) * (1.0 - exp(-kr * tstep))) - 
-                    df * tstep;
+        infil->Fe *= exp(-kr * tstep);                                         //(5.1.007)
         infil->Fe = MAX(infil->Fe, 0.0);
     }
     return f;
@@ -505,18 +512,14 @@ int grnampt_setParams(TGrnAmpt *infil, double p[])
 {
     double ksat;                       // sat. hyd. conductivity in in/hr
 
-    if ( p[0] <= 0.0 || p[1] <= 0.0 || p[2] < 0.0 ) return FALSE;
+    if ( p[0] < 0.0 || p[1] <= 0.0 || p[2] < 0.0 ) return FALSE;               //(5.1.007)
     infil->S      = p[0] / UCF(RAINDEPTH);   // Capillary suction head (ft)
     infil->Ks     = p[1] / UCF(RAINFALL);    // Sat. hyd. conductivity (ft/sec)
     infil->IMDmax = p[2];                    // Max. init. moisture deficit
 
     // --- find depth of upper soil zone (ft) using Mein's eqn.
     ksat = infil->Ks * 12. * 3600.;
-    infil->L = 4.0 * sqrt(ksat) / 12.;
-
-    // --- set max. water volume of upper layer
-    infil->FUmax = infil->L * infil->IMDmax;
-
+    infil->Lu = 4.0 * sqrt(ksat) / 12.;
     return TRUE;
 }
 
@@ -531,17 +534,17 @@ void grnampt_initState(TGrnAmpt *infil)
 {
     if (infil == NULL) return;
     infil->IMD = infil->IMDmax;
+    infil->Fu = 0.0;                                                           //(5.1.007)
     infil->F = 0.0;
-    infil->FU = infil->L * infil->IMD;
     infil->Sat = FALSE;
-    infil->T = MISSING;
+    infil->T = 5400.0 / infil->Lu / Evap.recoveryFactor;
 }
 
 void grnampt_getState(TGrnAmpt *infil, double x[])
 {
     x[0] = infil->IMD;
     x[1] = infil->F;
-    x[2] = infil->FU;
+    x[2] = infil->Fu;
     x[3] = infil->Sat;
     x[4] = infil->T;
 }
@@ -550,14 +553,45 @@ void grnampt_setState(TGrnAmpt *infil, double x[])
 {
     infil->IMD = x[0];
     infil->F   = x[1];
-    infil->FU  = x[2];
+    infil->Fu  = x[2];
     infil->Sat = (char)x[3];
     infil->T   = x[4];
 }
 
 //=============================================================================
 
+////  This function was re-written for release 5.1.007  ////                   //(5.1.007)
+
 double grnampt_getInfil(TGrnAmpt *infil, double tstep, double irate,
+    double depth)
+//
+//  Input:   infil = ptr. to Green-Ampt infiltration object
+//           tstep =  time step (sec),
+//           irate = net "rainfall" rate to upper zone (ft/sec);
+//                 = rainfall + snowmelt + runon,
+//                   does not include ponded water (added on below)
+//           depth = depth of ponded water (ft).
+//  Output:  returns infiltration rate (ft/sec)
+//  Purpose: computes Green-Ampt infiltration for a subcatchment
+//           or a storage node.
+//
+{
+    // --- find saturated upper soil zone water volume
+    Fumax = infil->IMDmax * infil->Lu;
+
+    // --- reduce time until next event
+    infil->T -= tstep;
+
+    // --- use different procedures depending on upper soil zone saturation
+    if ( infil->Sat ) return grnampt_getSatInfil(infil, tstep, irate, depth);
+    else              return grnampt_getUnsatInfil(infil, tstep, irate, depth);
+}
+
+//=============================================================================
+
+////  New function added to release 5.1.007  ////                              //(5.1.007)
+
+double grnampt_getUnsatInfil(TGrnAmpt *infil, double tstep, double irate,
     double depth)
 //
 //  Input:   infil = ptr. to Green-Ampt infiltration object
@@ -567,229 +601,192 @@ double grnampt_getInfil(TGrnAmpt *infil, double tstep, double irate,
 //                   does not include ponded water (added on below)
 //           depth = depth of ponded water (ft).
 //  Output:  returns infiltration rate (ft/sec)
-//  Purpose: computes Green-Ampt infiltration for a subcatchment.
+//  Purpose: computes Green-Ampt infiltration when upper soil zone is
+//           unsaturated.
 //
-//  Definition of variables:
-//   IMD    = initial soil moisture deficit at start of current rain event
-//            (void volume / total volume)
-//   IMDmax = max. IMD available (ft/ft)
-//   Ks     = saturated hyd. conductivity (ft/sec)
-//   S      = capillary suction head (ft)
-//   F      = cumulative event infiltration at start of time interval (ft)
-//   F2     = cumulative infiltration at end of time interval (ft)
-//   Fs     = infiltration volume needed to saturate surface (ft)
-//   T      = cumulative event duration (sec)
-//   Tmax   = max. discrete event duration (sec)
-//   L      = depth of upper soil zone (ft)
-//   FU     = current moisture content of upper zone (ft)
-//   FUmax  = saturated moisture content of upper zone (ft)
-//   DF     = upper zone moisture depeletion factor (1/sec)
-//   DV     = moisture depletion in upper zone (ft)
-//
-//   f      = infiltration rate (ft/sec)
-//   ivol   = total volume of water on surface (ft)
-//   ts     = remainder of time step after surface becomes saturated (sec)
-//   iv2    = available surface water volume over time step (ft)
-//   c1, c2 = terms of the implicit Green-Ampt equation
 {
-    double F = infil->F;
-    double F2;
-    double DF;
-    double DV;
-    double Fs;
-    double f;
-    double ivol, iv2;
-    double ts, c1, c2;
+    double ia, c1, F2, dF, Fs, kr, ts;
 
-    // --- add ponded water onto potential infiltration
-    irate += depth / tstep;
-    if ( irate < ZERO ) irate = 0.0;
-    ivol = irate * tstep;
+    // --- get available infiltration rate (rainfall + ponded water)
+    ia = irate + depth / tstep;
+    if ( ia < ZERO ) ia = 0.0;
 
-    // --- add ponded water head to suction head
-    c1 = (infil->S + depth) * infil->IMD;
-
-    // --- initialize time to drain upper zone
-    if ( infil->T == MISSING )
+    // --- no rainfall so recover upper zone moisture
+    if ( ia == 0.0 )
     {
-        if ( irate > 0.0 ) grnampt_setT(infil);
-        else return 0.0;
-    }
-
-    // --- upper soil zone is unsaturated
-    if ( !infil->Sat )
-    {
-        // --- update time remaining until upper zone is completely drained
-        infil->T -= tstep;
-
-        // --- no rainfall; deplete soil moisture
-        if ( irate <= 0.0 )
+        if ( infil->Fu <= 0.0 ) return 0.0;
+        kr = infil->Lu / 90000.0 * Evap.recoveryFactor;
+        dF = kr * Fumax * tstep;
+        infil->F -= dF;
+        infil->Fu -= dF;
+        if ( infil->Fu <= 0.0 )
         {
-           // --- return if no upper zone moisture
-            if ( infil->FU <= 0.0 ) return 0.0;
-            DF = infil->L / 300. * (12. / 3600.) * Evap.recoveryFactor;
-            DV = DF * infil->FUmax * tstep;
-            infil->F -= DV;
-            infil->FU -= DV;
-            if ( infil->FU <= 0.0 )
-            {
-                infil->FU = 0.0;
-                infil->F = 0.0;
-                infil->IMD = infil->IMDmax;
-                return 0.0;
-            }
-
-            // --- if upper zone drained, then redistribute moisture content
-            if ( infil->T <= 0.0 )
-            {
-                infil->IMD = (infil->FUmax - infil->FU) / infil->L;
-                infil->F = 0.0;
-            }
+            infil->Fu = 0.0;
+            infil->F = 0.0;
+            infil->IMD = infil->IMDmax;
             return 0.0;
         }
 
-        // --- low rainfall; everything infiltrates
-        if ( irate <= infil->Ks )
+        // --- if new wet event begins then reset IMD & F
+        if ( infil->T <= 0.0 )
         {
-            F2 = F + ivol;
-            f = grnampt_getRate(infil, tstep, F2, F);
-
-            // --- if sufficient time to drain upper zone, then redistribute
-            if ( infil->T <= 0.0 )
-            {
-                infil->IMD = (infil->FUmax - infil->FU) / infil->L;
-                infil->F = 0.0;
-            }
-            return f;
+            infil->IMD = (Fumax - infil->Fu) / infil->Lu;
+            infil->F = 0.0;
         }
-
-        // --- rainfall > hyd. conductivity; renew time to drain upper zone
-        grnampt_setT(infil);
-
-        // --- check if surface already saturated
-        Fs = c1 * infil->Ks / (irate - infil->Ks);
-        if ( F - Fs >= 0.0 )
-        {
-            infil->Sat = TRUE;
-        }
-
-        // --- check if all water infiltrates
-        else if ( Fs - F >= ivol )
-        {
-            F2 = F + ivol;
-            f = grnampt_getRate(infil, tstep, F2, F);
-            return f;
-        }
-
-        // --- otherwise surface saturates during time interval
-        else
-        {
-            ts  = tstep - (Fs - F) / irate;
-            if ( ts <= 0.0 ) ts = 0.0;
-            c2  = c1 * log(Fs + c1) - infil->Ks * ts;
-            iv2 = ts * irate;
-            iv2 = MIN(iv2, infil->Ks * ts);
-
-            F2  = grnampt_getF2(Fs, c1, c2, iv2);
-            f   = grnampt_getRate(infil, tstep, F2, Fs);
-            infil->Sat = TRUE;
-            return f;
-        }
+        return 0.0;
     }
 
-    // --- upper soil zone saturated:
+    // --- rainfall does not exceed Ksat
+    if ( ia <= infil->Ks )
+    {    
+        dF = ia * tstep;
+        infil->F += dF;
+        infil->Fu += dF;
+        infil->Fu = MIN(infil->Fu, Fumax);
+        if ( infil->T <= 0.0 )
+        {
+            infil->IMD = (Fumax - infil->Fu) / infil->Lu;
+            infil->F = 0.0;
+        }
+        return ia;
+    }
 
-    // --- renew time to drain upper zone
-    grnampt_setT(infil);
+    // --- rainfall exceeds Ksat; renew time to drain upper zone
+    infil->T = 5400.0 / infil->Lu / Evap.recoveryFactor;
 
-    // --- compute volume of potential infiltration
-    if ( c1 <= 0.0 ) F2 = infil->Ks * tstep + F;
-    else
+    // --- find volume needed to saturate surface layer
+    Fs = infil->Ks * (infil->S + depth) * infil->IMD / (ia - infil->Ks);
+
+    // --- surface layer already saturated
+    if ( infil->F > Fs )
     {
-        c2 = c1 * log(F + c1) - infil->Ks * tstep;
-        iv2 = tstep * irate;
-        iv2 = MIN(iv2, infil->Ks * tstep);
-        F2 = grnampt_getF2(F, c1, c2, iv2);
+        infil->Sat = TRUE;
+        return grnampt_getSatInfil(infil, tstep, irate, depth);
     }
-
-    // --- excess water will remain on surface
-    if ( F2 - F <= ivol )
+        
+    // --- surface layer remains unsaturated
+    if ( infil->F + ia*tstep < Fs )
     {
-        f = grnampt_getRate(infil, tstep, F2, F);
-        return f;
+        dF = ia * tstep;
+        infil->F += dF;
+        infil->Fu += dF;
+        infil->Fu = MIN(infil->Fu, Fumax);
+        return ia;
     }
 
-    // --- all rain + ponded water infiltrates
-    F2 = F + ivol;
-    f = grnampt_getRate(infil, tstep, F2, F);
-    infil->Sat = FALSE;
-    return f;
+    // --- surface layer becomes saturated during time step;
+    // --- compute portion of tstep when saturated
+    ts  = tstep - (Fs - infil->F) / ia;
+    if ( ts <= 0.0 ) ts = 0.0;
+
+    // --- compute new total volume infiltrated
+    c1 = (infil->S + depth) * infil->IMD;
+    F2 = grnampt_getF2(Fs, c1, infil->Ks, ts);
+    if ( F2 > Fs + ia*ts ) F2 = Fs + ia*ts;
+
+    // --- compute infiltration rate
+    dF = F2 - infil->F;
+    infil->F = F2;
+    infil->Fu += dF;
+    infil->Fu = MIN(infil->Fu, Fumax);
+    infil->Sat = TRUE;
+    return dF / tstep;
 }
 
 //=============================================================================
 
-double grnampt_getRate(TGrnAmpt *infil, double tstep, double F2, double F)
+////  New function added to release 5.1.007  ////                              //(5.1.007)
+
+double grnampt_getSatInfil(TGrnAmpt *infil, double tstep, double irate,
+    double depth)
 //
 //  Input:   infil = ptr. to Green-Ampt infiltration object
 //           tstep =  runoff time step (sec),
-//           F2 = new cumulative event infiltration volume (ft)
-//           F = old cumulative event infiltration volume (ft)
+//           irate = net "rainfall" rate to upper zone (ft/sec);
+//                 = rainfall + snowmelt + runon,
+//                   does not include ponded water (added on below)
+//           depth = depth of ponded water (ft).
 //  Output:  returns infiltration rate (ft/sec)
-//  Purpose: computes infiltration rate from change in infiltration volume.
+//  Purpose: computes Green-Ampt infiltration when upper soil zone is
+//           saturated.
 //
 {
-    double f = (F2 - infil->F) / tstep;
-    double dF = F2 - F;
-    if ( f < 0.0 ) f = 0.0;
-    if ( dF < 0.0 ) dF = 0.0;
-    infil->FU += dF;
-    if ( infil->FU > infil->FUmax ) infil->FU = infil->FUmax;
-    infil->F = F2;
-    return f;
+    double ia, c1, dF, F2;
+
+    // --- get available infiltration rate (rainfall + ponded water)
+    ia = irate + depth / tstep;
+    if ( ia < ZERO ) return 0.0;
+
+    // --- re-set new event recovery time
+    infil->T = 5400.0 / infil->Lu / Evap.recoveryFactor;
+
+    // --- solve G-A equation for new cumulative infiltration volume (F2)
+    c1 = (infil->S + depth) * infil->IMD;
+    F2 = grnampt_getF2(infil->F, c1, infil->Ks, tstep);
+    dF = F2 - infil->F;
+
+    // --- all available water infiltrates -- set saturated state to false
+    if ( dF > ia * tstep )
+    {
+        dF = ia * tstep;
+        infil->Sat = FALSE;
+    }
+
+    // --- update total infiltration and upper zone moisture deficit
+    infil->F += dF;
+    infil->Fu += dF;
+    infil->Fu = MIN(infil->Fu, Fumax);
+    return dF / tstep;
 }
 
 //=============================================================================
 
-double grnampt_getF2(double f1, double c1, double c2, double iv2)
+////  This function was re-written for release 5.1.007.  ////                  //(5.1.007)
+
+double grnampt_getF2(double f1, double c1, double ks, double ts)
 //
 //  Input:   f1 = old infiltration volume (ft)
-//           c1, c2 =  equation terms
-//           iv2 = minimum possible infiltration over time step (ft)
+//           c1 = head * moisture deficit (ft)
+//           ks = sat. hyd. conductivity (ft/sec)
+//           ts = time step (sec)
 //  Output:  returns infiltration volume at end of time step (ft)
 //  Purpose: computes new infiltration volume over a time step
-//           using Green-Ampt formula for saturated upper soil zone
+//           using Green-Ampt formula for saturated upper soil zone.
 //
 {
     int    i;
     double f2 = f1;
+    double f2min;
     double df2;
+    double c2;
 
+    // --- find min. infil. volume
+    f2min = f1 + ks * ts;
 
-    // --- use Newton-Raphson method to solve governing nonlinear equation
+    // --- use min. infil. volume for 0 moisture deficit
+    if ( c1 == 0.0 ) return f2min;
+
+    // --- use direct form of G-A equation for small time steps
+    //     and c1/f1 < 100
+    if ( ts < 10.0 && f1 > 0.01 * c1 )
+    {
+        f2 = f1 + ks * (1.0 + c1/f1) * ts;
+        return MAX(f2, f2min);
+    }
+
+    // --- use Newton-Raphson method to solve integrated G-A equation
+    //     (convergence limit reduced from that used in previous releases)
+    c2 = c1 * log(f1 + c1) - ks * ts;
     for ( i = 1; i <= 20; i++ )
     {
         df2 = (f2 - f1 - c1 * log(f2 + c1) + c2) / (1.0 - c1 / (f2 + c1) );
-        if ( fabs(df2) < 0.0001 )
+        if ( fabs(df2) < 0.00001 )
         {
-            return MAX(f2, f1+iv2);
+            return MAX(f2, f2min);
         }
         f2 -= df2;
     }
-    return f1 + iv2;
-}
-
-//=============================================================================
-
-void grnampt_setT(TGrnAmpt *infil)
-//
-//  Input:   infil = ptr. to Green-Ampt infiltration object
-//  Output:  none
-//  Purpose: resets maximum time to drain upper soil zone for Green-Ampt
-//           infiltration.
-//
-{
-    double DF = infil->L / 300.0 * (12. / 3600.) * Evap.recoveryFactor;
-    infil->T = 6.0 / (100.0 * DF);
+    return f2min;
 }
 
 //=============================================================================

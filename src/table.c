@@ -3,7 +3,8 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.1
-//   Date:     03/20/09   (Build 5.1.001)
+//   Date:     03/20/14   (Build 5.1.001)
+//             09/15/14   (Build 5.1.007)
 //   Author:   L. Rossman
 //
 //   Table (curve and time series) functions.
@@ -513,10 +514,10 @@ double  table_getMaxY(TTable *table, double x)
     ymax = yy;
     while ( x > xx && table_getNextEntry(table, &xx, &yy) )
     {
-        if ( yy < ymax ) break;
+        if ( yy < ymax ) return ymax;                                          //(5.1.007)
         ymax = yy;
     }
-    return ymax;
+    return 0.0;                                                                //(5.1.007)
 }
 
 //=============================================================================
@@ -680,14 +681,21 @@ double  table_getInverseArea(TTable* table, double a)
         if ( a <= a2 )
         {
             if ( dx <= 0.0 ) return x1;
-            if ( dy == 0.0 ) return x1 + dx;
+
+////  Following code segment modified for release 5.1.007.  ////               //(5.1.007)
+            if ( dy == 0.0 )
+            {
+                if ( a2 == a1 ) return x1;
+                else return x1 + dx * (a - a1) / (a2 - a1);
+            }
+////////////////////////////////////////////////////////////////
 
             // --- if y decreases with x then replace point 1 with point 2
             if ( dy < 0.0 )
             {
                 x1 = x2;
-		y1 = y2;
-		a1 = a2;
+                y1 = y2;
+                a1 = a2;
             }
 
             s = dy/dx;
