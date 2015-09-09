@@ -5,6 +5,7 @@
 //   Version:  5.1
 //   Date:     03/20/14  (Build 5.1.001)
 //             03/19/15  (Build 5.1.008)
+//             08/05/15  (Build 5.1.010)
 //   Author:   L. Rossman (EPA)
 //
 //   Binary output file access functions.
@@ -12,6 +13,9 @@
 //   Build 5.1.008:
 //   - Possible divide by zero for reported system wide variables avoided.
 //   - Updating of maximum node depth at reporting times added.
+//
+//   Build 5.1.010:
+//   - Potentional ET added to list of system-wide variables saved to file.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -538,6 +542,10 @@ void output_saveSubcatchResults(double reportTime, FILE* file)
     if ( UnitSystem == SI ) f = (5./9.) * (Temp.ta - 32.0);
     else f = Temp.ta;
     SysResults[SYS_TEMPERATURE] = (REAL4)f;
+    
+    f = Evap.rate * UCF(EVAPRATE);                                             //(5.1.010)
+    SysResults[SYS_PET] = (REAL4)f;                                            //(5.1.010)
+
     if ( totalArea > 0.0 )                                                     //(5.1.008)
     {
         SysResults[SYS_EVAP]      /= totalArea;

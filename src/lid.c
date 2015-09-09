@@ -8,6 +8,7 @@
 //             09/15/14   (Build 5.1.007)
 //             03/19/15   (Build 5.1.008)
 //             04/30/15   (Build 5.1.009)
+//             08/05/15   (Build 5.1.010)
 //   Author:   L. Rossman (US EPA)
 //
 //   This module handles all data processing involving LID (Low Impact
@@ -47,6 +48,12 @@
 //   Build 5.1.009:
 //   - Fixed bug where LID's could return outflow to non-LID area when LIDs
 //     make up entire subcatchment.
+//
+//   Build 5.1.010:
+//   - Support for new Modified Green Ampt infiltration model added.
+//   - Imported variable HasWetLids now properly initialized.
+//   - Initial state of reporting (lidUnit->rptFile->wasDry) changed to
+//     prevent duplicate printing of first line of detailed report file.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -141,6 +148,8 @@ extern double     VlidIn;              // impervious area flow to LID units
 extern double     VlidOut;             // surface outflow from LID units
 extern double     VlidDrain;           // drain outflow from LID units
 extern double     VlidReturn;          // LID outflow returned to pervious area
+extern char       HasWetLids;          // TRUE if any LIDs are wet             //(5.1.010)
+                                       // (from RUNOFF.C)                      //(5.1.010)
 
 ////  Deleted for release 5.1.008.  ////                                       //(5.1.008)
 //static double     NextReportTime;
@@ -1046,7 +1055,7 @@ void validateLidGroup(int j)
         //... assign vegetative swale infiltration parameters
         if ( LidProcs[k].lidType == VEG_SWALE )
         {
-            if ( InfilModel == GREEN_AMPT )
+            if ( InfilModel == GREEN_AMPT || InfilModel == MOD_GREEN_AMPT )    //(5.1.010)
             {
                 p[0] = GAInfil[j].S * UCF(RAINDEPTH);
                 p[1] = GAInfil[j].Ks * UCF(RAINFALL);
@@ -1118,6 +1127,7 @@ void lid_initState()
     double     initDryTime = StartDryDays * SECperDAY;
 
     //NextReportTime = (double) (ReportStep * 1000.0);                         //(5.1.008)
+    HasWetLids = FALSE;                                                        //(5.1.010)
     for (j = 0; j < GroupCount; j++)
     {
         //... check if group exists
@@ -1162,6 +1172,7 @@ void lid_initState()
                     LidProcs[k].drainMat.thickness;
                 initVol += lidUnit->storageDepth * LidProcs[k].drainMat.voidFrac;
             }
+            if ( lidUnit->initSat > 0.0 ) HasWetLids = TRUE;                   //(5.1.010)
 
             //... initialize water balance totals
             lidproc_initWaterBalance(lidUnit, initVol);
@@ -1855,5 +1866,5 @@ fprintf(f,
 "\n-------\t --------\t --------\t --------\t --------\t --------\t --------\t --------\t --------\t --------\t --------" );
 
     //... initialize LID dryness state                                         //(5.1.008)
-    lidUnit->rptFile->wasDry = FALSE;                                          //(5.1.008)
+    lidUnit->rptFile->wasDry = TRUE;                                           //(5.1.010)
 }

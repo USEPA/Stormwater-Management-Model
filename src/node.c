@@ -6,6 +6,7 @@
 //   Date:     03/20/14   (Build 5.1.001)
 //             09/15/14   (Build 5.1.007)
 //             04/02/15   (Build 5.1.008)
+//             08/05/15   (Build 5.1.010)
 //   Author:   L. Rossman
 //
 //   Conveyance system node functions.
@@ -18,6 +19,9 @@
 //
 //   Build 5.1.008:
 //   - Support added for sending outfall discharge to a subctchment.
+//
+//   Build 5.1.010:
+//   - Storage losses now based on node's new volume instead of old volume.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -792,22 +796,22 @@ void  storage_getVolDiff(double y, double* f, double* df, void* p)
 //           at storage node Kstar using the node's area versus depth function.
 //
 {
-	int    k;
-	double e, v;
-	TStorageVol* storageVol;
+    int    k;
+    double e, v;
+    TStorageVol* storageVol;
 		
-	// ... cast void pointer p to a TStorageVol object
-	storageVol = (TStorageVol *)p;
-	k = storageVol->k;
+    // ... cast void pointer p to a TStorageVol object
+    storageVol = (TStorageVol *)p;
+    k = storageVol->k;
 
-	// ... find storage volume at depth y
+    // ... find storage volume at depth y
     e = Storage[k].aExpon + 1.0;
     v = Storage[k].aConst * y + Storage[k].aCoeff / e * pow(y, e);
 
-	// ... compute difference between this volume and target volume
-	//     as well as its derivative w.r.t. y
-	*f = v - storageVol->v;
-	*df = Storage[k].aConst + Storage[k].aCoeff * pow(y, e-1.0);
+    // ... compute difference between this volume and target volume
+    //     as well as its derivative w.r.t. y
+    *f = v - storageVol->v;
+    *df = Storage[k].aConst + Storage[k].aCoeff * pow(y, e-1.0);
 }
 
 //=============================================================================
@@ -861,7 +865,7 @@ double storage_getSurfArea(int j, double d)
         area = table_lookupEx(&Curve[i], d*UCF(LENGTH));
     else
     {
-		if ( Storage[k].aCoeff <= 0.0 ) area = Storage[k].aConst;
+        if ( Storage[k].aCoeff <= 0.0 ) area = Storage[k].aConst;
         else if ( Storage[k].aExpon == 0.0 )
             area = Storage[k].aConst + Storage[k].aCoeff;
         else area = Storage[k].aConst + Storage[k].aCoeff *
@@ -913,7 +917,7 @@ double storage_getLosses(int j, double tStep)
 //           a storage node.
 //
 {
-	int    k;
+    int    k;
     double depth;
     double area;
     double evapRate = 0.0;
@@ -923,32 +927,34 @@ double storage_getLosses(int j, double tStep)
     TExfil* exfil;
 
     // --- if node has some stored volume
-    if ( Node[j].oldVolume > FUDGE )
+    if ( Node[j].newVolume > FUDGE )                                           //(5.1.010)
     {
-        // --- get evap. rate & infil. object
+        // --- get node's evap. rate (ft/s) &  exfiltration object
         k = Node[j].subIndex;
         evapRate = Evap.rate * Storage[k].fEvap;
         exfil = Storage[k].exfil;
+
+        // --- if either of these apply
         if ( evapRate > 0.0 || exfil != NULL) 
         {
-            // --- find surface area available for evaporation
-            depth = Node[j].oldDepth;
+            // --- obtain storage depth & surface area 
+            depth = Node[j].newDepth;                                          //(5.1.010)
             area = storage_getSurfArea(j, depth);
 
-            // --- compute evap rate over this area
+            // --- compute evap rate over this area (cfs)
             evapRate = area * evapRate;
 
-		    // --- compute exfiltration rate through bottom and side banks
-		    if ( exfil != NULL )
-	    	{
+            // --- find exfiltration rate (cfs) through bottom and side banks
+            if ( exfil != NULL )
+            {
                 exfilRate = exfil_getLoss(exfil, tStep, depth, area);
             }
 
             // --- total loss over time step cannot exceed stored volume
             totalLoss = (evapRate + exfilRate) * tStep;
-            if ( totalLoss > Node[j].oldVolume )
+            if ( totalLoss > Node[j].newVolume )                               //(5.1.010)
             {
-                lossRatio = Node[j].oldVolume / totalLoss;
+                lossRatio = Node[j].newVolume / totalLoss;                     //(5.1.010)
                 evapRate *= lossRatio;
                 exfilRate *= lossRatio; 
             }
@@ -1340,8 +1346,7 @@ void outfall_setOutletDepth(int j, double yNorm, double yCrit, double z)
 
         // --- otherwise stage lies between bottom of conduit and critical
         //     depth in conduit so result is elev. of critical depth
-        else
-            yNew = z + yCrit;
+        else yNew = z + yCrit;
     }
 
     // --- and for case where there is no conduit offset and outfall stage

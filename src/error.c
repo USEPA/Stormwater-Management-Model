@@ -5,12 +5,16 @@
 //   Version: 5.1
 //   Date:    03/20/14  (Build 5.1.001)
 //            03/19/15  (Build 5.1.008)
+//            08/05/15  (Build 5.1.010)
 //   Author:  L. Rossman
 //
 //   Error messages
 //
 //   Build 5.1.008:
 //   - Text of Error 217 for control rules modified.
+//
+//   Build 5.1.010:
+//   - Text of Error 318 for rainfall data files modified.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -118,7 +122,8 @@
 #define ERR313 "\n  ERROR 313: cannot open scratch rainfall interface file."
 #define ERR315 "\n  ERROR 315: cannot open rainfall interface file %s."
 #define ERR317 "\n  ERROR 317: cannot open rainfall data file %s."
-#define ERR318 "\n  ERROR 318: date out of sequence in rainfall data file %s."
+#define ERR318 \
+"\n  ERROR 318: the following line is out of sequence in rainfall data file %s." //(5.1.010)
 #define ERR319 "\n  ERROR 319: unknown format for rainfall data file %s."
 #define ERR320 "\n  ERROR 320: invalid format for rainfall interface file."
 #define ERR321 "\n  ERROR 321: no data in rainfall interface file for gage %s."

@@ -6,6 +6,7 @@
 //   Date:    03/19/14  (Build 5.1.000)
 //            09/15/14  (Build 5.1.007)
 //            03/19/15  (Build 5.1.008)
+//            08/05/15  (Build 5.1.010)
 //   Author:  L. Rossman (EPA)
 //            M. Tryby (EPA)
 //            R. Dickinson (CDM)
@@ -34,7 +35,11 @@
 //   - Total LID drain flow and outfall runon added to Runoff Totals.
 //   - Groundwater statistics object added.
 //   - Maximum depth for reporting times added to node statistics object.
-//            
+//
+//   Build 5.1.010:
+//   - Additional fields added to Weir object to support ROADWAY_WEIR type.
+//   - New field added to Link object to record when its setting was changed.
+//   - q1Old and q2Old of Link object restored.
 //-----------------------------------------------------------------------------
 
 #include "mathexpr.h"
@@ -99,7 +104,7 @@ typedef struct
    int           rainInterval;    // recording time interval (seconds)
    int           rainUnits;       // rain depth units (US or SI)
    double        snowFactor;      // snow catch deficiency correction
-
+   //-----------------------------
    long          startFilePos;    // starting byte position in Rain file
    long          endFilePos;      // ending byte position in Rain file
    long          currentFilePos;  // current byte position in Rain file
@@ -128,7 +133,7 @@ typedef struct
    double        elev;            // elev. of study area (ft)
    double        anglat;          // latitude (degrees)
    double        dtlong;          // longitude correction (hours)
-
+   //-----------------------------
    double        ta;              // air temperature (deg F)
    double        tmax;            // previous day's max. temp. (deg F)
    double        ea;              // saturation vapor pressure (in Hg)
@@ -144,7 +149,7 @@ typedef struct
 {
    int          type;             // monthly or file data
    double       aws[12];          // monthly avg. wind speed (mph)
-
+   //-----------------------------
    double        ws;              // wind speed (mph)
 }  TWind;
 
@@ -157,9 +162,8 @@ typedef struct
    double        snotmp;          // temp. dividing rain from snow (deg F)
    double        tipm;            // antecedent temp. index parameter
    double        rnm;             // ratio of neg. melt to melt coeff.
-   double        adc[2][10];      // areal depletion curves (pervious & 
-                                  // imperv. area curves w/ 10 pts.each)
-
+   double        adc[2][10];      // areal depletion curves
+   //-----------------------------
    double        season;          // snowmelt season
    double        removed;         // total snow plowed out of system (ft3)
 }  TSnow;
@@ -176,7 +180,7 @@ typedef struct
     double       panCoeff[12];    // monthly pan coeff. values
     int          recoveryPattern; // soil recovery factor pattern 
     int          dryOnly;         // true if evaporation only in dry periods
-
+    //----------------------------
     double       rate;            // current evaporation rate (ft/sec)
     double       recoveryFactor;  // current soil recovery factor 
 }   TEvap;
@@ -191,6 +195,7 @@ typedef struct
     double       evap[12];        // monthly evaporation adjustments (ft/s)
     double       rain[12];        // monthly rainfall adjustment multipliers
     double       hydcon[12];      // hyd. conductivity adjustment multipliers  //(5.1.008)
+    //----------------------------
     double       rainFactor;      // current rainfall adjustment multiplier
     double       hydconFactor;    // current conductivity multiplier           //(5.1.008)
 }   TAdjust;
@@ -252,7 +257,7 @@ typedef struct
     double        bottomElev;     // bottom elevation of lower GW zone (ft)
     double        waterTableElev; // initial water table elevation (ft)
     double        upperMoisture;  // initial moisture content of unsat. zone
-
+    //----------------------------
     double        theta;          // upper zone moisture content
     double        lowerDepth;     // depth of saturated zone (ft)
     double        oldFlow;        // gw outflow from previous time period (cfs)
@@ -285,7 +290,7 @@ typedef struct
    double        weplow;          // depth at which plowing begins (ft)
    double        sfrac[5];        // fractions moved to other areas by plowing
    int           toSubcatch;      // index of subcatch receiving plowed snow
-
+   //-----------------------------
    double        dhm[3];          // melt coeff. for each surface (ft/sec-F)
 }  TSnowmelt;
 
@@ -325,7 +330,7 @@ typedef struct
    double        N;               // Manning's n
    double        fArea;           // fraction of total area
    double        dStore;          // depression storage (ft)
-
+   //-----------------------------
    double        alpha;           // overland flow factor
    double        inflow;          // inflow rate (ft/sec)
    double        runoff;          // runoff rate (ft/sec)
@@ -367,7 +372,7 @@ typedef struct
    MathExpr*     gwLatFlowExpr;   // user-supplied lateral outflow expression  //(5.1.007)
    MathExpr*     gwDeepFlowExpr;  // user-supplied deep percolation expression //(5.1.007)
    TSnowpack*    snowpack;        // associated snow pack data
-
+   //-----------------------------
    double        lidArea;         // area devoted to LIDs (ft2)
    double        rainfall;        // current rainfall (ft/sec)
    double        evapLoss;        // current evap losses (ft/sec)
@@ -480,7 +485,7 @@ typedef struct
    TDwfInflow*   dwfInflow;       // pointer to dry weather flow inflow data
    TRdiiInflow*  rdiiInflow;      // pointer to RDII inflow data
    TTreatment*   treatment;       // array of treatment data
-
+   //-----------------------------
    int           degree;          // number of outflow links
    char          updated;         // true if state has been updated
    double        crownElev;       // top of highest connecting conduit (ft)
@@ -529,7 +534,7 @@ typedef struct
    double      aExpon;            // exponent of area v. height curve
    int         aCurve;            // index of tabulated area v. height curve
    TExfil*     exfil;             // ptr. to exfiltration object               //(5.1.007)
-
+   //-----------------------------
    double      hrt;               // hydraulic residence time (sec)
    double      evapLoss;          // evaporation loss (ft3) 
    double      exfilLoss;         // exfiltration loss (ft3)                   //(5.1.007)
@@ -590,7 +595,7 @@ typedef struct
     double       sMax;                      // section factor at max. flow (ft^4/3)
     double       aMax;                      // area at max. flow (ft2)
     double       lengthFactor;              // floodplain / channel length 
-
+    //--------------------------------------
     double       roughness;                 // Manning's n
     double       areaTbl[N_TRANSECT_TBL];   // table of area v. depth
     double       hradTbl[N_TRANSECT_TBL];   // table of hyd. radius v. depth
@@ -639,7 +644,7 @@ typedef struct
    double        cLossAvg;        // avg. loss coeff.
    double        seepRate;        // seepage rate (ft/sec)
    int           hasFlapGate;     // true if flap gate present
-
+   //-----------------------------
    double        oldFlow;         // previous flow rate (cfs)
    double        newFlow;         // current flow rate (cfs)
    double        oldDepth;        // previous flow depth (ft)
@@ -651,6 +656,7 @@ typedef struct
    double        qFull;           // flow when full (cfs)
    double        setting;         // current control setting
    double        targetSetting;   // target control setting
+   double        timeLastSet;     // time when setting was last changed        //(5.1.010)
    double        froude;          // Froude number
    double*       oldQual;         // previous quality state
    double*       newQual;         // current quality state
@@ -672,7 +678,7 @@ typedef struct
    double        length;          // conduit length (ft)
    double        roughness;       // Manning's n
    char          barrels;         // number of barrels
-
+   //-----------------------------
    double        modLength;       // modified conduit length (ft)
    double        roughFactor;     // roughness factor for DW routing
    double        slope;           // slope
@@ -680,7 +686,7 @@ typedef struct
    double        qMax;            // max. flow (cfs)
    double        a1, a2;          // upstream & downstream areas (ft2)
    double        q1, q2;          // upstream & downstream flows per barrel (cfs)
-// double        q1Old, q2Old;    // (deprecated)                              //(5.1.008)
+   double        q1Old, q2Old;    // previous values of q1 & q2 (cfs)          //(5.1.010)
    double        evapLossRate;    // evaporation rate (cfs)
    double        seepLossRate;    // seepage rate (cfs)
    char          capacityLimited; // capacity limited flag
@@ -714,7 +720,7 @@ typedef struct
    int           shape;           // orifice shape code
    double        cDisch;          // discharge coeff.
    double        orate;           // time to open/close (sec)
-
+   //-----------------------------
    double        cOrif;           // coeff. for orifice flow (ft^2.5/sec)
    double        hCrit;           // inlet depth where weir flow begins (ft)
    double        cWeir;           // coeff. for weir flow (cfs)
@@ -734,7 +740,9 @@ typedef struct
    double        cDisch2;         // discharge coeff. for ends
    double        endCon;          // end contractions
    int           canSurcharge;    // true if weir can surcharge                //(5.1.007)
-
+   double        roadWidth;       // width for ROADWAY weir                    //(5.1.010)
+   int           roadSurface;     // road surface material                     //(5.1.010)
+   //-----------------------------
    double        cSurcharge;      // orifice coeff. for surcharge              //(5.1.007)
    double        length;          // equivalent length (ft)
    double        slope;           // slope for Vnotch & Trapezoidal weirs

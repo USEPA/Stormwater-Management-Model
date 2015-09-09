@@ -7,6 +7,7 @@
 //            04/14/14  (Build 5.1.004)
 //            09/15/14  (Build 5.1.007)
 //            03/19/15  (Build 5.1.008)
+//            08/05/15  (Build 5.1.010)
 //   Author:  L. Rossman
 //
 //   Exportable keyword dictionary
@@ -23,6 +24,10 @@
 //   Build 5.1.008:
 //   - Keyword arrays placed in alphabetical order for better readability.
 //   - Keywords added for Minimum Routing Step and Number of Threads options.
+//
+//   Build 5.1.010:
+//   - New Modified Green Ampt keyword added to InfilModelWords.
+//   - New Roadway weir keyword added to WeirTypeWords.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -45,7 +50,7 @@ char* FlowUnitWords[]      = { w_CFS, w_GPM, w_MGD, w_CMS, w_LPS, w_MLD, NULL};
 char* ForceMainEqnWords[]  = { w_H_W, w_D_W, NULL};
 char* GageDataWords[]      = { w_TIMESERIES, w_FILE, NULL};
 char* InfilModelWords[]    = { w_HORTON, w_MOD_HORTON, w_GREEN_AMPT,
-                               w_CURVE_NUMEBR, NULL};
+                               w_MOD_GREEN_AMPT, w_CURVE_NUMEBR, NULL};        //(5.1.010)
 char* InertDampingWords[]  = { w_NONE, w_PARTIAL, w_FULL, NULL};
 char* LinkOffsetWords[]    = { w_DEPTH, w_ELEVATION, NULL};
 char* LinkTypeWords[]      = { w_CONDUIT, w_PUMP, w_ORIFICE,
@@ -135,7 +140,7 @@ char* VolUnitsWords[]      = { w_MGAL, w_MLTRS };
 char* VolUnitsWords2[]     = { w_GAL, w_LTR };
 char* WashoffTypeWords[]   = { w_NONE, w_EXP, w_RC, w_EMC, NULL};
 char* WeirTypeWords[]      = { w_TRANSVERSE, w_SIDEFLOW, w_VNOTCH,
-                               w_TRAPEZOIDAL, NULL};
+                               w_TRAPEZOIDAL, w_ROADWAY, NULL};                //(5.1.010)
 char* XsectTypeWords[]     = { w_DUMMY,           w_CIRCULAR,
                                w_FILLED_CIRCULAR, w_RECT_CLOSED,
                                w_RECT_OPEN,       w_TRAPEZOIDAL,

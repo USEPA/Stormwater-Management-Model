@@ -6,6 +6,7 @@
 //   Date:     03/19/14  (Build 5.1.000)
 //             09/15/14  (Build 5.1.007)
 //             04/02/15  (Build 5.1.008)
+//             08/05/15  (Build 5.1.010)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -23,6 +24,9 @@
 //   - Flows from LID drains included in lateral inflows.
 //   - Conduit evap/seepage losses multiplied by number of barrels before
 //     being added into mass balances.
+//
+//   Build 5.1.010:
+//   - Time when a link's setting is changed is recorded.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -161,6 +165,7 @@ void routing_execute(int routingModel, double routingStep)
     {
         if ( Link[j].targetSetting != Link[j].setting )
         {
+            Link[j].timeLastSet = currentDate;                                 //(5.1.010)
             link_setSetting(j, routingStep);
             actionCount++;
         } 
@@ -488,6 +493,11 @@ void addGroundwaterInflows(double routingTime)
 ////  New function added to release 5.1.008.  ////                             //(5.1.008)
 
 void addLidDrainInflows(double routingTime)
+//
+//  Input:   routingTime = elasped time (millisec)
+//  Output:  none
+//  Purpose: adds inflows to nodes receiving LID drain flow.
+//
 {
     int j;
     double f;
@@ -631,8 +641,8 @@ void removeStorageLosses(double tStep)
 //
 {
     int    i;
- 	double evapLoss = 0.0,
-		   exfilLoss = 0.0;
+    double evapLoss = 0.0,
+           exfilLoss = 0.0;
 
     // --- check each storage node
     for ( i = 0; i < Nobjects[NODE]; i++ )
@@ -661,24 +671,24 @@ void removeConduitLosses()
 //           & seepage over current time step to overall mass balance.
 //
 {
-	int i, k;
-	double barrels,
+    int i, k;
+    double barrels,
            evapLoss = 0.0,
-		   seepLoss = 0.0;
+	   seepLoss = 0.0;
 
-	for ( i = 0; i < Nobjects[LINK]; i++ )
-	{
-		if (Link[i].type == CONDUIT)
+    for ( i = 0; i < Nobjects[LINK]; i++ )
+    {
+	if (Link[i].type == CONDUIT)
         {
             // --- retrieve number of barrels
             k = Link[i].subIndex;
             barrels = Conduit[k].barrels;
 
-			// --- update total conduit losses
-			evapLoss += Conduit[k].evapLossRate * barrels;
+            // --- update total conduit losses
+            evapLoss += Conduit[k].evapLossRate * barrels;
             seepLoss += Conduit[k].seepLossRate * barrels;
-		}
-	}
+        }
+    }
     massbal_addLinkLosses(evapLoss, seepLoss);
 }
 

@@ -476,7 +476,7 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
     double newDepth = Node[j].newDepth;
     int    canPond = (AllowPonding && Node[j].pondedArea > 0.0);
 
-    // --- update depth statistics 
+    // --- update depth statistics
     NodeStats[j].avgDepth += newDepth;
     if ( newDepth > NodeStats[j].maxDepth )
     {
@@ -524,12 +524,12 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
     if ( Node[j].type == OUTFALL ) 
     {
         k = Node[j].subIndex;
-		if ( Node[j].inflow >= MIN_RUNOFF_FLOW )
-		{
+        if ( Node[j].inflow >= MIN_RUNOFF_FLOW )
+        {
             OutfallStats[k].avgFlow += Node[j].inflow;
             OutfallStats[k].maxFlow = MAX(OutfallStats[k].maxFlow, Node[j].inflow);
             OutfallStats[k].totalPeriods++;
-		}
+        }
         for (p=0; p<Nobjects[POLLUT]; p++)
         {
             OutfallStats[k].totalLoad[p] += Node[j].inflow * 

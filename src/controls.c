@@ -6,6 +6,7 @@
 //   Date:     03/21/14 (Build 5.1.001)
 //             03/19/15 (Build 5.1.008)
 //             04/30/15 (Build 5.1.009)
+//             08/05/15 (Build 5.1.010)
 //   Author:   L. Rossman
 //
 //   Rule-based controls functions.
@@ -41,9 +42,13 @@
 //  Build 5.1.009:
 //  - Fixed problem with parsing a RHS premise variable.
 //
+//  Build 5.1.010:
+//  - Support added for link TIMEOPEN & TIMECLOSED premises.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
+#include <string.h>
 #include <malloc.h>
 #include <math.h>
 #include "headers.h"
@@ -56,7 +61,8 @@ enum RuleState    {r_RULE, r_IF, r_AND, r_OR, r_THEN, r_ELSE, r_PRIORITY,
 enum RuleObject   {r_NODE, r_LINK, r_CONDUIT, r_PUMP, r_ORIFICE, r_WEIR,
 	               r_OUTLET, r_SIMULATION};
 enum RuleAttrib   {r_DEPTH, r_HEAD, r_VOLUME, r_INFLOW, r_FLOW, r_STATUS,      //(5.1.008)
-                   r_SETTING, r_TIME, r_DATE, r_CLOCKTIME, r_DAY, r_MONTH};
+                   r_SETTING, r_TIMEOPEN, r_TIMECLOSED, r_TIME, r_DATE,        //(5.1.010)
+                   r_CLOCKTIME, r_DAY, r_MONTH};
 enum RuleRelation {EQ, NE, LT, LE, GT, GE};
 enum RuleSetting  {r_CURVE, r_TIMESERIES, r_PID, r_NUMERIC};
 
@@ -65,7 +71,8 @@ static char* ObjectWords[] =
 	 "SIMULATION", NULL};
 static char* AttribWords[] =
     {"DEPTH", "HEAD", "VOLUME", "INFLOW", "FLOW", "STATUS", "SETTING",         //(5.1.008)
-     "TIME", "DATE", "CLOCKTIME", "DAY", "MONTH", NULL};
+     "TIMEOPEN", "TIMECLOSED","TIME", "DATE", "CLOCKTIME", "DAY", "MONTH",     //(5.1.010)
+     NULL};
 static char* RelOpWords[] = {"=", "<>", "<", "<=", ">", ">=", NULL};
 static char* StatusWords[]  = {"OFF", "ON", NULL};
 static char* ConduitWords[] = {"CLOSED", "OPEN", NULL};
@@ -470,6 +477,18 @@ int getPremiseVariable(char* tok[], int* k, struct TVariable* v)
       case r_INFLOW: break;
       default: return error_setInpError(ERR_KEYWORD, tok[n]);
     }
+
+////  Added to release 5.1.010.  ////                                          //(5.1.010)
+    // --- check for link TIMEOPEN & TIMECLOSED attributes
+    else if ( link >= 0  &&
+            ( (attrib == r_TIMEOPEN ||
+               attrib == r_TIMECLOSED)
+            ))
+    {
+ 
+    }
+////
+
     else if ( obj == r_LINK || obj == r_CONDUIT ) switch (attrib)
     {
       case r_STATUS:
@@ -529,6 +548,8 @@ int getPremiseValue(char* token, int attrib, double* value)
 
       case r_TIME:
       case r_CLOCKTIME:
+      case r_TIMEOPEN:                                                         //(5.1.010)
+      case r_TIMECLOSED:                                                       //(5.1.010)
         if ( !datetime_strToTime(token, value) )
             return error_setInpError(ERR_DATETIME, token);
         break;
@@ -930,7 +951,9 @@ int evaluatePremise(struct TPremise* p, double tStep)
     switch (p->lhsVar.attribute)
     {
     case r_TIME:
-    case r_CLOCKTIME: 
+    case r_CLOCKTIME:
+    case r_TIMEOPEN:                                                           //(5.1.010)
+    case r_TIMECLOSED:                                                         //(5.1.010)
         return compareTimes(lhsValue, p->relation, rhsValue, tStep/2.0); 
     default:
         return compareValues(lhsValue, p->relation, rhsValue);
@@ -992,6 +1015,18 @@ double getVariableValue(struct TVariable v)
       case r_INFLOW:
         if ( i < 0 ) return MISSING;
         else return Node[i].newLatFlow*UCF(FLOW);
+
+////  This section added to release 5.1.010.  ////                             //(5.1.010)
+      case r_TIMEOPEN:
+          if ( j < 0 ) return MISSING;
+          if ( Link[j].setting <= 0.0 ) return MISSING;
+          return CurrentDate + CurrentTime - Link[j].timeLastSet;
+
+      case r_TIMECLOSED:
+          if ( j < 0 ) return MISSING;
+          if ( Link[j].setting > 0.0 ) return MISSING;
+          return CurrentDate + CurrentTime - Link[j].timeLastSet;
+////
 
       default: return MISSING;
     }

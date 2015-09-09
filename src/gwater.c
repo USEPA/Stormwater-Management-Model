@@ -6,6 +6,7 @@
 //   Date:     03/19/14  (Build 5.1.000)
 //             09/15/14  (Build 5.1.007)
 //             03/19/15  (Build 5.1.008)
+//             08/05/15  (Build 5.1.010)
 //   Author:   L. Rossman
 //
 //   Groundwater functions.
@@ -19,6 +20,9 @@
 //   - Subcatchment area made into a shared variable.
 //   - Evaporation loss initialized to 0.
 //   - Support for collecting GW statistics added.
+//
+//   Build 5.1.010:
+//   - Unsaturated hydraulic conductivity added to GW flow equation variables.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -44,17 +48,17 @@ enum   GWvariables {
          gwvHCB,                       // channel bottom height (ft)           //(5.1.007)
          gwvHGS,                       // ground surface height (ft)           //(5.1.007)
          gwvKS,                        // sat. hyd. condutivity (ft/s)         //(5.1.007)
-         gwvTHETA,                     // upper zone moisture content          //(5.1.008)
          gwvK,                         // unsat. hyd. conductivity (ft/s)      //(5.1.008)
+         gwvTHETA,                     // upper zone moisture content          //(5.1.008)
          gwvPHI,                       // soil porosity                        //(5.1.008)
          gwvFI,                        // surface infiltration (ft/s)          //(5.1.008)
-         gwvFU,                        // soil percolation (ft/s)              //(5.1.008)
+         gwvFU,                        // uper zone percolation rate (ft/s)    //(5.1.008)
          gwvA,                         // subcatchment area (ft2)              //(5.1.008)
          gwvMAX};
 
 // Names of GW variables that can be used in GW outflow expression
-static char* GWVarWords[] = {"HGW", "HSW", "HCB", "HGS", "KS", "THETA",        //(5.1.008)
-                             "K", "PHI", "FI", "FU", "A", NULL};               //(5.1.008)
+static char* GWVarWords[] = {"HGW", "HSW", "HCB", "HGS", "KS", "K",            //(5.1.010)
+                             "THETA", "PHI", "FI", "FU", "A", NULL};           //(5.1.008)
 
 //-----------------------------------------------------------------------------
 //  Shared variables
@@ -75,6 +79,7 @@ static double    MaxGWFlowNeg;    // upper limit on GWFlow when its negative
 static double    FracPerv;        // fraction of surface that is pervious
 static double    TotalDepth;      // total depth of GW aquifer
 static double    Theta;           // moisture content of upper zone
+static double    HydCon;          // unsaturated hydraulic conductivity (ft/s) //(5.1.010)
 static double    Hgw;             // ht. of saturated zone
 static double    Hstar;           // ht. from aquifer bottom to node invert
 static double    Hsw;             // ht. from aquifer bottom to water surface
@@ -650,7 +655,7 @@ void  getFluxes(double theta, double lowerDepth)
     upperDepth = TotalDepth - lowerDepth;
 
     // --- save lower depth and theta to global variables
-	Hgw = lowerDepth;
+    Hgw = lowerDepth;
     Theta = theta;
 
     // --- find evaporation rate from both zones
@@ -672,7 +677,7 @@ void  getFluxes(double theta, double lowerDepth)
     GWFlow = getGWFlow(lowerDepth);
     if ( LatFlowExpr != NULL )
     {
-	    GWFlow += mathexpr_eval(LatFlowExpr, getVariableValue) / UCF(GWFLOW);
+        GWFlow += mathexpr_eval(LatFlowExpr, getVariableValue) / UCF(GWFLOW);
     }
     if ( GWFlow >= 0.0 ) GWFlow = MIN(GWFlow, MaxGWFlowPos);
     else GWFlow = MAX(GWFlow, MaxGWFlowNeg);
@@ -764,7 +769,7 @@ void getEvapRates(double theta, double upperDepth)
         lowerFrac = MIN(lowerFrac, 1.0);
 
         // --- make the lower zone evap rate proportional to this fraction
-	    //     and the evap not used in the upper zone
+        //     and the evap not used in the upper zone
         LowerEvap = lowerFrac * (1.0 - upperFrac) * MaxEvap;
         LowerEvap = MIN(LowerEvap, (AvailEvap - UpperEvap));
     }
@@ -796,6 +801,7 @@ double getUpperPerc(double theta, double upperDepth)
     dhdz = 1.0 + A.tensionSlope * 2.0 * delta / upperDepth;
 
     // --- compute upper zone percolation rate
+    HydCon = hydcon;                                                           //(5.1.010)
     return hydcon * dhdz;
 }
 
@@ -861,16 +867,17 @@ double getVariableValue(int varIndex)
 {
     switch (varIndex)
     {
-	case gwvHGW:  return Hgw * UCF(LENGTH);
-	case gwvHSW:  return Hsw * UCF(LENGTH);
-	case gwvHCB:  return Hstar * UCF(LENGTH);
+    case gwvHGW:  return Hgw * UCF(LENGTH);
+    case gwvHSW:  return Hsw * UCF(LENGTH);
+    case gwvHCB:  return Hstar * UCF(LENGTH);
     case gwvHGS:  return TotalDepth * UCF(LENGTH);
     case gwvKS:   return A.conductivity * UCF(RAINFALL);
+    case gwvK:    return HydCon * UCF(RAINFALL);                               //(5.1.010)
     case gwvTHETA:return Theta;                                                //(5.1.008)
     case gwvPHI:  return A.porosity;                                           //(5.1.008)
-    case gwvA:    return Area * UCF(LANDAREA);                                 //(5.1.008)
     case gwvFI:   return Infil * UCF(RAINFALL);                                //(5.1.008)
     case gwvFU:   return UpperPerc * UCF(RAINFALL);                            //(5.1.008)
-	default:      return 0.0;
+    case gwvA:    return Area * UCF(LANDAREA);                                 //(5.1.008)
+    default:      return 0.0;
     }
 }

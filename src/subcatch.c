@@ -7,6 +7,7 @@
 //             04/19/14  (Build 5.1.006)
 //             03/19/15  (Build 5.1.008)
 //             04/30/15  (Build 5.1.009)
+//             08/05/15  (Build 5.1.010)
 //   Author:   L. Rossman
 //
 //   Subcatchment runoff functions.
@@ -22,6 +23,10 @@
 //
 //   Build 5.1.009:
 //   - Runon for full LID subcatchment added to statistical summary.
+//
+//   Build 5.1.010:
+//   - Fixed a bug introduced in 5.1.008 that forgot to include LID
+//     exfiltration as inflow sent to GW routine.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -690,7 +695,7 @@ double subcatch_getRunoff(int j, double tStep)
     // --- update groundwater levels & flows if applicable
     if ( !IgnoreGwater && Subcatch[j].groundwater )
     {
-        gwater_getGroundwater(j, Vpevap, Vinfil, tStep);
+        gwater_getGroundwater(j, Vpevap, Vinfil+VlidInfil, tStep);             //(5.1.010)
     }
 
     // --- save subcatchment's total loss rates (ft/s)

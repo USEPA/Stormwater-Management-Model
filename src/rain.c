@@ -4,6 +4,7 @@
 //   Project: EPA SWMM5
 //   Version: 5.1
 //   Date:    03/20/14  (Build 5.1.001)
+//            08/05/15  (Build 5.1.010)
 //   Author:  L. Rossman
 //
 //   Places rainfall data from external files into a SWMM rainfall
@@ -752,6 +753,7 @@ int readNWSLine(char *line, int fileFormat, DateTime day1, DateTime day2)
         if ( sscanf(&line[DataOffset], "%4d%2d%2d", &y, &m, &d) < 3 ) return 0;
         k = DataOffset + 8;
         break;
+
       default: return 0;
     }
 
@@ -803,7 +805,7 @@ int readNWSLine(char *line, int fileFormat, DateTime day1, DateTime day2)
               k += lineLength;
               break;
 
-		  default: n = 0;
+          default: n = 0;
         }
 
         // --- check that we at least have an hour, minute & value
@@ -977,11 +979,8 @@ int readStdLine(char *line, DateTime day1, DateTime day2)
     date2 = date1 + datetime_encodeTime(hour, minute, 0);
     if ( date2 <= PreviousDate )
     {
-        report_writeLine(
-            "ERROR 318: the following line is out of sequence in rainfall file ");
-        report_writeLine(Gage[GageIndex].fname);
+        report_writeErrorMsg(ERR_RAIN_FILE_SEQUENCE, Gage[GageIndex].fname);   //(5.1.010)
         report_writeLine(line);
-        ErrorCode = ERR_RAIN_FILE_SEQUENCE;
         return -1;
     }
     PreviousDate = date2;

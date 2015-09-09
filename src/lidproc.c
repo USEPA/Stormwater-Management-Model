@@ -8,6 +8,7 @@
 //             09/15/14   (Build 5.1.007)
 //             03/19/15   (Build 5.1.008)
 //             04/30/15   (Build 5.1.009)
+//             08/05/15   (Build 5.1.010)
 //   Author:   L. Rossman (US EPA)
 //
 //   This module computes the hydrologic performance of an LID (Low Impact
@@ -31,6 +32,9 @@
 //
 //   Build 5.1.009:
 //   - Fixed typo in net flux rate for vegetative swale LID.
+//
+//   Build 5.1.010:
+//   - New modified version of Green-Ampt used for surface layer infiltration.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -251,7 +255,8 @@ double lidproc_getOutflow(TLidUnit* lidUnit, TLidProc* lidProc, double inflow,
     {
         SurfaceInfil =
             grnampt_getInfil(&theLidUnit->soilInfil, Tstep,
-                             SurfaceInflow, theLidUnit->surfaceDepth);
+                             SurfaceInflow, theLidUnit->surfaceDepth,
+                             MOD_GREEN_AMPT);                                  //(5.1.010)
     }
     else SurfaceInfil = infil;
 
@@ -394,6 +399,7 @@ void lidproc_saveResults(TLidUnit* lidUnit, TLidProc* lidProc,
         //... if the current LID state is wet but the previous state was dry
         //    then write the saved previous results to the report file thus
         //    marking the end of a dry period
+
         if ( !isDry && theLidUnit->rptFile->wasDry )
             fprintf(theLidUnit->rptFile->file, "%s",
             theLidUnit->rptFile->results);

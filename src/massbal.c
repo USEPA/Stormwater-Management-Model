@@ -6,6 +6,7 @@
 //   Date:     03/19/14  (Build 5.1.001)
 //             09/15/14  (Build 5.1.007)
 //             04/02/15  (Build 5.1.008)
+//             08/05/15  (Build 5.1.010)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -20,6 +21,9 @@
 //   - LID drain flows and returned outfall flows added to components of
 //     runoff mass balance.
 //   - Seepage pollutant loss added into mass balances.
+//
+//   Build 5.1.010:
+//   - Remaining pollutant mass in "dry" elements now added to final storage.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -159,12 +163,12 @@ int massbal_open()
     //     to initial storage under dynamic wave routing
     if ( RouteModel == DW )
     {
-	    for (j = 0; j < Nobjects[NODE]; j++)
-	    {
+        for (j = 0; j < Nobjects[NODE]; j++)
+	{
             if ( Node[j].type != STORAGE &&
                 Node[j].initDepth <= Node[j].crownElev - Node[j].invertElev )  //(5.1.007)
                 FlowTotals.initStorage += Node[j].initDepth * MinSurfArea;
-	    }
+	}
     }
 
     // --- initialize arrays to null
@@ -416,6 +420,8 @@ void massbal_initTimeStepTotals()
         StepQualTotals[j].outflow   = 0.0;
         StepQualTotals[j].reacted   = 0.0;
         StepQualTotals[j].seepLoss  = 0.0;                                     //(5.1.008)
+        StepQualTotals[j].initStorage = 0.0;                                   //(5.1.010)
+        StepQualTotals[j].finalStorage = 0.0;                                  //(5.1.010)
     }
 }
 
@@ -625,6 +631,7 @@ void massbal_updateRoutingTotals(double tStep)
         QualTotals[j].outflow  += StepQualTotals[j].outflow * tStep;
         QualTotals[j].reacted  += StepQualTotals[j].reacted * tStep;
         QualTotals[j].seepLoss += StepQualTotals[j].seepLoss * tStep;          //(5.1.008)
+        QualTotals[j].finalStorage += StepQualTotals[j].finalStorage;          //(5.1.010)
     }
 
     for ( j = 0; j < Nobjects[NODE]; j++)
@@ -668,12 +675,12 @@ double massbal_getStorage(char isFinalStorage)
     //     to final storage under dynamic wave routing
     if ( isFinalStorage && RouteModel == DW )
     {
-	    for (j = 0; j < Nobjects[NODE]; j++)
+        for (j = 0; j < Nobjects[NODE]; j++)
         {
             if ( Node[j].type != STORAGE &&
                  Node[j].newDepth <= Node[j].crownElev - Node[j].invertElev )  //(5.1.007)
                 totalStorage +=	Node[j].newDepth * MinSurfArea;
-	    }
+	}
     }
 
     // --- skip final link storage for Steady Flow routing 
@@ -1061,7 +1068,7 @@ double massbal_getStoredMass(int p)
         storedMass += Node[j].newVolume * Node[j].newQual[p];
 
     // --- get mass stored in links (except for Steady Flow routing)
-    if ( RouteModel != SF )
+//    if ( RouteModel != SF )
     {
         for (j = 0; j < Nobjects[LINK]; j++)
             storedMass += Link[j].newVolume * Link[j].newQual[p];

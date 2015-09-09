@@ -727,7 +727,7 @@ char* getTempFileName(char* fname)
     if (strlen(TempDir) > 0)
     {
         _mkdir(TempDir);
-	    dir = TempDir;
+        dir = TempDir;
     }
 
     // --- use _tempnam to get a pointer to an unused file name
