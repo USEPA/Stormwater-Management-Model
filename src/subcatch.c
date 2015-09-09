@@ -6,6 +6,7 @@
 //   Date:     03/19/14  (Build 5.1.000)
 //             04/19/14  (Build 5.1.006)
 //             03/19/15  (Build 5.1.008)
+//             04/30/15  (Build 5.1.009)
 //   Author:   L. Rossman
 //
 //   Subcatchment runoff functions.
@@ -18,6 +19,9 @@
 //   - Runon now distributed only over non-LID area of a subcatchment, unless
 //     LID covers full area.
 //   - Pollutant buildup and washoff functions were moved to surfqual.c.
+//
+//   Build 5.1.009:
+//   - Runon for full LID subcatchment added to statistical summary.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -649,6 +653,12 @@ double subcatch_getRunoff(int j, double tStep)
     nonLidArea = Subcatch[j].area - Subcatch[j].lidArea;
     vRunon = Subcatch[j].runon * tStep * nonLidArea;
     Vinflow = vRunon + subcatch_getDepth(j) * nonLidArea;
+
+////  Added to release 5.1.009.  ////                                          //(5.1.009)
+    // --- find LID runon only if LID occupies full subcatchment
+    if ( nonLidArea == 0.0 )
+        vRunon = Subcatch[j].runon * tStep * Subcatch[j].area;
+////
 
     // --- get net precip. (rainfall + snowfall + snowmelt) on the 3 types
     //     of subcatchment sub-areas and update Vinflow with it

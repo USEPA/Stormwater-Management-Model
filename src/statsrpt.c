@@ -6,6 +6,7 @@
 //   Date:     03/20/14 (Build 5.1.001)
 //             09/15/14 (Build 5.1.007)
 //             03/19/15 (Build 5.1.008)
+//             04/30/15 (Build 5.1.009)
 //   Author:   L. Rossman
 //
 //   Report writing functions for summary statistics.
@@ -13,6 +14,9 @@
 //   Build 5.1.008:
 //   - New Groundwater Summary table added.
 //   - Reported Max. Depth added to Node Depth Summary table.
+//
+//   Build 5.1.009:
+//   - Units on column heading in Node Inflow Summary table fixed.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -354,7 +358,7 @@ void writeNodeFlows()
 "\n                                   Inflow   Inflow   Occurrence      Volume      Volume       Error"
 "\n  Node                 Type           %3s      %3s  days hr:min    %8s    %8s     Percent",
         FlowUnitWords[FlowUnits], FlowUnitWords[FlowUnits], VolUnitsWords[UnitSystem],
-        VolUnitsWords2[UnitSystem]);                                           //(5.1.008)
+        VolUnitsWords[UnitSystem]);                                            //(5.1.009)
     fprintf(Frpt.file,
 "\n  -------------------------------------------------------------------------------------------------");
 

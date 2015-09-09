@@ -7,6 +7,7 @@
 //             05/19/14   (Build 5.1.006)
 //             09/15/14   (Build 5.1.007)
 //             03/19/15   (Build 5.1.008)
+//             04/30/15   (Build 5.1.009)
 //   Author:   L. Rossman (US EPA)
 //
 //   This module handles all data processing involving LID (Low Impact
@@ -42,6 +43,10 @@
 //   - LID drain flows are now tracked separately.
 //   - LID drain flows can now be routed to separate outlets.
 //   - Check added to insure LID flows not returned to nonexistent pervious area.
+//
+//   Build 5.1.009:
+//   - Fixed bug where LID's could return outflow to non-LID area when LIDs
+//     make up entire subcatchment.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -1686,7 +1691,7 @@ void evalLidUnit(int j, TLidUnit* lidUnit, double lidArea, double lidInflow,
     lidDrain *= lidArea;
 
     //... revise flows if LID outflow returned to pervious area
-    if ( lidUnit->toPerv )
+    if ( lidUnit->toPerv && Subcatch[j].area > Subcatch[j].lidArea )           //(5.1.009)
     {
         //... surface runoff is always returned
         *qReturn += lidRunoff;

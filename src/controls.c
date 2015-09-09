@@ -5,6 +5,7 @@
 //   Version:  5.1
 //   Date:     03/21/14 (Build 5.1.001)
 //             03/19/15 (Build 5.1.008)
+//             04/30/15 (Build 5.1.009)
 //   Author:   L. Rossman
 //
 //   Rule-based controls functions.
@@ -36,6 +37,9 @@
 //  Build 5.1.008:
 //  - Support added for r.h.s. variables in rule premises.
 //  - Node volume added as a premise variable.
+//
+//  Build 5.1.009:
+//  - Fixed problem with parsing a RHS premise variable.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -373,7 +377,9 @@ int  addPremise(int r, int type, char* tok[], int nToks)
     if ( findmatch(tok[n], ObjectWords) >= 0 && n + 3 >= nToks )
     {
         err = getPremiseVariable(tok, &n, &v2);
-        if ( err == 0 ) return ERR_RULE;
+        if ( err > 0 ) return ERR_RULE;                                        //(5.1.009)
+        if ( v1.attribute != v2.attribute)                                     //(5.1.009)
+            report_writeWarningMsg(WARN11, Rules[r].ID);                       //(5.1.009)
     }
 
     // --- otherwise get value to which LHS variable is compared to

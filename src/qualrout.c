@@ -5,6 +5,7 @@
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
 //             04/02/15   (Build 5.1.008)
+//             04/30/15   (Build 5.1.009)
 //   Author:   L. Rossman
 //
 //   Water quality routing functions.
@@ -13,6 +14,9 @@
 //   - Pollutant mass lost to seepage flow added to mass balance totals.
 //   - Pollutant concen. increased when evaporation occurs.
 //
+//   Build 5.1.009:
+//   - Criterion for dry link/storage node changed to avoid concen. blowup.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -20,6 +24,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include "headers.h"
+
+//-----------------------------------------------------------------------------
+//  Constants
+//-----------------------------------------------------------------------------
+static const double ZeroDepth = 0.00328; // 1 mm in feet
 
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
@@ -282,6 +291,7 @@ void findLinkQual(int i, double tStep)
 
     // --- get starting and ending volumes
     v1 = Link[i].oldVolume - vLosses;                                          //(5.1.008)
+    //v1 = Link[i].oldVolume;                                                    //(5.1.009)
     v1 = MAX(v1, 0.0);                                                         //(5.1.008)
     v2 = Link[i].newVolume;
 
@@ -488,11 +498,14 @@ double getLinkLosses(int i, double tStep)
         v1 = Link[i].oldVolume - seepRate * tStep;    // after seepage
         v2 = v1 - evapRate * tStep;                   // after seepage & evap
 
-        // --- no volume remaining; send remaining mass to final storage
-        if ( v2 < FUDGE )
+        // --- consuit is dry; send any remaining mass to final storage        //(5.1.009)
+        if ( Link[i].newDepth <= ZeroDepth )                                   //(5.1.009)
         {
             for (p = 0; p < Nobjects[POLLUT]; p++)
+            {
                 massbal_addToFinalStorage(p, Link[i].oldQual[p] * v1);
+                Link[i].oldQual[p] = 0.0;                                      //(5.1.009)
+            }
         }
         // --- otherwise increase concentrations by loss in volume
         else
@@ -546,11 +559,14 @@ double getStorageLosses(int i, double tStep)
         v1 = Node[i].oldVolume - seepRate * tStep;    // after seepage
         v2 = v1 - evapRate * tStep;                   // after seepage & evap
 
-        // --- no volume remaining; send remaining mass to final storage
-        if ( v2 < FUDGE )
+        // --- storage unit is dry; send any remaining mass to final storage   //(5.1.009)
+        if ( Node[i].newDepth <= ZeroDepth )                                   //(5.1.009)
         {
             for (p = 0; p < Nobjects[POLLUT]; p++)
+            {
                 massbal_addToFinalStorage(p, Node[i].oldQual[p] * v1);
+                Node[i].oldQual[p] = 0.0;                                      //(5.1.009)
+            }
         }
         // --- otherwise increase concentrations by loss in volume
         else

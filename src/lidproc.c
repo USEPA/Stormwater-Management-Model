@@ -7,6 +7,7 @@
 //             05/19/14   (Build 5.1.006)
 //             09/15/14   (Build 5.1.007)
 //             03/19/15   (Build 5.1.008)
+//             04/30/15   (Build 5.1.009)
 //   Author:   L. Rossman (US EPA)
 //
 //   This module computes the hydrologic performance of an LID (Low Impact
@@ -27,6 +28,9 @@
 //   - Detailed reporting procedure fixed.
 //   - Possibile negative head on Bioretention Cell drain avoided.
 //   - Bug in computing flow through Green Roof drainage mat fixed.
+//
+//   Build 5.1.009:
+//   - Fixed typo in net flux rate for vegetative swale LID.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -1055,7 +1059,7 @@ void swaleFluxRates(double x[], double f[])
     }
 
     //... net flux rate (dV/dt) in cfs
-    dVdT = surfInflow - SurfaceEvap - StorageInfil-+ SurfaceOutflow;
+    dVdT = surfInflow - SurfaceEvap - StorageInfil - SurfaceOutflow;           //(5.1.009)
 
     //... when full, any net positive inflow becomes spillage
     if ( depth == theLidProc->surface.thickness && dVdT > 0.0 )

@@ -7,6 +7,7 @@
 //             04/14/14  (Build 5.1.004)
 //             09/15/14  (Build 5.1.007)
 //             03/19/15  (Build 5.1.008)
+//             04/30/15  (Build 5.1.009)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -33,6 +34,9 @@
 //     parallel threads for dynamic wave routing added.
 //   - Default values of hyd. conductivity adjustments added.
 //   - Freeing of memory used for outfall pollutant load added.
+//
+//   Build 5.1.009:
+//   - Fixed bug in computing total duration introduced in 5.1.008.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -138,20 +142,27 @@ void project_readInput()
     }
     else
     {
-        // --- compute total duration of simulation in milliseconds
-        TotalDuration = floor(datetime_timeDiff(EndDateTime, StartDateTime)
-                              * 1000.0);
+////  Following code segment was modified for release 5.1.009.  ////           //(5.1.009)
+////
+        // --- compute total duration of simulation in seconds
+        TotalDuration = floor((EndDateTime - StartDateTime) * SECperDAY);
 
         // --- reporting step must be <= total duration
-        if ( (double)ReportStep > TotalDuration/1000.0 )
+        if ( (double)ReportStep > TotalDuration )
         {
-            ReportStep = (int)(TotalDuration/1000.0);
+            ReportStep = (int)(TotalDuration);
         }
-        if ( (float)ReportStep < RouteStep )
+
+        // --- reporting step can't be < routing step
+        if ( (double)ReportStep < RouteStep )
         {
             report_writeErrorMsg(ERR_REPORT_STEP, "");
         }
+
+        // --- convert total duration to milliseconds
+        TotalDuration *= 1000.0;
     }
+////
 }
 
 //=============================================================================
