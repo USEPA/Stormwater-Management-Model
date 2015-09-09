@@ -5,9 +5,20 @@
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
 //             09/15/14   (Build 5.1.007)
+//             04/02/15   (Build 5.1.008)
 //   Author:   L. Rossman
 //
 //   Conveyance system node functions.
+//
+//   Build 5.1.007:
+//   - Ponded area property for storage nodes deprecated.
+//   - Support for Green-Ampt seepage from bottom and sides of storage node added.
+//   - Storage node evap. & seepage losses now computed at start of each routing
+//     time step.
+//
+//   Build 5.1.008:
+//   - Support added for sending outfall discharge to a subctchment.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -36,16 +47,16 @@ typedef struct
 //  node_setOldQualState   (called from routing_execute)
 //  node_initInflow        (called from routing_execute)
 //  node_setOutletDepth    (called from routing_execute)
-//  node_getLosses         (called from flowroutc & dynwave.c)
+//  node_getLosses         (called from routing_execute)                       //(5.1.008)
 //  node_getSystemOutflow  (called from removeOutflows in routing.c)
 //  node_getResults        (called from output_saveNodeResults)
+//  node_getPondedArea     (called from initNodeStates in dynwave.c)
+//  node_getOutflow        (called from link_getInflow & conduit_getInflow)
+//  node_getMaxOutflow     (called from flowrout.c and dynwave.c)
 //  node_getSurfArea
 //  node_getDepth
 //  node_getVolume
-//  node_getPondedDepth
-//  node_getPondedArea
-//  node_getOutflow
-//  node_getMaxOutflow
+//  node_getPondedDepth    removed                                             //(5.1.008)
 
 //-----------------------------------------------------------------------------
 //  Local functions
@@ -130,6 +141,17 @@ void  node_setParams(int j, int type, int k, double x[])
         Outfall[k].tideCurve   = (int)x[3];
         Outfall[k].stageSeries = (int)x[4];
         Outfall[k].hasFlapGate = (char)x[5];
+
+////  Following code segment added to release 5.1.008.  ////                   //(5.1.008)
+
+        Outfall[k].routeTo     = (int)x[6];
+        Outfall[k].wRouted     = NULL;
+        if ( Outfall[k].routeTo >= 0 )
+        {
+            Outfall[k].wRouted =
+                (double *) calloc(Nobjects[POLLUT], sizeof(double));
+        }
+////
         break;
 
       case STORAGE:
@@ -224,6 +246,7 @@ void node_initState(int j)
 
 
 ////  Following code section added to release 5.1.007.  ////                   //(5.1.007)
+
     // --- initialize storage nodes
     if ( Node[j].type == STORAGE )
     {
@@ -234,6 +257,21 @@ void node_initState(int j)
         // --- initialize exfiltration properties
         if ( Storage[k].exfil ) exfil_initState(k);
     }
+////
+
+////  Following code section added to release 5.1.008.  ////                   //(5.1.008)
+
+    // --- initialize flow stream routed from outfall onto a subcatchment
+    if ( Node[j].type == OUTFALL )
+    {
+        k = Node[j].subIndex;
+        if ( Outfall[k].routeTo >= 0 )
+        {
+            Outfall[k].vRouted = 0.0;
+            for (p = 0; p < Nobjects[POLLUT]; p++) Outfall[k].wRouted[p] = 0.0;
+        }
+    }
+////
 }
 
 //=============================================================================
@@ -506,30 +544,6 @@ void   node_setOutletDepth(int j, double yNorm, double yCrit, double z)
         if ( z > 0.0 ) Node[j].newDepth = 0.0;
         else Node[j].newDepth = MIN(yNorm, yCrit);
     }
-}
-
-//=============================================================================
-
-double node_getPondedDepth(int j, double v)
-//
-//  Input:   j = node index
-//           v = water volume (ft3)
-//  Output:  returns depth of water at a node (ft)
-//  Purpose: computes depth of water at a node based on volume.
-//
-{
-    double y;
-
-    // --- if volume below full volume, use normal getDepth function
-    if ( v <= Node[j].fullVolume ) return node_getDepth(j, v);
-
-    // --- find ponded volume
-    v = v - Node[j].fullVolume;
-
-    // --- depth equals full depth + ponded volume / ponded area
-    y = Node[j].fullDepth;
-    if ( Node[j].pondedArea > 0.0 ) y += v / Node[j].pondedArea;
-    return y;
 }
 
 //=============================================================================
@@ -888,7 +902,7 @@ double storage_getOutflow(int j, int i)
 
 //=============================================================================
 
-////  This function was re-written for release 5.1.007.  ////                  //(5.1.007)
+////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
 
 double storage_getLosses(int j, double tStep)
 //
@@ -902,42 +916,42 @@ double storage_getLosses(int j, double tStep)
 	int    k;
     double depth;
     double area;
-    double evapRate;
+    double evapRate = 0.0;
     double exfilRate = 0.0;
     double totalLoss = 0.0;
     double lossRatio;
     TExfil* exfil;
 
-    // --- get evap. rate & infil. object
-    k = Node[j].subIndex;
-    evapRate = Evap.rate * Storage[k].fEvap;
-    exfil = Storage[k].exfil;
-    if ( evapRate > 0.0 || exfil != NULL )
+    // --- if node has some stored volume
+    if ( Node[j].oldVolume > FUDGE )
     {
-        // --- find surface area available for evaporation
-        depth = Node[j].oldDepth;
-        area = storage_getSurfArea(j, depth);
-
-        // --- compute evap rate over this area
-        evapRate = area * evapRate;
-
-		// --- compute infiltration rate through bottom and side banks
-		if ( exfil != NULL )
-		{
-            exfilRate = exfil_getLoss(exfil, tStep, depth, area);
-        }
-     }
-
-    // --- total loss over time step cannot exceed stored volume
-    totalLoss = (evapRate + exfilRate) * tStep;
-    if ( totalLoss > 0.0 )
-    {
-        lossRatio = Node[j].oldVolume / totalLoss;
-        if ( lossRatio < 1.0 )
+        // --- get evap. rate & infil. object
+        k = Node[j].subIndex;
+        evapRate = Evap.rate * Storage[k].fEvap;
+        exfil = Storage[k].exfil;
+        if ( evapRate > 0.0 || exfil != NULL) 
         {
-            evapRate *= lossRatio;
-            exfilRate *= lossRatio; 
-            totalLoss *= lossRatio;
+            // --- find surface area available for evaporation
+            depth = Node[j].oldDepth;
+            area = storage_getSurfArea(j, depth);
+
+            // --- compute evap rate over this area
+            evapRate = area * evapRate;
+
+		    // --- compute exfiltration rate through bottom and side banks
+		    if ( exfil != NULL )
+	    	{
+                exfilRate = exfil_getLoss(exfil, tStep, depth, area);
+            }
+
+            // --- total loss over time step cannot exceed stored volume
+            totalLoss = (evapRate + exfilRate) * tStep;
+            if ( totalLoss > Node[j].oldVolume )
+            {
+                lossRatio = Node[j].oldVolume / totalLoss;
+                evapRate *= lossRatio;
+                exfilRate *= lossRatio; 
+            }
         }
     }
 
@@ -1182,15 +1196,15 @@ int outfall_readParams(int j, int k, char* tok[], int ntoks)
 //  Purpose: reads an outfall's properties from a tokenized line of input.
 //
 //  Format of input line is:
-//    nodeID  elev  FIXED  fixedStage (flapGate)
-//    nodeID  elev  TIDAL  curveID (flapGate)
-//    nodeID  elev  TIMESERIES  tseriesID (flapGate)
-//    nodeID  elev  FREE (flapGate)
-//    nodeID  elev  NORMAL (flapGate)
+//    nodeID  elev  FIXED  fixedStage (flapGate) (routeTo)
+//    nodeID  elev  TIDAL  curveID (flapGate) (routeTo)
+//    nodeID  elev  TIMESERIES  tseriesID (flapGate) (routTo)
+//    nodeID  elev  FREE (flapGate) (routeTo)
+//    nodeID  elev  NORMAL (flapGate) (routeTo)
 //
 {
     int    i, m, n;
-    double x[6];
+    double x[7];                                                               //(5.1.008)
     char*  id;
 
     if ( ntoks < 3 ) return error_setInpError(ERR_ITEMS, "");
@@ -1206,6 +1220,8 @@ int outfall_readParams(int j, int k, char* tok[], int ntoks)
     x[3] = -1.;                                            // tidal curve
     x[4] = -1.;                                            // tide series
     x[5] = 0.;                                             // flap gate
+    x[6] = -1.;                                            // route to subcatch//(5.1.008)
+
     n = 4;
     if ( i >= FIXED_OUTFALL )
     {
@@ -1235,6 +1251,16 @@ int outfall_readParams(int j, int k, char* tok[], int ntoks)
         if ( m < 0 ) return error_setInpError(ERR_KEYWORD, tok[n-1]);
         x[5] = m;
     }
+
+////  Added for release 5.1.008.  ////                                         //(5.1.008)
+    if ( ntoks == n+1)
+    {
+        m = project_findObject(SUBCATCH, tok[n]);
+        if ( m < 0 ) return error_setInpError(ERR_NAME, tok[n]);
+        x[6] = m;
+    }
+////
+
     Node[j].ID = id;
     node_setParams(j, OUTFALL, k, x);
     return 0;

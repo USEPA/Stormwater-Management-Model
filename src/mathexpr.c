@@ -6,8 +6,8 @@
 **                 operators.
 **  AUTHORS:       L. Rossman, US EPA - NRMRL
 **                 F. Shang, University of Cincinnati
-**  VERSION:       5.1.001
-**  LAST UPDATE:   3/20/14
+**  VERSION:       5.1.008
+**  LAST UPDATE:   04/01/15
 ******************************************************************************/
 /*
 **   Operand codes:
@@ -102,7 +102,6 @@ static void       deleteTree(ExprTree *);
 
 // Callback functions
 static int    (*getVariableIndex) (char *); // return index of named variable
-static double (*getVariableValue) (int);    // return value of indexed variable
 
 //=============================================================================
 
@@ -530,6 +529,9 @@ void deleteTree(ExprTree *tree)
 
 //=============================================================================
 
+// Turn on "precise" floating point option                                     //(5.1.008)
+#pragma float_control(precise, on, push)                                       //(5.1.008)
+
 double mathexpr_eval(MathExpr *expr, double (*getVariableValue) (int))
 //  Mathematica expression evaluation using a stack
 {
@@ -727,8 +729,15 @@ double mathexpr_eval(MathExpr *expr, double (*getVariableValue) (int))
         node = node->next;
     }
     r1 = ExprStack[stackindex];
+
+    // Set result to 0 if it is NaN due to an illegal math op                  //(5.1.008)
+    if ( r1 != r1 ) r1 = 0.0;                                                  //(5.1.008)
+
     return r1;
 }
+
+// Turn off "precise" floating point option                                    //(5.1.008)
+#pragma float_control(pop)                                                     //(5.1.008)
 
 //=============================================================================
 

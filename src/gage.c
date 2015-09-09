@@ -8,6 +8,10 @@
 //   Author:   L. Rossman
 //
 //   Rain gage functions.
+//
+//   Build 5.1.007:
+//   - Support for monthly rainfall adjustments added.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 

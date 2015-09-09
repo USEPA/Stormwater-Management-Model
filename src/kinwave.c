@@ -4,10 +4,14 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14  (Build 5.1.001)
+//             03/19/15  (Build 5.1.008)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
 //   Kinematic wave flow routing functions.
+//
+//   Build 5.1.008:
+//   - Conduit inflow passed to function that computes conduit losses.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -90,15 +94,15 @@ int kinwave_execute(int j, double* qinflow, double* qoutflow, double tStep)
     q1 = Conduit[k].q1 / Qfull;
     q2 = Conduit[k].q2 / Qfull;
 
+    // --- normalize inflow                                                    //(5.1.008)
+    qin = (*qinflow) / Conduit[k].barrels / Qfull;
+
     // --- compute evaporation and infiltration loss rate
-	q3 = link_getLossRate(j, tStep) / Qfull;
+	q3 = link_getLossRate(j, qin*Qfull, tStep) / Qfull;                        //(5.1.008)
 
     // --- normalize previous areas
     a1 = Conduit[k].a1 / Afull;
     a2 = Conduit[k].a2 / Afull;
-
-    // --- normalize inflow 
-    qin = (*qinflow) / Conduit[k].barrels / Qfull;
 
     // --- use full area when inlet flow >= full flow
     if ( qin >= 1.0 ) ain = 1.0;
@@ -150,6 +154,8 @@ int kinwave_execute(int j, double* qinflow, double* qoutflow, double tStep)
     Conduit[k].a1 = ain * Afull;
     Conduit[k].q2 = qout * Qfull;
     Conduit[k].a2 = aout * Afull;
+    Conduit[k].fullState =
+        link_getFullState(Conduit[k].a1, Conduit[k].a2, Afull);                //(5.1.008)
     (*qinflow)  = Conduit[k].q1 * Conduit[k].barrels;
     (*qoutflow) = Conduit[k].q2 * Conduit[k].barrels;
     return result;

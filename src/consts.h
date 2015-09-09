@@ -44,7 +44,7 @@
 // Definition of measureable runoff flow & depth
 //----------------------------------------------
 #define   MIN_RUNOFF_FLOW    0.001          // cfs
-#define   MIN_EXCESS_DEPTH   0.0001         // ft, = 0.03 mm
+#define   MIN_EXCESS_DEPTH   0.0001         // ft, = 0.03 mm  <NOT USED>
 #define   MIN_TOTAL_DEPTH    0.004167       // ft, = 0.05 inches
 #define   MIN_RUNOFF         2.31481e-8     // ft/sec = 0.001 in/hr
 
@@ -52,8 +52,8 @@
 // Minimum flow, depth & volume used to evaluate steady state conditions
 //----------------------------------------------------------------------
 #define   FLOW_TOL      0.00001  // cfs
-#define   DEPTH_TOL     0.00001  // ft
-#define   VOLUME_TOL    0.01     // ft3
+#define   DEPTH_TOL     0.00001  // ft    <NOT USED>
+#define   VOLUME_TOL    0.01     // ft3   <NOT USED>
 
 //---------------------------------------------------
 // Minimum depth for reporting non-zero water quality

@@ -6,6 +6,7 @@
 //   Date:     03/19/14  (Build 5.1.000)
 //             04/14/14  (Build 5.1.004)
 //             09/15/14  (Build 5.1.007)
+//             03/19/15  (Build 5.1.008)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -16,12 +17,31 @@
 //   o setting default values for object properties and options
 //   o initializing the internal state of all objects
 //   o managing hash tables for identifying objects by ID name
+//
+//   Build 5.1.004:
+//   - Ignore RDII option added.
+//
+//   Build 5.1.007:
+//   - Default monthly adjustments for climate variables included.
+//   - User-supplied GW flow equaitions initialized to NULL.
+//   - Storage node exfiltration object initialized to NULL.
+//   - Freeing of memory used for storage node exfiltration included.
+//
+//   Build 5.1.008:
+//   - Constants used for dynamic wave routing moved to dynwave.c.
+//   - Input processing of minimum time step & number of
+//     parallel threads for dynamic wave routing added.
+//   - Default values of hyd. conductivity adjustments added.
+//   - Freeing of memory used for outfall pollutant load added.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
+#include <math.h>                                                              //(5.1.008)
+#include <omp.h>                                                               //(5.1.008)
 #include "headers.h"
 #include "lid.h" 
 #include "hash.h"
@@ -30,10 +50,7 @@
 //-----------------------------------------------------------------------------
 //  Constants
 //-----------------------------------------------------------------------------
-//  These are defaults for DYNWAVE flow routing
-const double DEFAULT_SURFAREA  = 12.566;  // Min. nodal surface area (~4 ft diam.)
-const double DEFAULT_HEADTOL   = 0.005;   // Default head tolerance (ft)
-const int    DEFAULT_MAXTRIALS = 8;       // Max. trials per time step
+////  Constants for DYNWAVE flow routing moved to dynwave.c.  ////             //(5.1.008)
 
 //-----------------------------------------------------------------------------
 //  Shared variables
@@ -122,9 +139,8 @@ void project_readInput()
     else
     {
         // --- compute total duration of simulation in milliseconds
-        //     (add on 1 msec to account for any roundoff)
-        TotalDuration = (EndDateTime - StartDateTime) * MSECperDAY;
-        TotalDuration += 1.0;
+        TotalDuration = floor(datetime_timeDiff(EndDateTime, StartDateTime)
+                              * 1000.0);
 
         // --- reporting step must be <= total duration
         if ( (double)ReportStep > TotalDuration/1000.0 )
@@ -214,12 +230,16 @@ void project_validate()
     if ( RptFlags.links == ALL )
         for (i=0; i<Nobjects[LINK]; i++) Link[i].rptFlag = TRUE;
 
-    // --- adjust DYNWAVE options
-	if ( MinSurfArea == 0.0 ) MinSurfArea = DEFAULT_SURFAREA;
-	else                      MinSurfArea /= UCF(LENGTH) * UCF(LENGTH);
-    if ( HeadTol == 0.0 ) HeadTol = DEFAULT_HEADTOL;
-	else                  HeadTol /= UCF(LENGTH);
-	if ( MaxTrials == 0 ) MaxTrials = DEFAULT_MAXTRIALS;
+    // --- validate dynamic wave options
+    if ( RouteModel == DW ) dynwave_validate();                                //(5.1.008)
+
+#pragma omp parallel                                                           //(5.1.008)
+{
+    if ( NumThreads == 0 ) NumThreads = omp_get_num_threads();                 //(5.1.008)
+    else NumThreads = MIN(NumThreads, omp_get_num_threads());                  //(5.1.008)
+}
+    if ( Nobjects[LINK] < 4 * NumThreads ) NumThreads = 1;                     //(5.1.008)
+
 }
 
 //=============================================================================
@@ -590,6 +610,21 @@ int project_readOption(char* s1, char* s2)
         else LengtheningStep = MAX(0.0, tStep);
         break;
 
+////  Following code section added to release 5.1.008.  ////                   //(5.1.008)
+
+     // --- minimum variable time step for dynamic wave routing
+      case MIN_ROUTE_STEP:
+        if ( !getDouble(s2, &MinRouteStep) || MinRouteStep < 0.0 )
+            return error_setInpError(ERR_NUMBER, s2);
+        break;
+
+      case NUM_THREADS:
+        m = atoi(s2);
+        if ( m < 0 ) return error_setInpError(ERR_NUMBER, s2);
+        NumThreads = m;
+        break;
+ ////
+
       // --- safety factor applied to variable time step estimates under
       //     dynamic wave flow routing (value of 0 indicates that variable
       //     time step option not used)
@@ -748,12 +783,14 @@ void setDefaults()
    WetStep         = 300;              // Runoff wet time step (secs)
    DryStep         = 3600;             // Runoff dry time step (secs)
    RouteStep       = 300.0;            // Routing time step (secs)
+   MinRouteStep    = 0.5;              // Minimum variable time step (sec)     //(5.1.008)
    ReportStep      = 900;              // Reporting time step (secs)
    StartDryDays    = 0.0;              // Antecedent dry days
    MaxTrials       = 0;                // Force use of default max. trials 
    HeadTol         = 0.0;              // Force use of default head tolerance
    SysFlowTol      = 0.05;             // System flow tolerance for steady state
    LatFlowTol      = 0.05;             // Lateral flow tolerance for steady state
+   NumThreads      = 0;                // Number of parallel threads to use
 
    // Deprecated options
    SlopeWeighting  = TRUE;             // Use slope weighting 
@@ -817,14 +854,18 @@ void setDefaults()
    Evap.dryOnly = FALSE;
 
 ////  Following code segment added to release 5.1.007.  ////                   //(5.1.007)
+////
    // Climate adjustments
    for (i = 0; i < 12; i++)
    {
        Adjust.temp[i] = 0.0;   // additive adjustments
        Adjust.evap[i] = 0.0;   // additive adjustments
        Adjust.rain[i] = 1.0;   // multiplicative adjustments
+       Adjust.hydcon[i] = 1.0; // hyd. conductivity adjustments                //(5.1.008)
    }
    Adjust.rainFactor = 1.0;
+   Adjust.hydconFactor = 1.0;                                                  //(5.1.008)
+////
 }
 
 //=============================================================================
@@ -1097,6 +1138,7 @@ void deleteObjects()
     infil_delete();
 
 ////  Added for release 5.1.007.  ////                                         //(5.1.007)
+////
     // --- free memory used for storage exfiltration
     if ( Node ) for (j = 0; j < Nnodes[STORAGE]; j++)
     {
@@ -1107,6 +1149,11 @@ void deleteObjects()
             FREE(Storage[j].exfil);
         }
     }
+////
+
+    // --- free memory used for outfall pollutants loads                       //(5.1.008)
+    if ( Node ) for (j = 0; j < Nnodes[OUTFALL]; j++)                          //(5.1.008)
+        FREE(Outfall[j].wRouted);                                              //(5.1.008)
 
     // --- free memory used for nodal inflows & treatment functions
     if ( Node ) for (j = 0; j < Nobjects[NODE]; j++)

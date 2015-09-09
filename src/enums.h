@@ -6,9 +6,23 @@
 //   Date:    03/20/14  (Build 5.1.001)
 //            04/14/14  (Build 5.1.004)
 //            09/15/14  (Build 5.1.007)
+//            03/19/15  (Build 5.1.008)
 //   Author:  L. Rossman
 //
 //   Enumerated variables
+//
+//   Build 5.1.004:
+//   - IGNORE_RDII for the ignore RDII option added.
+//
+//   Build 5.1.007:
+//   - s_GWF for [GWF] input file section added.
+//   - s_ADJUST for [ADJUSTMENTS] input file section added.
+//
+//   Build 5.1.008:
+//   - Enumerations for fullness state of a conduit added.
+//   - NUM_THREADS added for number of parallel threads option.
+//   - Runoff flow categories added to represent mass balance components.
+//
 //-----------------------------------------------------------------------------
 
 //-------------------------------------
@@ -210,7 +224,7 @@ enum SysFlowType {
 //-------------------------------------
 // Conduit flow classifications
 //-------------------------------------
- #define MAX_FLOW_CLASSES 7
+// #define MAX_FLOW_CLASSES 7                                                  //(5.1.008)
  enum FlowClassType {
       DRY,                             // dry conduit
       UP_DRY,                          // upstream end is dry
@@ -218,7 +232,24 @@ enum SysFlowType {
       SUBCRITICAL,                     // sub-critical flow
       SUPCRITICAL,                     // super-critical flow
       UP_CRITICAL,                     // free-fall at upstream end
-      DN_CRITICAL};                    // free-fall at downstream end
+      DN_CRITICAL,                     // free-fall at downstream end
+      MAX_FLOW_CLASSES,                // number of distinct flow classes      //(5.1.008)
+      UP_FULL,                         // upstream end is full                 //(5.1.008)
+      DN_FULL,                         // downstream end is full               //(5.1.008)
+      ALL_FULL};                       // completely full                      //(5.1.008)
+
+
+////  Added to release 5.1.008.  ////                                          //(5.1.008)
+//------------------------
+// Runoff flow categories
+//------------------------
+enum RunoffFlowType {
+     RUNOFF_RAINFALL,                  // rainfall
+     RUNOFF_EVAP,                      // evaporation
+     RUNOFF_INFIL,                     // infiltration
+     RUNOFF_RUNOFF,                    // runoff
+     RUNOFF_DRAINS,                    // LID drain flow
+     RUNOFF_RUNON};                    // runon from outfalls
 
 //-------------------------------------
 // Surface pollutant loading categories
@@ -418,7 +449,8 @@ enum  CompatibilityType {
       FORCE_MAIN_EQN,    LINK_OFFSETS,      MIN_SLOPE,
       IGNORE_SNOWMELT,   IGNORE_GWATER,     IGNORE_ROUTING,
       IGNORE_QUALITY,    MAX_TRIALS,        HEAD_TOL,
-      SYS_FLOW_TOL,      LAT_FLOW_TOL,      IGNORE_RDII};                      //(5.1.004)
+      SYS_FLOW_TOL,      LAT_FLOW_TOL,      IGNORE_RDII,                       //(5.1.004)
+      MIN_ROUTE_STEP,    NUM_THREADS};                                         //(5.1.008)
 
 enum  NoYesType {
       NO,

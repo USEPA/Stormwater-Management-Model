@@ -4,9 +4,13 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     09/15/14  (Build 5.1.007)
+//             03/19/15  (Build 5.1.008)
 //   Author:   L. Rossman
 //
-//   Exfiltration functions.
+//   Storage unit exfiltration functions.
+//
+//   Build 5.1.008:
+//   - Monthly conductivity adjustment applied to exfiltration rate.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -136,7 +140,10 @@ double exfil_getLoss(TExfil* exfil, double tStep, double depth, double area)
     double exfilRate = 0.0;
 
     // --- find infiltration through bottom of unit
-    if ( exfil->btmExfil->IMDmax == 0.0 ) exfilRate = exfil->btmExfil->Ks;
+    if ( exfil->btmExfil->IMDmax == 0.0 )
+    {
+        exfilRate = exfil->btmExfil->Ks * Adjust.hydconFactor;                 //(5.1.008)
+    }
     else exfilRate = grnampt_getInfil(exfil->btmExfil, tStep, 0.0, depth);
     exfilRate *= exfil->btmArea;
 
@@ -150,7 +157,7 @@ double exfil_getLoss(TExfil* exfil, double tStep, double depth, double area)
             // --- if infil. rate not a function of depth
             if ( exfil->btmExfil->IMDmax == 0.0 )
             {    
-                exfilRate += area * exfil->btmExfil->Ks;
+                exfilRate += area * exfil->btmExfil->Ks * Adjust.hydconFactor; //(5.1.008)
             }
 
             // --- infil. rate depends on depth above bank
@@ -184,6 +191,8 @@ int  createStorageExfil(int k, double x[])
 //           x = array of Green-Ampt infiltration parameters
 //  Output:  returns an error code.
 //  Purpose: creates an exfiltration object for a storage node.
+//
+//  Note: the exfiltration object is freed in project.c.
 //
 {
     TExfil*   exfil;

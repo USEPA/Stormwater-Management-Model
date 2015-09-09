@@ -5,9 +5,20 @@
 //   Version:  5.1
 //   Date:     03/19/14  (Build 5.1.000)
 //             04/19/14  (Build 5.1.006)
+//             03/19/15  (Build 5.1.008)
 //   Author:   L. Rossman
 //
-//   Subcatchment runoff & quality functions.
+//   Subcatchment runoff functions.
+//
+//   Build 5.1.008:
+//   - Support added for keeping separate track of drain outflows from LIDs.
+//   - Processing of inflow/outflow volumes over a time step was refactored. 
+//   - Reported subcatchment runoff includes both surface runoff and LID
+//     drain flows, even though latter can be routed elsewhere.
+//   - Runon now distributed only over non-LID area of a subcatchment, unless
+//     LID covers full area.
+//   - Pollutant buildup and washoff functions were moved to surfqual.c.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -25,28 +36,25 @@ const double MEXP      = 1.6666667;         // exponent in Manning Eq.
 const double ODETOL    = 0.0001;            // acceptable error for ODE solver
 
 //-----------------------------------------------------------------------------
-// Shared variables   
+// Globally shared variables   
 //-----------------------------------------------------------------------------
-static  double     Losses;        // subcatch evap. + infil. loss rate (ft/sec)
-static  double     Outflow;       // subcatch outflow rate (ft/sec)
+// Volumes (ft3) for a subcatchment over a time step                           //(5.1.008)
+double     Vevap;         // evaporation
+double     Vpevap;        // pervious area evaporation
+double     Vinfil;        // non-LID infiltration
+double     Vinflow;       // non-LID precip + snowmelt + runon + ponded water
+double     Voutflow;      // non-LID runoff to subcatchment's outlet
+double     VlidIn;        // impervious area flow to LID units
+double     VlidInfil;     // infiltration from LID units
+double     VlidOut;       // surface outflow from LID units
+double     VlidDrain;     // drain outflow from LID units
+double     VlidReturn;    // LID outflow returned to pervious area
 
-// Volumes as either total (ft3) or per unit area (ft) depending on context
-static  double     Vrain;         // subcatch rain volume over a time step
-static  double     Vevap;         // subcatch evap. volume over a time step
-static  double     Vinfil;        // subcatch infil. volume over a time step
-
-static  double     Vrunon;        // subcatch runon volume over a time step (ft3)
-static  double     Vponded;       // volume of ponded water over subcatch (ft3)
-static  double     Voutflow;      // subcatch outflow depth (ft3)
-
+//-----------------------------------------------------------------------------
+// Locally shared variables   
+//-----------------------------------------------------------------------------
 static  TSubarea* theSubarea;     // subarea to which getDdDt() is applied
 static  char *RunoffRoutingWords[] = { w_OUTLET,  w_IMPERV, w_PERV, NULL};
-
-//-----------------------------------------------------------------------------
-//  Imported variables (declared in RUNOFF.C)
-//-----------------------------------------------------------------------------
-extern  double*    OutflowLoad;   // outflow pollutant mass from a subcatchment
-extern  double*    WashoffLoad;   // washoff pollutant mass from landuses
 
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)   
@@ -61,33 +69,29 @@ extern  double*    WashoffLoad;   // washoff pollutant mass from landuses
 
 //  subcatch_setOldState       (called from runoff_execute)
 //  subcatch_getRunon          (called from runoff_execute)
+//  subcatch_addRunon          (called from subcatch_getRunon,
+//                              lid_addDrainRunon, & runoff_getOutfallRunon)   //(5.1.008)
 //  subcatch_getRunoff         (called from runoff_execute)
-//  subcatch_getWashoff        (called from runoff_execute)
-//  subcatch_getBuildup        (called from runoff_execute)
-//  subcatch_sweepBuildup      (called from runoff_execute)
 //  subcatch_hadRunoff         (called from runoff_execute)
 
 //  subcatch_getFracPerv       (called from gwater_initState)
 //  subcatch_getStorage        (called from massbal_getRunoffError)
+//  subcatch_getDepth          (called from findPondedLoads in surfqual.c)
 
 //  subcatch_getWtdOutflow     (called from addWetWeatherInflows in routing.c)
-//  subcatch_getWtdWashoff     (called from addWetWeatherInflows in routing.c)
-
 //  subcatch_getResults        (called from output_saveSubcatchResults)
 
 //-----------------------------------------------------------------------------
 // Function declarations
 //-----------------------------------------------------------------------------
 static void   getNetPrecip(int j, double* netPrecip, double tStep);
-static void   getSubareaRunoff(int subcatch, int subarea, double rainfall,
-              double evap, double tStep);
+static double getSubareaRunoff(int subcatch, int subarea, double area,         //(5.1.008)
+              double rainfall, double evap, double tStep);
 static double getSubareaInfil(int j, TSubarea* subarea, double precip,
               double tStep);
-static void   findSubareaRunoff(TSubarea* subarea, double tRunoff);
+static double findSubareaRunoff(TSubarea* subarea, double tRunoff);            //(5.1.008)
 static void   updatePondedDepth(TSubarea* subarea, double* tx);
 static void   getDdDt(double t, double* d, double* dddt);
-static void   updatePondedQual(int j, double wUp[], double pondedQual[],
-	          double tStep);
 
 //=============================================================================
 
@@ -100,7 +104,7 @@ int  subcatch_readParams(int j, char* tok[], int ntoks)
 //  Purpose: reads subcatchment parameters from a tokenized  line of input data.
 //
 //  Data has format:
-//    Name  RainGage  Outlet  Area  %Imperv  Width  Slope CurbLength  Snowmelt  
+//    Name  RainGage  Outlet  Area  %Imperv  Width  Slope CurbLength  Snowpack  
 //
 {
     int    i, k, m;
@@ -386,7 +390,6 @@ void  subcatch_initState(int j)
 //
 {
     int    i;
-    int    p;                          // pollutant index
 
     // --- initialize rainfall, runoff, & snow depth
     Subcatch[j].rainfall = 0.0;
@@ -395,6 +398,8 @@ void  subcatch_initState(int j)
     Subcatch[j].oldSnowDepth = 0.0;
     Subcatch[j].newSnowDepth = 0.0;
     Subcatch[j].runon = 0.0;
+    Subcatch[j].evapLoss = 0.0;                                                //(5.1.008)
+    Subcatch[j].infilLoss = 0.0;                                               //(5.1.008)
 
     // --- set isUsed property of subcatchment's rain gage
     i = Subcatch[j].gage;
@@ -418,16 +423,7 @@ void  subcatch_initState(int j)
     }
 
     // --- initialize runoff quality
-    for (p = 0; p < Nobjects[POLLUT]; p++)
-    {
-        Subcatch[j].oldQual[p] = 0.0;
-        Subcatch[j].newQual[p] = 0.0;
-        Subcatch[j].pondedQual[p] = 0.0;
-    }
-
-    // --- initialize pollutant buildup
-	landuse_getInitBuildup(Subcatch[j].landFactor,  Subcatch[j].initBuildup,
-		Subcatch[j].area, Subcatch[j].curbLength);
+    surfqual_initState(j);
 }
 
 //=============================================================================
@@ -451,6 +447,7 @@ void subcatch_setOldState(int j)
         Subcatch[j].oldQual[i] = Subcatch[j].newQual[i];
         Subcatch[j].newQual[i] = 0.0;
     }
+    lid_setOldGroupState(j);                                                   //(5.1.008)
 }
 
 //=============================================================================
@@ -497,6 +494,8 @@ double subcatch_getStorage(int j)
 
 //=============================================================================
 
+////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
+
 void subcatch_getRunon(int j)
 //
 //  Input:   j = subcatchment index
@@ -505,8 +504,8 @@ void subcatch_getRunon(int j)
 //           or between its subareas.
 //
 {
-    int    i;                          // subarea index
     int    k;                          // outlet subcatchment index
+    int    p;                          // pollutant index
     double q;                          // runon to outlet subcatchment (ft/sec)
     double q1, q2;                     // runoff from imperv. areas (ft/sec)
     double pervArea;                   // subcatchment pervious area (ft2)
@@ -514,27 +513,19 @@ void subcatch_getRunon(int j)
     // --- add previous period's runoff from this subcatchment to the
     //     runon of the outflow subcatchment, if it exists
     k = Subcatch[j].outSubcatch;
-    if ( k >= 0 && k != j && Subcatch[k].area > 0.0 )
+    q = Subcatch[j].oldRunoff;
+    if ( k >= 0 && k != j )
     {
-        // --- distribute previous runoff from subcatch j (in cfs)
-        //     uniformly over area of subcatch k (ft/sec)
-        q = Subcatch[j].oldRunoff / Subcatch[k].area;
-        Subcatch[k].runon += q;
-
-        // --- assign this flow to the 3 types of subareas
-        for (i = IMPERV0; i <= PERV; i++)
+        subcatch_addRunonFlow(k, q);
+        for (p = 0; p < Nobjects[POLLUT]; p++)
         {
-            Subcatch[k].subArea[i].inflow += q;
-        }
-
-        // --- add runoff mass load (in mass/sec) to receiving subcatch,
-        //     storing it in Subcatch[].newQual for now
-        for (i = 0; i < Nobjects[POLLUT]; i++)
-        {
-            Subcatch[k].newQual[i] += (Subcatch[j].oldRunoff *
-                                       Subcatch[j].oldQual[i] * LperFT3);
+            Subcatch[k].newQual[p] += q * Subcatch[j].oldQual[p] * LperFT3;
         }
     }
+
+    // --- add any LID underdrain flow sent from this subcatchment to
+    //     other subcatchments
+    if ( Subcatch[j].lidArea > 0.0 ) lid_addDrainRunon(j);
 
     // --- add to sub-area inflow any outflow from other subarea in previous period
     //     (NOTE: no transfer of runoff pollutant load, since runoff loads are
@@ -571,13 +562,49 @@ void subcatch_getRunon(int j)
     if ( Subcatch[j].lidArea > 0.0 && Subcatch[j].fracImperv < 1.0 )
     {
         pervArea = Subcatch[j].subArea[PERV].fArea *
-            (Subcatch[j].area - Subcatch[j].lidArea);
-        if ( pervArea > 0.0 ) Subcatch[j].subArea[PERV].inflow +=
-            lid_getFlowToPerv(j) / pervArea;
+                   (Subcatch[j].area - Subcatch[j].lidArea);
+        q = lid_getFlowToPerv(j);
+        if ( pervArea > 0.0 )
+        {
+            Subcatch[j].subArea[PERV].inflow += q / pervArea;
+        }
     }
 }
 
 //=============================================================================
+
+////  New function added to release 5.1.008.  ////                            //(5.1.008)
+
+void  subcatch_addRunonFlow(int k, double q)
+//
+//  Input:   k = subcatchment index
+//           q = runon flow rate (cfs) to subcatchment k
+//  Output:  none
+//  Purpose: Updates the total runon flow (ft/s) seen by a subcatchment that
+//           receives runon flow from an upstream subcatchment.
+//
+{
+    int i;
+    double nonLidArea;
+
+    // --- distribute runoff from upstream subcatchment (in cfs)
+    //     uniformly over the non-LID area of current subcatchment (ft/sec)
+    if ( Subcatch[k].area <= 0.0 ) return;
+    nonLidArea = Subcatch[k].area - Subcatch[k].lidArea; 
+    if ( nonLidArea > 0.0 ) q = q / nonLidArea;
+    else                    q = q / Subcatch[k].area;
+    Subcatch[k].runon += q;
+
+    // --- assign this flow to the 3 types of subareas
+    for (i = IMPERV0; i <= PERV; i++)
+    {
+        Subcatch[k].subArea[i].inflow += q;
+    }
+}
+
+//=============================================================================
+
+////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
 
 double subcatch_getRunoff(int j, double tStep)
 //
@@ -586,100 +613,108 @@ double subcatch_getRunoff(int j, double tStep)
 //  Output:  returns total runoff produced by subcatchment (ft/sec)
 //  Purpose: Computes runoff & new storage depth for subcatchment.
 //
+//  The 'runoff' value returned by this function is the total runoff
+//  generated (in ft/sec) by the subcatchment before any internal
+//  re-routing is applied. It is used to compute pollutant washoff.
+//
+//  The 'outflow' value computed here (in cfs) is the surface runoff
+//  that actually leaves the subcatchment after any LID controls are
+//  applied and is saved to Subcatch[j].newRunoff. 
+//
 {
     int    i;                          // subarea index
-    double area;                       // portion of subcatchment area (ft2)
+    double nonLidArea;                 // non-LID portion of subcatch area (ft2)
+    double area;                       // sub-area or subcatchment area (ft2)
     double netPrecip[3];               // subarea net precipitation (ft/sec)
-    double rainVol     = 0.0;          // rain volume (ft3)
-    double evapVol     = 0.0;          // evaporation volume (ft3)
-    double infilVol    = 0.0;          // infiltration volume (ft3)
-    double outflowVol  = 0.0;          // runoff volume leaving subcatch (ft3)
-    double outflow     = 0.0;          // runoff rate leaving subcatch (cfs)
-    double runoff      = 0.0;          // total runoff rate on subcatch (ft/sec)
-    double pervEvapVol = 0.0;          // evaporation over pervious area (ft3)
-    double evapRate    = 0.0;          // max. evaporation rate (ft/sec)
+    double vRain;                      // rainfall (+ snowfall) volume (ft3)
+    double vRunon    = 0.0;            // runon volume from other areas (ft3)
+    double vOutflow  = 0.0;            // runoff volume leaving subcatch (ft3)
+    double runoff    = 0.0;            // total runoff flow on subcatch (cfs)
+    double evapRate  = 0.0;            // potential evaporation rate (ft/sec)
 
-    // NOTE: The 'runoff' value returned by this function is the total runoff
-    //       generated (in ft/sec) by the subcatchment before any internal
-    //       re-routing is applied. It is used in the Exponential Washoff
-    //       function to compute pollutant washoff. The 'outflow' value
-    //       computed here (in cfs) is the runoff that actually leaves the
-    //       subcatchment (which can be reduced by internal re-routing and
-    //       LID controls) and is saved to Subcatch[j].newRunoff.
+    // --- initialize shared water balance variables
+    Vevap     = 0.0;
+    Vpevap    = 0.0;
+    Vinfil    = 0.0;
+    Voutflow  = 0.0;
+    VlidIn    = 0.0;
+    VlidInfil = 0.0;
+    VlidOut   = 0.0;
+    VlidDrain = 0.0;
+    VlidReturn = 0.0;
 
-    // --- save current depth of ponded water over entire subcatchment
-	Vponded = subcatch_getDepth(j) * Subcatch[j].area;
+    // --- find volume of inflow to non-LID portion of subcatchment as existing
+    //     ponded water + any runon volume from upstream areas;
+    //     rainfall and snowmelt will be added as each sub-area is analyzed
+    nonLidArea = Subcatch[j].area - Subcatch[j].lidArea;
+    vRunon = Subcatch[j].runon * tStep * nonLidArea;
+    Vinflow = vRunon + subcatch_getDepth(j) * nonLidArea;
 
-    // --- get net precipitation (rainfall + snowmelt) on subcatchment
+    // --- get net precip. (rainfall + snowfall + snowmelt) on the 3 types
+    //     of subcatchment sub-areas and update Vinflow with it
     getNetPrecip(j, netPrecip, tStep);
+
+    // --- find potential evaporation rate
     if ( Evap.dryOnly && Subcatch[j].rainfall > 0.0 ) evapRate = 0.0;
     else evapRate = Evap.rate;
 
-    // --- initialize runoff rates
-    outflow = 0.0;
-    runoff = 0.0;
-
-    // --- examine each type of sub-area
-    for (i = IMPERV0; i <= PERV; i++)
+    // --- examine each type of sub-area (impervious w/o depression storage,
+    //     impervious w/ depression storage, and pervious)
+    if ( nonLidArea > 0.0 ) for (i = IMPERV0; i <= PERV; i++)
     {
-        // --- check that sub-area type exists
-        area = (Subcatch[j].area - Subcatch[j].lidArea) *
-                Subcatch[j].subArea[i].fArea;
-        if ( area > 0.0 )
-        {
-            // --- get runoff rate from sub-area
-            getSubareaRunoff(j, i, netPrecip[i], evapRate, tStep);
-            runoff += Subcatch[j].subArea[i].runoff * area;
-
-            // --- update components of volumetric water balance (in ft3)
-            //Subcatch[j].losses += Losses * area;
-            rainVol    += netPrecip[i] * tStep * area;
-            outflow    += Outflow * area;
-            evapVol    += Vevap * area;
-            infilVol   += Vinfil * area;
-
-            // --- save evap losses from pervious area
-            //     (needed for groundwater modeling)
-            if ( i == PERV ) pervEvapVol += Vevap * area;
-        }
+        // --- get runoff from sub-area updating Vevap, Vpevap,
+        //     Vinfil & Voutflow)
+        area = nonLidArea * Subcatch[j].subArea[i].fArea;
+        Subcatch[j].subArea[i].runoff =
+            getSubareaRunoff(j, i, area, netPrecip[i], evapRate, tStep);
+        runoff += Subcatch[j].subArea[i].runoff * area;
     }
 
-    // --- evaluate LID treatment as if it were another type of sub-area
-    //     while updating outflow, evap volumes, & infil volumes
+    // --- evaluate any LID treatment provided (updating Vevap,
+    //     Vpevap, VlidInfil, VlidIn, VlidOut, & VlidDrain)
     if ( Subcatch[j].lidArea > 0.0 )
-        runoff += lid_getRunoff(j, &outflow, &evapVol, &pervEvapVol,
-                                &infilVol, tStep);
+    {
+        lid_getRunoff(j, tStep);
+    }
 
     // --- update groundwater levels & flows if applicable
-    if (!IgnoreGwater && Subcatch[j].groundwater )
-        gwater_getGroundwater(j, pervEvapVol, infilVol, tStep);
+    if ( !IgnoreGwater && Subcatch[j].groundwater )
+    {
+        gwater_getGroundwater(j, Vpevap, Vinfil, tStep);
+    }
 
-    // --- save subcatchment's outflow (cfs) & total loss rates (ft/s)
+    // --- save subcatchment's total loss rates (ft/s)
     area = Subcatch[j].area;
-    Subcatch[j].newRunoff = outflow;
-    Subcatch[j].evapLoss = evapVol / tStep / area;
-    Subcatch[j].infilLoss = infilVol / tStep / area;
+    Subcatch[j].evapLoss = Vevap / tStep / area;
+    Subcatch[j].infilLoss = (Vinfil + VlidInfil) / tStep / area;
 
-    // --- save volumes (ft3) for use in pollutant washoff calculation
-    Vrain = rainVol;
-    Vevap = evapVol;
-    Vinfil = infilVol;
-	Voutflow = outflow * tStep;
-	Vrunon = Subcatch[j].runon * tStep * area;
+    // --- find net surface runoff volume
+    //     (VlidDrain accounts for LID drain flows)
+    vOutflow = Voutflow      // runoff from all non-LID areas
+               - VlidIn      // runoff treated by LID units
+               + VlidOut;    // runoff from LID units
+    Subcatch[j].newRunoff = vOutflow / tStep;
 
-    // --- compute water flux volumes over the time step
-    rainVol = Subcatch[j].rainfall * tStep * area;
-    stats_updateSubcatchStats(j, rainVol, Vrunon, Vevap, Vinfil,
-                              Voutflow, outflow);
+    // --- obtain external precip. volume (without any snowmelt)
+    vRain = Subcatch[j].rainfall * tStep * area;
 
-    // --- update system flow balance
-    //     (system outflow is 0 if outlet is another subcatch)
-    outflowVol = Voutflow;
+    // --- update the cumulative stats for this subcatchment
+    stats_updateSubcatchStats(j, vRain, vRunon, Vevap, Vinfil + VlidInfil,
+                              vOutflow + VlidDrain,
+                              Subcatch[j].newRunoff + VlidDrain/tStep);
+
+    // --- include this subcatchment's contribution to overall flow balance
+    //     only if its outlet is a drainage system node
     if ( Subcatch[j].outNode == -1 && Subcatch[j].outSubcatch != j )
     {
-        outflowVol = 0.0;
+        vOutflow = 0.0;
     }
-    massbal_updateRunoffTotals(rainVol, evapVol, infilVol, outflowVol);
+
+    // --- update mass balances
+    massbal_updateRunoffTotals(RUNOFF_RAINFALL, vRain);
+    massbal_updateRunoffTotals(RUNOFF_EVAP, Vevap);
+    massbal_updateRunoffTotals(RUNOFF_INFIL, Vinfil+VlidInfil);
+    massbal_updateRunoffTotals(RUNOFF_RUNOFF, vOutflow);
 
     // --- return area-averaged runoff (ft/s)
     return runoff / area;
@@ -727,11 +762,14 @@ void getNetPrecip(int j, double* netPrecip, double tStep)
 
 //=============================================================================
 
+////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
+
 double subcatch_getDepth(int j)
 //
 //  Input:   j = subcatchment index
-//  Output:  returns average depth of water (ft)
-//  Purpose: finds average depth of water over a subcatchment
+//  Output:  returns average depth of ponded water (ft)
+//  Purpose: finds average depth of water over the non-LID portion of a
+//           subcatchment
 //
 {
     int    i;
@@ -743,258 +781,7 @@ double subcatch_getDepth(int j)
         fArea = Subcatch[j].subArea[i].fArea;
         if ( fArea > 0.0 ) depth += Subcatch[j].subArea[i].depth * fArea;
     }
-
-    if ( Subcatch[j].lidArea > 0.0 ) 
-    {
-        depth = (depth * (Subcatch[j].area - Subcatch[j].lidArea) +
-            lid_getSurfaceDepth(j) * Subcatch[j].lidArea) / Subcatch[j].area;
-    }
     return depth;
-}
-
-//=============================================================================
-
-void subcatch_getBuildup(int j, double tStep)
-//
-//  Input:   j = subcatchment index
-//           tStep = time step (sec)
-//  Output:  none
-//  Purpose: adds to pollutant buildup on subcatchment.
-//
-{
-    int     i;                         // land use index
-    int     p;                         // pollutant index
-    double  f;                         // land use fraction
-    double  area;                      // land use area (acres or hectares)
-    double  curb;                      // land use curb length (user units)
-    double  oldBuildup;                // buildup at start of time step
-    double  newBuildup;                // buildup at end of time step
-
-    // --- consider each landuse
-    for (i = 0; i < Nobjects[LANDUSE]; i++)
-    {
-        // --- skip landuse if not in subcatch
-        f = Subcatch[j].landFactor[i].fraction;
-        if ( f == 0.0 ) continue;
-
-        // --- get land area (in acres or hectares) & curb length
-        area = f * Subcatch[j].area * UCF(LANDAREA);
-        curb = f * Subcatch[j].curbLength;
-
-        // --- examine each pollutant
-        for (p = 0; p < Nobjects[POLLUT]; p++)
-        {
-            // --- see if snow-only buildup is in effect
-            if (Pollut[p].snowOnly 
-            && Subcatch[j].newSnowDepth < 0.001/12.0) continue;
-
-            // --- use land use's buildup function to update buildup amount
-            oldBuildup = Subcatch[j].landFactor[i].buildup[p];        
-            newBuildup = landuse_getBuildup(i, p, area, curb, oldBuildup,
-                         tStep);
-            newBuildup = MAX(newBuildup, oldBuildup);
-            Subcatch[j].landFactor[i].buildup[p] = newBuildup;
-            massbal_updateLoadingTotals(BUILDUP_LOAD, p, 
-                                       (newBuildup - oldBuildup));
-       }
-    }
-}
-
-//=============================================================================
-
-void subcatch_sweepBuildup(int j, DateTime aDate)
-//
-//  Input:   j = subcatchment index
-//  Output:  none
-//  Purpose: reduces pollutant buildup over a subcatchment if sweeping occurs.
-//
-{
-    int     i;                         // land use index
-    int     p;                         // pollutant index
-    double  oldBuildup;                // buildup before sweeping (lbs or kg)
-    double  newBuildup;                // buildup after sweeping (lbs or kg)
-
-    // --- no sweeping if there is snow on plowable impervious area
-    if ( Subcatch[j].snowpack != NULL &&
-         Subcatch[j].snowpack->wsnow[IMPERV0] > MIN_TOTAL_DEPTH ) return;
-
-    // --- consider each land use
-    for (i = 0; i < Nobjects[LANDUSE]; i++)
-    {
-        // --- skip land use if not in subcatchment 
-        if ( Subcatch[j].landFactor[i].fraction == 0.0 ) continue;
-
-        // --- see if land use is subject to sweeping
-        if ( Landuse[i].sweepInterval == 0.0 ) continue;
-
-        // --- see if sweep interval has been reached
-        if ( aDate - Subcatch[j].landFactor[i].lastSwept >=
-            Landuse[i].sweepInterval )
-        {
-        
-            // --- update time when last swept
-            Subcatch[j].landFactor[i].lastSwept = aDate;
-
-            // --- examine each pollutant
-            for (p = 0; p < Nobjects[POLLUT]; p++)
-            {
-                // --- reduce buildup by the fraction available
-                //     times the sweeping effic.
-                oldBuildup = Subcatch[j].landFactor[i].buildup[p];
-                newBuildup = oldBuildup * (1.0 - Landuse[i].sweepRemoval *
-                             Landuse[i].washoffFunc[p].sweepEffic);
-                newBuildup = MIN(oldBuildup, newBuildup);
-                newBuildup = MAX(0.0, newBuildup);
-                Subcatch[j].landFactor[i].buildup[p] = newBuildup;
-
-                // --- update mass balance totals
-                massbal_updateLoadingTotals(SWEEPING_LOAD, p,
-                                            oldBuildup - newBuildup);
-            }
-        }
-    }
-}
-
-//=============================================================================
-
-void  subcatch_getWashoff(int j, double runoff, double tStep)
-//
-//  Input:   j = subcatchment index
-//           runoff = total subcatchment runoff (ft/sec)
-//           tStep = time step (sec)
-//  Output:  none
-//  Purpose: computes new runoff quality for subcatchment.
-//
-//  Considers two separate pollutant generating streams that are combined
-//  together:
-//  1. complete mix mass balance of pollutants in surface ponding due to
-//     runon, wet deposition, infil., & evap.
-//  2. washoff of pollutant buildup as described by the project's land
-//     use washoff functions.
-//
-{
-    int    i, p;
-    double massLoad;
-
-    // --- return if there is no area or no pollutants
-    if ( Nobjects[POLLUT] == 0 || Subcatch[j].area == 0.0 ) return;
-
-    // --- intialize outflow loads to zero
-    for (p = 0; p < Nobjects[POLLUT]; p++)
-    {
-        WashoffLoad[p] = 0.0;      // load just from washoff function
-        OutflowLoad[p] = 0.0;      // Washoff load + ponded water load
-    }
-
-    // --- add outflow of pollutants in ponded water to outflow loads
-    //     (Note: at this point, Subcatch.newQual contains mass inflow
-    //      from any upstream subcatchments draining to this one)
-    updatePondedQual(j, Subcatch[j].newQual, Subcatch[j].pondedQual, tStep);
-
-    // --- add washoff loads from landuses to outflow loads
-    if ( runoff >= MIN_RUNOFF )
-    {
-        for (i = 0; i < Nobjects[LANDUSE]; i++)
-        {
-            if ( Subcatch[j].landFactor[i].fraction > 0.0 )
-            {
-                landuse_getWashoff(i, Subcatch[j].area, Subcatch[j].landFactor,
-				    runoff, tStep, WashoffLoad);
-            }
-        }
-
-        // --- compute contribution from any co-pollutant
-        for (p = 0; p < Nobjects[POLLUT]; p++)
-        {
-            WashoffLoad[p] += landuse_getCoPollutLoad(p, WashoffLoad);
-            OutflowLoad[p] += WashoffLoad[p];
-        }
-
-    }
-
-    // --- switch from internal runoff (used in washoff functions) to
-    //     runoff that actually leaves the subcatchment
-    runoff = Subcatch[j].newRunoff;
-
-    // --- for each pollutant
-    for (p = 0; p < Nobjects[POLLUT]; p++)
-    {
-        // --- update subcatchment's total runoff load in lbs (or kg)
-        massLoad = OutflowLoad[p] * Pollut[p].mcf;
-        Subcatch[j].totalLoad[p] += massLoad;
-
-        // --- update overall runoff mass balance if runoff goes to
-        //     conveyance system
-        if ( Subcatch[j].outNode >= 0 || Subcatch[j].outSubcatch == j ) 
-            massbal_updateLoadingTotals(RUNOFF_LOAD, p, massLoad);
-        
-        // --- save new outflow runoff concentration (in mass/L)
-        if ( runoff > MIN_RUNOFF )
-            Subcatch[j].newQual[p] = OutflowLoad[p] / (runoff * tStep * LperFT3);
-        else Subcatch[j].newQual[p] = 0.0;
-    }
-}
-
-//=============================================================================
-
-void updatePondedQual(int j, double wRunon[], double pondedQual[], double tStep)
-{
-    int    p;
-    double c;
-    double vIn;
-    double wPpt, wInfil, w1;
-    double bmpRemoval;
-    int    isDry;
-
-    // --- total inflow volume
-    vIn = Vrain + Vrunon;
-
-    // --- for dry conditions
-    if ( Vponded + vIn == 0.0 ) isDry = 1;
-    else isDry = 0;
-
-    // --- analyze each pollutant
-    for (p = 0; p < Nobjects[POLLUT]; p++)
-    {
-        // --- update mass balance for direct deposition
-        wPpt = Pollut[p].pptConcen * LperFT3 * Vrain;                          //(5.1.006 - MT)
-        massbal_updateLoadingTotals(DEPOSITION_LOAD, p, wPpt * Pollut[p].mcf);
-
-        // --- surface is dry and has no inflow -- add any remaining mass
-        //     to overall mass balance's FINAL_LOAD category
-        if ( isDry )
-        {
-            massbal_updateLoadingTotals(FINAL_LOAD, p,
-                pondedQual[p] * Pollut[p].mcf);
-            pondedQual[p] = 0.0;
-            OutflowLoad[p] = 0.0;
-        }
-        else
-        {
-            // --- find concen. of ponded water
-            w1 = pondedQual[p] + wPpt + wRunon[p]*tStep;
-            c = w1 / (Vponded + vIn);
-
-            // --- mass lost to infiltration
-            wInfil = c * Vinfil;
-            wInfil = MIN(wInfil, w1);
-            massbal_updateLoadingTotals(INFIL_LOAD, p, wInfil * Pollut[p].mcf);
-            w1 -= wInfil;
-
-            // --- mass lost to outflow
-            OutflowLoad[p] = MIN(w1, (c*Voutflow));
-            w1 -= OutflowLoad[p];
-
-            // --- reduce outflow load by average BMP removal
-            bmpRemoval = landuse_getAvgBmpEffic(j, p) * OutflowLoad[p];
-            massbal_updateLoadingTotals(BMP_REMOVAL_LOAD, p,
-                bmpRemoval*Pollut[p].mcf);
-            OutflowLoad[p] -= bmpRemoval;
-
-            // --- update ponded mass
-            pondedQual[p] = c * subcatch_getDepth(j) * Subcatch[j].area;       //(5.1.006)
-        }
-    }
 }
 
 //=============================================================================
@@ -1009,21 +796,6 @@ double subcatch_getWtdOutflow(int j, double f)
 {
     if ( Subcatch[j].area == 0.0 ) return 0.0;
     return (1.0 - f) * Subcatch[j].oldRunoff + f * Subcatch[j].newRunoff;
-}
-
-//=============================================================================
-
-double subcatch_getWtdWashoff(int j, int p, double f)
-//
-//  Input:   j = subcatchment index
-//           p = pollutant index
-//           f = weighting factor
-//  Output:  returns pollutant washoff value
-//  Purpose: finds wtd. combination of old and new washoff for a pollutant.
-//
-{
-    return (1.0 - f) * Subcatch[j].oldRunoff * Subcatch[j].oldQual[p] +
-           f * Subcatch[j].newRunoff *Subcatch[j].newQual[p];
 }
 
 //=============================================================================
@@ -1057,8 +829,20 @@ void  subcatch_getResults(int j, double f, float x[])
     x[SUBCATCH_EVAP] = (float)(Subcatch[j].evapLoss * UCF(EVAPRATE));
     x[SUBCATCH_INFIL] = (float)(Subcatch[j].infilLoss * UCF(RAINFALL));
     runoff = f1 * Subcatch[j].oldRunoff + f * Subcatch[j].newRunoff;
-    if ( runoff < MIN_RUNOFF_FLOW ) runoff = 0.0;
-    x[SUBCATCH_RUNOFF] = (float)(runoff* UCF(FLOW));
+
+////  Following code segement added to release 5.1.008.  ////                  //(5.1.008)
+////
+    // --- add any LID drain flow to reported runoff
+    if ( Subcatch[j].lidArea > 0.0 )
+    {
+        runoff += f1 * lid_getDrainFlow(j, PREVIOUS) +
+                  f * lid_getDrainFlow(j, CURRENT);
+    }
+////
+
+    // --- if runoff is really small, report it as zero
+    if ( runoff < MIN_RUNOFF * Subcatch[j].area ) runoff = 0.0;                //(5.1.008)
+    x[SUBCATCH_RUNOFF] = (float)(runoff * UCF(FLOW));
 
     // --- retrieve groundwater results
     gw = Subcatch[j].groundwater;
@@ -1081,7 +865,7 @@ void  subcatch_getResults(int j, double f, float x[])
     // --- retrieve pollutant washoff
     if ( !IgnoreQuality ) for (p = 0; p < Nobjects[POLLUT]; p++ )
     {
-        if ( runoff < MIN_RUNOFF_FLOW ) z = 0.0;
+        if ( runoff == 0.0 ) z = 0.0;
         else z = f1 * Subcatch[j].oldQual[p] + f * Subcatch[j].newQual[p];
         x[SUBCATCH_WASHOFF+p] = (float)z;
     }
@@ -1092,42 +876,37 @@ void  subcatch_getResults(int j, double f, float x[])
 //                              SUB-AREA METHODS
 //=============================================================================
 
-void getSubareaRunoff(int j, int i, double precip, double evap, double tStep)
+////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
+
+double getSubareaRunoff(int j, int i, double area, double precip, double evap,
+    double tStep)
 //
 //  Purpose: computes runoff & losses from a subarea over the current time step.
 //  Input:   j = subcatchment index
 //           i = subarea index
+//           area = sub-area area (ft2)
 //           precip = rainfall + snowmelt over subarea (ft/sec)
 //           evap = evaporation (ft/sec)
 //           tStep = time step (sec)
-//  Output:  none
+//  Output:  returns runoff rate from the sub-area (cfs);
+//           updates shared variables Vinflow, Vevap, Vpevap, Vinfil & Voutflow.
 //
 {
     double    tRunoff;                 // time over which runoff occurs (sec)
-    double    oldRunoff;               // runoff from previous time period
     double    surfMoisture;            // surface water available (ft/sec)
     double    surfEvap;                // evap. used for surface water (ft/sec)
-    double    infil;                   // infiltration rate (ft/sec)
+    double    infil = 0.0;             // infiltration rate (ft/sec)
+    double    runoff = 0.0;            // runoff rate (ft/sec)
     TSubarea* subarea;                 // pointer to subarea being analyzed
+
+    // --- no runoff if no area
+    if ( area == 0.0 ) return 0.0;
 
     // --- assign pointer to current subarea
     subarea = &Subcatch[j].subArea[i];
 
     // --- assume runoff occurs over entire time step
     tRunoff = tStep;
-
-    // --- initialize runoff & losses
-    oldRunoff = subarea->runoff;
-    subarea->runoff = 0.0;
-    infil    = 0.0;
-    Vevap    = 0.0;
-    Vinfil   = 0.0;
-    Voutflow = 0.0;
-    Losses   = 0.0;
-    Outflow  = 0.0;
-
-    // --- no runoff if no area
-    if ( subarea->fArea == 0.0 ) return;
 
     // --- determine evaporation loss rate
     surfMoisture = subarea->depth / tStep;
@@ -1140,34 +919,34 @@ void getSubareaRunoff(int j, int i, double precip, double evap, double tStep)
     subarea->inflow += precip;
     surfMoisture += subarea->inflow;
 
-    // --- save volumes lost to evaporation & infiltration
-    Vevap = surfEvap * tStep;
-    Vinfil = infil * tStep;
+    // --- update total inflow, evaporation & infiltration volumes
+    Vinflow += precip * area * tStep;
+    Vevap += surfEvap * area * tStep;
+    if ( i == PERV ) Vpevap += Vevap;
+    Vinfil += infil * area * tStep;
 
     // --- if losses exceed available moisture then no ponded water remains
-    Losses = surfEvap + infil;
-    if ( Losses >= surfMoisture )
+    if ( surfEvap + infil >= surfMoisture )
     {
-        Losses = surfMoisture;
         subarea->depth = 0.0;
     }
 
-    // --- otherwise update depth of ponded water
-    //     and time over which runoff occurs
-    else updatePondedDepth(subarea, &tRunoff);
+    // --- otherwise reduce inflow by losses and update depth
+    //     of ponded water and time over which runoff occurs
+    else
+    {
+        subarea->inflow -= surfEvap + infil;
+        updatePondedDepth(subarea, &tRunoff);
+    }
 
     // --- compute runoff based on updated ponded depth
-    findSubareaRunoff(subarea, tRunoff);
+    runoff = findSubareaRunoff(subarea, tRunoff);
 
     // --- compute runoff volume leaving subcatchment for mass balance purposes
     //     (fOutlet is the fraction of this subarea's runoff that goes to the
     //     subcatchment outlet as opposed to another subarea of the subcatchment)
-    if ( subarea->fOutlet > 0.0 )
-    {
-        Voutflow = 0.5 * (oldRunoff + subarea->runoff) * tRunoff
-                  * subarea->fOutlet;
-        Outflow = subarea->fOutlet * subarea->runoff;
-    }
+    Voutflow += subarea->fOutlet * runoff * area * tStep;
+    return runoff;
 }
 
 //=============================================================================
@@ -1177,6 +956,7 @@ double getSubareaInfil(int j, TSubarea* subarea, double precip, double tStep)
 //  Purpose: computes infiltration rate at current time step.
 //  Input:   j = subcatchment index
 //           subarea = ptr. to a subarea
+//           precip = rainfall + snowmelt over subarea (ft/sec)
 //           tStep = time step (sec)
 //  Output:  returns infiltration rate (ft/s)
 //
@@ -1199,35 +979,39 @@ double getSubareaInfil(int j, TSubarea* subarea, double precip, double tStep)
 
 //=============================================================================
 
-void findSubareaRunoff(TSubarea* subarea, double tRunoff)
+////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
+
+double findSubareaRunoff(TSubarea* subarea, double tRunoff)
 //
 //  Purpose: computes runoff (ft/s) from subarea after current time step.
 //  Input:   subarea = ptr. to a subarea
 //           tRunoff = time step over which runoff occurs (sec)
-//  Output:  none
+//  Output:  returns runoff rate (ft/s)
 //
 {
     double xDepth = subarea->depth - subarea->dStore;
+    double runoff = 0.0;
 
     if ( xDepth > ZERO )
     {
         // --- case where nonlinear routing is used
         if ( subarea->N > 0.0 )
         {
-            subarea->runoff = subarea->alpha * pow(xDepth, MEXP);
+            runoff = subarea->alpha * pow(xDepth, MEXP);
         }
 
         // --- case where no routing is used (Mannings N = 0)
         else
         {
-            subarea->runoff = xDepth / tRunoff;
+            runoff = xDepth / tRunoff;
             subarea->depth = subarea->dStore;
         }
     }
     else
     {    
-        subarea->runoff = 0.0;
+        runoff = 0.0;
     }
+    return runoff;
 }
 
 //=============================================================================
@@ -1240,12 +1024,9 @@ void updatePondedDepth(TSubarea* subarea, double* dt)
 //  Purpose: computes new ponded depth over subarea after current time step.
 //
 {
-    double ix;                         // excess inflow to subarea (ft/sec)
+    double ix = subarea->inflow;       // excess inflow to subarea (ft/sec)    //(5.1.008)
     double dx;                         // depth above depression storage (ft)
     double tx = *dt;                   // time over which dx > 0 (sec)
-
-    // --- excess inflow = total inflow - losses
-    ix = subarea->inflow - Losses;
 
     // --- see if not enough inflow to fill depression storage (dStore)
     if ( subarea->depth + ix*tx <= subarea->dStore )
@@ -1297,7 +1078,7 @@ void  getDdDt(double t, double* d, double* dddt)
 //           for the subarea whose runoff is being computed.
 //
 {
-    double ix = theSubarea->inflow - Losses;
+    double ix = theSubarea->inflow;                                            //(5.1.008)
     double rx = *d - theSubarea->dStore;
     if ( rx < 0.0 )
     {

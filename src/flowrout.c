@@ -5,10 +5,20 @@
 //   Version:  5.1
 //   Date:     03/19/14  (Build 5.1.001)
 //             09/15/14  (Build 5.1.007)
+//             03/19/15  (Build 5.1.008)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
 //   Flow routing functions.
+//
+//
+//   Build 5.1.007:
+//   - updateStorageState() modified in response to node outflow being 
+//     initialized with current evap & seepage losses in routing_execute().
+//
+//   Build 5.1.008:
+//   - Determination of node crown elevations moved to dynwave.c.
+//   - Support added for new way of recording conduit's fullness state.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -38,7 +48,7 @@ static const double STOPTOL = 0.005;   // storage updating stopping tolerance
 static void   initLinkDepths(void);
 static void   initNodeDepths(void);
 static void   initNodes(void);
-static void   initLinks(void);
+static void   initLinks(int routingModel);                                     //(5.1.008)
 static void   validateTreeLayout(void);      
 static void   validateGeneralLayout(void);
 static void   updateStorageState(int i, int j, int links[], double dt);
@@ -80,7 +90,7 @@ void flowrout_init(int routingModel)
 
     // --- initialize node & link volumes
     initNodes();
-    initLinks();
+    initLinks(routingModel);                                                   //(5.1.008)
 }
 
 //=============================================================================
@@ -402,6 +412,8 @@ void initLinkDepths()
 
 //=============================================================================
 
+////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
+
 void initNodes()
 //
 //  Input:   none
@@ -413,9 +425,6 @@ void initNodes()
 
     for ( i = 0; i < Nobjects[NODE]; i++ )
     {
-        // --- set default crown elevations here
-        Node[i].crownElev = Node[i].invertElev;
-
         // --- initialize node inflow and outflow
         Node[i].inflow = Node[i].newLatFlow;
         Node[i].outflow = 0.0;
@@ -452,52 +461,42 @@ void initNodes()
 
 //=============================================================================
 
-void initLinks()
+////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
+
+void initLinks(int routingModel)
 //
 //  Input:   none
 //  Output:  none
 //  Purpose: sets initial upstream/downstream conditions in links.
 //
-//  Note: initNodes() must have been called first to properly
-//        initialize each node's crown elevation.
-//
 {
     int    i;                          // link index
-    int    j;                          // node index
     int    k;                          // conduit or pump index
-    double z;                          // crown elev. (ft)
 
     // --- examine each link
     for ( i = 0; i < Nobjects[LINK]; i++ )
     {
-        // --- examine each conduit
-        if ( Link[i].type == CONDUIT )
+        if ( routingModel == SF) Link[i].newFlow = 0.0;
+
+        // --- otherwise if link is a conduit
+        else if ( Link[i].type == CONDUIT )
         {
             // --- assign initial flow to both ends of conduit
             k = Link[i].subIndex;
             Conduit[k].q1 = Link[i].newFlow / Conduit[k].barrels;
             Conduit[k].q2 = Conduit[k].q1;
 
-            Conduit[k].q1Old = Conduit[k].q1;
-            Conduit[k].q2Old = Conduit[k].q2;
-
             // --- find areas based on initial flow depth
             Conduit[k].a1 = xsect_getAofY(&Link[i].xsect, Link[i].newDepth);
             Conduit[k].a2 = Conduit[k].a1;
 
             // --- compute initial volume from area
-            Link[i].newVolume = Conduit[k].a1 * link_getLength(i) *
-                                Conduit[k].barrels;
+            {
+                Link[i].newVolume = Conduit[k].a1 * link_getLength(i) *
+                                    Conduit[k].barrels;
+            }
             Link[i].oldVolume = Link[i].newVolume;
         }
-
-        // --- update crown elev. of nodes at either end
-        j = Link[i].node1;
-        z = Node[j].invertElev + Link[i].offset1 + Link[i].xsect.yFull;
-        Node[j].crownElev = MAX(Node[j].crownElev, z);
-        j = Link[i].node2;
-        z = Node[j].invertElev + Link[i].offset2 + Link[i].xsect.yFull;
-        Node[j].crownElev = MAX(Node[j].crownElev, z);
     }
 }
 
@@ -691,8 +690,15 @@ void setNewLinkState(int j)
 
         // --- check if capacity limited
         if ( Conduit[k].a1 >= Link[j].xsect.aFull )
+        {
              Conduit[k].capacityLimited = TRUE;
-        else Conduit[k].capacityLimited = FALSE;
+             Conduit[k].fullState = ALL_FULL;                                  //(5.1.008)
+        }
+        else
+        {    
+            Conduit[k].capacityLimited = FALSE;
+            Conduit[k].fullState = 0;                                          //(5.1.008)
+        }
     }
 }
 
@@ -753,7 +759,7 @@ int steadyflow_execute(int j, double* qin, double* qout, double tStep)
         else 
         {
             // --- subtract evap and infil losses from inflow
-            q -= link_getLossRate(j, tStep);
+            q -= link_getLossRate(j, q, tStep);                                //(5.1.008)
             if ( q < 0.0 ) q = 0.0;
 
             // --- flow can't exceed full flow 

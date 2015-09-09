@@ -8,6 +8,10 @@
 //   Author:   L. Rossman
 //
 //   Input data processing functions.
+//
+//   Build 5.1.007:
+//   - Support added for climate adjustment input data.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 

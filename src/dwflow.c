@@ -3,7 +3,8 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.1
-//   Date:     03/20/14   (5.1.001)
+//   Date:     03/20/14   (Build 5.1.001)
+//             03/19/15   (Build 5.1.008)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -11,10 +12,8 @@
 //   Solves the momentum equation for flow in a conduit under dynamic wave
 //   flow routing.
 //
-//   Because this module can be used in parallelizing conduit flow
-//   computations, care must be taken not to use any shared variables
-//   nor make changes to any variables other than those belonging to a
-//   specific conduit.
+//   Build 5.1.008:
+//   - Bug in finding if conduit was upstrm/dnstrm full was fixed.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -28,7 +27,7 @@ static int    getFlowClass(int link, double q, double h1, double h2,
               double y1, double y2, double* criticalDepth, double* normalDepth,
               double* fasnh);
 static void   findSurfArea(int link, double q, double length, double* h1,
-	      double* h2, double* y1, double* y2);
+              double* h2, double* y1, double* y2);
 static double findLocalLosses(int link, double a1, double a2, double aMid,
               double q);
 
@@ -80,7 +79,7 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     // --- adjust isClosed status by any control action
     if ( Link[j].setting == 0 ) isClosed = TRUE;
 
-    // --- get flow from last time step & previous iteration 
+    // --- get flow from last time step & previous iteration
     k =  Link[j].subIndex;
     barrels = Conduit[k].barrels;
     qOld = Link[j].oldFlow / barrels;
@@ -151,8 +150,8 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
         Link[j].froude = 0.0;
         Link[j].newDepth = MIN(yMid, Link[j].xsect.yFull);
         Link[j].newVolume = Conduit[k].a1 * link_getLength(j) * barrels;
-	Link[j].newFlow = 0.0;
-	return;
+        Link[j].newFlow = 0.0;
+        return;
     }
 
     // --- compute velocity from last flow estimate
@@ -209,7 +208,7 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     }
 
     // --- 6. term for evap and seepage losses per unit length
-    dq6 = link_getLossRate(j, dt) * 1.5 * dt * v / link_getLength(j);
+    dq6 = link_getLossRate(j, qOld, dt) * 1.5 * dt * v / link_getLength(j);    //(5.1.008)
 
     // --- combine terms to find new conduit flow
     denom = 1.0 + dq1 + dq5;
@@ -236,7 +235,7 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     }
 
     // --- apply under-relaxation weighting between new & old flows;
-    // --- do not allow change in flow direction without first being zero 
+    // --- do not allow change in flow direction without first being zero
     if ( steps > 0 )
     {
         q = (1.0 - omega) * qLast + omega * q;
@@ -264,6 +263,7 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     Link[j].newDepth  = MIN(yMid, xsect->yFull);
     aMid = (a1 + a2) / 2.0;
     aMid = MIN(aMid, xsect->aFull);
+    Conduit[k].fullState = link_getFullState(a1, a2, xsect->aFull);            //(5.1.008)
     Link[j].newVolume = aMid * link_getLength(j) * barrels;
     Link[j].newFlow = q * barrels;
 }
@@ -313,7 +313,7 @@ int getFlowClass(int j, double q, double h1, double h2, double y1, double y2,
         if ( q < 0.0 )
         {
             // --- upstream end at critical depth if flow depth is
-            //     below conduit's critical depth and an upstream 
+            //     below conduit's critical depth and an upstream
             //     conduit offset exists
             if ( z1 > 0.0 )
             {
@@ -424,6 +424,9 @@ void findSurfArea(int j, double q, double length, double* h1, double* h2,
     flowDepth1 = *y1;
     flowDepth2 = *y2;
 
+    normalDepth = (flowDepth1 + flowDepth2) / 2.0;
+    criticalDepth = normalDepth;
+
     // --- find conduit's flow classification
     Link[j].flowClass = getFlowClass(j, q, *h1, *h2, *y1, *y2,
 	                    &criticalDepth, &normalDepth, &fasnh);
@@ -444,7 +447,7 @@ void findSurfArea(int j, double q, double length, double* h1, double* h2,
       case UP_CRITICAL:
         flowDepth1 = criticalDepth;
         if ( normalDepth < criticalDepth ) flowDepth1 = normalDepth;
-        flowDepth1 = MAX(flowDepth1, FUDGE); 
+        flowDepth1 = MAX(flowDepth1, FUDGE);
         *h1 = Node[n1].invertElev + Link[j].offset1 + flowDepth1;
         flowDepthMid = 0.5 * (flowDepth1 + flowDepth2);
         if ( flowDepthMid < FUDGE ) flowDepthMid = FUDGE;
@@ -456,7 +459,7 @@ void findSurfArea(int j, double q, double length, double* h1, double* h2,
       case DN_CRITICAL:
         flowDepth2 = criticalDepth;
         if ( normalDepth < criticalDepth ) flowDepth2 = normalDepth;
-        flowDepth2 = MAX(flowDepth2, FUDGE); 
+        flowDepth2 = MAX(flowDepth2, FUDGE);
         *h2 = Node[n2].invertElev + Link[j].offset2 + flowDepth2;
         width1 = getWidth(xsect, flowDepth1);
         flowDepthMid = 0.5 * (flowDepth1 + flowDepth2);
@@ -634,6 +637,6 @@ double checkNormalFlow(int j, double q, double y1, double y2, double a1,
             Link[j].normalFlow = TRUE;
             return qNorm;
         }
-    } 
+    }
     return q;
 }

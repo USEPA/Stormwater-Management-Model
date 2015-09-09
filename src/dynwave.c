@@ -6,6 +6,7 @@
 //   Date:     03/20/14   (5.1.001)
 //             03/28/14   (5.1.002)
 //             09/15/14   (5.1.007)
+//             03/19/15   (5.1.008)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -17,19 +18,40 @@
 //   to solve the explicit form of the continuity and momentum equations
 //   for conduits.
 //
+//   Build 5.1.002:
+//   - Only non-ponded nodal surface area is saved for use in
+//     surcharge algorithm.
+//
+//   Build 5.1.007:
+//   - Node losses added to node outflow variable instead of treated
+//     as a separate item when computing change in node flow volume.
+//
+//   Build 5.1.008:
+//   - Module-specific constants moved here from project.c.
+//   - Support added for user-specified minimum variable time step.
+//   - Node crown elevations found here instead of in flowrout.c module.
+//   - OpenMP use to parallelize findLinkFlows() & findNodeDepths().
+//   - Bug in finding complete list of capacity limited links fixed.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include "headers.h"
 #include <malloc.h>
 #include <math.h>
-#include <omp.h>
+#include <omp.h>                                                               //(5.1.008)
 
 //-----------------------------------------------------------------------------
 //     Constants 
 //-----------------------------------------------------------------------------
-static const double MINTIMESTEP =  0.5;     // min. time step (sec)
+static const double MINTIMESTEP =  0.001;   // min. time step (sec)            //(5.1.008)
 static const double OMEGA       =  0.5;     // under-relaxation parameter
+
+//  Constants moved here from project.c  //                                    //(5.1.008)
+const double DEFAULT_SURFAREA  = 12.566; // Min. nodal surface area (~4 ft diam.)
+const double DEFAULT_HEADTOL   = 0.005;  // Default head tolerance (ft)
+const int    DEFAULT_MAXTRIALS = 8;      // Max. trials per time step
+
 
 //-----------------------------------------------------------------------------
 //  Data Structures
@@ -78,6 +100,8 @@ static double getNodeStep(double tMin, int *minNode);
 
 //=============================================================================
 
+////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
+
 void dynwave_init()
 //
 //  Input:   none
@@ -85,19 +109,29 @@ void dynwave_init()
 //  Purpose: initializes dynamic wave routing method.
 //
 {
-    int i;
+    int i, j;
+    double z;
 
     VariableStep = 0.0;
     Xnode = (TXnode *) calloc(Nobjects[NODE], sizeof(TXnode));
 
-    // --- initialize node surface areas
+    // --- initialize node surface areas & crown elev.
     for (i = 0; i < Nobjects[NODE]; i++ )
     {
         Xnode[i].newSurfArea = 0.0;
         Xnode[i].oldSurfArea = 0.0;
+        Node[i].crownElev = Node[i].invertElev;
     }
+
+    // --- update node crown elev. & initialize links
     for (i = 0; i < Nobjects[LINK]; i++)
     {
+        j = Link[i].node1;
+        z = Node[j].invertElev + Link[i].offset1 + Link[i].xsect.yFull;
+        Node[j].crownElev = MAX(Node[j].crownElev, z);
+        j = Link[i].node2;
+        z = Node[j].invertElev + Link[i].offset2 + Link[i].xsect.yFull;
+        Node[j].crownElev = MAX(Node[j].crownElev, z);
         Link[i].flowClass = DRY;
         Link[i].dqdh = 0.0;
     }
@@ -113,6 +147,26 @@ void  dynwave_close()
 //
 {
     FREE(Xnode);
+}
+
+//=============================================================================
+
+////  New function added to release 5.1.008.  ////                             //(5.1.008)
+
+void dynwave_validate()
+//
+//  Input:   none
+//  Output:  none
+//  Purpose: adjusts dynamic wave routing options.
+//
+{
+    if ( MinRouteStep > RouteStep ) MinRouteStep = RouteStep;
+    if ( MinRouteStep < MINTIMESTEP ) MinRouteStep = MINTIMESTEP;
+	if ( MinSurfArea == 0.0 ) MinSurfArea = DEFAULT_SURFAREA;
+	else MinSurfArea /= UCF(LENGTH) * UCF(LENGTH);
+    if ( HeadTol == 0.0 ) HeadTol = DEFAULT_HEADTOL;
+    else HeadTol /= UCF(LENGTH);
+	if ( MaxTrials == 0 ) MaxTrials = DEFAULT_MAXTRIALS;
 }
 
 //=============================================================================
@@ -133,7 +187,7 @@ double dynwave_getRoutingStep(double fixedStep)
     //     use the minimum allowable time step
     if ( VariableStep == 0.0 )
     {
-        VariableStep = MINTIMESTEP;
+        VariableStep = MinRouteStep;                                           //(5.1.008)
     }
 
     // --- otherwise compute variable step based on current flow solution
@@ -279,7 +333,7 @@ void  findLimitedLinks()
     for (j = 0; j < Nobjects[LINK]; j++)
     {
         // ---- check only non-dummy conduit links
-        if ( !isTrueConduit(j) ) return;
+        if ( !isTrueConduit(j) ) continue;                                     //(5.1.008)
 
         // --- check that upstream end is full
         k = Link[j].subIndex;
@@ -304,11 +358,15 @@ void findLinkFlows(double dt)
     int i;
 
     // --- find new flow in each non-dummy conduit
+#pragma omp parallel num_threads(NumThreads)                                   //(5.1.008)
+{
+    #pragma omp for                                                            //(5.1.008)
     for ( i = 0; i < Nobjects[LINK]; i++)
     {
         if ( isTrueConduit(i) && !Link[i].bypassed )
             dwflow_findConduitFlow(i, Steps, Omega, dt);
     }
+}
 
     // --- update inflow/outflows for nodes attached to non-dummy conduits
     for ( i = 0; i < Nobjects[LINK]; i++)
@@ -319,8 +377,8 @@ void findLinkFlows(double dt)
     // --- find new flows for all dummy conduits, pumps & regulators
     for ( i = 0; i < Nobjects[LINK]; i++)
     {
-	    if ( !isTrueConduit(i) )
-	    {	
+        if ( !isTrueConduit(i) )
+        {	
             if ( !Link[i].bypassed ) findNonConduitFlow(i, dt);
             updateNodeFlows(i);
         }
@@ -514,6 +572,9 @@ int findNodeDepths(double dt)
     // --- compute new depth for all non-outfall nodes and determine if
     //     depth change from previous iteration is below tolerance
     converged = TRUE;
+#pragma omp parallel num_threads(NumThreads)                                   //(5.1.008)
+{
+    #pragma omp for private(yOld)                                              //(5.1.008)
     for ( i = 0; i < Nobjects[NODE]; i++ )
     {
         if ( Node[i].type == OUTFALL ) continue;
@@ -526,6 +587,7 @@ int findNodeDepths(double dt)
             Xnode[i].converged = FALSE;
         }
     }
+}                                                                              //(5.1.008)
     return converged;
 }
 
@@ -706,7 +768,7 @@ double getVariableStep(double maxStep)
     stats_updateCriticalTimeCount(minNode, minLink);
 
     // --- don't let time step go below an absolute minimum
-    if ( tMin < MINTIMESTEP ) tMin = MINTIMESTEP;
+    if ( tMin < MinRouteStep ) tMin = MinRouteStep;                            //(5.1.008)
     return tMin;
 }
 

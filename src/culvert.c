@@ -25,11 +25,11 @@ enum CulvertParam {FORM, K, M, C, Y};
 static const int    MAX_CULVERT_CODE = 57;
 static const double Params[58][5] = {
 
-//   FORM   K       M     C        Y  
+//   FORM   K       M     C        Y
 //------------------------------------
     {0.0, 0.0,    0.0,  0.0,    0.00},
 
-    //Circular concrete 
+    //Circular concrete
     {1.0, 0.0098, 2.00, 0.0398, 0.67},  //Square edge w/headwall
     {1.0, 0.0018, 2.00, 0.0292, 0.74},  //Groove end w/headwall
     {1.0, 0.0045, 2.00, 0.0317, 0.69},  //Groove end projecting
@@ -48,7 +48,7 @@ static const double Params[58][5] = {
     {1.0, 0.061, 0.75,  0.0400, 0.80},  //90 or 15 deg. wingwall flares
     {1.0, 0.061, 0.75,  0.0423, 0.82},  //0 deg. wingwall flares (striaght sides)
 
-    //Rectanglar Box with Flared Wingwalls & Top Edge Bevel 
+    //Rectanglar Box with Flared Wingwalls & Top Edge Bevel
     {2.0, 0.510, 0.667, 0.0309, 0.80},  //45 deg. flare; 0.43D top edge bevel
     {2.0, 0.486, 0.667, 0.0249, 0.83},  //18-33.7 deg flare; 0.083D top edge bevel
 
@@ -137,7 +137,7 @@ typedef struct
 {
     double  yFull;                  // full depth of culvert (ft)
     double  scf;                    // slope correction factor
-    double  dQdH;                   // Derivative of flow w.r.t. head 
+    double  dQdH;                   // Derivative of flow w.r.t. head
     double  qc;                     // Unsubmerged critical flow
     double  kk;
 	double  mm;                     // Coeffs. for unsubmerged flow
@@ -186,13 +186,13 @@ double culvert_getInflow(int j, double q0, double h)
              q;                         //inlet-controlled flow (cfs)
 	TCulvert culvert;                   //intermediate results
 
-    // --- check that we have a culvert conduit    
+    // --- check that we have a culvert conduit
     if ( Link[j].type != CONDUIT ) return q0;
     culvert.xsect = &Link[j].xsect;
     code = culvert.xsect->culvertCode;
     if ( code <= 0 || code > MAX_CULVERT_CODE ) return q0;
 
-    // --- compute often-used variables 
+    // --- compute often-used variables
     k = Link[j].subIndex;
     culvert.yFull = culvert.xsect->yFull;
     culvert.ad = culvert.xsect->aFull * sqrt(culvert.yFull);
@@ -202,18 +202,18 @@ double culvert_getInflow(int j, double q0, double h)
     {
     case 5:
     case 37:
-    case 46: culvert.scf = -7.0 * Conduit[k].slope; break;    
+    case 46: culvert.scf = -7.0 * Conduit[k].slope; break;
     default: culvert.scf = 0.5 * Conduit[k].slope;
     }
 
     // --- find head relative to culvert's upstream invert
-    //     (can be greater than yFull when inlet is submerged) 
+    //     (can be greater than yFull when inlet is submerged)
     y = h - (Node[Link[j].node1].invertElev + Link[j].offset1);
 
     // --- check for submerged flow (based on FHWA criteria of Q/AD > 4)
     y2 = culvert.yFull * (16.0 * Params[code][C] + Params[code][Y] - culvert.scf);
     if ( y >= y2 )
-    {    
+    {
         q = getSubmergedFlow(code, y, &culvert);
         condition = 2;
     }
@@ -261,7 +261,7 @@ double getUnsubmergedFlow(int code, double h, TCulvert* culvert)
 //           culvert inlet.
 //
 {
-    double arg; 
+    double arg;
     double q;
 
     // --- assign shared variables
@@ -343,14 +343,12 @@ double getForm1Flow(double h, TCulvert* culvert)
 //  See pages 195-196 of FHWA HEC-5 (2001) for details.
 //
 {
-    double yc;
-
     // --- save re-used terms in culvert structure
     culvert->hPlus = h / culvert->yFull + culvert->scf;
 
     // --- use Ridder's method to solve Equation Form 1 for critical depth
     //     between a range of 0.01h and h
-    yc = findroot_Ridder(0.01*h, h, 0.001, form1Eqn, culvert);
+    findroot_Ridder(0.01*h, h, 0.001, form1Eqn, culvert);
 
     // --- return the flow value used in evaluating Equation Form 1
     return culvert->qc;
@@ -365,7 +363,7 @@ double form1Eqn(double yc, void* p)
 //  Output:  returns residual error
 //  Purpose: evaluates the error in satisfying FHWA culvert Equation Form1:
 //
-//  h/yFull + 0.5*s = yc/yFull + yh/2/yFull + K[ac/aFull*sqrt(g*yh/yFull)]^M 
+//  h/yFull + 0.5*s = yc/yFull + yh/2/yFull + K[ac/aFull*sqrt(g*yh/yFull)]^M
 //
 //  for a given value of critical depth yc where:
 //    h = inlet depth above culvert invert
@@ -383,7 +381,7 @@ double form1Eqn(double yc, void* p)
 	ac = xsect_getAofY(culvert->xsect, yc);
     wc = xsect_getWofY(culvert->xsect, yc);
     yh = ac/wc;
-    
+
     culvert->qc = ac * sqrt(GRAVITY * yh);
     return culvert->hPlus - yc/culvert->yFull - yh/2.0/culvert->yFull -
 		culvert->kk * pow(culvert->qc/culvert->ad, culvert->mm);

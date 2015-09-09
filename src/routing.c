@@ -5,10 +5,24 @@
 //   Version:  5.1
 //   Date:     03/19/14  (Build 5.1.000)
 //             09/15/14  (Build 5.1.007)
+//             04/02/15  (Build 5.1.008)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
 //   Conveyance system routing functions.
+//
+//   Build 5.1.007:
+//   - Nodal evap/seepage losses computed using conditions at start of time step.
+//   - DWF pollutant concentrations ignored if DWF is negative.
+//   - Separate mass balance accounting made for storage evap. & seepage.
+//   - Nodal mass balance accounting for negative lateral inflows corrected.
+//
+//   Build 5.1.008:
+//   - Initialization of flow and quality routing systems moved here from swmm5.c.
+//   - Lateral inflows now evaluated at start (not end) of time step.
+//   - Flows from LID drains included in lateral inflows.
+//   - Conduit evap/seepage losses multiplied by number of barrels before
+//     being added into mass balances.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -18,6 +32,7 @@
 #include <string.h>
 #include <math.h>
 #include "headers.h"
+#include "lid.h"                                                               //(5.1.008)
 
 //-----------------------------------------------------------------------------
 // Shared variables
@@ -41,9 +56,10 @@ static void addWetWeatherInflows(double routingTime);
 static void addGroundwaterInflows(double routingTime);
 static void addRdiiInflows(DateTime currentDate);
 static void addIfaceInflows(DateTime currentDate);
+static void addLidDrainInflows(double routingTime);                            //(5.1.008)
 static void removeStorageLosses(double tStep);
-static void removeOutflows(void);
-static void removeConduitLosses(void); 
+static void removeConduitLosses(void);
+static void removeOutflows(double tStep);                                      //(5.1.008)
 static int  inflowHasChanged(void);
 
 //=============================================================================
@@ -74,6 +90,11 @@ int routing_open()
 
     // --- open any routing interface files
     iface_openRoutingFiles();
+
+    // --- initialize flow and quality routing systems                         //(5.1.008)
+    flowrout_init(RouteModel);                                                 //(5.1.008)
+    if ( Fhotstart1.mode == NO_FILE ) qualrout_init();                         //(5.1.008)
+
     return ErrorCode;
 }
 
@@ -148,7 +169,7 @@ void routing_execute(int routingModel, double routingStep)
     // --- update value of elapsed routing time (in milliseconds)
     OldRoutingTime = NewRoutingTime;
     NewRoutingTime = NewRoutingTime + 1000.0 * routingStep;
-    currentDate = getDateTime(NewRoutingTime);
+//    currentDate = getDateTime(NewRoutingTime);   //Deleted                   //(5.1.008)             
 
     // --- initialize mass balance totals for time step
     stepFlowError = massbal_getStepFlowError();
@@ -170,8 +191,9 @@ void routing_execute(int routingModel, double routingStep)
     }
     addExternalInflows(currentDate);
     addDryWeatherInflows(currentDate);
-    addWetWeatherInflows(NewRoutingTime);
-    addGroundwaterInflows(NewRoutingTime);
+    addWetWeatherInflows(OldRoutingTime);                                      //(5.1.008)
+    addGroundwaterInflows(OldRoutingTime);                                     //(5.1.008)
+    addLidDrainInflows(OldRoutingTime);                                        //(5.1.008)
     addRdiiInflows(currentDate);
     addIfaceInflows(currentDate);
 
@@ -212,7 +234,7 @@ void routing_execute(int routingModel, double routingStep)
     // --- remove evaporation, infiltration & outflows from system
     removeStorageLosses(routingStep);
     removeConduitLosses();
-    removeOutflows();
+    removeOutflows(routingStep);                                               //(5.1.008)
 	
     // --- update continuity with new totals
     //     applied over 1/2 of routing step
@@ -221,7 +243,8 @@ void routing_execute(int routingModel, double routingStep)
     // --- update summary statistics
     if ( RptFlags.flowStats && Nobjects[LINK] > 0 )
     {
-        stats_updateFlowStats(routingStep, currentDate, stepCount, inSteadyState);
+        stats_updateFlowStats(routingStep, getDateTime(NewRoutingTime),        //(5.1.008)
+                              stepCount, inSteadyState);
     }
 }
 
@@ -399,7 +422,7 @@ void addWetWeatherInflows(double routingTime)
             // add pollutant load
             for (p = 0; p < Nobjects[POLLUT]; p++)
             {
-                w = subcatch_getWtdWashoff(i, p, f);
+                w = surfqual_getWtdWashoff(i, p, f);                           //(5.1.008)
                 Node[j].newQual[p] += w;
                 massbal_addInflowQual(WET_WEATHER_INFLOW, p, w);
             }
@@ -457,6 +480,27 @@ void addGroundwaterInflows(double routingTime)
                 }
             }
         }
+    }
+}
+
+//=============================================================================
+
+////  New function added to release 5.1.008.  ////                             //(5.1.008)
+
+void addLidDrainInflows(double routingTime)
+{
+    int j;
+    double f;
+
+    // for each subcatchment
+    if ( Nobjects[SUBCATCH] == 0 ) return;
+    f = (routingTime - OldRunoffTime) / (NewRunoffTime - OldRunoffTime);
+    if ( f < 0.0 ) f = 0.0;
+    if ( f > 1.0 ) f = 1.0;
+    for (j = 0; j < Nobjects[SUBCATCH]; j++)
+    {
+        if ( Subcatch[j].area > 0.0 && Subcatch[j].lidArea > 0.0 )
+            lid_addDrainInflow(j, f);
     }
 }
 
@@ -576,18 +620,19 @@ int  inflowHasChanged()
 
 //=============================================================================
 
+////  This function was re-written for release 5.1.008.  ////                  //(5.1.008)
+
 void removeStorageLosses(double tStep)
 //
 //  Input:   tStep = routing time step (sec)
 //  Output:  none
-//  Purpose: adds rate of mass lost from all storage nodes due to evaporation
-//           & infiltration in current time step to overall mass balance.
+//  Purpose: adds flow rate lost from all storage nodes due to evaporation
+//           & seepage in current time step to overall mass balance totals.
 //
 {
-    int    i, j, p;
+    int    i;
  	double evapLoss = 0.0,
-		   infilLoss = 0.0;                                                    //(5.1.007)
-    double vRatio;
+		   exfilLoss = 0.0;
 
     // --- check each storage node
     for ( i = 0; i < Nobjects[NODE]; i++ )
@@ -596,46 +641,42 @@ void removeStorageLosses(double tStep)
         {
             // --- update total system storage losses
             evapLoss += Storage[Node[i].subIndex].evapLoss;
-            infilLoss += Storage[Node[i].subIndex].exfilLoss;                   //(5.1.007)
-  
-            // --- adjust storage concentrations for any evaporation loss
-            if ( Nobjects[POLLUT] > 0 && Node[i].newVolume > FUDGE )
-            {
-                j = Node[i].subIndex;
-                vRatio = 1.0 + (Storage[j].evapLoss / Node[i].newVolume);
-                for ( p = 0; p < Nobjects[POLLUT]; p++ )
-                {
-                    Node[i].newQual[p] *= vRatio;
-                }
-            }
+            exfilLoss += Storage[Node[i].subIndex].exfilLoss;
         }
     }
 
     // --- add loss rates (ft3/sec) to time step's mass balance 
-    massbal_addNodeLosses(evapLoss/tStep, infilLoss/tStep);                    //(5.1.007)
+    massbal_addNodeLosses(evapLoss/tStep, exfilLoss/tStep);
 }
 
 //=============================================================================
+
+////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
 
 void removeConduitLosses()
 //
 //  Input:   none
 //  Output:  none
-//  Purpose: adds rate of mass lost from all conduits due to evaporation
+//  Purpose: adds flow rate lost from all conduits due to evaporation
 //           & seepage over current time step to overall mass balance.
 //
 {
-	int i;
-	double evapLoss = 0.0,
+	int i, k;
+	double barrels,
+           evapLoss = 0.0,
 		   seepLoss = 0.0;
 
 	for ( i = 0; i < Nobjects[LINK]; i++ )
 	{
 		if (Link[i].type == CONDUIT)
         {
-			// --- update conduit losses
-			evapLoss += Conduit[Link[i].subIndex].evapLossRate;
-            seepLoss += Conduit[Link[i].subIndex].seepLossRate;
+            // --- retrieve number of barrels
+            k = Link[i].subIndex;
+            barrels = Conduit[k].barrels;
+
+			// --- update total conduit losses
+			evapLoss += Conduit[k].evapLossRate * barrels;
+            seepLoss += Conduit[k].seepLossRate * barrels;
 		}
 	}
     massbal_addLinkLosses(evapLoss, seepLoss);
@@ -643,7 +684,9 @@ void removeConduitLosses()
 
 //=============================================================================
 
-void removeOutflows()
+////  This function was re-written for release 5.1.008.  ////                  //(5.1.008)
+
+void removeOutflows(double tStep)
 //
 //  Input:   none
 //  Output:  none
@@ -651,14 +694,27 @@ void removeOutflows()
 //           balance totals.
 //
 {
-    int    i, p;
+    int    i, p, k;
     int    isFlooded;
-    double q, w;
+    double q, w, v;
 
     for ( i = 0; i < Nobjects[NODE]; i++ )
     {
-        // --- update mass balance with flow and mass leaving the system       //(5.1.007)
-        //     through outfalls and flooded interior nodes                     //(5.1.007)
+        // --- accumulate inflow volume & pollut. load at outfalls
+        if ( Node[i].type == OUTFALL && Node[i].inflow > 0.0 )
+        {
+            k = Node[i].subIndex;
+            if ( Outfall[k].routeTo >= 0 )
+            {
+                v = Node[i].inflow * tStep;
+                Outfall[k].vRouted += v;
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                    Outfall[k].wRouted[p] += Node[i].newQual[p] * v;
+            }
+        }
+
+        // --- update mass balance with flow and mass leaving the system
+        //     through outfalls and flooded interior nodes
         q = node_getSystemOutflow(i, &isFlooded);
         if ( q != 0.0 )
         {
@@ -670,7 +726,6 @@ void removeOutflows()
             }
         }
 
-////  Following code section added for release 5.1.007.  ////                  //(5.1.007)
         // --- update mass balance with mass leaving system through negative
         //     lateral inflows (lateral flow was previously accounted for)
         q = Node[i].newLatFlow;
@@ -682,6 +737,7 @@ void removeOutflows()
                 massbal_addOutflowQual(p, w, FALSE);
             }
         }
+
     }
 }
 

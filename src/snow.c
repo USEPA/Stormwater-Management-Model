@@ -4,9 +4,17 @@
 //   Project: EPA SWMM5
 //   Version: 5.1
 //   Date:    03/20/14   (Build 5.1.001)
+//            03/19/15   (Build 5.1.008)
 //   Author:  L. Rossman
 //
 //   Models snow melt processes.
+//
+//   Build 5.1.008:
+//   - Adjustment of snowmelt and subcatchment's net precipitation for area
+//     covered by snow was corrected. 
+//   - Area covered by snow now included in calculation of rate that liquid
+//     water leaves a snowpack.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -32,7 +40,8 @@ enum SnowKeywords {SNOW_PLOWABLE, SNOW_IMPERV, SNOW_PERV, SNOW_REMOVAL};
 //  snow_setMeltCoeffs   (called from setTemp in climate.c)
 //  snow_plowSnow        (called from runoff_execute)
 //  snow_getSnowMelt     (called from subcatch_getRunoff)
-//  snow_getSnowCover    (called from massbal_open) 
+//  snow_getSnowCover    (called from massbal_open)
+//  snow_getState        (called from saveRunoff in hotstart.c)
 
 //-----------------------------------------------------------------------------
 //  Local functions
@@ -462,7 +471,7 @@ double snow_getSnowMelt(int j, double rainfall, double snowfall, double tStep,
     double  asc;                       // frac. of sub-area snow covered
     double  snowDepth = 0.0;           // snow depth on entire subcatchment (ft)
     double  impervPrecip;              // net precip. on imperv. area (ft/sec)
-    TSnowpack* snowpack;               // ptr. to snowpack object
+    TSnowpack* snowpack;               // ptr. to snow pack object
 
     // --- get ptr. to subcatchment's snowpack
     snowpack = Subcatch[j].snowpack;
@@ -494,9 +503,12 @@ double snow_getSnowMelt(int j, double rainfall, double snowfall, double tStep,
             smelt = routeSnowmelt(snowpack, i, smelt, asc, rainfall, tStep);
         }
 
-        // --- find net precip. over snow pack area
-        netPrecip[i] = smelt*asc + rainfall*(1.0 - asc)
-                       + snowpack->imelt[i];
+////  Following section revised for release 5.1.008.  ////                     //(5.1.008)
+////
+        // --- find net precip. over entire subcatch area
+        netPrecip[i] = smelt + snowpack->imelt[i]     // snow pack melt
+                       + rainfall*(1.0 - asc);        // rainfall on non-snow area
+////
 
         // --- add to total snow depth on subcatchment
         snowDepth += snowpack->wsnow[i] * snowpack->fArea[i];
@@ -542,7 +554,7 @@ double snow_getSnowCover(int j)
 
 double getArealDepletion(TSnowpack* snowpack, int i, double snowfall, double tStep)
 //
-//  Input:   snowpack = ptr. to snowpack object
+//  Input:   snowpack = ptr. to snow pack object
 //           i = snow sub-area index
 //           snowfall = snow fall rate (ft/sec)
 //           tStep = time step (sec)
@@ -662,7 +674,7 @@ double getArealSnowCover(int i, double awesi)
 double meltSnowpack(TSnowpack* snowpack, int i, double rmelt, double asc,
                     double snowfall, double tStep)
 //
-//  Input:   snowpack = ptr. to snowpack object
+//  Input:   snowpack = ptr. to snow pack object
 //           i        = snow sub-area index
 //           rmelt    = melt rate if raining (ft/sec)
 //           asc      = fraction of area covered with snow
@@ -692,6 +704,9 @@ double meltSnowpack(TSnowpack* snowpack, int i, double rmelt, double asc,
         updateColdContent(snowpack, i, asc, snowfall, tStep);
         return 0.0;
     }
+
+    // --- adjust snowmelt for area of snow cover                              //(5.1.008)
+    smelt *= asc;                                                              //(5.1.008)
 
     // --- reduce cold content of melting pack
     ccFactor = tStep * Snow.rnm * asc;
@@ -731,7 +746,7 @@ double getRainmelt(double rainfall)
 void updateColdContent(TSnowpack* snowpack, int i, double asc, double snowfall,
                        double tStep)
 //
-//  Input:   snowpack = ptr. to snowpack object
+//  Input:   snowpack = ptr. to snow pack object
 //           i        = snow sub-area index
 //           asc      = fraction of area snow covered
 //           snowfall = snow fall rate (ft/sec)
@@ -745,8 +760,8 @@ void updateColdContent(TSnowpack* snowpack, int i, double asc, double snowfall,
     double cc;                         // snow pack cold content (ft)
     double ccMax;                      // max. possible cold content (ft)
     double tipm;                       // adjusted ATI weighting factor
-	
-    // --- retrieve ATI & CC from snowpack object
+
+    // --- retrieve ATI & CC from snow pack object
     ati = snowpack->ati[i];
     cc = snowpack->coldc[i];
 
@@ -819,20 +834,31 @@ double routeSnowmelt(TSnowpack* snowpack, int i, double smelt, double asc,
 //           asc      = fraction of area snow covered
 //           rainfall = rainfall rate (ft/sec)
 //           tStep    = time step (sec)
-//  Output:  returns snow melt rate (ft/sec)
+//  Output:  returns rate of liquid snow melt leaving a snow pack (ft/sec)
 //  Purpose: routes snow melt through free water holding capacity of snow pack.
 //
+////  Additional comments added for release 5.1.008.  ////                     //(5.1.008)
 {
-    int    k;                          // snowmelt parameter set index
-    double  vmelt;                     // snow melt volume (ft)
+    int     k;          // snowmelt parameter set index
+    double  vmelt;      // snow melt volume (ft)
 
+    // --- get volume of snowmelt over time step
     k = snowpack->snowmeltIndex;
-    vmelt = smelt * tStep * asc; 
+    vmelt = smelt * tStep;
     vmelt = MIN(vmelt, snowpack->wsnow[i]);
+
+    // --- reduce snow depth by volume of snowmelt
     snowpack->wsnow[i] -= vmelt;
-    snowpack->fw[i] += vmelt + rainfall * tStep;
+
+    // --- add snowmelt volume and any rainfall on snow
+    //     covered area of sub-area to snow pack's free water content
+    snowpack->fw[i] += vmelt + rainfall * tStep * asc;                         //(5.1.008) 
+
+    // --- excess free water becomes liquid melt that leaves the pack 
     vmelt = snowpack->fw[i] - Snowmelt[k].fwfrac[i] * snowpack->wsnow[i];
     vmelt = MAX(vmelt, 0.0);
+
+    // --- reduce free water by liquid melt volume and return liquid melt rate
     snowpack->fw[i] -= vmelt;
     return vmelt / tStep;
 }

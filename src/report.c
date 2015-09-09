@@ -6,9 +6,24 @@
 //   Date:     03/21/2014  (Build 5.1.001)
 //             04/14/14    (Build 5.1.004)
 //             09/15/14    (Build 5.1.007)
+//             04/02/15    (Build 5.1.008)
 //   Author:   L. Rossman (EPA)
 //
 //   Report writing functions.
+//
+//   Build 5.1.004:
+//   - Ignore RDII option reported.
+//
+//   Build 5.1.007:
+//   - Total exfiltration loss reported.
+//
+//   Build 5.1.008:
+//   - Number of threads option reported.
+//   - LID drainage volume and outfall runon reported.
+//   - "Internal Outflow" label changed to "Flooding Loss" in Flow Routing
+//     Continuity table.
+//   - Exfiltration loss added into Quality Routing Continuity table.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -28,7 +43,7 @@
 
 
 //-----------------------------------------------------------------------------
-//  Shared variables   
+//  Shared variables
 //-----------------------------------------------------------------------------
 static time_t SysTime;
 
@@ -38,7 +53,7 @@ static time_t SysTime;
 #define REAL4 float
 extern REAL4* SubcatchResults;         // Results vectors defined in OUTPUT.C
 extern REAL4* NodeResults;             //  "
-extern REAL4* LinkResults;             //  " 
+extern REAL4* LinkResults;             //  "
 extern char   ErrString[81];           // defined in ERROR.C
 
 //-----------------------------------------------------------------------------
@@ -171,7 +186,7 @@ void report_writeSysTime(void)
         if ( elapsedTime < 1.0 ) fprintf(Frpt.file, "< 1 sec");
         else
         {
-            elapsedTime /= SECperDAY;                                      
+            elapsedTime /= SECperDAY;
             if (elapsedTime >= 1.0)
             {
                 fprintf(Frpt.file, "%d.", (int)floor(elapsedTime));
@@ -220,7 +235,7 @@ void report_writeTitle()
 
 //=============================================================================
 
-void report_writeOptions() 
+void report_writeOptions()
 //
 //  Input:   none
 //  Output:  none
@@ -275,7 +290,7 @@ void report_writeOptions()
     else fprintf(Frpt.file, "YES");
 
     if ( Nobjects[SUBCATCH] > 0 )
-    fprintf(Frpt.file, "\n  Infiltration Method ...... %s", 
+    fprintf(Frpt.file, "\n  Infiltration Method ...... %s",
         InfilModelWords[InfilModel]);
     if ( Nobjects[LINK] > 0 )
     fprintf(Frpt.file, "\n  Flow Routing Method ...... %s",
@@ -307,7 +322,9 @@ void report_writeOptions()
 		if ( CourantFactor > 0.0 ) fprintf(Frpt.file, "YES");
 		else                       fprintf(Frpt.file, "NO");
 		fprintf(Frpt.file, "\n  Maximum Trials ........... %d", MaxTrials);
-		fprintf(Frpt.file, "\n  Head Tolerance ........... %.6f ", HeadTol);
+        fprintf(Frpt.file, "\n  Number of Threads ........ %d", NumThreads);   //(5.1.008)
+		fprintf(Frpt.file, "\n  Head Tolerance ........... %.6f ",
+            HeadTol*UCF(LENGTH));                                              //(5.1.008)
 		if ( UnitSystem == US ) fprintf(Frpt.file, "ft");
 		else                    fprintf(Frpt.file, "m");
 		}
@@ -347,10 +364,10 @@ void report_writeRainStats(int i, TRainStats* r)
     {
         if ( r->startDate != NO_DATE ) datetime_dateToStr(r->startDate, date1);
         if ( r->endDate   != NO_DATE ) datetime_dateToStr(r->endDate, date2);
-        fprintf(Frpt.file, "  %-10s %-11s  %-11s  %5d min    %6d     %6d     %6d\n",
+        fprintf(Frpt.file, "  %-10s %-11s  %-11s  %5d min    %6ld     %6ld     %6ld\n",
             Gage[i].staID, date1, date2, Gage[i].rainInterval/60,
             r->periodsRain, r->periodsMissing, r->periodsMalfunc);
-    }        
+    }
 }
 
 
@@ -441,7 +458,7 @@ void report_writeRunoffError(TRunoffTotals* totals, double totalArea)
 //  Input:  totals = accumulated runoff totals
 //          totalArea = total area of all subcatchments
 //  Output:  none
-//  Purpose: writes runoff continuity error to report file. 
+//  Purpose: writes runoff continuity error to report file.
 //
 {
 
@@ -487,6 +504,15 @@ void report_writeRunoffError(TRunoffTotals* totals, double totalArea)
             totals->rainfall * UCF(LENGTH) * UCF(LANDAREA),
             totals->rainfall / totalArea * UCF(RAINDEPTH));
 
+////  Following code segment added to release 5.1.008.  ////                   //(5.1.008)
+    if ( totals->runon > 0.0 )
+    {
+        fprintf(Frpt.file, "\n  Outfall Runon ............%14.3f%14.3f",
+            totals->runon * UCF(LENGTH) * UCF(LANDAREA),
+            totals->runon / totalArea * UCF(RAINDEPTH));
+    }
+////
+
     fprintf(Frpt.file, "\n  Evaporation Loss .........%14.3f%14.3f",
             totals->evap * UCF(LENGTH) * UCF(LANDAREA),
             totals->evap / totalArea * UCF(RAINDEPTH));
@@ -499,6 +525,14 @@ void report_writeRunoffError(TRunoffTotals* totals, double totalArea)
             totals->runoff * UCF(LENGTH) * UCF(LANDAREA),
             totals->runoff / totalArea * UCF(RAINDEPTH));
 
+////  Following code segment added to release 5.1.008.  ////                   //(5.1.008)
+    if ( totals->drains > 0.0 )
+    {
+        fprintf(Frpt.file, "\n  LID Drainage .............%14.3f%14.3f",
+            totals->drains * UCF(LENGTH) * UCF(LANDAREA),
+            totals->drains / totalArea * UCF(RAINDEPTH));
+    }
+
     if ( Nobjects[SNOWMELT] > 0 )
     {
         fprintf(Frpt.file, "\n  Snow Removed .............%14.3f%14.3f",
@@ -509,7 +543,7 @@ void report_writeRunoffError(TRunoffTotals* totals, double totalArea)
             totals->finalSnowCover / totalArea * UCF(RAINDEPTH));
     }
 
-    fprintf(Frpt.file, "\n  Final Surface Storage ....%14.3f%14.3f",
+    fprintf(Frpt.file, "\n  Final Storage ............%14.3f%14.3f",           //(5.1.008)
             totals->finalStorage * UCF(LENGTH) * UCF(LANDAREA),
             totals->finalStorage / totalArea * UCF(RAINDEPTH));
 
@@ -525,7 +559,7 @@ void report_writeLoadingError(TLoadingTotals* totals)
 //  Input:   totals = accumulated pollutant loading totals
 //           area = total area of all subcatchments
 //  Output:  none
-//  Purpose: writes runoff loading continuity error to report file. 
+//  Purpose: writes runoff loading continuity error to report file.
 //
 {
     int p1, p2;
@@ -550,7 +584,7 @@ void report_LoadingErrors(int p1, int p2, TLoadingTotals* totals)
 //           area = total area of all subcatchments
 //  Output:  none
 //  Purpose: writes runoff loading continuity error to report file for
-//           up to 5 pollutants at a time. 
+//           up to 5 pollutants at a time.
 //
 {
     int    i;
@@ -633,7 +667,7 @@ void report_writeGwaterError(TGwaterTotals* totals, double gwArea)
 //  Input:   totals = accumulated groundwater totals
 //           gwArea = total area of all subcatchments with groundwater
 //  Output:  none
-//  Purpose: writes groundwater continuity error to report file. 
+//  Purpose: writes groundwater continuity error to report file.
 //
 {
     WRITE("");
@@ -649,19 +683,19 @@ void report_writeGwaterError(TGwaterTotals* totals, double gwArea)
             totals->initStorage * UCF(LENGTH) * UCF(LANDAREA),
             totals->initStorage / gwArea * UCF(RAINDEPTH));
 
-    fprintf(Frpt.file, "\n  Infiltration .............%14.3f%14.3f", 
+    fprintf(Frpt.file, "\n  Infiltration .............%14.3f%14.3f",
             totals->infil * UCF(LENGTH) * UCF(LANDAREA),
             totals->infil / gwArea * UCF(RAINDEPTH));
 
-    fprintf(Frpt.file, "\n  Upper Zone ET ............%14.3f%14.3f", 
+    fprintf(Frpt.file, "\n  Upper Zone ET ............%14.3f%14.3f",
             totals->upperEvap * UCF(LENGTH) * UCF(LANDAREA),
             totals->upperEvap / gwArea * UCF(RAINDEPTH));
 
-    fprintf(Frpt.file, "\n  Lower Zone ET ............%14.3f%14.3f", 
+    fprintf(Frpt.file, "\n  Lower Zone ET ............%14.3f%14.3f",
             totals->lowerEvap * UCF(LENGTH) * UCF(LANDAREA),
             totals->lowerEvap / gwArea * UCF(RAINDEPTH));
 
-    fprintf(Frpt.file, "\n  Deep Percolation .........%14.3f%14.3f", 
+    fprintf(Frpt.file, "\n  Deep Percolation .........%14.3f%14.3f",
             totals->lowerPerc * UCF(LENGTH) * UCF(LANDAREA),
             totals->lowerPerc / gwArea * UCF(RAINDEPTH));
 
@@ -684,7 +718,7 @@ void report_writeFlowError(TRoutingTotals *totals)
 //
 //  Input:  totals = accumulated flow routing totals
 //  Output:  none
-//  Purpose: writes flow routing continuity error to report file. 
+//  Purpose: writes flow routing continuity error to report file.
 //
 {
     double ucf1, ucf2;
@@ -699,7 +733,7 @@ void report_writeFlowError(TRoutingTotals *totals)
     if ( UnitSystem == US) fprintf(Frpt.file,
     "\n  Flow Routing Continuity        acre-feet      10^6 gal");
     else fprintf(Frpt.file,
-    "\n  Flow Routing Continuity        hectare-m      10^6 ltr"); 
+    "\n  Flow Routing Continuity        hectare-m      10^6 ltr");
     fprintf(Frpt.file,
     "\n  **************************     ---------     ---------");
 
@@ -721,12 +755,12 @@ void report_writeFlowError(TRoutingTotals *totals)
     fprintf(Frpt.file, "\n  External Outflow .........%14.3f%14.3f",
             totals->outflow * ucf1, totals->outflow * ucf2);
 
-    fprintf(Frpt.file, "\n  Internal Outflow .........%14.3f%14.3f",
+    fprintf(Frpt.file, "\n  Flooding Loss ............%14.3f%14.3f",           //(5.1.008)
             totals->flooding * ucf1, totals->flooding * ucf2);
 
     fprintf(Frpt.file, "\n  Evaporation Loss .........%14.3f%14.3f",
             totals->evapLoss * ucf1, totals->evapLoss * ucf2);
-    
+
     fprintf(Frpt.file, "\n  Exfiltration Loss ........%14.3f%14.3f",           //(5.1.007)
             totals->seepLoss * ucf1, totals->seepLoss * ucf2);
 
@@ -747,7 +781,7 @@ void report_writeQualError(TRoutingTotals QualTotals[])
 //
 //  Input:   totals = accumulated quality routing totals for each pollutant
 //  Output:  none
-//  Purpose: writes quality routing continuity error to report file. 
+//  Purpose: writes quality routing continuity error to report file.
 //
 {
     int p1, p2;
@@ -820,17 +854,26 @@ void report_QualErrors(int p1, int p2, TRoutingTotals QualTotals[])
         fprintf(Frpt.file, "%14.3f", QualTotals[p].exInflow);
     }
 
-    fprintf(Frpt.file, "\n  Internal Flooding ........");
-    for (p = p1; p <= p2; p++)
-    {
-        fprintf(Frpt.file, "%14.3f", QualTotals[p].flooding);
-    }
-
     fprintf(Frpt.file, "\n  External Outflow .........");
     for (p = p1; p <= p2; p++)
     {
         fprintf(Frpt.file, "%14.3f", QualTotals[p].outflow);
     }
+
+    fprintf(Frpt.file, "\n  Flooding Loss ............");                      //(5.1.008)
+    for (p = p1; p <= p2; p++)
+    {
+        fprintf(Frpt.file, "%14.3f", QualTotals[p].flooding);
+    }
+
+////  Following code segment added to release 5.1.008.  ////                   //(5.1.008)
+////
+    fprintf(Frpt.file, "\n  Exfiltration Loss ........");
+    for (p = p1; p <= p2; p++)
+    {
+        fprintf(Frpt.file, "%14.3f", QualTotals[p].seepLoss);
+    }
+////
 
     fprintf(Frpt.file, "\n  Mass Reacted .............");
     for (p = p1; p <= p2; p++)
@@ -868,7 +911,7 @@ void report_writeMaxStats(TMaxStats maxMassBalErrs[], TMaxStats maxCourantCrit[]
 //           maxLinkTimes[] = links most often Courant time step critical
 //           nMaxStats = number of most critical nodes/links saved
 //  Output:  none
-//  Purpose: lists nodes & links with highest mass balance errors and 
+//  Purpose: lists nodes & links with highest mass balance errors and
 //           time Courant time step critical
 //
 {
@@ -880,7 +923,7 @@ void report_writeMaxStats(TMaxStats maxMassBalErrs[], TMaxStats maxCourantCrit[]
     {
         WRITE("");
         WRITE("*************************");
-        WRITE("Highest Continuity Errors");    
+        WRITE("Highest Continuity Errors");
         WRITE("*************************");
         for (i=0; i<nMaxStats; i++)
         {
@@ -895,7 +938,7 @@ void report_writeMaxStats(TMaxStats maxMassBalErrs[], TMaxStats maxCourantCrit[]
     if ( CourantFactor == 0.0 ) return;
     WRITE("");
     WRITE("***************************");
-    WRITE("Time-Step Critical Elements");    
+    WRITE("Time-Step Critical Elements");
     WRITE("***************************");
     k = 0;
     for (i=0; i<nMaxStats; i++)
@@ -929,19 +972,19 @@ void report_writeMaxFlowTurns(TMaxStats flowTurns[], int nMaxStats)
     if ( Nobjects[LINK] == 0 ) return;
     WRITE("");
     WRITE("********************************");
-    WRITE("Highest Flow Instability Indexes"); 
+    WRITE("Highest Flow Instability Indexes");
     WRITE("********************************");
     if ( nMaxStats <= 0 || flowTurns[0].index <= 0 )
         fprintf(Frpt.file, "\n  All links are stable.");
     else
-    { 
+    {
         for (i=0; i<nMaxStats; i++)
         {
             j = flowTurns[i].index;
             if ( j < 0 ) continue;
             fprintf(Frpt.file, "\n  Link %s (%.0f)",
                 Link[j].ID, flowTurns[i].value);
-        }  
+        }
     }
     WRITE("");
 }
@@ -1034,7 +1077,7 @@ void report_Subcatchments()
     k = 0;
     for (j = 0; j < Nobjects[SUBCATCH]; j++)
     {
-        if ( Subcatch[j].rptFlag == TRUE ) 
+        if ( Subcatch[j].rptFlag == TRUE )
         {
             report_SubcatchHeader(Subcatch[j].ID);
             for ( period = 1; period <= Nperiods; period++ )
@@ -1046,7 +1089,7 @@ void report_Subcatchments()
                 fprintf(Frpt.file, "\n  %11s %8s %10.3f%10.3f%10.4f",
                     theDate, theTime, SubcatchResults[SUBCATCH_RAINFALL],
                     SubcatchResults[SUBCATCH_EVAP]/24.0 +
-                    SubcatchResults[SUBCATCH_INFIL], 
+                    SubcatchResults[SUBCATCH_INFIL],
                     SubcatchResults[SUBCATCH_RUNOFF]);
                 if ( hasSnowmelt )
                     fprintf(Frpt.file, "  %10.3f",
@@ -1078,7 +1121,7 @@ void  report_SubcatchHeader(char *id)
     int i;
     int hasSnowmelt = (Nobjects[SNOWMELT] > 0 && !IgnoreSnowmelt);
     int hasGwater   = (Nobjects[AQUIFER] > 0  && !IgnoreGwater);
-    int hasQuality  = (Nobjects[POLLUT] > 0 && !IgnoreQuality); 
+    int hasQuality  = (Nobjects[POLLUT] > 0 && !IgnoreQuality);
 
     // --- print top border of header
     WRITE("");
@@ -1104,9 +1147,9 @@ void  report_SubcatchHeader(char *id)
         fprintf(Frpt.file, "%10s", Pollut[i].ID);
 
     // --- print second line of column headings
-    if ( UnitSystem == US ) fprintf(Frpt.file, 
+    if ( UnitSystem == US ) fprintf(Frpt.file,
     "\n                            in/hr     in/hr %9s", FlowUnitWords[FlowUnits]);
-    else fprintf(Frpt.file, 
+    else fprintf(Frpt.file,
     "\n                            mm/hr     mm/hr %9s", FlowUnitWords[FlowUnits]);
     if ( hasSnowmelt )
     {
@@ -1223,7 +1266,7 @@ void report_Links()
 //  Purpose: writes results for selected links to report file.
 //
 {
-    int      j, p, k; 
+    int      j, p, k;
     int      period;
     DateTime days;
     char     theDate[12];
@@ -1247,14 +1290,14 @@ void report_Links()
                 datetime_timeToStr(days, theTime);
                 output_readLinkResults(period, k);
                 fprintf(Frpt.file, "\n  %11s %8s  %9.3f %9.3f %9.3f %9.3f",
-                    theDate, theTime, LinkResults[LINK_FLOW], 
+                    theDate, theTime, LinkResults[LINK_FLOW],
                     LinkResults[LINK_VELOCITY], LinkResults[LINK_DEPTH],
                     LinkResults[LINK_CAPACITY]);
                 if ( !IgnoreQuality ) for (p = 0; p < Nobjects[POLLUT]; p++)
                     fprintf(Frpt.file, " %9.3f", LinkResults[LINK_QUAL + p]);
             }
             WRITE("");
-            k++; 
+            k++;
         }
     }
 }
@@ -1271,10 +1314,10 @@ void  report_LinkHeader(char *id)
     int i;
     WRITE("");
     fprintf(Frpt.file,"\n  <<< Link %s >>>", id);
-    WRITE(LINE_64); 
+    WRITE(LINE_64);
     for (i = 0; i < Nobjects[POLLUT]; i++) fprintf(Frpt.file, LINE_10);
 
-    fprintf(Frpt.file, 
+    fprintf(Frpt.file,
     "\n                             Flow  Velocity     Depth  Capacity/");
     if ( !IgnoreQuality ) for (i = 0; i < Nobjects[POLLUT]; i++)
         fprintf(Frpt.file, "%10s", Pollut[i].ID);
@@ -1290,7 +1333,7 @@ void  report_LinkHeader(char *id)
     if ( !IgnoreQuality ) for (i = 0; i < Nobjects[POLLUT]; i++)
         fprintf(Frpt.file, " %9s", QualUnitsWords[Pollut[i].units]);
 
-    WRITE(LINE_64); 
+    WRITE(LINE_64);
     if ( !IgnoreQuality )
         for (i = 0; i < Nobjects[POLLUT]; i++) fprintf(Frpt.file, LINE_10);
 }
@@ -1390,4 +1433,4 @@ void report_writeTseriesErrorMsg(int code, TTable *tseries)
         fprintf(Frpt.file, " at %s %s.", theDate, theTime);
     }
     else report_writeErrorMsg(code, tseries->ID);
-} 
+}

@@ -5,10 +5,20 @@
 //   Version:  5.1
 //   Date:     03/20/14  (Build 5.1.000)
 //             09/15/14  (Build 5.1.007)
+//             04/02/15  (Build 5.1.008)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
 //   Global interfacing functions.
+//
+//   Build 5.1.007:
+//   - climate_readAdjustments() added.
+//
+//   Build 5.1.008:
+//   - Function list was re-ordered and blank lines added for readability.
+//   - Pollutant buildup/washoff functions for the new surfqual.c module added.
+//   - Several other functions added, re-named or have modified arguments.
+//
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
@@ -16,13 +26,16 @@
 //-----------------------------------------------------------------------------
 void     project_open(char *f1, char *f2, char *f3);
 void     project_close(void);
+
 void     project_readInput(void);
 int      project_readOption(char* s1, char* s2);
 void     project_validate(void);
 int      project_init(void);
+
 int      project_addObject(int type, char* id, int n);
 int      project_findObject(int type, char* id);
 char*    project_findID(int type, char* id);
+
 double** project_createMatrix(int nrows, int ncols);
 void     project_freeMatrix(double** m);
 
@@ -36,26 +49,32 @@ int     input_readData(void);
 //   Report Writer Methods
 //-----------------------------------------------------------------------------
 int     report_readOptions(char* tok[], int ntoks);
+
 void    report_writeLine(char* line);
 void    report_writeSysTime(void);
 void    report_writeLogo(void);
 void    report_writeTitle(void);
 void    report_writeOptions(void);
+void    report_writeReport(void);
+
 void    report_writeRainStats(int gage, TRainStats* rainStats);
 void    report_writeRdiiStats(double totalRain, double totalRdii);
+
 void    report_writeControlActionsHeading(void);
 void    report_writeControlAction(DateTime aDate, char* linkID, double value,
         char* ruleID);
+
 void    report_writeRunoffError(TRunoffTotals* totals, double area);
 void    report_writeLoadingError(TLoadingTotals* totals);
 void    report_writeGwaterError(TGwaterTotals* totals, double area);
 void    report_writeFlowError(TRoutingTotals* totals);
 void    report_writeQualError(TRoutingTotals* totals);
+
 void    report_writeMaxStats(TMaxStats massBalErrs[], TMaxStats CourantCrit[],
         int nMaxStats);
 void    report_writeMaxFlowTurns(TMaxStats flowTurns[], int nMaxStats);
 void    report_writeSysStats(TSysStats* sysStats);
-void    report_writeReport(void);
+
 void    report_writeErrorMsg(int code, char* msg);
 void    report_writeErrorCode(void);
 void    report_writeInputErrorMsg(int k, int sect, char* line, long lineCount);
@@ -75,7 +94,7 @@ void     climate_validate(void);
 void     climate_openFile(void);
 void     climate_initState(void);
 void     climate_setState(DateTime aDate);
-DateTime climate_getNextEvap(DateTime aDate); 
+DateTime climate_getNextEvapDate(void);                                        //(5.1.008)
 
 //-----------------------------------------------------------------------------
 //   Rainfall Processing Methods
@@ -88,11 +107,14 @@ void    rain_close(void);
 //-----------------------------------------------------------------------------
 int     snow_readMeltParams(char* tok[], int ntoks);
 int     snow_createSnowpack(int subcacth, int snowIndex);
+
+void    snow_validateSnowmelt(int snowIndex);
 void    snow_initSnowpack(int subcatch);
+void    snow_initSnowmelt(int snowIndex);
+
 void    snow_getState(int subcatch, int subArea, double x[]);
 void    snow_setState(int subcatch, int subArea, double x[]);
-void    snow_initSnowmelt(int snowIndex);
-void    snow_validateSnowmelt(int snowIndex);
+
 void    snow_setMeltCoeffs(int snowIndex, double season);
 void    snow_plowSnow(int subcatch, double tStep);
 double  snow_getSnowMelt(int subcatch, double rainfall, double snowfall,
@@ -134,11 +156,14 @@ int     gwater_readAquiferParams(int aquifer, char* tok[], int ntoks);
 int     gwater_readGroundwaterParams(char* tok[], int ntoks);
 int     gwater_readFlowExpression(char* tok[], int ntoks);
 void    gwater_deleteFlowExpression(int subcatch);
+
 void    gwater_validateAquifer(int aquifer);
 void    gwater_validate(int subcatch);
+
 void    gwater_initState(int subcatch);
 void    gwater_getState(int subcatch, double x[]);
 void    gwater_setState(int subcatch, double x[]);
+
 void    gwater_getGroundwater(int subcatch, double evap, double infil,
         double tStep);
 double  gwater_getVolume(int subcatch);
@@ -162,12 +187,14 @@ int     landuse_readParams(int landuse, char* tok[], int ntoks);
 int     landuse_readPollutParams(int pollut, char* tok[], int ntoks);
 int     landuse_readBuildupParams(char* tok[], int ntoks);
 int     landuse_readWashoffParams(char* tok[], int ntoks);
+
 void    landuse_getInitBuildup(TLandFactor* landFactor,  double* initBuildup,
 	    double area, double curb);
 double  landuse_getBuildup(int landuse, int pollut, double area, double curb,
         double buildup, double tStep);
-void    landuse_getWashoff(int landuse, double area, TLandFactor landFactor[],
-        double runoff, double tStep, double washoffLoad[]);
+
+double  landuse_getWashoffLoad(int landuse, int p, double area,                //(5.1.008)
+        TLandFactor landFactor[], double runoff, double vOutflow);             //(5.1.008)
 double  landuse_getAvgBmpEffic(int j, int p);
 double  landuse_getCoPollutLoad(int p, double washoff[]);
 
@@ -182,6 +209,7 @@ int     flowrout_execute(int links[], int routingModel, double tStep);
 void    toposort_sortLinks(int links[]);
 int     kinwave_execute(int link, double* qin, double* qout, double tStep);
 
+void    dynwave_validate(void);                                                //(5.1.008)
 void    dynwave_init(void);
 void    dynwave_close(void);
 double  dynwave_getRoutingStep(double fixedStep);
@@ -207,12 +235,13 @@ void    treatmnt_setInflow(double qIn, double wIn[]);
 int     massbal_open(void);
 void    massbal_close(void);
 void    massbal_report(void);
-void    massbal_updateRunoffTotals(double vRainfall, double vEvap, double vInfil,
-        double vRunoff);
+
+void    massbal_updateRunoffTotals(int type, double v);                        //(5.1.008)
 void    massbal_updateLoadingTotals(int type, int pollut, double w);
 void    massbal_updateGwaterTotals(double vInfil, double vUpperEvap,
         double vLowerEvap, double vLowerPerc, double vGwater);
 void    massbal_updateRoutingTotals(double tStep);
+
 void    massbal_initTimeStepTotals(void);
 void    massbal_addInflowFlow(int type, double q);
 void    massbal_addInflowQual(int type, int pollut, double w);
@@ -221,6 +250,8 @@ void    massbal_addOutflowQual(int pollut, double mass, int isFlooded);
 void    massbal_addNodeLosses(double evapLoss, double infilLoss);
 void    massbal_addLinkLosses(double evapLoss, double infilLoss);
 void    massbal_addReactedMass(int pollut, double mass);
+void    massbal_addSeepageLoss(int pollut, double seepLoss);                   //(5.1.008)
+void    massbal_addToFinalStorage(int pollut, double mass);                    //(5.1.008)
 double  massbal_getStepFlowError(void);
 
 //-----------------------------------------------------------------------------
@@ -229,12 +260,17 @@ double  massbal_getStepFlowError(void);
 int     stats_open(void);
 void    stats_close(void);
 void    stats_report(void);
+
 void    stats_updateCriticalTimeCount(int node, int link);
 void    stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
         int steadyState);
 void    stats_updateSubcatchStats(int subcatch, double rainVol, double runonVol,
         double evapVol, double infilVol, double runoffVol, double runoff);
+void    stats_updateGwaterStats(int j, double infil, double evap,              //(5.1.008)
+        double latFlow, double deepFlow, double theta, double waterTable,      //(5.1.008)
+        double tStep);                                                         //(5.1.008)
 void    stats_updateMaxRunoff(void);
+void    stats_updateMaxNodeDepth(int node, double depth);                      //(5.1.008)
 
 //-----------------------------------------------------------------------------
 //   Raingage Methods
@@ -254,37 +290,52 @@ int     subcatch_readParams(int subcatch, char* tok[], int ntoks);
 int     subcatch_readSubareaParams(char* tok[], int ntoks);
 int     subcatch_readLanduseParams(char* tok[], int ntoks);
 int     subcatch_readInitBuildup(char* tok[], int ntoks);
+
 void    subcatch_validate(int subcatch);
 void    subcatch_initState(int subcatch);
 void    subcatch_setOldState(int subcatch);
+
 double  subcatch_getFracPerv(int subcatch);
 double  subcatch_getStorage(int subcatch);
-void    subcatch_getRunon(int subcatch);
-double  subcatch_getRunoff(int subcatch, double tStep);
 double  subcatch_getDepth(int subcatch);
-void    subcatch_getWashoff(int subcatch, double runoff, double tStep);
-void    subcatch_getBuildup(int subcatch, double tStep);
-void    subcatch_sweepBuildup(int subcatch, DateTime aDate);
+
+void    subcatch_getRunon(int subcatch);
+void    subcatch_addRunonFlow(int subcatch, double flow);                      //(5.1.008)
+double  subcatch_getRunoff(int subcatch, double tStep);
+
 double  subcatch_getWtdOutflow(int subcatch, double wt);
-double  subcatch_getWtdWashoff(int subcatch, int pollut, double wt);
 void    subcatch_getResults(int subcatch, double wt, float x[]);
+
+////  New functions added to release 5.1.008.  ////                            //(5.1.008)
+//-----------------------------------------------------------------------------
+//  Surface Pollutant Buildup/Washoff Methods
+//-----------------------------------------------------------------------------
+void    surfqual_initState(int subcatch);
+void    surfqual_getWashoff(int subcatch, double runoff, double tStep);
+void    surfqual_getBuildup(int subcatch, double tStep);
+void    surfqual_sweepBuildup(int subcatch, DateTime aDate);
+double  surfqual_getWtdWashoff(int subcatch, int pollut, double wt);
 
 //-----------------------------------------------------------------------------
 //   Conveyance System Node Methods
 //-----------------------------------------------------------------------------
 int     node_readParams(int node, int type, int subIndex, char* tok[], int ntoks);
 void    node_validate(int node);
+
 void    node_initState(int node);
+void    node_initInflow(int node, double tStep);
 void    node_setOldHydState(int node);
 void    node_setOldQualState(int node);
-void    node_initInflow(int node, double tStep);
+
 void    node_setOutletDepth(int node, double yNorm, double yCrit, double z);
 void    node_setDividerCutoff(int node, int link);
+
 double  node_getSurfArea(int node, double depth);
 double  node_getDepth(int node, double volume);
 double  node_getVolume(int node, double depth);
-double  node_getPondedDepth(int node, double volume);
+//double  node_getPondedDepth(int node, double volume); removed                //(5.1.008)
 double  node_getPondedArea(int node, double depth);
+
 double  node_getOutflow(int node, int link);
 double  node_getLosses(int node, double tStep);
 double  node_getMaxOutflow(int node, double q, double tStep);
@@ -297,11 +348,14 @@ void    node_getResults(int node, double wt, float x[]);
 int     inflow_readExtInflow(char* tok[], int ntoks);
 int     inflow_readDwfInflow(char* tok[], int ntoks);
 int     inflow_readDwfPattern(char* tok[], int ntoks);
+
 void    inflow_initDwfInflow(TDwfInflow* inflow);
 void    inflow_initDwfPattern(int pattern);
+
 double  inflow_getExtInflow(TExtInflow* inflow, DateTime aDate);
 double  inflow_getDwfInflow(TDwfInflow* inflow, int m, int d, int h);
 double  inflow_getPatternFactor(int p, int month, int day, int hour);
+
 void    inflow_deleteExtInflows(int node);
 void    inflow_deleteDwfInflows(int node);
 
@@ -329,13 +383,16 @@ void    hotstart_close(void);
 int     link_readParams(int link, int type, int subIndex, char* tok[], int ntoks);
 int     link_readXsectParams(char* tok[], int ntoks);
 int     link_readLossParams(char* tok[], int ntoks);
+
 void    link_validate(int link);
 void    link_initState(int link);
 void    link_setOldHydState(int link);
 void    link_setOldQualState(int link);
+
 void    link_setTargetSetting(int j);
 void    link_setSetting(int j, double tstep);
 int     link_setFlapGate(int link, int n1, int n2, double q);
+
 double  link_getInflow(int link);
 void    link_setOutfallDepth(int link);
 double  link_getLength(int link);
@@ -344,7 +401,9 @@ double  link_getYnorm(int link, double q);
 double  link_getVelocity(int link, double q, double y);
 double  link_getFroude(int link, double v, double y);
 double  link_getPower(int link);
-double  link_getLossRate(int link, double tStep);
+double  link_getLossRate(int link, double q, double tStep);                    //(5.1.008)
+char    link_getFullState(double a1, double a2, double aFull);                 //(5.1.008)
+
 void    link_getResults(int link, double wt, float x[]);
 
 //-----------------------------------------------------------------------------
@@ -355,6 +414,7 @@ int     xsect_setParams(TXsect *xsect, int type, double p[], double ucf);
 void    xsect_setIrregXsectParams(TXsect *xsect);
 void    xsect_setCustomXsectParams(TXsect *xsect);
 double  xsect_getAmax(TXsect* xsect);
+
 double  xsect_getSofA(TXsect* xsect, double area);
 double  xsect_getYofA(TXsect* xsect, double area);
 double  xsect_getRofA(TXsect* xsect, double area);
@@ -404,23 +464,28 @@ int     controls_evaluate(DateTime currentTime, DateTime elapsedTime,
 //-----------------------------------------------------------------------------
 int     table_readCurve(char* tok[], int ntoks);
 int     table_readTimeseries(char* tok[], int ntoks);
+
 int     table_addEntry(TTable* table, double x, double y);
-void    table_deleteEntries(TTable* table);
-void    table_init(TTable* table);
-int     table_validate(TTable* table);
-double  table_interpolate(double x, double x1, double y1, double x2, double y2);
-double  table_lookup(TTable* table, double x);
-double  table_intervalLookup(TTable* table, double x);
-double  table_inverseLookup(TTable* table, double y);
-double  table_getSlope(TTable *table, double x);
 int     table_getFirstEntry(TTable* table, double* x, double* y);
 int     table_getNextEntry(TTable* table, double* x, double* y);
+void    table_deleteEntries(TTable* table);
+
+void    table_init(TTable* table);
+int     table_validate(TTable* table);
+//      table_interpolate now defined in table.c                               //(5.1.008)
+
+double  table_lookup(TTable* table, double x);
+double  table_lookupEx(TTable* table, double x);
+double  table_intervalLookup(TTable* table, double x);
+double  table_inverseLookup(TTable* table, double y);
+
+double  table_getSlope(TTable *table, double x);
 double  table_getMaxY(TTable *table, double x);
-void    table_tseriesInit(TTable *table);
-double  table_tseriesLookup(TTable* table, double t, char extend);
 double  table_getArea(TTable* table, double x);
 double  table_getInverseArea(TTable* table, double a);
-double  table_lookupEx(TTable* table, double x);
+
+void    table_tseriesInit(TTable *table);
+double  table_tseriesLookup(TTable* table, double t, char extend);
 
 //-----------------------------------------------------------------------------
 //   Utility Methods

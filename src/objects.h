@@ -5,6 +5,7 @@
 //   Version: 5.1
 //   Date:    03/19/14  (Build 5.1.000)
 //            09/15/14  (Build 5.1.007)
+//            03/19/15  (Build 5.1.008)
 //   Author:  L. Rossman (EPA)
 //            M. Tryby (EPA)
 //            R. Dickinson (CDM)
@@ -13,12 +14,27 @@
 //
 //   Most SWMM 5 "objects" are represented as C data structures.
 //
-//   NOTE: the units shown next to each structure's properties are SWMM's
-//         internal units and may be different than the units required
-//         for the property as it appears in the input file.
+//   The units shown next to each structure's properties are SWMM's
+//   internal units and may be different than the units required
+//   for the property as it appears in the input file.
 //
-//   NOTE: in many structure definitions, a blank line separates the set of
-//         input properties from the set of computed output properties.
+//   In many structure definitions, a blank line separates the set of
+//   input properties from the set of computed output properties.
+//
+//   Build 5.1.007:
+//   - Data structure for monthly adjustments of temperature, evaporation,
+//     and rainfall added.
+//   - User-supplied equation for deep GW flow added to subcatchment object.
+//   - Exfiltration added to storage node object.
+//   - Surcharge option added to weir object.
+//
+//   Build 5.1.008:
+//   - Route to subcatchment option added to Outfall data structure.
+//   - Hydraulic conductivity added to monthly adjustments data structure.
+//   - Total LID drain flow and outfall runon added to Runoff Totals.
+//   - Groundwater statistics object added.
+//   - Maximum depth for reporting times added to node statistics object.
+//            
 //-----------------------------------------------------------------------------
 
 #include "mathexpr.h"
@@ -174,7 +190,9 @@ typedef struct
     double       temp[12];        // monthly temperature adjustments (deg F)
     double       evap[12];        // monthly evaporation adjustments (ft/s)
     double       rain[12];        // monthly rainfall adjustment multipliers
+    double       hydcon[12];      // hyd. conductivity adjustment multipliers  //(5.1.008)
     double       rainFactor;      // current rainfall adjustment multiplier
+    double       hydconFactor;    // current conductivity multiplier           //(5.1.008)
 }   TAdjust;
 
 
@@ -200,6 +218,24 @@ typedef struct
 }   TAquifer;
 
 
+////  Added to release 5.1.008.  ////                                          //(5.1.008)
+//-----------------------
+// GROUNDWATER STATISTICS
+//-----------------------
+typedef struct
+{
+    double       infil;           // total infiltration (ft)
+    double       evap;            // total evaporation (ft)
+    double       latFlow;         // total lateral outflow (ft)
+    double       deepFlow;        // total flow to deep aquifer (ft)
+    double       avgUpperMoist;   // avg. upper zone moisture
+    double       finalUpperMoist; // final upper zone moisture
+    double       avgWaterTable;   // avg. water table height (ft)
+    double       finalWaterTable; // final water table height (ft)
+    double       maxFlow;         // max. lateral outflow (cfs)
+}  TGWaterStats;
+
+
 //------------------------
 // GROUNDWATER OBJECT
 //------------------------
@@ -223,6 +259,7 @@ typedef struct
     double        newFlow;        // gw outflow from current time period (cfs)
     double        evapLoss;       // evaporation loss rate (ft/sec)
     double        maxInfilVol;    // max. infil. upper zone can accept (ft)
+    TGWaterStats  stats;          // gw statistics                             //(5.1.008)
 } TGroundwater;
 
 
@@ -475,6 +512,9 @@ typedef struct
    double     fixedStage;         // fixed outfall stage (ft)
    int        tideCurve;          // index of tidal stage curve
    int        stageSeries;        // index of outfall stage time series
+   int        routeTo;            // subcatchment index routed onto            //(5.1.008)
+   double     vRouted;            // flow volume routed (ft3)                  //(5.1.008)
+   double*    wRouted;            // pollutant load routed (mass)              //(5.1.008)
 }  TOutfall;
 
 
@@ -640,12 +680,13 @@ typedef struct
    double        qMax;            // max. flow (cfs)
    double        a1, a2;          // upstream & downstream areas (ft2)
    double        q1, q2;          // upstream & downstream flows per barrel (cfs)
-   double        q1Old, q2Old;    // previous values of q1 & q2 (cfs)
+// double        q1Old, q2Old;    // (deprecated)                              //(5.1.008)
    double        evapLossRate;    // evaporation rate (cfs)
    double        seepLossRate;    // seepage rate (cfs)
    char          capacityLimited; // capacity limited flag
    char          superCritical;   // super-critical flow flag
    char          hasLosses;       // local losses flag
+   char          fullState;       // determines if either or both ends full    //(5.1.008)
 }  TConduit;
 
 
@@ -794,11 +835,13 @@ typedef struct
 // CUMULATIVE RUNOFF TOTALS
 //-------------------------------
 typedef struct
-{                                 // All volume totals are in ft.
+{                                 // All volume totals are in ft3.             //(5.1.008)
    double        rainfall;        // rainfall volume 
    double        evap;            // evaporation loss
    double        infil;           // infiltration loss
    double        runoff;          // runoff volume
+   double        drains;          // LID drains                                //(5.1.008)
+   double        runon;           // runon from outfalls                       //(5.1.008)
    double        initStorage;     // inital surface storage
    double        finalStorage;    // final surface storage
    double        initSnowCover;   // initial snow cover
@@ -901,7 +944,6 @@ typedef struct
     double       maxFlow;         
 }  TSubcatchStats;
 
-
 //----------------
 // NODE STATISTICS
 //----------------
@@ -910,7 +952,7 @@ typedef struct
    double        avgDepth;
    double        maxDepth;
    DateTime      maxDepthDate;
-   double        maxDepthChange;
+   double        maxRptDepth;                                                  //(5.1.008)
    double        volFlooded;
    double        timeFlooded;
    double        timeSurcharged;
@@ -978,7 +1020,7 @@ typedef struct
    double        maxFlow;
    DateTime      maxFlowDate;
    double        maxVeloc;
-   DateTime      maxVelocDate;
+   //DateTime      maxVelocDate;  //deprecated                                 //(5.1.008)
    double        maxDepth;
    double        timeNormalFlow;
    double        timeInletControl;

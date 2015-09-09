@@ -8,8 +8,6 @@
 //
 //   Error codes
 //
-//   NOTE: The error code enumeration was re-ordered sequentially for
-//         release 5.0.023 and all previous update comments were removed.
 //-----------------------------------------------------------------------------
 
 enum  ErrorType {

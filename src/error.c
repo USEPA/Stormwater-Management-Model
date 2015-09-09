@@ -4,13 +4,14 @@
 //   Project: EPA SWMM5
 //   Version: 5.1
 //   Date:    03/20/14  (Build 5.1.001)
+//            03/19/15  (Build 5.1.008)
 //   Author:  L. Rossman
 //
 //   Error messages
 //
-//   NOTE: The error message listings were re-ordered sequentially for
-//         release 5.0.023 and all previous update comments were removed.
-
+//   Build 5.1.008:
+//   - Text of Error 217 for control rules modified.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -97,7 +98,7 @@
 #define ERR209 "\n  ERROR 209: undefined object %s "
 #define ERR211 "\n  ERROR 211: invalid number %s "
 #define ERR213 "\n  ERROR 213: invalid date/time %s "
-#define ERR217 "\n  ERROR 217: control rule clause out of sequence "
+#define ERR217 "\n  ERROR 217: control rule clause invalid or out of sequence "  //(5.1.008)
 #define ERR219 "\n  ERROR 219: data provided for unidentified transect "
 #define ERR221 "\n  ERROR 221: transect station out of sequence "
 #define ERR223 "\n  ERROR 223: Transect %s has too few stations." 
@@ -161,7 +162,6 @@
 #define ERR405 \
 "\n  ERROR 405: amount of output produced will exceed maximum file size;" \
 "\n             either reduce Ending Date or increase Reporting Time Step."
-
 
 ////////////////////////////////////////////////////////////////////////////
 //  NOTE: Need to update ErrorMsgs[], ErrorCodes[], and ErrorType

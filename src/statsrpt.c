@@ -5,9 +5,15 @@
 //   Version:  5.1
 //   Date:     03/20/14 (Build 5.1.001)
 //             09/15/14 (Build 5.1.007)
+//             03/19/15 (Build 5.1.008)
 //   Author:   L. Rossman
 //
 //   Report writing functions for summary statistics.
+//
+//   Build 5.1.008:
+//   - New Groundwater Summary table added.
+//   - Reported Max. Depth added to Node Depth Summary table.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -36,6 +42,7 @@ extern double*         NodeOutflow;            // defined in massbal.c
 //  Local functions
 //-----------------------------------------------------------------------------
 void    writeSubcatchRunoff(void);
+void    writeGroundwater(void);                                                //(5.1.008)
 void    writeSubcatchLoads(void);
 void    writeNodeDepths(void);
 void    writeNodeFlows(void);
@@ -80,6 +87,7 @@ void statsrpt_writeReport()
         {
             writeSubcatchRunoff();
             lid_writeWaterBalance();
+            if ( !IgnoreGwater ) writeGroundwater();                           //(5.1.008)
             if ( Nobjects[POLLUT] > 0 && !IgnoreQuality) writeSubcatchLoads();
         }
     }
@@ -156,6 +164,63 @@ void writeSubcatchRunoff()
 
 //=============================================================================
 
+////  New function added to release 5.1.008.  ////                             //(5.1.008)
+
+void    writeGroundwater(void)
+{
+    int i, j;
+    int count = 0;
+    double totalSeconds = NewRunoffTime / 1000.;
+    double x[9];
+
+    if ( Nobjects[SUBCATCH] == 0 ) return;
+    for ( j = 0; j < Nobjects[SUBCATCH]; j++ )
+    {
+        if ( Subcatch[j].groundwater != NULL ) count++;
+    }
+    if ( count == 0 ) return;
+
+    WRITE("");
+    WRITE("*******************");
+    WRITE("Groundwater Summary");
+    WRITE("*******************");
+    WRITE("");
+    fprintf(Frpt.file,
+
+"\n  -----------------------------------------------------------------------------------------------------"
+"\n                                            Total    Total  Maximum  Average  Average    Final    Final"
+"\n                          Total    Total    Lower  Lateral  Lateral    Upper    Water    Upper    Water"
+"\n                          Infil     Evap  Seepage  Outflow  Outflow   Moist.    Table   Moist.    Table");
+    if ( UnitSystem == US ) fprintf(Frpt.file,
+"\n  Subcatchment               in       in       in       in      %3s                ft                ft",
+        FlowUnitWords[FlowUnits]);
+    else fprintf(Frpt.file,
+"\n  Subcatchment               mm       mm       mm       mm      %3s                 m                 m",
+        FlowUnitWords[FlowUnits]);
+    fprintf(Frpt.file,
+"\n  -----------------------------------------------------------------------------------------------------");
+
+    for ( j = 0; j < Nobjects[SUBCATCH]; j++ )
+    {
+        if ( Subcatch[j].area == 0.0 || Subcatch[j].groundwater == NULL ) continue;
+        fprintf(Frpt.file, "\n  %-20s", Subcatch[j].ID);
+        x[0] = Subcatch[j].groundwater->stats.infil * UCF(RAINDEPTH);
+        x[1] = Subcatch[j].groundwater->stats.evap * UCF(RAINDEPTH);
+        x[2] = Subcatch[j].groundwater->stats.deepFlow * UCF(RAINDEPTH);
+        x[3] = Subcatch[j].groundwater->stats.latFlow * UCF(RAINDEPTH);
+        x[4] = Subcatch[j].groundwater->stats.maxFlow * UCF(FLOW) * Subcatch[j].area;
+        x[5] = Subcatch[j].groundwater->stats.avgUpperMoist / totalSeconds;
+        x[6] = Subcatch[j].groundwater->stats.avgWaterTable * UCF(LENGTH) /
+               totalSeconds;
+        x[7] = Subcatch[j].groundwater->stats.finalUpperMoist;
+        x[8] = Subcatch[j].groundwater->stats.finalWaterTable * UCF(LENGTH);
+        for (i = 0; i < 9; i++) fprintf(Frpt.file, " %8.2f", x[i]);
+    }
+    WRITE("");
+}
+
+//=============================================================================
+
 void writeSubcatchLoads()
 {
     int i, j, p;
@@ -221,6 +286,8 @@ void writeSubcatchLoads()
 
 //=============================================================================
 
+////  Function modified for release 5.1.008.  ////                             //(5.1.008)
+
 void writeNodeDepths()
 //
 //  Input:   none
@@ -238,26 +305,26 @@ void writeNodeDepths()
     WRITE("");
 
     fprintf(Frpt.file,
-"\n  ---------------------------------------------------------------------"
-"\n                                 Average  Maximum  Maximum  Time of Max"
-"\n                                   Depth    Depth      HGL   Occurrence");
+"\n  ---------------------------------------------------------------------------------"
+"\n                                 Average  Maximum  Maximum  Time of Max    Reported"
+"\n                                   Depth    Depth      HGL   Occurrence   Max Depth");
     if ( UnitSystem == US ) fprintf(Frpt.file,
-"\n  Node                 Type         Feet     Feet     Feet  days hr:min");
+"\n  Node                 Type         Feet     Feet     Feet  days hr:min        Feet");
     else fprintf(Frpt.file,
-"\n  Node                 Type       Meters   Meters   Meters  days hr:min");
+"\n  Node                 Type       Meters   Meters   Meters  days hr:min      Meters");
     fprintf(Frpt.file,
-"\n  ---------------------------------------------------------------------");
+"\n  ---------------------------------------------------------------------------------");
 
     for ( j = 0; j < Nobjects[NODE]; j++ )
     {
         fprintf(Frpt.file, "\n  %-20s", Node[j].ID);
         fprintf(Frpt.file, " %-9s ", NodeTypeWords[Node[j].type]);
         getElapsedTime(NodeStats[j].maxDepthDate, &days, &hrs, &mins);
-        fprintf(Frpt.file, "%7.2f  %7.2f  %7.2f  %4d  %02d:%02d",
+        fprintf(Frpt.file, "%7.2f  %7.2f  %7.2f  %4d  %02d:%02d  %10.2f",
             NodeStats[j].avgDepth / StepCount * UCF(LENGTH),
             NodeStats[j].maxDepth * UCF(LENGTH),
             (NodeStats[j].maxDepth + Node[j].invertElev) * UCF(LENGTH),
-            days, hrs, mins);
+            days, hrs, mins, NodeStats[j].maxRptDepth * UCF(LENGTH));
     }
     WRITE("");
 }
@@ -287,7 +354,7 @@ void writeNodeFlows()
 "\n                                   Inflow   Inflow   Occurrence      Volume      Volume       Error"
 "\n  Node                 Type           %3s      %3s  days hr:min    %8s    %8s     Percent",
         FlowUnitWords[FlowUnits], FlowUnitWords[FlowUnits], VolUnitsWords[UnitSystem],
-        VolUnitsWords[UnitSystem], VolUnitsWords2[UnitSystem]);
+        VolUnitsWords2[UnitSystem]);                                           //(5.1.008)
     fprintf(Frpt.file,
 "\n  -------------------------------------------------------------------------------------------------");
 

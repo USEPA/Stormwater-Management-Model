@@ -4,9 +4,15 @@
 //   Project: EPA SWMM5
 //   Version: 5.1
 //   Date:    03/20/14   (Build 5.1.001)
+//            03/19/15   (Build 5.1.008)
 //   Author:  L. Rossman (US EPA)
 //
 //   Public interface for LID functions.
+//
+//   Build 5.1.008:
+//   - Support added for Roof Disconnection LID.
+//   - Support added for separate routing of LID drain flows.
+//   - Detailed LID reporting modified.
 //
 //-----------------------------------------------------------------------------
 
@@ -28,12 +34,17 @@ enum LidTypes {
     INFIL_TRENCH,            // infiltration trench
     POROUS_PAVEMENT,         // porous pavement
     RAIN_BARREL,             // rain barrel
-    VEG_SWALE};              // vegetative swale
+    VEG_SWALE,               // vegetative swale
+    ROOF_DISCON};            // roof disconnection                             //(5.1.008)
+
+enum TimePeriod {
+    PREVIOUS,                // previous time period                           //(5.1.008)
+    CURRENT};                // current time period                            //(5.1.008)
 
 //-----------------------------------------------------------------------------
 //  Data Structures
 //-----------------------------------------------------------------------------
-#define MAX_STATE_VARS 3
+#define MAX_LAYERS 4
 
 // LID Surface Layer
 typedef struct
@@ -106,7 +117,7 @@ typedef struct
     TSoilLayer     soil;          // soil layer parameters
     TStorageLayer  storage;       // storage layer parameters
     TDrainLayer    drain;         // underdrain system parameters
-    TDrainMatLayer drainMat;      // drainage mat layer 
+    TDrainMatLayer drainMat;      // drainage mat layer
 }  TLidProc;
 
 // Water Balance Statistics
@@ -125,30 +136,37 @@ typedef struct
 typedef struct
 {
     FILE*     file;               // file pointer
-    double    lastReportTime;     // next reporting time (msec)
+    int       wasDry;             // true if LID was dry                       //(5.1.008)
+    char      results[256];       // results for current time period           //(5.1.008)
 }   TLidRptFile;
 
 // LID Unit - specific LID process applied over a given area
 typedef struct
 {
-    int            lidIndex;      // index of LID process
-    int            number;        // number of replicate units
-    double         area;          // area of single replicate unit (ft2)
-    double         fullWidth;     // full top width of single unit (ft)
-    double         botWidth;      // bottom width of single unit (ft)
-    double         initSat;       // initial saturation of soil & storage layers
-    double         fromImperv;    // fraction of impervious area runoff treated
-    int            toPerv;        // 1 if outflow sent to pervious area; 0 if not
-    TLidRptFile*   rptFile;       // pointer to detailed report file
+    int      lidIndex;       // index of LID process
+    int      number;         // number of replicate units
+    double   area;           // area of single replicate unit (ft2)
+    double   fullWidth;      // full top width of single unit (ft)
+    double   botWidth;       // bottom width of single unit (ft)
+    double   initSat;        // initial saturation of soil & storage layers
+    double   fromImperv;     // fraction of impervious area runoff treated
+    int      toPerv;         // 1 if outflow sent to pervious area; 0 if not
+    int      drainSubcatch;  // subcatchment receiving drain flow              //(5.1.008)
+    int      drainNode;      // node receiving drain flow                      //(5.1.008)
+    TLidRptFile* rptFile;    // pointer to detailed report file
 
-    TGrnAmpt       soilInfil;     // infil. object for biocell soil layer 
-    double         surfaceDepth;  // depth of ponded water on surface layer (ft)
-    double         soilMoisture;  // moisture content of biocell soil layer
-    double         storageDepth;  // depth of water in storage layer (ft)
-    double         oldFluxRates[MAX_STATE_VARS];  // net inflow - outflow from previous
-                                     // time step for surface/soil(pavement)/
-                                     // storage layers (ft/sec)
-    double         dryTime;          // time since last rainfall (sec)
+    TGrnAmpt soilInfil;      // infil. object for biocell soil layer 
+    double   surfaceDepth;   // depth of ponded water on surface layer (ft)
+    double   paveMoisture;   // moisture content of porous pavement layer      //(5.1.008)
+    double   soilMoisture;   // moisture content of biocell soil layer
+    double   storageDepth;   // depth of water in storage layer (ft)
+
+    // net inflow - outflow from previous time step for each LID layer (ft/s)
+    double   oldFluxRates[MAX_LAYERS];
+                                     
+    double   dryTime;        // time since last rainfall (sec)
+    double   oldDrainFlow;   // previous drain flow (cfs)                      //(5.1.008)
+    double   newDrainFlow;   // current drain flow (cfs)                       //(5.1.008)
     TWaterBalance  waterBalance;     // water balance quantites
 }  TLidUnit;
 
@@ -157,25 +175,40 @@ typedef struct
 //-----------------------------------------------------------------------------
 void     lid_create(int lidCount, int subcatchCount);
 void     lid_delete(void);
+
 int      lid_readProcParams(char* tok[], int ntoks);
 int      lid_readGroupParams(char* tok[], int ntoks);
+
 void     lid_validate(void);
 void     lid_initState(void);
+void     lid_setOldGroupState(int subcatch);                                   //(5.1.008)
+
 double   lid_getPervArea(int subcatch);
 double   lid_getFlowToPerv(int subcatch);
+double   lid_getDrainFlow(int subcatch, int timePeriod);                       //(5.1.008)
 double   lid_getStoredVolume(int subcatch);
-double   lid_getSurfaceDepth(int subcatch);
-double   lid_getDepthOnPavement(int subcatch, double impervDepth);
-double   lid_getRunoff(int subcatch, double *outflow, double *evapVol,
-         double *pervEvapVol, double *infilVol, double tStep);
+
+//double   lid_getSurfaceDepth(int subcatch);                                  //(5.1.008)
+//double   lid_getDepthOnPavement(int subcatch, double impervDepth);           //(5.1.008)
+
+void     lid_addDrainLoads(int subcatch, double c[], double tStep);            //(5.1.008)
+void     lid_addDrainRunon(int subcatch);                                      //(5.1.008)
+void     lid_addDrainInflow(int subcatch, double f);                           //(5.1.008)
+
+void     lid_getRunoff(int subcatch, double tStep);                            //(5.1.008)
+
 void     lid_writeSummary(void);
 void     lid_writeWaterBalance(void);
+
 //-----------------------------------------------------------------------------
+
 void     lidproc_initWaterBalance(TLidUnit *lidUnit, double initVol);
-double   lidproc_getOutflow(TLidUnit* theUnit, TLidProc* theProc, double inflow,
-	     double rain, double evap, double infil, double maxInfil, double tStep,
-         double* lidEvap, double* lidInfil);
-void     lidproc_saveResults(TLidUnit* theUnit, int saveResults,
+
+double   lidproc_getOutflow(TLidUnit* lidUnit, TLidProc* lidProc,
+         double inflow, double evap, double infil, double maxInfil,            //(5.1.008)
+         double tStep, double* lidEvap, double* lidInfil, double* lidDrain);   //(5.1.008)
+
+void     lidproc_saveResults(TLidUnit* lidUnit, TLidProc* lidProc,             //(5.1.008)
          double ucfRainfall, double ucfRainDepth);
 
 #endif

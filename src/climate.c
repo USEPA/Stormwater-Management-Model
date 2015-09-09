@@ -5,9 +5,21 @@
 //   Version: 5.1
 //   Date:    03/20/10 (Build 5.1.001)
 //            09/15/14 (Build 5.1.007)
+//            03/19/15 (Build 5.1.008)
 //   Author:  L. Rossman
 //
 //   Climate related functions.
+//
+//   Build 5.1.007:
+//   - NCDC GHCN climate file format added.
+//   - Monthly adjustments for temperature, evaporation & rainfall added.
+//
+//   Build 5.1.008:
+//   - Monthly adjustments for hyd. conductivity added.
+//   - Time series evaporation rates can now vary within a day.
+//   - Evaporation rates are now properly updated when only flow routing
+//     is being simulated.
+//             
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -25,8 +37,8 @@ enum ClimateFileFormats {UNKNOWN_FORMAT,
                          GHCND,             // NCDC GHCN Daily format          //(5.1.007)
                          TD3200,            // NCDC TD3200 format
                          DLY0204};          // Canadian DLY02 or DLY04 format
-static const int   MAXCLIMATEVARS  = 4;
-static const int   MAXDAYSPERMONTH = 32;
+static const int    MAXCLIMATEVARS  = 4;
+static const int    MAXDAYSPERMONTH = 32;
 
 // These variables are used when processing climate files.
 enum   ClimateVarType {TMIN, TMAX, EVAP, WIND};
@@ -44,7 +56,7 @@ static double    Trng;                 // 1/2 range of daily temperatures
 static double    Trng1;                // prev. max - current min. temp.
 static double    Tave;                 // average daily temperature (deg F)
 static double    Hrsr;                 // time of min. temp. (hrs)
-static double    Hrss;                 // time of max. temp (hrs) 
+static double    Hrss;                 // time of max. temp (hrs)
 static double    Hrday;                // avg. of min/max temp times
 static double    Dhrdy;                // hrs. between min. & max. temp. times
 static double    Dydif;                // hrs. between max. & min. temp. times
@@ -78,7 +90,7 @@ static int      FileWindType;          // wind speed type;                     /
 //  climate_openFile                   // called by runoff_open
 //  climate_initState                  // called by project_init
 //  climate_setState                   // called by runoff_execute
-//  climate_getNextEvap                // called by runoff_getTimeStep
+//  climate_getNextEvapDate            // called by runoff_getTimeStep         //(5.1.008)
 
 //-----------------------------------------------------------------------------
 //  Local functions
@@ -89,12 +101,14 @@ static void readUserFileLine(int *year, int *month);
 static void readTD3200FileLine(int *year, int *month);
 static void readDLY0204FileLine(int *year, int *month);
 static void readFileValues(void);
-static void setFileValues(int param);
+
+static void setNextEvapDate(DateTime thedate);                                 //(5.1.008)
 static void setEvap(DateTime theDate);
 static void setTemp(DateTime theDate);
 static void setWind(DateTime theDate);
 static void updateTempTimes(int day);
 static double getTempEvap(int day);
+
 static void updateFileValues(DateTime theDate);
 static void parseUserFileLine(void);
 static void parseTD3200FileLine(void);
@@ -118,7 +132,7 @@ int  climate_readParams(char* tok[], int ntoks)
 //    TIMESERIES  name
 //    FILE        name
 //    WINDSPEED   MONTHLY  v1  v2  ...  v12
-//    WINDSPEED   FILE 
+//    WINDSPEED   FILE
 //    SNOWMELT    v1  v2  ...  v6
 //    ADC         IMPERV/PERV  v1  v2  ...  v10
 //
@@ -214,7 +228,7 @@ int  climate_readParams(char* tok[], int ntoks)
         // --- read 10 fractional values
         for (j=0; j<10; j++)
         {
-            if ( !getDouble(tok[j+2], &y) || y < 0.0 || y > 1.0 ) 
+            if ( !getDouble(tok[j+2], &y) || y < 0.0 || y > 1.0 )
                 return error_setInpError(ERR_NUMBER, tok[j+2]);
             Snow.adc[i][j] = y;
         }
@@ -236,7 +250,7 @@ int climate_readEvapParams(char* tok[], int ntoks)
 //    CONSTANT  value
 //    MONTHLY   v1 ... v12
 //    TIMESERIES name
-//    TEMPERATURE 
+//    TEMPERATURE
 //    FILE      (v1 ... v12)
 //    RECOVERY   name
 //    DRY_ONLY   YES/NO
@@ -288,7 +302,7 @@ int climate_readEvapParams(char* tok[], int ntoks)
         for ( i=0; i<12; i++)
             if ( !getDouble(tok[i+1], &Evap.monthlyEvap[i]) )
                 return error_setInpError(ERR_NUMBER, tok[i+1]);
-        break;           
+        break;
 
       case TIMESERIES_EVAP:
         // --- for time series evap., read name of time series
@@ -331,11 +345,12 @@ int climate_readAdjustments(char* tok[], int ntoks)
 //    TEMPERATURE   v1 ... v12
 //    EVAPORATION   v1 ... v12
 //    RAINFALL      v1 ... v12
+//    CONDUCTIVITY  v1 ... v12                                                 //(5.1.008)
 {
     int i;
     if (ntoks == 1) return 0;
 
-    if ( match(tok[0], "TEMP") ) 
+    if ( match(tok[0], "TEMP") )
     {
         if ( ntoks < 13 )  return error_setInpError(ERR_ITEMS, "");
         for (i = 1; i < 13; i++)
@@ -346,7 +361,7 @@ int climate_readAdjustments(char* tok[], int ntoks)
         return 0;
     }
 
-    if ( match(tok[0], "EVAP") ) 
+    if ( match(tok[0], "EVAP") )
     {
         if ( ntoks < 13 )  return error_setInpError(ERR_ITEMS, "");
         for (i = 1; i < 13; i++)
@@ -357,7 +372,7 @@ int climate_readAdjustments(char* tok[], int ntoks)
         return 0;
     }
 
-    if ( match(tok[0], "RAIN") ) 
+    if ( match(tok[0], "RAIN") )
     {
         if ( ntoks < 13 )  return error_setInpError(ERR_ITEMS, "");
         for (i = 1; i < 13; i++)
@@ -367,6 +382,20 @@ int climate_readAdjustments(char* tok[], int ntoks)
         }
         return 0;
     }
+
+////  Following code segment added for release 5.1.008.  ////                  //(5.1.008)
+////
+    if ( match(tok[0], "CONDUCT") )
+    {
+        if ( ntoks < 13 )  return error_setInpError(ERR_ITEMS, "");
+        for (i = 1; i < 13; i++)
+        {
+            if ( !getDouble(tok[i], &Adjust.hydcon[i-1]) )
+                return error_setInpError(ERR_NUMBER, tok[i]);
+        }
+        return 0;
+    }
+////
     return error_setInpError(ERR_KEYWORD, tok[0]);
 }
 
@@ -405,7 +434,7 @@ void climate_validate()
     a = Temp.anglat;
     if ( a <= -89.99 ||
          a >= 89.99  ) report_writeErrorMsg(ERR_SNOWMELT_PARAMS, "");
-    else Temp.tanAnglat = tan(a * PI / 180.0); 
+    else Temp.tanAnglat = tan(a * PI / 180.0);
 
     // --- compute psychrometric constant
     z = Temp.elev / 1000.0;
@@ -416,7 +445,7 @@ void climate_validate()
     // --- convert units of monthly temperature & evap adjustments             //(5.1.007)
     for (i = 0; i < 12; i++)
     {
-        if (UnitSystem == SI) Adjust.temp[i] *= 9.0/5.0;                          
+        if (UnitSystem == SI) Adjust.temp[i] *= 9.0/5.0;
         Adjust.evap[i] /= UCF(EVAPRATE);
     }
 }
@@ -459,7 +488,7 @@ void climate_openFile()
     rewind(Fclimate.file);
     strcpy(FileLine, "");
     if ( Temp.fileStartDate == NO_DATE )
-        datetime_decodeDate(StartDate, &FileYear, &FileMonth, &FileDay); 
+        datetime_decodeDate(StartDate, &FileYear, &FileMonth, &FileDay);
     else
         datetime_decodeDate(Temp.fileStartDate, &FileYear, &FileMonth, &FileDay);
     while ( !feof(Fclimate.file) )
@@ -473,8 +502,8 @@ void climate_openFile()
         report_writeErrorMsg(ERR_CLIMATE_END_OF_FILE, Fclimate.name);
         return;
     }
-    
-    // --- initialize file dates and current climate variable values 
+
+    // --- initialize file dates and current climate variable values
     if ( !ErrorCode )
     {
         FileElapsedDays = 0;
@@ -490,6 +519,8 @@ void climate_openFile()
 
 //=============================================================================
 
+////  This function was re-written for release 5.1.008.  ////                  //(5.1.008)
+
 void climate_initState()
 //
 //  Input:   none
@@ -502,9 +533,23 @@ void climate_initState()
     Snow.removed = 0.0;
     NextEvapDate = StartDate;
     NextEvapRate = 0.0;
+
+    // --- initialize variables for time series evaporation
     if ( Evap.type == TIMESERIES_EVAP && Evap.tSeries >= 0  )
-        NextEvapRate = table_intervalLookup(&Tseries[Evap.tSeries],
-                                            StartDate-1.0);
+    {
+        // --- initialize NextEvapDate & NextEvapRate to first entry of
+        //     time series whose date <= the simulation start date
+        table_getFirstEntry(&Tseries[Evap.tSeries],
+                            &NextEvapDate, &NextEvapRate);
+        if ( NextEvapDate < StartDate )
+        {  
+            setNextEvapDate(StartDate);
+        }
+        Evap.rate = NextEvapRate / UCF(EVAPRATE);
+
+        // --- find the next time evaporation rates change after this
+        setNextEvapDate(NextEvapDate); 
+    }
 }
 
 //=============================================================================
@@ -521,58 +566,86 @@ void climate_setState(DateTime theDate)
     setEvap(theDate);
     setWind(theDate);
     Adjust.rainFactor = Adjust.rain[datetime_monthOfYear(theDate)-1];          //(5.1.007)
+    Adjust.hydconFactor = Adjust.hydcon[datetime_monthOfYear(theDate)-1];      //(5.1.008)
+    setNextEvapDate(theDate);                                                  //(5.1.008)
 }
 
 //=============================================================================
 
-DateTime climate_getNextEvap(DateTime days)
+////  New function added to release 5.1.008.  ////                             //(5.1.008)
+
+DateTime climate_getNextEvapDate()
 //
-//  Input:   days = current simulation date
-//  Output:  returns date (in whole days) when evaporation rate next changes
-//  Purpose: finds date for next change in evaporation.
+//  Input:   none
+//  Output:  returns the current value of NextEvapDate
+//  Purpose: gets the next date when evaporation rate changes.
+//
+{
+    return NextEvapDate;
+}
+
+//=============================================================================
+
+////  Modified from what was previously named climate_getNextEvap.  ////       //(5.1.008)
+
+void setNextEvapDate(DateTime theDate)
+//
+//  Input:   theDate = current simulation date
+//  Output:  sets a new value for NextEvapDate
+//  Purpose: finds date for next change in evaporation after the current date.
 //
 {
     int    yr, mon, day, k;
     double d, e;
 
-    days = floor(days);
+    // --- do nothing if current date hasn't reached the current next date
+    if ( NextEvapDate > theDate ) return;
+
     switch ( Evap.type )
     {
+      // --- for constant evaporation, use a next date far in the future
       case CONSTANT_EVAP:
-        return days + 365.;
+         NextEvapDate = theDate + 365.;
+         break;
 
+      // --- for monthly evaporation, use the start of the next month
       case MONTHLY_EVAP:
-        datetime_decodeDate(days, &yr, &mon, &day);
+        datetime_decodeDate(theDate, &yr, &mon, &day);
         if ( mon == 12 )
         {
             mon = 1;
             yr++;
         }
         else mon++;
-        return datetime_encodeDate(yr, mon, 1);
+        NextEvapDate = datetime_encodeDate(yr, mon, 1);
+        break;
 
+      // --- for time series evaporation, find the next entry in the
+      //     series on or after the current date
       case TIMESERIES_EVAP:
-        if ( NextEvapDate > days ) return NextEvapDate;
         k = Evap.tSeries;
         if ( k >= 0 )
-        {    
+        {
+            NextEvapDate = theDate + 365.;
             while ( table_getNextEntry(&Tseries[k], &d, &e) &&
                     d <= EndDateTime )
             {
-                if ( d > days )
+                if ( d >= theDate )
                 {
                     NextEvapDate = d;
                     NextEvapRate = e;
-                    return d;
+                    break;
                 }
             }
         }
-        return days + 365.;
+        break;
 
+      // --- for climate file daily evaporation, use the next day
       case FILE_EVAP:
-        return days + 1.0;
+        NextEvapDate = floor(theDate) + 1.0;
+        break;
 
-      default: return days + 365.;
+      default: NextEvapDate = theDate + 365.;
     }
 }
 
@@ -657,10 +730,10 @@ void setTemp(DateTime theDate)
                 tmp = Tmin;
                 Tmin = Tmax;
                 Tmax = tmp;
-            } 
+            }
             updateTempTimes(day);
             if ( Evap.type == TEMPERATURE_EVAP )
-                FileValue[EVAP] = getTempEvap(day); 
+                FileValue[EVAP] = getTempEvap(day);
         }
 
         // --- compute snow melt coefficients based on day of year
@@ -842,7 +915,7 @@ double getTempEvap(int day)
                 (omega*sin(phi)*sin(del) +
                  cos(phi)*cos(del)*sin(omega));
     double e = 0.0023*ra/lamda*sqrt(tr)*(ta+17.8);    //evap. rate (mm/day)
-    if ( e < 0.0 ) e = 0.0; 
+    if ( e < 0.0 ) e = 0.0;
     if ( UnitSystem == US ) e /= MMperINCH;
     return e;
 }
@@ -876,12 +949,12 @@ int  getFileFormat()
 
     // --- check for DLY0204 format
     if ( strlen(line) >= 233 )
-    { 
+    {
         sstrncpy(elemType, &line[13], 3);
         n = atoi(elemType);
         if ( n == 1 || n == 2 || n == 151 ) return DLY0204;
     }
-    
+
     // --- check for USER_PREPARED format
     n = sscanf(line, "%s %d %d %d %s", staID, &y, &m, &d, s);
     if ( n == 5 ) return USER_PREPARED;
@@ -906,7 +979,7 @@ void readFileLine(int *y, int *m)
     while ( strlen(FileLine) == 0 )
     {
         if ( fgets(FileLine, MAXLINE, Fclimate.file) == NULL ) return;
-     	if ( FileLine[0] == '\n' ) FileLine[0] = '\0'; 
+     	if ( FileLine[0] == '\n' ) FileLine[0] = '\0';
     }
 
     // --- parse year & month from line
@@ -969,7 +1042,7 @@ void readTD3200FileLine(int* y, int* m)
         return;
     }
 
-    // --- get record's date 
+    // --- get record's date
     sstrncpy(year,  &FileLine[17], 4);
     sstrncpy(month, &FileLine[21], 2);
     *y = atoi(year);
@@ -998,7 +1071,7 @@ void readDLY0204FileLine(int* y, int* m)
         return;
     }
 
-    // --- get record's date 
+    // --- get record's date
     sstrncpy(year,  &FileLine[7], 4);
     sstrncpy(month, &FileLine[11], 2);
     *y = atoi(year);
@@ -1074,7 +1147,7 @@ void parseUserFileLine()
         if ( UnitSystem == SI ) x = 9./5.*x + 32.0;
         FileData[TMAX][d] =  x;
     }
- 
+
     // --- process TMIN
     if ( strlen(s1) > 0 && *s1 != '*' )
     {
@@ -1151,7 +1224,7 @@ void setTD3200FileValues(int i)
 
             // --- if value is valid then store it in FileData array
             d = atoi(day);
-            if ( strcmp(value, "99999") != 0 
+            if ( strcmp(value, "99999") != 0
                  && ( flag2[0] == '0' || flag2[0] == '1')
                  &&   d > 0
                  &&   d <= 31 )
@@ -1168,10 +1241,10 @@ void setTD3200FileValues(int i)
                     // --- convert to mm if using SI units
                     if ( UnitSystem == SI ) x *= MMperINCH;
                 }
-                
+
                 // --- convert wind speed from miles/day to miles/hour
                 if ( i == WIND ) x /= 24.0;
- 
+
                 // --- store value
                 FileData[i][d] = x;
             }
@@ -1325,7 +1398,7 @@ void parseGhcndFileLine()
 {
     int y, m, d, n, v;
     double x;
-    
+
     // --- parse day of month from date field
     n = sscanf(&FileLine[FileDateFieldPos], "%4d%2d%2d", &y, &m, &d);
     if ( n < 3 ) return;

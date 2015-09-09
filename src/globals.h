@@ -6,14 +6,22 @@
 //   Date:    03/19/14  (Build 5.1.000)
 //            04/14/14  (Build 5.1.004)
 //            09/15/14  (Build 5.1.007)
+//            03/19/15  (Build 5.1.008)
 //   Author:  L. Rossman
 //
 //   Global Variables
+//
+//   Build 5.1.004:
+//   - Ignore RDII option added.
+//
+//   Build 5.1.007:
+//   - Monthly climate variable adjustments added.
+//
+//   Build 5.1.008:
+//   - Number of parallel threads for dynamic wave routing added.
+//   - Minimum dynamic wave routing variable time step added.
+//
 //-----------------------------------------------------------------------------
-
-EXTERN int J1, P1, J2;
-EXTERN double RT;
-
 
 EXTERN TFile
                   Finp,                     // Input file
@@ -70,10 +78,12 @@ EXTERN int
                   ReportStep,               // Reporting time step (sec)
                   SweepStart,               // Day of year when sweeping starts
                   SweepEnd,                 // Day of year when sweeping ends
-                  MaxTrials;                // Max. trials for DW routing
+                  MaxTrials,                // Max. trials for DW routing
+                  NumThreads;               // Number of parallel threads used //(5.1.008)
 
 EXTERN double
                   RouteStep,                // Routing time step (sec)
+                  MinRouteStep,             // Minimum variable time step (sec) //(5.1.008)
                   LengtheningStep,          // Time step for lengthening (sec)
                   StartDryDays,             // Antecedent dry days
                   CourantFactor,            // Courant time step factor

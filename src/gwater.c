@@ -5,9 +5,20 @@
 //   Version:  5.1
 //   Date:     03/19/14  (Build 5.1.000)
 //             09/15/14  (Build 5.1.007)
+//             03/19/15  (Build 5.1.008)
 //   Author:   L. Rossman
 //
 //   Groundwater functions.
+//
+//   Build 5.1.007:
+//   - User-supplied function for deep GW seepage flow added.
+//   - New variable names for use in user-supplied GW flow equations added.
+//
+//   Build 5.1.008:
+//   - More variable names for user-supplied GW flow equations added.
+//   - Subcatchment area made into a shared variable.
+//   - Evaporation loss initialized to 0.
+//   - Support for collecting GW statistics added.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -33,16 +44,23 @@ enum   GWvariables {
          gwvHCB,                       // channel bottom height (ft)           //(5.1.007)
          gwvHGS,                       // ground surface height (ft)           //(5.1.007)
          gwvKS,                        // sat. hyd. condutivity (ft/s)         //(5.1.007)
-         gwvMC,                        // upper zone moisture content          //(5.1.007)
+         gwvTHETA,                     // upper zone moisture content          //(5.1.008)
+         gwvK,                         // unsat. hyd. conductivity (ft/s)      //(5.1.008)
+         gwvPHI,                       // soil porosity                        //(5.1.008)
+         gwvFI,                        // surface infiltration (ft/s)          //(5.1.008)
+         gwvFU,                        // soil percolation (ft/s)              //(5.1.008)
+         gwvA,                         // subcatchment area (ft2)              //(5.1.008)
          gwvMAX};
 
 // Names of GW variables that can be used in GW outflow expression
-static char* GWVarWords[] = {"HGW", "HSW", "HCB", "HGS", "KS", "MC", NULL};    //(5.1.007)
+static char* GWVarWords[] = {"HGW", "HSW", "HCB", "HGS", "KS", "THETA",        //(5.1.008)
+                             "K", "PHI", "FI", "FU", "A", NULL};               //(5.1.008)
 
 //-----------------------------------------------------------------------------
 //  Shared variables
 //-----------------------------------------------------------------------------
 //  NOTE: all flux rates are in ft/sec, all depths are in ft.
+static double    Area;            // subcatchment area (ft2)                   //(5.1.008)
 static double    Infil;           // infiltration rate from surface
 static double    MaxEvap;         // max. evaporation rate
 static double    AvailEvap;       // available evaporation rate
@@ -394,6 +412,7 @@ void  gwater_initState(int j)
         // ... initial lateral groundwater outflow
         gw->oldFlow = 0.0;
         gw->newFlow = 0.0;
+        gw->evapLoss = 0.0;                                                    //(5.1.008)
 
         // ... initial available infiltration volume into upper zone
         gw->maxInfilVol = (gw->surfElev - gw->waterTableElev) *
@@ -465,12 +484,14 @@ void gwater_getGroundwater(int j, double evap, double infil, double tStep)
 //           tStep = time step (sec)
 //  Output:  none
 //
+
+//  Note: local "area" variable was replaced with shared variable "Area". //   //(5.1.008)
+
 {
     int    n;                          // node exchanging groundwater
     double x[2];                       // upper moisture content & lower depth 
     double vUpper;                     // upper vol. available for percolation
     double nodeFlow;                   // max. possible GW flow from node
-    double area;                       // total subcatchment area
 
     // --- save subcatchment's groundwater and aquifer objects to 
     //     shared variables
@@ -483,17 +504,17 @@ void gwater_getGroundwater(int j, double evap, double infil, double tStep)
     // --- get fraction of total area that is pervious
     FracPerv = subcatch_getFracPerv(j);
     if ( FracPerv <= 0.0 ) return;
-    area = Subcatch[j].area;
+    Area = Subcatch[j].area;
 
     // --- convert infiltration volume (ft3) to equivalent rate
     //     over entire GW (subcatchment) area
-    infil = infil / area / tStep;
+    infil = infil / Area / tStep;
     Infil = infil;
     Tstep = tStep;
 
     // --- convert pervious surface evaporation already exerted (ft3)
     //     to equivalent rate over entire GW (subcatchment) area
-    evap = evap / area / tStep;
+    evap = evap / Area / tStep;
 
     // --- convert max. surface evap rate (ft/sec) to a rate
     //     that applies to GW evap (GW evap can only occur
@@ -541,7 +562,7 @@ void gwater_getGroundwater(int j, double evap, double infil, double tStep)
     //     inflow to the node
     MaxGWFlowNeg = (TotalDepth - x[LOWERDEPTH]) * (A.porosity - x[THETA])
                    / tStep;
-    nodeFlow = (Node[n].inflow + Node[n].newVolume/tStep) / area;
+    nodeFlow = (Node[n].inflow + Node[n].newVolume/tStep) / Area;
     MaxGWFlowNeg = -MIN(MaxGWFlowNeg, nodeFlow);
     
     // --- integrate eqns. for d(Theta)/dt and d(LowerDepth)/dt
@@ -576,7 +597,11 @@ void gwater_getGroundwater(int j, double evap, double infil, double tStep)
                       (A.porosity - x[THETA]) / FracPerv;
 
     // --- update GW mass balance
-    updateMassBal(area, tStep);
+    updateMassBal(Area, tStep);
+
+    // --- update GW statistics                                                //(5.1.008)
+    stats_updateGwaterStats(j, infil, GW->evapLoss, GWFlow, LowerLoss,         //(5.1.008)
+        GW->theta, GW->lowerDepth + GW->bottomElev, tStep);                    //(5.1.008)
 }
 
 //=============================================================================
@@ -841,7 +866,11 @@ double getVariableValue(int varIndex)
 	case gwvHCB:  return Hstar * UCF(LENGTH);
     case gwvHGS:  return TotalDepth * UCF(LENGTH);
     case gwvKS:   return A.conductivity * UCF(RAINFALL);
-    case gwvMC:   return Theta;
+    case gwvTHETA:return Theta;                                                //(5.1.008)
+    case gwvPHI:  return A.porosity;                                           //(5.1.008)
+    case gwvA:    return Area * UCF(LANDAREA);                                 //(5.1.008)
+    case gwvFI:   return Infil * UCF(RAINFALL);                                //(5.1.008)
+    case gwvFU:   return UpperPerc * UCF(RAINFALL);                            //(5.1.008)
 	default:      return 0.0;
     }
 }
