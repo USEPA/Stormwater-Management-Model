@@ -5,6 +5,7 @@
 //   Version:  5.1
 //   Date:     03/19/14  (Build 5.1.001)
 //             03/19/15  (Build 5.1.008)
+//             06/30/16  (Build 5.1.011)
 //   Author:   L. Rossman
 //
 //   This is the main module of the computational engine for Version 5 of
@@ -22,6 +23,14 @@
 //   - Hot start file now read before routing system opened.
 //   - Final routing step adjusted so that total duration not exceeded.
 //
+//   Build 5.1.011:
+//   - Made sure that MS exception handling only used with MS C compiler.
+//   - Added name of module handling an exception to error report.
+//   - Elapsed simulation time now saved to new global variable ElaspedTime.
+//   - Added swmm_getError() function that retrieves error code and message.
+//   - Changed WarningCode to Warnings (# warnings issued).
+//   - Added swmm_getWarnings() function to retrieve value of Warnings.
+//     
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -42,16 +51,16 @@
   #define WINDOWS
 #endif
 
-////  ---- following section modified for release 5.1.008.  ////               //(5.1.008)
+////  ---- following section modified for release 5.1.011.  ////               //(5.1.011)
 ////
 // --- define EXH (MS Windows exception handling)
-#undef MINGW       // indicates if MinGW compiler used
 #undef EXH         // indicates if exception handling included
 #ifdef WINDOWS
-  #ifndef MINGW
+  #ifdef _MSC_VER
     #define EXH
   #endif
 #endif
+
 
 // --- include Windows & exception handling headers
 #ifdef WINDOWS
@@ -137,11 +146,11 @@ static int  DoRouting;            // TRUE if flow routing is computed
 //-----------------------------------------------------------------------------
 //  Local functions
 //-----------------------------------------------------------------------------
-static void execRouting(DateTime elapsedTime);
+static void execRouting(void);                                                 //(5.1.011)
 
 // Exception filtering function
-#ifdef WINDOWS
-static int  xfilter(int xc, DateTime elapsedTime, long step);
+#ifdef EXH                                                                     //(5.1.011)
+static int  xfilter(int xc, char* module, double elapsedTime, long step);      //(5.1.011)
 #endif
 
 //-----------------------------------------------------------------------------
@@ -192,7 +201,7 @@ int  main(int argc, char *argv[])
         sprintf(Msg, "\n\n... EPA-SWMM completed in %.2f seconds.", runTime);
         writecon(Msg);
         if      ( ErrorCode   ) writecon(FMT03);
-        else if ( WarningCode ) writecon(FMT04);
+        else if ( Warnings    ) writecon(FMT04);                               //(5.1.011)
         else                    writecon(FMT05);
     }
 
@@ -219,7 +228,7 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
 {
     long newHour, oldHour = 0;
     long theDay, theHour;
-    DateTime elapsedTime = 0.0;
+    double elapsedTime = 0.0;                                                  //(5.1.011)
 
     // --- open the files & read input data
     ErrorCode = 0;
@@ -281,7 +290,7 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
    _fpreset();              
 #endif
 
-#ifdef WINDOWS
+#ifdef EXH                                                                     //(5.1.011)
     // --- begin exception handling here
     __try
 #endif
@@ -289,7 +298,8 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
         // --- initialize error & warning codes
         datetime_setDateFormat(M_D_Y);
         ErrorCode = 0;
-        WarningCode = 0;
+        strcpy(ErrorMsg, "");
+        Warnings = 0;
         IsOpenFlag = FALSE;
         IsStartedFlag = FALSE;
         ExceptionCount = 0;
@@ -313,9 +323,9 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
         if ( RptFlags.input ) inputrpt_writeInput();
     }
 
-#ifdef WINDOWS
+#ifdef EXH                                                                     //(5.1.011)
     // --- end of try loop; handle exception here
-    __except(xfilter(GetExceptionCode(), 0.0, 0))
+    __except(xfilter(GetExceptionCode(), "swmm_open", 0.0, 0))                 //(5.1.011)
     {
         ErrorCode = ERR_SYSTEM;
     }
@@ -339,13 +349,19 @@ int DLLEXPORT swmm_start(int saveResults)
         report_writeErrorMsg(ERR_NOT_OPEN, "");
         return ErrorCode;
     }
+
+    // --- save saveResults flag to global variable                            //(5.1.011)
+    SaveResultsFlag = saveResults;                                             //(5.1.011)
     ExceptionCount = 0;
 
-#ifdef WINDOWS
+#ifdef EXH                                                                     //(5.1.011)
     // --- begin exception handling loop here
     __try
 #endif
     {
+        // --- initialize elapsed time in decimal days                         //(5.1.011)
+        ElapsedTime = 0.0;                                                     //(5.1.011)
+
         // --- initialize runoff, routing & reporting time (in milliseconds)
         NewRunoffTime = 0.0;
         NewRoutingTime = 0.0;
@@ -398,21 +414,18 @@ int DLLEXPORT swmm_start(int saveResults)
 ////
     }
 
-#ifdef WINDOWS
+#ifdef EXH                                                                     //(5.1.011)
     // --- end of try loop; handle exception here
-    __except(xfilter(GetExceptionCode(), 0.0, 0))
+    __except(xfilter(GetExceptionCode(), "swmm_start", 0.0, 0))                //(5.1.011)
     {
         ErrorCode = ERR_SYSTEM;
     }
 #endif
-
-    // --- save saveResults flag to global variable
-    SaveResultsFlag = saveResults;    
     return ErrorCode;
 }
 //=============================================================================
 
-int DLLEXPORT swmm_step(DateTime* elapsedTime)
+int DLLEXPORT swmm_step(double* elapsedTime)                                   //(5.1.011)
 //
 //  Input:   elapsedTime = current elapsed time in decimal days
 //  Output:  updated value of elapsedTime,
@@ -428,7 +441,7 @@ int DLLEXPORT swmm_step(DateTime* elapsedTime)
         return ErrorCode;
     }
 
-#ifdef WINDOWS
+#ifdef EXH                                                                     //(5.1.011)
     // --- begin exception handling loop here
     __try
 #endif
@@ -439,7 +452,7 @@ int DLLEXPORT swmm_step(DateTime* elapsedTime)
             // --- route flow & WQ through drainage system
             //     (runoff will be calculated as needed)
             //     (NewRoutingTime is updated)
-            execRouting(*elapsedTime);
+            execRouting();                                                     //(5.1.011)
         }
 
         // --- save results at next reporting time
@@ -452,16 +465,17 @@ int DLLEXPORT swmm_step(DateTime* elapsedTime)
         // --- update elapsed time (days)
         if ( NewRoutingTime < TotalDuration )
         {
-            *elapsedTime = NewRoutingTime / MSECperDAY;
+            ElapsedTime = NewRoutingTime / MSECperDAY;                         //(5.1.011)
         }
 
         // --- otherwise end the simulation
-        else *elapsedTime = 0.0;
+        else ElapsedTime = 0.0;                                                //(5.1.011)
+        *elapsedTime = ElapsedTime;                                            //(5.1.011)
     }
 
-#ifdef WINDOWS
+#ifdef EXH                                                                     //(5.1.011)
     // --- end of try loop; handle exception here
-    __except(xfilter(GetExceptionCode(), *elapsedTime, StepCount))
+    __except(xfilter(GetExceptionCode(), "swmm_step", ElapsedTime, StepCount)) //(5.1.011)
     {
         ErrorCode = ERR_SYSTEM;
     }
@@ -471,9 +485,9 @@ int DLLEXPORT swmm_step(DateTime* elapsedTime)
 
 //=============================================================================
 
-void execRouting(DateTime elapsedTime)
+void execRouting()                                                             //(5.1.011)
 //
-//  Input:   elapsedTime = current elapsed time in decimal days
+//  Input:   none                                                              //(5.1.011)
 //  Output:  none
 //  Purpose: routes flow & WQ through drainage system over a single time step.
 //
@@ -481,7 +495,7 @@ void execRouting(DateTime elapsedTime)
     double   nextRoutingTime;          // updated elapsed routing time (msec)
     double   routingStep;              // routing time step (sec)
 
-#ifdef WINDOWS
+#ifdef EXH                                                                     //(5.1.011)
     // --- begin exception handling loop here
     __try
 #endif
@@ -524,9 +538,10 @@ void execRouting(DateTime elapsedTime)
         else NewRoutingTime = nextRoutingTime;
     }
 
-#ifdef WINDOWS
+#ifdef EXH                                                                     //(5.1.011)
     // --- end of try loop; handle exception here
-    __except(xfilter(GetExceptionCode(), elapsedTime, StepCount))
+    __except(xfilter(GetExceptionCode(), "execRouting",                        //(5.1.011)
+                     ElapsedTime, StepCount))                                  //(5.1.011)
     {
         ErrorCode = ERR_SYSTEM;
         return;
@@ -657,6 +672,38 @@ int  DLLEXPORT swmm_getVersion(void)
     return VERSION;
 }
 
+//=============================================================================
+
+////  New function added to release 5.1.011.  ////                             //(5.1.011)
+
+int DLLEXPORT swmm_getWarnings(void)
+//
+//  Input:  none
+//  Output: returns number of warning messages issued.
+//  Purpose: retireves number of warning messages issued during an analysis.
+{
+    return Warnings;
+}
+
+//=============================================================================
+
+////  New function added to release 5.1.011.  ////                             //(5.1.011)
+
+int  DLLEXPORT swmm_getError(char* errMsg, int msgLen)
+//
+//  Input:   errMsg = character array to hold error message text
+//           msgLen = maximum size of errMsg
+//  Output:  returns error message code number and text of error message.
+//  Purpose: retrieves the code number and text of the error condition that
+//           caused SWMM to abort its analysis.
+{
+    if ( ErrorCode > 0 && strlen(ErrorMsg) == 0 )
+    {
+        sprintf(ErrorMsg, error_getMsg(ErrorCode), "");
+    }
+    strncpy(errMsg, ErrorMsg, msgLen);
+    return ErrorCode;
+}
 
 //=============================================================================
 //   General purpose functions
@@ -810,15 +857,16 @@ void  writecon(char *s)
 
 //=============================================================================
 
-#ifdef WINDOWS
-int xfilter(int xc, DateTime elapsedTime, long step)
+#ifdef EXH                                                                     //(5.1.011)
+int xfilter(int xc, char* module, double elapsedTime, long step)               //(5.1.011)
 //
 //  Input:   xc          = exception code
+//           module      = name of code module where exception was handled     //(5.1.011)
 //           elapsedTime = simulation time when exception occurred (days)
 //           step        = step count at time when exception occurred
 //  Output:  returns an exception handling code
 //  Purpose: exception filtering routine for operating system exceptions
-//           under Windows.
+//           under Windows and the Microsoft C compiler.
 //
 {
     int  rc;                           // result code
@@ -868,7 +916,8 @@ int xfilter(int xc, DateTime elapsedTime, long step)
         rc = EXCEPTION_EXECUTE_HANDLER;
     }
     hour = (long)(elapsedTime / 1000.0 / 3600.0);
-    sprintf(xmsg, "%s at step %d, hour %d", msg, step, hour);
+    sprintf(xmsg, "%sin module %s at step %d, hour %d",                        //(5.1.011)
+            msg, module, step, hour);                                          //(5.1.011)
     if ( rc == EXCEPTION_EXECUTE_HANDLER ||
          ++ExceptionCount >= MAX_EXCEPTIONS )
     {
