@@ -5,7 +5,7 @@
 //   Version:  5.1
 //   Date:     03/19/14  (Build 5.1.001)
 //             03/19/15  (Build 5.1.008)
-//             06/30/16  (Build 5.1.011)
+//             08/01/16  (Build 5.1.011)
 //   Author:   L. Rossman
 //
 //   This is the main module of the computational engine for Version 5 of
@@ -30,6 +30,7 @@
 //   - Added swmm_getError() function that retrieves error code and message.
 //   - Changed WarningCode to Warnings (# warnings issued).
 //   - Added swmm_getWarnings() function to retrieve value of Warnings.
+//   - Fixed error code returned on swmm_xxx functions.
 //     
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -272,7 +273,7 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
 
     // --- close the system
     swmm_close();
-    return ErrorCode;
+    return error_getCode(ErrorCode);                                           //(5.1.011)
 }
 
 //=============================================================================
@@ -306,14 +307,14 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
 
         // --- open a SWMM project
         project_open(f1, f2, f3);
-        if ( ErrorCode ) return ErrorCode;
+        if ( ErrorCode ) return error_getCode(ErrorCode);                      //(5.1.011)
         IsOpenFlag = TRUE;
         report_writeLogo();
         writecon(FMT06);
 
         // --- retrieve project data from input file
         project_readInput();
-        if ( ErrorCode ) return ErrorCode;
+        if ( ErrorCode ) return error_getCode(ErrorCode);                      //(5.1.011)
 
         // --- write project title to report file & validate data
         report_writeTitle();
@@ -330,7 +331,7 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
         ErrorCode = ERR_SYSTEM;
     }
 #endif
-    return ErrorCode;
+    return error_getCode(ErrorCode);                                           //(5.1.011)
 }
 
 //=============================================================================
@@ -343,11 +344,11 @@ int DLLEXPORT swmm_start(int saveResults)
 //
 {
     // --- check that a project is open & no run started
-    if ( ErrorCode ) return ErrorCode;
+    if ( ErrorCode ) return error_getCode(ErrorCode);                          //(5.1.011)
     if ( !IsOpenFlag || IsStartedFlag )
     {
         report_writeErrorMsg(ERR_NOT_OPEN, "");
-        return ErrorCode;
+        return error_getCode(ErrorCode);                                       //(5.1.011)
     }
 
     // --- save saveResults flag to global variable                            //(5.1.011)
@@ -379,7 +380,7 @@ int DLLEXPORT swmm_start(int saveResults)
         // --- open rainfall processor (creates/opens a rainfall
         //     interface file and generates any RDII flows)
         if ( !IgnoreRainfall ) rain_open();
-        if ( ErrorCode ) return ErrorCode;
+        if ( ErrorCode ) return error_getCode(ErrorCode);                      //(5.1.011)
 
         // --- initialize state of each major system component
         project_init();
@@ -421,7 +422,7 @@ int DLLEXPORT swmm_start(int saveResults)
         ErrorCode = ERR_SYSTEM;
     }
 #endif
-    return ErrorCode;
+    return error_getCode(ErrorCode);                                           //(5.1.011)
 }
 //=============================================================================
 
@@ -434,11 +435,11 @@ int DLLEXPORT swmm_step(double* elapsedTime)                                   /
 //
 {
     // --- check that simulation can proceed
-    if ( ErrorCode ) return ErrorCode;
+    if ( ErrorCode ) return error_getCode(ErrorCode);                          //(5.1.011)
     if ( !IsOpenFlag || !IsStartedFlag  )
     {
         report_writeErrorMsg(ERR_NOT_OPEN, "");
-        return ErrorCode;
+        return error_getCode(ErrorCode);                                       //(5.1.011)
     }
 
 #ifdef EXH                                                                     //(5.1.011)
@@ -480,7 +481,7 @@ int DLLEXPORT swmm_step(double* elapsedTime)                                   /
         ErrorCode = ERR_SYSTEM;
     }
 #endif
-    return ErrorCode;
+    return error_getCode(ErrorCode);                                           //(5.1.011)
 }
 
 //=============================================================================
@@ -562,7 +563,7 @@ int DLLEXPORT swmm_end(void)
     if ( !IsOpenFlag )
     {
         report_writeErrorMsg(ERR_NOT_OPEN, "");
-        return ErrorCode;
+        return error_getCode(ErrorCode);                                       //(5.1.011)
     }
 
     if ( IsStartedFlag )
@@ -586,7 +587,7 @@ int DLLEXPORT swmm_end(void)
         hotstart_close();
         IsStartedFlag = FALSE;
     }
-    return ErrorCode;
+    return error_getCode(ErrorCode);                                           //(5.1.011)
 }
 
 //=============================================================================
@@ -605,7 +606,7 @@ int DLLEXPORT swmm_report()
         writecon(FMT07);
         report_writeReport();
     }
-    return ErrorCode;
+    return error_getCode(ErrorCode);                                           //(5.1.011)
 }
 
 //=============================================================================
@@ -697,12 +698,19 @@ int  DLLEXPORT swmm_getError(char* errMsg, int msgLen)
 //  Purpose: retrieves the code number and text of the error condition that
 //           caused SWMM to abort its analysis.
 {
-    if ( ErrorCode > 0 && strlen(ErrorMsg) == 0 )
+    size_t errMsgLen = msgLen;
+
+    // --- copy text of last error message into errMsg
+    if ( ErrorCode > 0 && strlen(ErrorMsg) == 0 ) sstrncpy(errMsg, "", 1);
+    else
     {
-        sprintf(ErrorMsg, error_getMsg(ErrorCode), "");
+	    errMsgLen = MIN(errMsgLen, strlen(ErrorMsg));
+	    errMsg = sstrncpy(errMsg, ErrorMsg, errMsgLen);
     }
-    strncpy(errMsg, ErrorMsg, msgLen);
-    return ErrorCode;
+
+    // --- remove leading line feed from errMsg
+    if ( errMsgLen > 0 && errMsg[0] == '\n' ) errMsg[0] = ' ';
+    return error_getCode(ErrorCode);                                           //(5.1.011)
 }
 
 //=============================================================================

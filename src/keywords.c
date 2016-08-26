@@ -8,7 +8,7 @@
 //            09/15/14  (Build 5.1.007)
 //            03/19/15  (Build 5.1.008)
 //            08/05/15  (Build 5.1.010)
-//            06/30/16  (Build 5.1.011)
+//            08/01/16  (Build 5.1.011)
 //   Author:  L. Rossman
 //
 //   Exportable keyword dictionary

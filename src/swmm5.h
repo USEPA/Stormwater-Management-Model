@@ -4,7 +4,7 @@
 //   Project: EPA SWMM5
 //   Version: 5.1
 //   Date:    03/24/14  (Build 5.1.001)
-//            06/30/16  (Build 5.1.011)
+//            08/01/16  (Build 5.1.011)
 //   Author:  L. Rossman
 //
 //   Prototypes for SWMM5 functions exported to swmm5.dll.
