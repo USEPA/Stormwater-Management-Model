@@ -51,6 +51,7 @@
 #include "hash.h"
 #include "mempool.h"
 
+#include "swmm5.h"
 //-----------------------------------------------------------------------------
 //  Constants
 //-----------------------------------------------------------------------------
@@ -328,6 +329,28 @@ int   project_findObject(int type, char *id)
 {
     return HTfind(Htable[type], id);
 }
+
+//=============================================================================
+
+int DLLEXPORT  project_numObjects(int type, int *count)
+//
+// Input: 	type = object type (Based on ObjectType enum)
+//			count = pointer to integer
+// Output: 	returns API Error
+// Purpose: uses hash table to find number of elements of an object
+{	
+	int errorcode = 0;
+	
+	if(type >= MAX_OBJ_TYPES)
+	{
+		errorcode = 901;
+		return errorcode;
+	}
+	*count = Nobjects[type];
+	
+	return errorcode;
+}
+
 
 //=============================================================================
 

@@ -25,9 +25,13 @@
 // --- define DLLEXPORT
 
 #ifdef WINDOWS
-  #define DLLEXPORT __declspec(dllexport) __stdcall
+	#ifdef __MINGW32__
+		#define DLLEXPORT __declspec(dllexport) __cdecl // <- More wrapper friendly
+	#else
+		#define DLLEXPORT __declspec(dllexport) __stdcall
+	#endif
 #else
-  #define DLLEXPORT
+	#define DLLEXPORT
 #endif
 
 // --- use "C" linkage for C++ programs
@@ -46,6 +50,9 @@ int  DLLEXPORT   swmm_getMassBalErr(float* runoffErr, float* flowErr,
                  float* qualErr);
 int  DLLEXPORT   swmm_close(void);
 int  DLLEXPORT   swmm_getVersion(void);
+
+// Input API Exportable Functions
+int DLLEXPORT  project_numObjects(int type, int *count);
 
 #ifdef __cplusplus 
 }   // matches the linkage specification from above */ 
