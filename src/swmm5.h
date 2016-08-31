@@ -51,8 +51,6 @@ int  DLLEXPORT   swmm_getMassBalErr(float* runoffErr, float* flowErr,
 int  DLLEXPORT   swmm_close(void);
 int  DLLEXPORT   swmm_getVersion(void);
 
-// Input API Exportable Functions
-int DLLEXPORT  project_numObjects(int type, int *count);
 
 #ifdef __cplusplus 
 }   // matches the linkage specification from above */ 

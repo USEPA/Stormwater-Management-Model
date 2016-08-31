@@ -87,6 +87,7 @@
 #include "globals.h"                   // declaration of all global variables
 
 #include "swmm5.h"                     // declaration of exportable functions
+#include "inputAPI.h"
                                        //   callable from other programs
 #define  MAX_EXCEPTIONS 100            // max. number of exceptions handled
 
@@ -880,6 +881,3 @@ int xfilter(int xc, DateTime elapsedTime, long step)
     return rc;
 }
 #endif
-
-//=============================================================================
-    
