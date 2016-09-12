@@ -271,6 +271,103 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index )
 
 
 
+//-------------------------------
+// Active Simulation Results API
+//-------------------------------
+
+int DLLEXPORT swmm_getNodeResult(int index, int type, double *result)
+//
+// Input: 	index = Index of desired ID	
+//			type = Result Type
+// Output: 	result = result data desired (byref)
+// Return: 	
+// Purpose: Gets Node Simulated Value
+{
+	if (index < 0 || index >= Nobjects[NODE]) return(902);
+	
+	switch (type)
+	{
+		// Total Inflow
+		case 0: *result = Node[index].inflow; break; 
+		// Total Outflow
+		case 1: *result = Node[index].outflow; break; 
+		// Losses (evap + exfiltration loss)
+		case 2: *result = Node[index].losses; break; 
+		// Current Volume
+		case 3: *result = Node[index].newVolume; break; 
+		// overflow
+		case 4: *result = Node[index].overflow; break; 
+		// Current water depth
+		case 5: *result = Node[index].newDepth; break; 
+		// Current water head
+		case 6: *result = Node[index].newDepth + Node[index].invertElev; break; 		
+		// Current Lateral Inflow
+		case 7: *result = Node[index].newLatFlow; break; 
+	}
+	return(0);
+}
+
+int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
+//
+// Input: 	index = Index of desired ID	
+//			type = Result Type
+// Output: 	result = result data desired (byref)
+// Return: 	
+// Purpose: Gets Node Simulated Value
+{
+	if (index < 0 || index >= Nobjects[LINK]) return(902);
+	
+	switch (type)
+	{
+		// Current Flow
+		case 0: *result = Link[index].newFlow; break; 
+		// Current Depth
+		case 1: *result = Link[index].newDepth; break; 
+		// Current Volume
+		case 2: *result = Link[index].newVolume; break; 
+		// Upstream Surface Area
+		case 3: *result = Link[index].surfArea1; break; 
+		// Downstream Surface Area
+		case 4: *result = Link[index].surfArea2; break; 
+		// Current Setting
+		case 5: *result = Link[index].setting; break; 
+		// Target Setting
+		case 6: *result = Link[index].targetSetting; break; 	
+		// Froude number
+		case 7: *result = Link[index].froude; break; 			
+	}
+	return(0);
+}
+
+int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
+//
+// Input: 	index = Index of desired ID	
+//			type = Result Type
+// Output: 	result = result data desired (byref)
+// Return: 	
+// Purpose: Gets Node Simulated Value
+{
+	if (index < 0 || index >= Nobjects[SUBCATCH]) return(902);
+	
+	switch (type)
+	{
+		// Current Rainfall
+		case 0: *result = Subcatch[index].rainfall; break; 
+		// Current Evaporation Loss
+		case 1: *result = Subcatch[index].evapLoss; break; 
+		// Current Infiltration Loss
+		case 2: *result = Subcatch[index].infilLoss; break; 
+		// Subcatchment Runon
+		case 3: *result = Subcatch[index].runon; break; 
+		// Current Runoff
+		case 4: *result = Subcatch[index].newRunoff; break; 
+		// Current Snow Depth
+		case 5: *result = Subcatch[index].newSnowDepth; break; 		
+	}
+	return(0);
+}
+
+
 
 
 

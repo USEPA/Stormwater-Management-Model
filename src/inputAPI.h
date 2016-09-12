@@ -40,6 +40,14 @@ int DLLEXPORT  swmm_getNodeParam(int index, int Param, double *value);
 int DLLEXPORT  swmm_getLinkParam(int index, int Param, double *value);
 int DLLEXPORT  swmm_getSubcatchParam(int index, int Param, double *value);
 
+//-------------------------------
+// Active Simulation Results API
+//-------------------------------
+int DLLEXPORT swmm_getNodeResult(int index, int type, double *result);
+int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
+int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
+
+
 #ifdef __cplusplus 
 }   // matches the linkage specification from above */ 
 #endif
