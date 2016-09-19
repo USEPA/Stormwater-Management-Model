@@ -5,6 +5,7 @@
 build/
 dist/
 temp/
+*.cfg
 *.egg-info/
 
 
