@@ -10,6 +10,7 @@
 *.lastbuildstate
 *.filters
 *.ipch
+*.sdf
 
 # MSVC Build Dirs
 Debug/
