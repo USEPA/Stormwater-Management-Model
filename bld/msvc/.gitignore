@@ -11,6 +11,8 @@
 *.filters
 *.ipch
 *.sdf
+*.suo
+*.vcxproj.user
 
 # MSVC Build Dirs
 Debug/
