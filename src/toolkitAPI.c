@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-//   inputAPI.c
+//   toolkitAPI.c
 //
 //   Project: EPA SWMM5
 //   Version: 5.1
@@ -25,7 +25,7 @@
 #include "globals.h"                   // declaration of all global variables
 
 #include "swmm5.h"                     // declaration of exportable functions
-#include "inputAPI.h"
+#include "toolkitAPI.h"
 #include "hash.h"
 
 int DLLEXPORT  swmm_countObjects(int type, int *count)

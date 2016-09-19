@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-//   inputAPI.h
+//   toolkitAPI.h
 //
 //   Project: EPA SWMM5
 //   Version: 5.1
@@ -45,7 +45,7 @@ int DLLEXPORT  swmm_getSubcatchParam(int index, int Param, double *value);
 //-------------------------------
 int DLLEXPORT swmm_getNodeResult(int index, int type, double *result);
 int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
-int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
+int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
 
 
 #ifdef __cplusplus 
