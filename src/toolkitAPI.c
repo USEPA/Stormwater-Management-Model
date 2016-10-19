@@ -205,10 +205,24 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
 		// cLossAvg
 		case 6: *value = Link[index].cLossAvg; break;		
 		// seepRate
-		case 7: *value = Link[index].seepRate; break;				
+		case 7: *value = Link[index].seepRate; break;	
 	}
 	return(0);
 }
+
+
+int DLLEXPORT swmm_getLinkDirection(int index, signed char *value)
+//
+// Input: 	index = Index of desired ID
+// Output: 	Link Direction (Only changes is slope < 0)
+// Purpose: Gets Link Direction
+{
+	if (index < 0 || index >= Nobjects[LINK]) return(902);
+	*value = Link[index].direction;
+	return(0);
+}
+
+
 
 int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value)
 //

@@ -36,8 +36,12 @@ int DLLEXPORT  swmm_getLinkType(int index, int *Ltype);
 int DLLEXPORT  swmm_getLinkConnections(int index, int *Node1, int *Node2);
 int DLLEXPORT  swmm_getSubcatchOutConnection(int index, int *type, int *Index );
 
+//Nodes
 int DLLEXPORT  swmm_getNodeParam(int index, int Param, double *value);
+//Links
 int DLLEXPORT  swmm_getLinkParam(int index, int Param, double *value);
+int DLLEXPORT  swmm_getLinkDirection(int index, signed char *value);
+//Subcatchments
 int DLLEXPORT  swmm_getSubcatchParam(int index, int Param, double *value);
 
 //-------------------------------
