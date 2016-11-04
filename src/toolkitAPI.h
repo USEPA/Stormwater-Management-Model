@@ -51,6 +51,11 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result);
 int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
 int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
 
+//-------------------------------
+// Setters API
+//-------------------------------
+int DLLEXPORT swmm_setLinkParam(int index, double setting);
+
 
 #ifdef __cplusplus 
 }   // matches the linkage specification from above */ 

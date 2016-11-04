@@ -205,7 +205,7 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
 		// cLossAvg
 		case 6: *value = Link[index].cLossAvg; break;		
 		// seepRate
-		case 7: *value = Link[index].seepRate; break;	
+		case 7: *value = Link[index].seepRate; break;
 	}
 	return(0);
 }
@@ -382,9 +382,41 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 }
 
 
+//-------------------------------
+// Setters API
+//-------------------------------
 
-
-
+int DLLEXPORT swmm_setLinkSetting(int index, double targetSetting)
+//
+// Input: 	index = Index of desired ID
+//			value = New Target Setting		
+// Output: 	returns API Error
+// Purpose: Sets Link open fraction (Weir, Orifice, Pump, and Outlet)
+{
+	// Add Checks later on (11/03/2016 ** BEM)
+	if (index < 0 || index >= Nobjects[LINK]) return(902);
+	
+	int l_type, errcode;
+	
+	// Get Link Type
+	// errcode = swmm_getLinkType(index, &l_type);
+	// WEIR, ORIFICES, PUMPS can have any value between [0,1]
+	// CONDUIT can be only 0 or 1 * BEM 11/4/2016 investigate this...	
+	
+	Link[index].targetSetting  = targetSetting; 
+	// Use internal function to apply the new setting
+	link_setSetting(index, 0.0);
+	
+	// Add control action to RPT file if desired flagged
+    if (RptFlags.controls)
+	{
+		DateTime currentTime;
+		currentTime = getDateTime(NewRoutingTime);
+		char _rule_[11] = "ToolkitAPI";
+		report_writeControlAction(currentTime, Link[index].ID, targetSetting, _rule_);
+	}
+	return(0);
+}
 
 
 
