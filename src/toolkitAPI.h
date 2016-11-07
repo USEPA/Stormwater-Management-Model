@@ -54,7 +54,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
 //-------------------------------
 // Setters API
 //-------------------------------
-int DLLEXPORT swmm_setLinkParam(int index, double setting);
+int DLLEXPORT swmm_setLinkSetting(int index, double setting);
 
 
 #ifdef __cplusplus 
