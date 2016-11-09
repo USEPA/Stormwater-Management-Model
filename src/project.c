@@ -319,7 +319,7 @@ int   project_addObject(int type, char *id, int n)
 
 //=============================================================================
 
-int   project_findObject(int type, char *id)
+int DLLEXPORT  project_findObject(int type, char *id)
 //
 //  Input:   type = object type
 //           id   = object ID
