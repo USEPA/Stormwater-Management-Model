@@ -65,7 +65,7 @@ clean:
 	
 install:
 	COPY $(libname) $(libdir)
-	COPY $(libname) "C:\\PROJECTCODE\\pyswmm\\pyswmm\\data\\Windows"
+	COPY $(libname) "C:\\PROJECTCODE\\pyswmm\\pyswmm\\swmmLinkedLibs\\Windows"
 
 
 

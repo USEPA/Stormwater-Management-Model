@@ -289,6 +289,30 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index )
 // Active Simulation Results API
 //-------------------------------
 
+int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr)
+{
+	//Provide Empty Character Array 
+	
+    char     theDate[12];
+    char     theTime[9];
+	char     _DTimeStr[22];
+	
+	DateTime currentTime;
+	// Fetch Current Time
+	currentTime = getDateTime(NewRoutingTime);
+	// Convert To Char
+    datetime_dateToStr(currentTime, theDate);
+    datetime_timeToStr(currentTime, theTime);
+	
+	strcpy(_DTimeStr, theDate);
+	strcat(_DTimeStr, " ");
+	strcat(_DTimeStr, theTime);
+	
+	strcpy(dtimestr, _DTimeStr);
+	return(0);
+}
+
+
 int DLLEXPORT swmm_getNodeResult(int index, int type, double *result)
 //
 // Input: 	index = Index of desired ID	
@@ -380,6 +404,9 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 	}
 	return(0);
 }
+
+
+
 
 
 //-------------------------------

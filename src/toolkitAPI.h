@@ -47,6 +47,7 @@ int DLLEXPORT  swmm_getSubcatchParam(int index, int Param, double *value);
 //-------------------------------
 // Active Simulation Results API
 //-------------------------------
+int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr);
 int DLLEXPORT swmm_getNodeResult(int index, int type, double *result);
 int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
 int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
