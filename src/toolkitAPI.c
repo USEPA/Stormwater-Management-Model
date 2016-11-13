@@ -283,13 +283,49 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index )
 }
 
 
+int DLLEXPORT swmm_getSimulationDateTime(int timetype, char *dtimestr)
+//
+// Input: 	timetype = time type to return
+// Output: 	DateTime String 
+// Purpose: Get the simulation start, end and report date times
+{
+	char     theDate[12];
+    char     theTime[9];
+	char     _DTimeStr[22];
 
+	DateTime _dtime;
+	
+	switch(timetype)
+	{
+		//StartDateTime (globals.h)
+		case 0: _dtime = StartDateTime; break;
+		//EndDateTime (globals.h)
+		case 1: _dtime = EndDateTime;  break;
+		//ReportStart (globals.h)
+		case 2: _dtime = ReportStart;  break;
+		default: return(999);  break;
+	}	
+	datetime_dateToStr(_dtime, theDate);
+	datetime_timeToStr(_dtime, theTime);
+
+	strcpy(_DTimeStr, theDate);
+	strcat(_DTimeStr, " ");
+	strcat(_DTimeStr, theTime);
+	
+	strcpy(dtimestr, _DTimeStr);		
+	
+	return(0);
+}
+    
 
 //-------------------------------
 // Active Simulation Results API
 //-------------------------------
 
 int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr)
+//
+// Output: 	DateTime String 
+// Purpose: Get the current simulation time
 {
 	//Provide Empty Character Array 
 	
@@ -300,6 +336,7 @@ int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr)
 	DateTime currentTime;
 	// Fetch Current Time
 	currentTime = getDateTime(NewRoutingTime);
+	
 	// Convert To Char
     datetime_dateToStr(currentTime, theDate);
     datetime_timeToStr(currentTime, theTime);
