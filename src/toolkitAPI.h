@@ -58,7 +58,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
 // Setters API
 //-------------------------------
 int DLLEXPORT swmm_setLinkSetting(int index, double setting);
-
+int DLLEXPORT swmm_setNodeInflow(int index, double flowrate);
 
 #ifdef __cplusplus 
 }   // matches the linkage specification from above */ 

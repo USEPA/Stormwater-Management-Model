@@ -483,7 +483,17 @@ int DLLEXPORT swmm_setLinkSetting(int index, double targetSetting)
 }
 
 
-
+int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
+//
+// Input: 	index = Index of desired ID
+//			value = New Inflow Rate 		
+// Output: 	returns API Error
+// Purpose: Sets new node inflow rate and holds until set again
+{
+	if (index < 0 || index >= Nobjects[NODE]) return(902);
+	Node[index].extInflowAPI = flowrate;
+	return(0);
+}
 
 
 

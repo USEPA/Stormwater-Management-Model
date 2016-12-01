@@ -504,6 +504,7 @@ typedef struct
    double*       newQual;         // current quality state
    double        oldFlowInflow;   // previous flow inflow
    double        oldNetInflow;    // previous net inflow
+   double        extInflowAPI;    // current external inflow from API
 }  TNode;
 
 

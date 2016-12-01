@@ -451,3 +451,17 @@ double inflow_getPatternFactor(int p, int month, int day, int hour)
 }
 
 //=============================================================================
+
+double inflow_getExtInflowAPI(int j)
+//
+//  Input:   Node index
+//  Output:  returns current value of external inflow parameter from API
+//  Purpose: retrieves the value of an external inflow for a node from the API
+//
+{
+    double cf = 1.0/UCF(FLOW);     // units conversion factor
+
+    return cf * Node[j].extInflowAPI;
+}
+
+//=============================================================================

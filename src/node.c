@@ -248,6 +248,7 @@ void node_initState(int j)
     Node[j].newLatFlow = 0.0;
     Node[j].losses = 0.0;                                                      //(5.1.007)
 
+	Node[j].extInflowAPI = 0.0;
 
 ////  Following code section added to release 5.1.007.  ////                   //(5.1.007)
 
