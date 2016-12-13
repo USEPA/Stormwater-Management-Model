@@ -49,6 +49,7 @@ int inflow_readExtInflow(char* tok[], int ntoks)
     double cf = 1.0;                   // units conversion factor
     double sf = 1.0;                   // scaling factor
     double baseline = 0.0;             // baseline value
+	double extIfaceInflow = 0.0;   // external inferfacing inflow
     TExtInflow* inflow;                // external inflow object
 
     // --- find index of node receiving the inflow
@@ -146,6 +147,7 @@ int inflow_readExtInflow(char* tok[], int ntoks)
     inflow->sFactor  = sf;
     inflow->baseline = baseline;
     inflow->basePat  = basePat;
+	inflow->extIfaceInflow = extIfaceInflow;
     return 0;
 }
 
@@ -187,6 +189,7 @@ double inflow_getExtInflow(TExtInflow* inflow, DateTime aDate)
     double sf = inflow->sFactor;     // scaling factor
     double blv = inflow->baseline;   // baseline value
     double tsv = 0.0;                // time series value
+	double extIfaceInflow = inflow->extIfaceInflow;// external interfacing inflow
 
     if ( p >= 0 )
     {
@@ -196,7 +199,7 @@ double inflow_getExtInflow(TExtInflow* inflow, DateTime aDate)
         blv  *= inflow_getPatternFactor(p, month, day, hour);
     }
     if ( k >= 0 ) tsv = table_tseriesLookup(&Tseries[k], aDate, FALSE) * sf;
-    return cf * (tsv + blv);
+    return cf * (tsv + blv) + cf * extIfaceInflow;
 }
 
 //=============================================================================
@@ -448,20 +451,6 @@ double inflow_getPatternFactor(int p, int month, int day, int hour)
         break;
     }
     return 1.0;
-}
-
-//=============================================================================
-
-double inflow_getExtInflowAPI(int j)
-//
-//  Input:   Node index
-//  Output:  returns current value of external inflow parameter from API
-//  Purpose: retrieves the value of an external inflow for a node from the API
-//
-{
-    double cf = 1.0/UCF(FLOW);     // units conversion factor
-
-    return cf * Node[j].extInflowAPI;
 }
 
 //=============================================================================

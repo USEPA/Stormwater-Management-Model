@@ -63,7 +63,6 @@ static void addGroundwaterInflows(double routingTime);
 static void addRdiiInflows(DateTime currentDate);
 static void addIfaceInflows(DateTime currentDate);
 static void addLidDrainInflows(double routingTime);                            //(5.1.008)
-static void addExtenralInflowsAPI(void);
 static void removeStorageLosses(double tStep);
 static void removeConduitLosses(void);
 static void removeOutflows(double tStep);                                      //(5.1.008)
@@ -204,7 +203,7 @@ void routing_execute(int routingModel, double routingStep)
     addLidDrainInflows(OldRoutingTime);                                        //(5.1.008)
     addRdiiInflows(currentDate);
     addIfaceInflows(currentDate);
-	addExtenralInflowsAPI();
+	//addExtenralInflowsAPI();
 
     // --- check if can skip steady state periods
     if ( SkipSteadyState )
@@ -596,39 +595,6 @@ void addIfaceInflows(DateTime currentDate)
     }
 }
 
-//=============================================================================
-void addExtenralInflowsAPI()
-//
-//  Input:   nonde
-//  Output:  none
-//  Purpose: adds inflows from API to nodes.
-//
-{
-	int j, p, w;
-	double q;
-	for (j = 0; j < Nobjects[NODE]; j++)
-    {
-		q = inflow_getExtInflowAPI(j);
-		
-        if ( fabs(q) < FLOW_TOL ) q = 0.0;
-
-        // --- add flow inflow to node's lateral inflow
-        Node[j].newLatFlow += q;
-        massbal_addInflowFlow(EXTERNAL_INFLOW, q);
-
-        // add pollutant load (for positive inflow)
-        //if ( q > 0.0 )
-        //{
-        //    for (p = 0; p < Nobjects[POLLUT]; p++)
-        //    {
-        //        w = q * iface_getIfaceQual(i, p);
-        //        Node[j].newQual[p] += w;
-        //        massbal_addInflowQual(EXTERNAL_INFLOW, p, w);
-        //    }
-        //}
-	}
-		
-}
 
 
 //=============================================================================

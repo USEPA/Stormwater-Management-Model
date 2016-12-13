@@ -13,16 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "consts.h"                    // defined constants
-#include "macros.h"                    // macros used throughout SWMM
-#include "enums.h"                     // enumerated variables
-#include "error.h"                     // error message codes
-#include "datetime.h"                  // date/time functions
-#include "objects.h"                   // definitions of SWMM's data objects
-#include "funcs.h"                     // declaration of all global functions
-#include "text.h"                      // listing of all text strings 
-#define  EXTERN                        // defined as 'extern' in headers.h
-#include "globals.h"                   // declaration of all global variables
+#include "headers.h"
 
 #include "swmm5.h"                     // declaration of exportable functions
 #include "toolkitAPI.h"
@@ -491,10 +482,42 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 // Purpose: Sets new node inflow rate and holds until set again
 {
 	if (index < 0 || index >= Nobjects[NODE]) return(902);
-	Node[index].extInflowAPI = flowrate;
+	
+	// Check to see if node has an assigned inflow object
+	TExtInflow* inflow;
+	inflow = Node[index].extInflow;
+	if (!inflow)
+	{
+		// add inflow object then assign flow rate
+		// nodeID	FLOW	""	FLOW	1.0	1	0   
+		char *line[7];//[100] = {"","FLOW","\"\"","FLOW","1.0","1","0"};
+		line[1] = "FLOW";
+		line[2] = "\"\"";
+		line[3] = "FLOW";
+		line[4] = "1.0";
+		line[5] = "1";
+		line[6] = "0";
+		
+		
+		char *id; 
+		int Ntokens = 7;
+		// Get Node ID
+		swmm_getObjectId(NODE, index, id);
+		
+		// Insert Node ID into line
+		//strcpy(line[0],id);	
+		line[0] = id;
+		// Add external inflow to linked list
+		inflow_readExtInflow(line, Ntokens);
+		// Get inflow
+		inflow = Node[index].extInflow;
+	}
+	// Assign new flow rate
+	inflow -> extIfaceInflow = flowrate;
+
 	return(0);
 }
-
+ 
 
 
 

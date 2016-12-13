@@ -373,7 +373,6 @@ void    inflow_initDwfPattern(int pattern);
 double  inflow_getExtInflow(TExtInflow* inflow, DateTime aDate);
 double  inflow_getDwfInflow(TDwfInflow* inflow, int m, int d, int h);
 double  inflow_getPatternFactor(int p, int month, int day, int hour);
-double inflow_getExtInflowAPI(int j);
 
 void    inflow_deleteExtInflows(int node);
 void    inflow_deleteDwfInflows(int node);
@@ -525,3 +524,4 @@ void     writecon(char *s);                   // writes string to console
 DateTime getDateTime(double elapsedMsec);     // convert elapsed time to date
 void     getElapsedTime(DateTime aDate,       // convert elapsed date
          int* days, int* hrs, int* mins);
+	 

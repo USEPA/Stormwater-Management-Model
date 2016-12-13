@@ -413,6 +413,7 @@ struct ExtInflow
    double         cFactor;       // units conversion factor for mass inflow
    double         baseline;      // constant baseline value
    double         sFactor;       // time series scaling factor
+   double         extIfaceInflow;// external interfacing inflow
    struct ExtInflow* next;       // pointer to next inflow data object
 };
 typedef struct ExtInflow TExtInflow;
@@ -504,7 +505,6 @@ typedef struct
    double*       newQual;         // current quality state
    double        oldFlowInflow;   // previous flow inflow
    double        oldNetInflow;    // previous net inflow
-   double        extInflowAPI;    // current external inflow from API
 }  TNode;
 
 

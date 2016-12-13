@@ -10,17 +10,18 @@
 //
 //-----------------------------------------------------------------------------
 
-
+#ifndef DLLEXPORT
 #ifdef WINDOWS
 	#ifdef __MINGW32__
-		#define DLLEXPORT __declspec(dllexport) __cdecl // <- More wrapper friendly
+		// <- More wrapper friendly
+		#define DLLEXPORT __declspec(dllexport) __cdecl 
 	#else
 		#define DLLEXPORT __declspec(dllexport) __stdcall
 	#endif
 #else
 	#define DLLEXPORT
 #endif
-
+#endif 
 
 #ifdef __cplusplus
 extern "C" { 
