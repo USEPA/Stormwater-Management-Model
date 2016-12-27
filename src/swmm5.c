@@ -64,7 +64,7 @@
 
 // --- define DLLEXPORT
 
-#ifndef DLLEXPORT
+//#ifndef DLLEXPORT
 #ifdef WINDOWS
 	#ifdef __MINGW32__
 		// Seems to be more wrapper friendly
@@ -75,7 +75,7 @@
 #else
 	#define DLLEXPORT
 #endif
-#endif
+//#endif
 
 #include <stdio.h>
 #include <stdlib.h>
