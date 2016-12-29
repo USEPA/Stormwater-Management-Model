@@ -153,15 +153,15 @@ int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value)
 	switch(Param)
 	{
 		// invertElev
-		case 0: *value = Node[index].invertElev; break;			
+		case 0: *value = Node[index].invertElev * UCF(LENGTH); break;			
 		// fullDepth
-		case 1: *value = Node[index].fullDepth; break;		
+		case 1: *value = Node[index].fullDepth * UCF(LENGTH); break;		
 		// surDepth
-		case 2: *value = Node[index].surDepth; break;	
+		case 2: *value = Node[index].surDepth * UCF(LENGTH); break;	
 		// pondedArea
-		case 3: *value = Node[index].pondedArea; break;	
+		case 3: *value = Node[index].pondedArea * UCF(LENGTH) * UCF(LENGTH); break;	
 		// initDepth
-		case 4: *value = Node[index].initDepth; break;					
+		case 4: *value = Node[index].initDepth * UCF(LENGTH); break;					
 	}
 	return(0);
 }
@@ -182,13 +182,13 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
 	switch(Param)
 	{
 		// offset1
-		case 0: *value = Link[index].offset1; break;			
+		case 0: *value = Link[index].offset1 * UCF(LENGTH); break;			
 		// offset2
-		case 1: *value = Link[index].offset2; break;		
+		case 1: *value = Link[index].offset2 * UCF(LENGTH); break;		
 		// q0
-		case 2: *value = Link[index].q0; break;	
+		case 2: *value = Link[index].q0  * UCF(FLOW); break;	
 		// qLimit
-		case 3: *value = Link[index].qLimit; break;	
+		case 3: *value = Link[index].qLimit * UCF(FLOW); break;	
 		// cLossInlet
 		case 4: *value = Link[index].cLossInlet; break;		
 		// cLossOutlet
@@ -196,7 +196,7 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
 		// cLossAvg
 		case 6: *value = Link[index].cLossAvg; break;		
 		// seepRate
-		case 7: *value = Link[index].seepRate; break;
+		//case 7: *value = Link[index].seepRate * UCF(FLOW); break;
 	}
 	return(0);
 }
@@ -230,15 +230,15 @@ int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value)
 	switch(Param)
 	{
 		// width
-		case 0: *value = Subcatch[index].width; break;			
+		case 0: *value = Subcatch[index].width * UCF(LENGTH); break;			
 		// area
-		case 1: *value = Subcatch[index].area; break;		
+		case 1: *value = Subcatch[index].area * UCF(LANDAREA); break;		
 		// fracImperv
 		case 2: *value = Subcatch[index].fracImperv; break;	
 		// slope
 		case 3: *value = Subcatch[index].slope; break;	
 		// curbLength
-		case 4: *value = Subcatch[index].curbLength; break;		
+		case 4: *value = Subcatch[index].curbLength * UCF(LENGTH); break;		
 		// initBuildup
 		//case 5: *value = Subcatch[index].initBuildup; break;					
 	}
@@ -354,21 +354,21 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result)
 	switch (type)
 	{
 		// Total Inflow
-		case 0: *result = Node[index].inflow; break; 
+		case 0: *result = Node[index].inflow * UCF(FLOW); break; 
 		// Total Outflow
-		case 1: *result = Node[index].outflow; break; 
+		case 1: *result = Node[index].outflow * UCF(FLOW); break; 
 		// Losses (evap + exfiltration loss)
-		case 2: *result = Node[index].losses; break; 
+		case 2: *result = Node[index].losses * UCF(FLOW); break; 
 		// Current Volume
-		case 3: *result = Node[index].newVolume; break; 
+		case 3: *result = Node[index].newVolume * UCF(VOLUME); break; 
 		// overflow
-		case 4: *result = Node[index].overflow; break; 
+		case 4: *result = Node[index].overflow * UCF(FLOW); break; 
 		// Current water depth
-		case 5: *result = Node[index].newDepth; break; 
+		case 5: *result = Node[index].newDepth * UCF(LENGTH); break; 
 		// Current water head
-		case 6: *result = Node[index].newDepth + Node[index].invertElev; break; 		
+		case 6: *result = (Node[index].newDepth + Node[index].invertElev) * UCF(LENGTH); break; 		
 		// Current Lateral Inflow
-		case 7: *result = Node[index].newLatFlow; break; 
+		case 7: *result = Node[index].newLatFlow * UCF(FLOW); break; 
 	}
 	return(0);
 }
@@ -386,15 +386,15 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
 	switch (type)
 	{
 		// Current Flow
-		case 0: *result = Link[index].newFlow; break; 
+		case 0: *result = Link[index].newFlow * UCF(FLOW) ; break; 
 		// Current Depth
-		case 1: *result = Link[index].newDepth; break; 
+		case 1: *result = Link[index].newDepth * UCF(LENGTH); break; 
 		// Current Volume
-		case 2: *result = Link[index].newVolume; break; 
+		case 2: *result = Link[index].newVolume * UCF(VOLUME); break; 
 		// Upstream Surface Area
-		case 3: *result = Link[index].surfArea1; break; 
+		case 3: *result = Link[index].surfArea1 * UCF(LENGTH) * UCF(LENGTH); break; 
 		// Downstream Surface Area
-		case 4: *result = Link[index].surfArea2; break; 
+		case 4: *result = Link[index].surfArea2 * UCF(LENGTH) * UCF(LENGTH); break; 
 		// Current Setting
 		case 5: *result = Link[index].setting; break; 
 		// Target Setting
@@ -418,17 +418,17 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 	switch (type)
 	{
 		// Current Rainfall
-		case 0: *result = Subcatch[index].rainfall; break; 
+		case 0: *result = Subcatch[index].rainfall * UCF(RAINFALL); break; 
 		// Current Evaporation Loss
-		case 1: *result = Subcatch[index].evapLoss; break; 
+		case 1: *result = Subcatch[index].evapLoss * UCF(EVAPRATE); break; 
 		// Current Infiltration Loss
-		case 2: *result = Subcatch[index].infilLoss; break; 
+		case 2: *result = Subcatch[index].infilLoss * UCF(RAINFALL); break; 
 		// Subcatchment Runon
-		case 3: *result = Subcatch[index].runon; break; 
+		case 3: *result = Subcatch[index].runon * UCF(FLOW); break; 
 		// Current Runoff
-		case 4: *result = Subcatch[index].newRunoff; break; 
+		case 4: *result = Subcatch[index].newRunoff * UCF(FLOW); break; 
 		// Current Snow Depth
-		case 5: *result = Subcatch[index].newSnowDepth; break; 		
+		case 5: *result = Subcatch[index].newSnowDepth * UCF(RAINDEPTH); break; 		
 	}
 	return(0);
 }

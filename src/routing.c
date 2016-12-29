@@ -203,7 +203,6 @@ void routing_execute(int routingModel, double routingStep)
     addLidDrainInflows(OldRoutingTime);                                        //(5.1.008)
     addRdiiInflows(currentDate);
     addIfaceInflows(currentDate);
-	//addExtenralInflowsAPI();
 
     // --- check if can skip steady state periods
     if ( SkipSteadyState )
