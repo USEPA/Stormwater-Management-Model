@@ -10,7 +10,7 @@
 //
 //-----------------------------------------------------------------------------
 
-#ifndef DLLEXPORT
+//#ifndef DLLEXPORT
 #ifdef WINDOWS
 	#ifdef __MINGW32__
 		// <- More wrapper friendly
@@ -21,7 +21,7 @@
 #else
 	#define DLLEXPORT
 #endif
-#endif 
+//#endif 
 
 #ifdef __cplusplus
 extern "C" { 

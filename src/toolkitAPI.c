@@ -490,31 +490,32 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 	{
 		// add inflow object then assign flow rate
 		// nodeID	FLOW	""	FLOW	1.0	1	0   
-		char *line[7];//[100] = {"","FLOW","\"\"","FLOW","1.0","1","0"};
+		char *line[7];
+		char id[100]; 
+		int Ntokens = 7;
+	
+		// Get Node ID
+		swmm_getObjectId(NODE, index, id);
+				
+		// Insert Node ID into line
+		line[0] = id;	
 		line[1] = "FLOW";
-		line[2] = "\"\"";
+		line[2] = "";
 		line[3] = "FLOW";
 		line[4] = "1.0";
 		line[5] = "1";
 		line[6] = "0";
 		
-		
-		char *id; 
-		int Ntokens = 7;
-		// Get Node ID
-		swmm_getObjectId(NODE, index, id);
-		
-		// Insert Node ID into line
-		//strcpy(line[0],id);	
-		line[0] = id;
 		// Add external inflow to linked list
 		inflow_readExtInflow(line, Ntokens);
+		
 		// Get inflow
 		inflow = Node[index].extInflow;
 	}
+
 	// Assign new flow rate
 	inflow -> extIfaceInflow = flowrate;
-
+	
 	return(0);
 }
  
