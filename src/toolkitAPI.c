@@ -491,14 +491,11 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 		// add inflow object then assign flow rate
 		// nodeID	FLOW	""	FLOW	1.0	1	0   
 		char *line[7];
-		char id[100]; 
 		int Ntokens = 7;
-	
 		// Get Node ID
-		swmm_getObjectId(NODE, index, id);
-				
+		
+		swmm_getObjectId(NODE, index, line[0]);
 		// Insert Node ID into line
-		line[0] = id;	
 		line[1] = "FLOW";
 		line[2] = "";
 		line[3] = "FLOW";
