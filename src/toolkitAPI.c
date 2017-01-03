@@ -19,6 +19,148 @@
 #include "toolkitAPI.h"
 #include "hash.h"
 
+
+//-----------------------------------------------------------------------------
+//  Extended API Functions
+//-----------------------------------------------------------------------------
+
+int DLLEXPORT  swmm_getSimulationUnit(int type, int *value)
+//
+// Input: 	type = simulation unit type
+// Output: 	enum representation of units
+// Returns: error code
+// Purpose: get simulation unit types
+{
+	int errorcode = 0;
+	// Check if Open
+	if(swmm_IsOpenFlag() == FALSE)
+	{
+		errorcode = 902;
+		return errorcode;
+	}
+	// check if inside limits
+	if(type >= 2 && type >= 0)
+	{
+		errorcode = 901;
+		return errorcode;
+	}
+	
+	// Output  unit
+	switch(type)
+	{
+		// System Unit (enum.h UnitsType)
+		case 0:  *value = UnitSystem; break;
+		// Flow Unit (enum.h FlowUnitsType)
+		case 1:  *value = FlowUnits; break;
+		// Concentration Unit
+		//case 2:  *value = UnitSystem; break;
+	}
+	
+	return errorcode;
+}
+
+int DLLEXPORT  swmm_getSimulationAnalysisSetting(int type, int *value)
+//
+// Input: 	type = analysis type
+// Output: 	setting True or False
+// Returns: error code
+// Purpose: get simulation analysis setting
+{
+	int errorcode = 0;
+	// Check if Open
+	if(swmm_IsOpenFlag() == FALSE)
+	{
+		errorcode = 902;
+		return errorcode;
+	}
+	// check if inside limits
+	if(type >= 8 && type >= 0)
+	{
+		errorcode = 901;
+		return errorcode;
+	}
+	
+	// Output  setting
+	switch(type)
+	{
+		// No ponding at nodes (True or False)
+		case 0:  *value = AllowPonding; break;
+		// Do flow routing in steady state periods  (True or False)
+		case 1:  *value = SkipSteadyState; break;
+		// Analyze rainfall/runoff  (True or False)
+		case 2:  *value = IgnoreRainfall; break;
+		// Analyze RDII (True or False)
+		case 3:  *value = IgnoreRDII; break;
+		// Analyze snowmelt (True or False)
+		case 4:  *value = IgnoreSnowmelt; break;
+		// Analyze groundwater (True or False)
+		case 5:  *value = IgnoreGwater; break;
+		// Analyze flow routing (True or False)
+		case 6:  *value = IgnoreRouting; break;
+		// Analyze water quality (True or False)
+		case 7:  *value = IgnoreQuality; break;		
+	}
+	
+	return errorcode;	
+}
+
+int DLLEXPORT  swmm_getSimulationParam(int type, double *value)
+//
+// Input: 	type = analysis type
+// Output: 	Simulation Parameter
+// Returns: error code
+// Purpose: Get simulation analysis parameter
+{
+	int errorcode = 0;
+	// Check if Open
+	if(swmm_IsOpenFlag() == FALSE)
+	{
+		errorcode = 902;
+		return errorcode;
+	}
+	// check if inside limits
+	if(type >= 13 && type >= 0)
+	{
+		errorcode = 901;
+		return errorcode;
+	}
+	
+	// Output  setting
+	switch(type)
+	{
+		// Routing time step (sec)
+		case 0: *value = RouteStep; break;
+		// Minimum variable time step (sec)
+		case 1: *value = MinRouteStep; break;
+		// Time step for lengthening (sec)
+		case 2: *value = LengtheningStep; break;
+		// Antecedent dry days 
+		case 3: *value = StartDryDays; break;
+		// Courant time step factor
+		case 4: *value = CourantFactor; break;
+		// Minimum nodal surface area
+		case 5: *value = MinSurfArea; break;
+		// Minimum conduit slope
+		case 6: *value = MinSlope; break;
+		// Runoff continuity error
+		case 7: *value = RunoffError; break;
+		// Groundwater continuity error	
+		case 8: *value = GwaterError; break;
+		// Flow routing error
+		case 9: *value = FlowError; break;
+		// Quality routing error
+		case 10: *value = QualError; break;
+		// DW routing head tolerance (ft)
+		case 11: *value = HeadTol; break;
+		// Tolerance for steady system flow	
+		case 12: *value = SysFlowTol; break;
+		// Tolerance for steady nodal inflow
+		case 13: *value = LatFlowTol; break;             
+	}
+
+	return errorcode;	
+}
+
 int DLLEXPORT  swmm_countObjects(int type, int *count)
 //
 // Input: 	type = object type (Based on ObjectType enum)

@@ -54,6 +54,8 @@ int  DLLEXPORT   swmm_getMassBalErr(float* runoffErr, float* flowErr,
 int  DLLEXPORT   swmm_close(void);
 int  DLLEXPORT   swmm_getVersion(void);
 
+int  swmm_IsOpenFlag(void);
+int  swmm_IsStartedFlag(void);
 
 #ifdef __cplusplus 
 }   // matches the linkage specification from above */ 

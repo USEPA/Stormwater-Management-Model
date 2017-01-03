@@ -28,6 +28,10 @@ extern "C" {
 #endif 
 
 // Input API Exportable Functions
+int DLLEXPORT  swmm_getSimulationUnit(int type, int *value);
+int DLLEXPORT  swmm_getSimulationAnalysisSetting(int type, int *value);
+int DLLEXPORT  swmm_getSimulationParam(int type, double *value);
+
 int DLLEXPORT  swmm_countObjects(int type, int *count);
 int DLLEXPORT  swmm_getObjectId(int type, int index, char *id);
 

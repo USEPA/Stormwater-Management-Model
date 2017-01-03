@@ -896,3 +896,20 @@ int xfilter(int xc, DateTime elapsedTime, long step)
     return rc;
 }
 #endif
+
+
+int swmm_IsOpenFlag()
+//
+// Check if Project is Open
+{
+	// TRUE if a project has been opened
+	return IsOpenFlag;
+}
+
+int swmm_IsStartedFlag()
+//
+// Check if Simulation has started
+{
+	// TRUE if a simulation has been started
+	return IsStartedFlag;
+}
