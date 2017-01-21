@@ -70,7 +70,7 @@
 		// Seems to be more wrapper friendly
 		#define DLLEXPORT __declspec(dllexport) __cdecl 
 	#else
-		#define DLLEXPORT __declspec(dllexport) __stdcall
+		//#define DLLEXPORT __declspec(dllexport) __stdcall
 	#endif
 #else
 	#define DLLEXPORT

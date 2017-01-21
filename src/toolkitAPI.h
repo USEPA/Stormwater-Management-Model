@@ -16,7 +16,7 @@
 		// <- More wrapper friendly
 		#define DLLEXPORT __declspec(dllexport) __cdecl 
 	#else
-		#define DLLEXPORT __declspec(dllexport) __stdcall
+//		#define DLLEXPORT __declspec(dllexport) __stdcall
 	#endif
 #else
 	#define DLLEXPORT
@@ -26,6 +26,8 @@
 #ifdef __cplusplus
 extern "C" { 
 #endif 
+
+#define _CRT_SECURE_NO_DEPRECATE
 
 // Input API Exportable Functions
 int DLLEXPORT  swmm_getSimulationUnit(int type, int *value);
@@ -43,13 +45,17 @@ int DLLEXPORT  swmm_getSubcatchOutConnection(int index, int *type, int *Index );
 
 //Nodes
 int DLLEXPORT  swmm_getNodeParam(int index, int Param, double *value);
+int DLLEXPORT  swmm_setNodeParam(int index, int Param, double value);
 //Links
 int DLLEXPORT  swmm_getLinkParam(int index, int Param, double *value);
+int DLLEXPORT  swmm_setLinkParam(int index, int Param, double value);
 int DLLEXPORT  swmm_getLinkDirection(int index, signed char *value);
 //Subcatchments
 int DLLEXPORT  swmm_getSubcatchParam(int index, int Param, double *value);
+int DLLEXPORT  swmm_setSubcatchParam(int index, int Param, double value);
 // 
-int DLLEXPORT swmm_getSimulationDateTime(int timetype, char *dtimestr);
+int DLLEXPORT  swmm_getSimulationDateTime(int timetype, char *dtimestr);
+int DLLEXPORT  swmm_setSimulationDateTime(int timetype, char *dtimestr);
 
 //-------------------------------
 // Active Simulation Results API

@@ -18,7 +18,7 @@
 #include "swmm5.h"                     // declaration of exportable functions
 #include "toolkitAPI.h"
 #include "hash.h"
-
+#include "funcs.h"
 
 //-----------------------------------------------------------------------------
 //  Extended API Functions
@@ -30,14 +30,15 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, char *dtimestr)
 // Output: 	DateTime String 
 // Purpose: Get the simulation start, end and report date times
 {
+	
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE) return(902);
 	
 	char     theDate[12];
     char     theTime[9];
 	char     _DTimeStr[22];
-
 	DateTime _dtime;
+	strcpy(dtimestr, "");
 	
 	switch(timetype)
 	{
@@ -57,6 +58,49 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, char *dtimestr)
 	strcat(_DTimeStr, theTime);
 	
 	strcpy(dtimestr, _DTimeStr);
+	
+	return (0);
+}
+
+int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr)
+//
+// Input: 	timetype = time type to return
+//          DateTime String 
+// Purpose: Get the simulation start, end and report date times
+{
+	// Check if Open
+	if(swmm_IsOpenFlag() == FALSE) return(902);
+	// Check if Simulation is Running
+	if(swmm_IsStartedFlag() == TRUE) return(903);	
+	
+	char     theDate[10];
+    char     theTime[9];
+
+	strncpy(theDate, dtimestr, 10);
+	strncpy(theTime, dtimestr+11, 9);
+	
+	switch(timetype)
+	{
+		//StartDateTime (globals.h)
+		case 0: 
+		    project_readOption("START_DATE", theDate);
+		    project_readOption("START_TIME", theTime);
+		    StartDateTime = StartDate + StartTime;
+			break;
+		//EndDateTime (globals.h)
+		case 1: 
+		    project_readOption("END_DATE", theDate);
+		    project_readOption("END_TIME", theTime);
+		    EndDateTime = EndDate + EndTime;
+			break;		
+		//ReportStart (globals.h)
+		case 2: 
+		    project_readOption("REPORT_START_DATE", theDate);
+		    project_readOption("REPORT_START_TIME", theTime);
+		    ReportStart = ReportStartDate + ReportStartTime;
+			break;			
+		default: return(901);
+	}
 	
 	return (0);
 }
@@ -287,8 +331,7 @@ int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value)
 //
 // Input: 	index = Index of desired ID
 //			param = Parameter desired (Perhaps define enum )
-//			id = pointer to id pass by reference
-// Output: 	returns API Error
+// Output: 	value = value to be output
 // Purpose: Gets Node Parameter
 {
 	// Check if Open
@@ -314,13 +357,46 @@ int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value)
 	return(0);
 }
 
+int DLLEXPORT swmm_setNodeParam(int index, int Param, double value)
+//
+// Input: 	index = Index of desired ID
+//			param = Parameter desired (Perhaps define enum )
+//          value = value to be input
+// Purpose: Sets Node Parameter
+{
+	// Check if Open
+	if(swmm_IsOpenFlag() == FALSE) return(902);
+	// Check if Simulation is Running
+	if(swmm_IsStartedFlag() == TRUE) return(903);
+	// Check if object index is within bounds	
+	if (index < 0 || index >= Nobjects[NODE]) return(901);
+	
+	switch(Param)
+	{
+		// invertElev
+		case 0: Node[index].invertElev = value / UCF(LENGTH); break;
+		// fullDepth
+		case 1: Node[index].fullDepth = value / UCF(LENGTH); break;
+		// surDepth
+		case 2: Node[index].surDepth = value / UCF(LENGTH); break;	
+		// pondedArea
+		case 3: Node[index].pondedArea = value / ( UCF(LENGTH) * UCF(LENGTH) ); break;
+		// initDepth
+		case 4: Node[index].initDepth = value / UCF(LENGTH); break;
+		// Type not available
+		default: return(901);
+	}
+	// Re-validated a node ******************** BEM 1/20/2017 Probably need to re-validate connecting links
+	node_validate(index);// incorprate callback here
+	
+	return(0);
+}
 
 int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
 //
 // Input: 	index = Index of desired ID
 //			param = Parameter desired (Perhaps define enum )
-//			id = pointer to id pass by reference
-// Output: 	returns API Error
+// Output: 	value = value to be output
 // Purpose: Gets Link Parameter
 {
 	// Check if Open
@@ -352,6 +428,54 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
 	return(0);
 }
 
+int DLLEXPORT swmm_setLinkParam(int index, int Param, double value)
+//
+// Input: 	index = Index of desired ID
+//			param = Parameter desired (Perhaps define enum )
+//			value = value to be input
+// Output: 	returns API Error
+// Purpose: Gets Link Parameter
+{
+	// Check if Open
+	if(swmm_IsOpenFlag() == FALSE) return(902);
+	// Check if object index is within bounds
+	if (index < 0 || index >= Nobjects[LINK]) return(901);
+	
+	switch(Param)
+	{
+		// offset1
+		case 0: 
+			// Check if Simulation is Running
+	        if(swmm_IsStartedFlag() == TRUE) return(903);	
+	        Link[index].offset1 = value / UCF(LENGTH); break;
+		// offset2
+		case 1: 
+			// Check if Simulation is Running
+	        if(swmm_IsStartedFlag() == TRUE) return(903);	
+			Link[index].offset2 = value / UCF(LENGTH); break;
+		// q0
+		case 2: 
+			// Check if Simulation is Running
+	        if(swmm_IsStartedFlag() == TRUE) return(903);	
+			Link[index].q0 = value / UCF(FLOW); break;
+		// qLimit
+		case 3: Link[index].qLimit = value / UCF(FLOW); break;
+		// cLossInlet
+		case 4: Link[index].cLossInlet; break;
+		// cLossOutlet
+		case 5: Link[index].cLossOutlet; break;
+		// cLossAvg
+		case 6: Link[index].cLossAvg; break;
+		// seepRate
+		//case 7: *value = Link[index].seepRate * UCF(FLOW); break;
+		// Type not available
+		default: return(901);
+	}
+	// re-validated link
+	link_validate(index);// incorprate callback here
+	
+	return(0);
+}
 
 int DLLEXPORT swmm_getLinkDirection(int index, signed char *value)
 //
@@ -373,8 +497,7 @@ int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value)
 //
 // Input: 	index = Index of desired ID
 //			param = Parameter desired (Perhaps define enum )
-//			id = pointer to id pass by reference
-// Output: 	returns API Error
+// Output: 	value = value to be output
 // Purpose: Gets Subcatchment Parameter
 {
 	// Check if Open
@@ -399,6 +522,43 @@ int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value)
 		// Type not available
 		default: return(901);
 	}
+	return(0);
+}
+
+int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
+//
+// Input: 	index = Index of desired ID
+//			param = Parameter desired (Perhaps define enum )
+//          value = value to be output
+// Purpose: Sets Subcatchment Parameter
+{
+	// Check if Open
+	if(swmm_IsOpenFlag() == FALSE) return(902);
+	// Check if Simulation is Running
+	if(swmm_IsStartedFlag() == TRUE) return(903);
+	// Check if object index is within bounds
+	if (index < 0 || index >= Nobjects[SUBCATCH]) return(901);
+	
+	switch(Param)
+	{
+		// width
+		case 0: Subcatch[index].width = value / UCF(LENGTH); break;
+		// area
+		case 1: Subcatch[index].area = value / UCF(LANDAREA); break;
+		// fracImperv
+		case 2: Subcatch[index].fracImperv; break;	
+		// slope
+		case 3: Subcatch[index].slope; break;	
+		// curbLength
+		case 4: Subcatch[index].curbLength = value / UCF(LENGTH); break;
+		// initBuildup
+		//case 5: *value = Subcatch[index].initBuildup; break;
+		// Type not available
+		default: return(901);
+	}
+	//re-validate subcatchment
+	subcatch_validate(index); // incorprate callback here
+	
 	return(0);
 }
 
