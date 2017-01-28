@@ -23,6 +23,15 @@
 //-----------------------------------------------------------------------------
 //  Extended API Functions
 //-----------------------------------------------------------------------------
+void DLLEXPORT swmm_getError(int errcode, char *s)
+//
+// Input: 	errcode = error code
+// Output: 	errmessage String 
+// Purpose: Get an error message
+{
+	char *errmsg = error_getMsg(errcode);
+	strcpy(s, errmsg);
+}
 
 int DLLEXPORT swmm_getSimulationDateTime(int timetype, char *dtimestr)
 //
@@ -32,7 +41,7 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, char *dtimestr)
 {
 	
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	
 	char     theDate[12];
     char     theTime[9];
@@ -48,7 +57,7 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, char *dtimestr)
 		case 1: _dtime = EndDateTime;  break;
 		//ReportStart (globals.h)
 		case 2: _dtime = ReportStart;  break;
-		default: return(901);
+		default: return(ERR_API_OUTBOUNDS);
 	}
 	datetime_dateToStr(_dtime, theDate);
 	datetime_timeToStr(_dtime, theTime);
@@ -69,9 +78,9 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr)
 // Purpose: Get the simulation start, end and report date times
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if Simulation is Running
-	if(swmm_IsStartedFlag() == TRUE) return(903);	
+	if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);	
 	
 	char     theDate[10];
     char     theTime[9];
@@ -99,7 +108,7 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr)
 		    project_readOption("REPORT_START_TIME", theTime);
 		    ReportStart = ReportStartDate + ReportStartTime;
 			break;			
-		default: return(901);
+		default: return(ERR_API_OUTBOUNDS);
 	}
 	
 	return (0);
@@ -113,7 +122,7 @@ int DLLEXPORT  swmm_getSimulationUnit(int type, int *value)
 // Purpose: get simulation unit types
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	
 	// Output unit
 	switch(type)
@@ -125,7 +134,7 @@ int DLLEXPORT  swmm_getSimulationUnit(int type, int *value)
 		// Concentration Unit
 		//case 2:  *value = UnitSystem; break;
 		// Type not available
-		default: return(901); 
+		default: return(ERR_API_OUTBOUNDS); 
 	}
 	
 	return (0);
@@ -139,7 +148,7 @@ int DLLEXPORT  swmm_getSimulationAnalysisSetting(int type, int *value)
 // Purpose: get simulation analysis setting
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	
 	// Output  setting
 	switch(type)
@@ -161,7 +170,7 @@ int DLLEXPORT  swmm_getSimulationAnalysisSetting(int type, int *value)
 		// Analyze water quality (True or False)
 		case 7:  *value = IgnoreQuality; break;	
 		// Type not available
-		default: return(901); 
+		default: return(ERR_API_OUTBOUNDS); 
 	}
 	
 	return (0);	
@@ -175,7 +184,7 @@ int DLLEXPORT  swmm_getSimulationParam(int type, double *value)
 // Purpose: Get simulation analysis parameter
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 
 	// Output  setting
 	switch(type)
@@ -209,7 +218,7 @@ int DLLEXPORT  swmm_getSimulationParam(int type, double *value)
 		// Tolerance for steady nodal inflow
 		case 13: *value = LatFlowTol; break;    
 		// Type not available
-		default: return(901); 
+		default: return(ERR_API_OUTBOUNDS); 
 	}
 	return (0);
 }
@@ -221,7 +230,7 @@ int DLLEXPORT  swmm_countObjects(int type, int *count)
 // Output: 	returns API Error
 // Purpose: uses Object Count table to find number of elements of an object
 {	
-	if(type >= MAX_OBJ_TYPES)return 901;
+	if(type >= MAX_OBJ_TYPES)return ERR_API_OUTBOUNDS;
 	*count = Nobjects[type];
 	return (0);
 }
@@ -238,9 +247,9 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
 	strcpy(id,"");
 	
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[type]) return(901);
+	if (index < 0 || index >= Nobjects[type]) return(ERR_API_OUTBOUNDS);
 	switch (type)
 	{
 		case GAGE:
@@ -276,7 +285,7 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
 		//case LID:
 		//	strcpy(id,LidProcs[index].ID); break;
 		// Type not available
-		default: return(901);
+		default: return(ERR_API_OUTBOUNDS);
    }
    return(0);
 }
@@ -289,9 +298,9 @@ int DLLEXPORT swmm_getNodeType(int index, int *Ntype)
 // Purpose: Gets Node Type
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE]) return(901);
+	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OUTBOUNDS);
 	*Ntype = Node[index].type;
 	return(0);
 }
@@ -304,9 +313,9 @@ int DLLEXPORT swmm_getLinkType(int index, int *Ltype)
 // Purpose: Gets Link Type
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(901);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
 	*Ltype = Link[index].type;
 	return(0);
 }
@@ -319,9 +328,9 @@ int DLLEXPORT swmm_getLinkConnections(int index, int *Node1, int *Node2)
 // Purpose: Gets link Connection ID Indeces
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(901);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
 	*Node1 = Link[index].node1;
 	*Node2 = Link[index].node2;
 	return(0);
@@ -335,9 +344,9 @@ int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value)
 // Purpose: Gets Node Parameter
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE]) return(901);
+	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OUTBOUNDS);
 	
 	switch(Param)
 	{
@@ -352,7 +361,7 @@ int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value)
 		// initDepth
 		case 4: *value = Node[index].initDepth * UCF(LENGTH); break;
 		// Type not available
-		default: return(901);
+		default: return(ERR_API_OUTBOUNDS);
 	}
 	return(0);
 }
@@ -365,11 +374,11 @@ int DLLEXPORT swmm_setNodeParam(int index, int Param, double value)
 // Purpose: Sets Node Parameter
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if Simulation is Running
-	if(swmm_IsStartedFlag() == TRUE) return(903);
+	if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);
 	// Check if object index is within bounds	
-	if (index < 0 || index >= Nobjects[NODE]) return(901);
+	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OUTBOUNDS);
 	
 	switch(Param)
 	{
@@ -384,7 +393,7 @@ int DLLEXPORT swmm_setNodeParam(int index, int Param, double value)
 		// initDepth
 		case 4: Node[index].initDepth = value / UCF(LENGTH); break;
 		// Type not available
-		default: return(901);
+		default: return(ERR_API_OUTBOUNDS);
 	}
 	// Re-validated a node ******************** BEM 1/20/2017 Probably need to re-validate connecting links
 	node_validate(index);// incorprate callback here
@@ -400,9 +409,9 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
 // Purpose: Gets Link Parameter
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(901);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
 	
 	switch(Param)
 	{
@@ -423,7 +432,7 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
 		// seepRate
 		//case 7: *value = Link[index].seepRate * UCF(FLOW); break;
 		// Type not available
-		default: return(901);
+		default: return(ERR_API_OUTBOUNDS);
 	}
 	return(0);
 }
@@ -437,26 +446,26 @@ int DLLEXPORT swmm_setLinkParam(int index, int Param, double value)
 // Purpose: Gets Link Parameter
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(901);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
 	
 	switch(Param)
 	{
 		// offset1
 		case 0: 
 			// Check if Simulation is Running
-	        if(swmm_IsStartedFlag() == TRUE) return(903);	
+	        if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);	
 	        Link[index].offset1 = value / UCF(LENGTH); break;
 		// offset2
 		case 1: 
 			// Check if Simulation is Running
-	        if(swmm_IsStartedFlag() == TRUE) return(903);	
+	        if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);	
 			Link[index].offset2 = value / UCF(LENGTH); break;
 		// q0
 		case 2: 
 			// Check if Simulation is Running
-	        if(swmm_IsStartedFlag() == TRUE) return(903);	
+	        if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);	
 			Link[index].q0 = value / UCF(FLOW); break;
 		// qLimit
 		case 3: Link[index].qLimit = value / UCF(FLOW); break;
@@ -469,7 +478,7 @@ int DLLEXPORT swmm_setLinkParam(int index, int Param, double value)
 		// seepRate
 		//case 7: *value = Link[index].seepRate * UCF(FLOW); break;
 		// Type not available
-		default: return(901);
+		default: return(ERR_API_OUTBOUNDS);
 	}
 	// re-validated link
 	link_validate(index);// incorprate callback here
@@ -484,9 +493,9 @@ int DLLEXPORT swmm_getLinkDirection(int index, signed char *value)
 // Purpose: Gets Link Direction
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 		// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(901);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
 	*value = Link[index].direction;
 	return(0);
 }
@@ -501,9 +510,9 @@ int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value)
 // Purpose: Gets Subcatchment Parameter
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 		// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[SUBCATCH]) return(901);
+	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OUTBOUNDS);
 	
 	switch(Param)
 	{
@@ -520,7 +529,7 @@ int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value)
 		// initBuildup
 		//case 5: *value = Subcatch[index].initBuildup; break;
 		// Type not available
-		default: return(901);
+		default: return(ERR_API_OUTBOUNDS);
 	}
 	return(0);
 }
@@ -533,11 +542,11 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
 // Purpose: Sets Subcatchment Parameter
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if Simulation is Running
-	if(swmm_IsStartedFlag() == TRUE) return(903);
+	if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[SUBCATCH]) return(901);
+	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OUTBOUNDS);
 	
 	switch(Param)
 	{
@@ -554,7 +563,7 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
 		// initBuildup
 		//case 5: *value = Subcatch[index].initBuildup; break;
 		// Type not available
-		default: return(901);
+		default: return(ERR_API_OUTBOUNDS);
 	}
 	//re-validate subcatchment
 	subcatch_validate(index); // incorprate callback here
@@ -570,9 +579,9 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index )
 // Purpose: Gets Subcatchment Connection ID Indeces for either Node or Subcatchment
 {
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(902);
+	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 		// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[SUBCATCH]) return(901);
+	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OUTBOUNDS);
 	
 	if (Subcatch[index].outNode == -1 && Subcatch[index].outSubcatch == -1)
 	{
@@ -603,7 +612,7 @@ int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr)
 // Purpose: Get the current simulation time
 {
 	// Check if Simulation is Running
-	if(swmm_IsStartedFlag() == FALSE) return(903);
+	if(swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 	
 	//Provide Empty Character Array 
 	
@@ -637,9 +646,9 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result)
 // Purpose: Gets Node Simulated Value
 {
 	// Check if Simulation is Running
-	if(swmm_IsStartedFlag() == FALSE) return(903);
+	if(swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 		// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE]) return(901);
+	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OUTBOUNDS);
 	
 	switch (type)
 	{
@@ -660,7 +669,7 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result)
 		// Current Lateral Inflow
 		case 7: *result = Node[index].newLatFlow * UCF(FLOW); break;
 		// Type not available
-		default: return(901);
+		default: return(ERR_API_OUTBOUNDS);
 	}
 	return(0);
 }
@@ -674,9 +683,9 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
 // Purpose: Gets Node Simulated Value
 {
 	// Check if Simulation is Running
-	if(swmm_IsStartedFlag() == FALSE) return(903);
+	if(swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 		// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(901);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
 	
 	switch (type)
 	{
@@ -697,7 +706,7 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
 		// Froude number
 		case 7: *result = Link[index].froude; break;
 		// Type not available
-		default: return(901);
+		default: return(ERR_API_OUTBOUNDS);
 	}
 	return(0);
 }
@@ -711,9 +720,9 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 // Purpose: Gets Node Simulated Value
 {
 	// Check if Simulation is Running
-	if(swmm_IsStartedFlag() == FALSE) return(903);
+	if(swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 	// Check if object index is within bounds	
-	if (index < 0 || index >= Nobjects[SUBCATCH]) return(901);
+	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OUTBOUNDS);
 	
 	switch (type)
 	{
@@ -730,7 +739,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 		// Current Snow Depth
 		case 5: *result = Subcatch[index].newSnowDepth * UCF(RAINDEPTH); break;
 		// Type not available
-		default: return(901);
+		default: return(ERR_API_OUTBOUNDS);
 	}
 	return(0);
 }
@@ -751,9 +760,9 @@ int DLLEXPORT swmm_setLinkSetting(int index, double targetSetting)
 // Purpose: Sets Link open fraction (Weir, Orifice, Pump, and Outlet)
 {
 	// Check if Simulation is Running
-	if(swmm_IsStartedFlag() == FALSE) return(903);
+	if(swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 	// Check if object index is within bounds	
-	if (index < 0 || index >= Nobjects[LINK]) return(901);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
 	
 	int l_type, errcode;
 	
@@ -786,9 +795,9 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 // Purpose: Sets new node inflow rate and holds until set again
 {
 	// Check if Simulation is Running
-	if(swmm_IsStartedFlag() == FALSE) return(903);
+	if(swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE]) return(901);
+	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OUTBOUNDS);
 	
 	// Check to see if node has an assigned inflow object
 	TExtInflow* inflow;
