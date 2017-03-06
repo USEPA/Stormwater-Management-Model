@@ -12,8 +12,8 @@ SWMM is a dynamic hydrology-hydraulic water quality simulation model. It is used
 The objectives of this project are:
   
    - Create a Visual Studio solution for SWMM   
-   - Add additional toolkit capabilities to the SWMM analysis engine   
-   - Make easily accessible the SWMM functionalities to .Net developers through a wrapper written in c#    
+   - Add additional toolkit capabilities to the SWMM analysis engine
+   - Make easily accessible the SWMM functionalities to .Net developers through a wrapper written in c#    
 
 Source
 -------------
