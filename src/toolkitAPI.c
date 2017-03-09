@@ -92,21 +92,27 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr)
 	{
 		//StartDateTime (globals.h)
 		case 0: 
-		    project_readOption("START_DATE", theDate);
-		    project_readOption("START_TIME", theTime);
-		    StartDateTime = StartDate + StartTime;
+			project_readOption("START_DATE", theDate);
+			project_readOption("START_TIME", theTime);
+			StartDateTime = StartDate + StartTime;
+			TotalDuration = floor((EndDateTime - StartDateTime) * SECperDAY);
+			// --- convert total duration to milliseconds
+			TotalDuration *= 1000.0;
 			break;
 		//EndDateTime (globals.h)
 		case 1: 
-		    project_readOption("END_DATE", theDate);
-		    project_readOption("END_TIME", theTime);
-		    EndDateTime = EndDate + EndTime;
+			project_readOption("END_DATE", theDate);
+			project_readOption("END_TIME", theTime);
+			EndDateTime = EndDate + EndTime;
+			TotalDuration = floor((EndDateTime - StartDateTime) * SECperDAY);
+			// --- convert total duration to milliseconds
+			TotalDuration *= 1000.0;
 			break;		
 		//ReportStart (globals.h)
 		case 2: 
-		    project_readOption("REPORT_START_DATE", theDate);
-		    project_readOption("REPORT_START_TIME", theTime);
-		    ReportStart = ReportStartDate + ReportStartTime;
+			project_readOption("REPORT_START_DATE", theDate);
+			project_readOption("REPORT_START_TIME", theTime);
+			ReportStart = ReportStartDate + ReportStartTime;
 			break;			
 		default: return(ERR_API_OUTBOUNDS);
 	}
@@ -455,17 +461,17 @@ int DLLEXPORT swmm_setLinkParam(int index, int Param, double value)
 		// offset1
 		case 0: 
 			// Check if Simulation is Running
-	        if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);	
-	        Link[index].offset1 = value / UCF(LENGTH); break;
+			if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);	
+			Link[index].offset1 = value / UCF(LENGTH); break;
 		// offset2
 		case 1: 
 			// Check if Simulation is Running
-	        if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);	
+			if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);	
 			Link[index].offset2 = value / UCF(LENGTH); break;
 		// q0
 		case 2: 
 			// Check if Simulation is Running
-	        if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);	
+			if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);	
 			Link[index].q0 = value / UCF(FLOW); break;
 		// qLimit
 		case 3: Link[index].qLimit = value / UCF(FLOW); break;
