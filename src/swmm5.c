@@ -31,7 +31,7 @@
 //**********************************************************
 //#define CLE     /* Compile as a command line executable */
 //#define SOL     /* Compile as a shared object library */
-//#define DLL     /* Compile as a Windows DLL */
+#define DLL     /* Compile as a Windows DLL */
 
 // --- define WINDOWS
 #undef WINDOWS
@@ -70,7 +70,7 @@
 		// Seems to be more wrapper friendly
 		#define DLLEXPORT __declspec(dllexport) __cdecl 
 	#else
-		//#define DLLEXPORT __declspec(dllexport) __stdcall
+		#define DLLEXPORT __declspec(dllexport) __stdcall
 	#endif
 #else
 	#define DLLEXPORT
