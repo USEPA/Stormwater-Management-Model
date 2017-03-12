@@ -31,10 +31,10 @@ swmm_objs=swmm5.o climate.o controls.o culvert.o datetime.o dynwave.o dwflow.o e
        statsrpt.o subcatch.o surfqual.o table.o toposort.o transect.o treatmnt.o xsect.o
 
 swmm5: $(swmm_objs)
-		gcc $(swmm_objs) -fopenmp -lm -lpthread -o $(libname)
+	gcc $(swmm_objs) -fopenmp -lm -lpthread -o $(libname)
 
 clean:
-		rm *.o
+	rm *.o
 
 install:
-		COPY $(libname) $(libdir)
+	cp $(libname) $(libdir)
