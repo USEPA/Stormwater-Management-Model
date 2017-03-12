@@ -2,3 +2,6 @@
 # Eclipse Stuff
 .metadata/
 .settings/
+
+# Mac Stuff
+.DS_Store
