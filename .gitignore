@@ -2,11 +2,14 @@
 # Eclipse Stuff
 .metadata/
 .settings/
+
+# Mac Stuff
+.DS_Store
+
 /build/VC2010-DLL/Debug/VC2010-DLL.tlog/VC2010-DLL.lastbuildstate
 /build/VC2010-DLL/Debug/VC2010-DLL.tlog/unsuccessfulbuild
 /build/VC2010-DLL/Debug/VC2010-DLL.tlog
 /build/VC2010-DLL/Debug
-/build
 /documentation
 /Makefile_LINUX_WORKS_openmp.txt
 /target
