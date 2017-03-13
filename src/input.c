@@ -54,7 +54,6 @@ static int  readControl(char* tok[], int ntoks);
 static int  readNode(int type);
 static int  readLink(int type);
 
-
 //=============================================================================
 
 int input_countObjects()

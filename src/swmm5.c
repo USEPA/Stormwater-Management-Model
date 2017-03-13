@@ -31,7 +31,7 @@
 //**********************************************************
 //#define CLE     /* Compile as a command line executable */
 //#define SOL     /* Compile as a shared object library */
-//#define DLL     /* Compile as a Windows DLL */
+#define DLL     /* Compile as a Windows DLL */
 
 // --- define WINDOWS
 #undef WINDOWS
@@ -64,6 +64,7 @@
 
 // --- define DLLEXPORT
 
+//#ifndef DLLEXPORT
 #ifdef WINDOWS
 	#ifdef __MINGW32__
 		// Seems to be more wrapper friendly
@@ -74,7 +75,7 @@
 #else
 	#define DLLEXPORT
 #endif
-
+//#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -895,3 +896,20 @@ int xfilter(int xc, DateTime elapsedTime, long step)
     return rc;
 }
 #endif
+
+
+int swmm_IsOpenFlag()
+//
+// Check if Project is Open
+{
+	// TRUE if a project has been opened
+	return IsOpenFlag;
+}
+
+int swmm_IsStartedFlag()
+//
+// Check if Simulation has started
+{
+	// TRUE if a simulation has been started
+	return IsStartedFlag;
+}

@@ -160,6 +160,10 @@ enum  ErrorType {
       ERR_NOT_OPEN,             //403  102
       ERR_FILE_SIZE,            //405  103
 
+  //... API Errors
+      ERR_API_OUTBOUNDS,        //501  104
+      ERR_API_INPUTNOTOPEN,     //502  105
+      ERR_API_SIM_NRUNNING,     //503  106	  
       MAXERRMSG};
       
 char* error_getMsg(int i);
