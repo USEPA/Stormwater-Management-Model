@@ -43,7 +43,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>                                                              //(5.1.008)
 #include <omp.h>                                                               //(5.1.008)
 #include "headers.h"
