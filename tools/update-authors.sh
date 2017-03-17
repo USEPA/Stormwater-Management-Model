@@ -11,10 +11,12 @@ BEGIN {
   %seen = (), @authors = ();
 }
 ## must manually add Lew first, since he generated the code prior to CVS
-push @authors, "Lew Rossman <LRossman\@cinci.rr.com>\n";
+## push @authors, "Lew Rossman <LRossman\@cinci.rr.com>\n";
 while (<>) {
   next if $seen{$_};
   next if /orquina.jessica\@epa.gov/; ## this individual never authored code; just init-ed the repo
+  next if /Bryant M/;
+  next if /tryby.michael\@epa.gov/;
   $seen{$_} = push @authors, $_;
 }
 END {
