@@ -813,6 +813,15 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 		// add inflow object then assign flow rate
 		// nodeID	FLOW	""	FLOW	1.0	1	0   
 		char *line[7];
+		//2017-03-17: allocate memory for the 7 strings
+		line[0] = (char *)malloc(100);
+		line[1] = (char *)malloc(100);
+		line[2] = (char *)malloc(100);
+		line[3] = (char *)malloc(100);
+		line[4] = (char *)malloc(100);
+		line[5] = (char *)malloc(100);
+		line[6] = (char *)malloc(100);
+
 		int Ntokens = 7;
 		// Get Node ID
 		
@@ -824,6 +833,14 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 		line[4] = "1.0";
 		line[5] = "1";
 		line[6] = "0";
+		
+		free(line[0]);
+		free(line[1]);
+		free(line[2]);
+		free(line[3]);
+		free(line[4]);
+		free(line[5]);
+		free(line[6]);
 		
 		// Add external inflow to linked list
 		inflow_readExtInflow(line, Ntokens);
