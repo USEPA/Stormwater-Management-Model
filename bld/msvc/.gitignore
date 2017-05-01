@@ -1,0 +1,21 @@
+
+# MSVC Build Files 
+*.obj
+*.tlog
+*.log
+*.exe
+*.lib
+*.exp
+*.pdb
+*.lastbuildstate
+*.filters
+*.ipch
+*.sdf
+*.suo
+*.vcxproj.user
+
+# MSVC Build Dirs
+Debug/
+ipch/
+Release/
+x64/

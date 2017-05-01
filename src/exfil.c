@@ -6,14 +6,19 @@
 //   Date:     09/15/14  (Build 5.1.007)
 //             03/19/15  (Build 5.1.008)
 //             08/05/15  (Build 5.1.010)
+//             08/01/16  (Build 5.1.011)
 //   Author:   L. Rossman
 //
 //   Storage unit exfiltration functions.
 //
 //   Build 5.1.008:
 //   - Monthly conductivity adjustment applied to exfiltration rate.
+//
 //   Build 5.1.010:
 //   - New modified Green-Ampt infiltration option used.
+//
+//   Build 5.1.011:
+//   - Fixed units conversion error for storage units with surface area curves.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -113,12 +118,21 @@ void  exfil_initState(int k)
                 else break;
                 alast = a;
             }
+
+////  Following code block added to release 5.1.011  ////                      //(5.1.011)
+            // --- convert from user units to internal units
+            exfil->btmArea /= UCF(LENGTH) * UCF(LENGTH);
+            exfil->bankMaxArea /= UCF(LENGTH) * UCF(LENGTH);
+            exfil->bankMinDepth /= UCF(LENGTH);
+            exfil->bankMaxDepth /= UCF(LENGTH);
+////////////////////////////////////////////////////////
+
         }
 
         // --- functional storage shape curve
         else
         {
-    		exfil->btmArea = Storage[k].aConst;
+            exfil->btmArea = Storage[k].aConst;
             if ( Storage[k].aExpon == 0.0 ) exfil->btmArea +=Storage[k].aCoeff;
             exfil->bankMinDepth = 0.0;
             exfil->bankMaxDepth = BIG;

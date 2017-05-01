@@ -7,6 +7,7 @@
 //             04/14/14    (Build 5.1.004)
 //             09/15/14    (Build 5.1.007)
 //             04/02/15    (Build 5.1.008)
+//             08/01/16    (Build 5.1.011)
 //   Author:   L. Rossman (EPA)
 //
 //   Report writing functions.
@@ -23,6 +24,11 @@
 //   - "Internal Outflow" label changed to "Flooding Loss" in Flow Routing
 //     Continuity table.
 //   - Exfiltration loss added into Quality Routing Continuity table.
+//
+//   Build 5.1.011:
+//   - Blank line added after writing project title.
+//   - Text of error message saved to global variable ErrorMsg.
+//   - Global variable Warnings incremented after warning message issued.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -226,11 +232,14 @@ void report_writeTitle()
 //
 {
     int i;
+    int lineCount = 0;                                                         //(5.1.011)
     if ( ErrorCode ) return;
     for (i=0; i<MAXTITLE; i++) if ( strlen(Title[i]) > 0 )
     {
         WRITE(Title[i]);
+        lineCount++;                                                           //(5.1.011)
     }
+    if ( lineCount > 0 ) WRITE("");                                            //(5.1.011)
 }
 
 //=============================================================================
@@ -1357,6 +1366,14 @@ void report_writeErrorMsg(int code, char* s)
         fprintf(Frpt.file, error_getMsg(code), s);
     }
     ErrorCode = code;
+
+////  Following code segment added to release 5.1.011.  ////                   //(5.1.011)
+    // --- save message to ErrorMsg if it's not for a line of input data
+    if ( ErrorCode <= ERR_INPUT || ErrorCode >= ERR_FILE_NAME )
+    {                                                
+        sprintf(ErrorMsg, error_getMsg(ErrorCode), s);
+    }
+////
 }
 
 //=============================================================================
@@ -1409,6 +1426,7 @@ void report_writeWarningMsg(char* msg, char* id)
 //
 {
     fprintf(Frpt.file, "\n  %s %s", msg, id);
+    Warnings++;                                                                //(5.1.011)
 }
 
 //=============================================================================

@@ -8,6 +8,7 @@
 //             09/15/14  (Build 5.1.007)
 //             03/19/15  (Build 5.1.008)
 //             04/30/15  (Build 5.1.009)
+//             08/01/16  (Build 5.1.011)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -37,6 +38,9 @@
 //
 //   Build 5.1.009:
 //   - Fixed bug in computing total duration introduced in 5.1.008.
+//
+//   Build 5.1.011:
+//   - Memory management of hydraulic event dates array added.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -733,6 +737,7 @@ void initPointers()
     Aquifer    = NULL;
     UnitHyd    = NULL;
     Snowmelt   = NULL;
+    Event      = NULL;                                                         //(5.1.011)
     MemPoolAllocated = FALSE;
 }
 
@@ -802,6 +807,7 @@ void setDefaults()
    SysFlowTol      = 0.05;             // System flow tolerance for steady state
    LatFlowTol      = 0.05;             // Lateral flow tolerance for steady state
    NumThreads      = 0;                // Number of parallel threads to use
+   NumEvents       = 0;                // Number of detailed routing events    //(5.1.011)
 
    // Deprecated options
    SlopeWeighting  = TRUE;             // Use slope weighting 
@@ -962,6 +968,13 @@ void createObjects()
     Snowmelt = (TSnowmelt *) calloc(Nobjects[SNOWMELT], sizeof(TSnowmelt));
     Shape    = (TShape *)    calloc(Nobjects[SHAPE],    sizeof(TShape));
 
+////  Added to release 5.1.011.  ////                                          //(5.1.011)
+    // --- create array of detailed routing event periods
+    Event = (TEvent *) calloc(NumEvents+1, sizeof(TEvent));
+    Event[NumEvents].start = BIG;
+    Event[NumEvents].end = BIG + 1.0;
+////
+
     // --- create LID objects
     lid_create(Nobjects[LID], Nobjects[SUBCATCH]);
 
@@ -999,7 +1012,7 @@ void createObjects()
     {
         Link[j].oldQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
         Link[j].newQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
-	    Link[j].totalLoad = (double *) calloc(Nobjects[POLLUT], sizeof(double));
+        Link[j].totalLoad = (double *) calloc(Nobjects[POLLUT], sizeof(double));
     }
 
     // --- allocate memory for land use buildup/washoff functions
@@ -1048,7 +1061,7 @@ void createObjects()
         Subcatch[j].outNode     = -1;
         Subcatch[j].infil       = -1;
         Subcatch[j].groundwater = NULL;
-	    Subcatch[j].gwLatFlowExpr = NULL;                                      //(5.1.007)
+        Subcatch[j].gwLatFlowExpr = NULL;                                      //(5.1.007)
         Subcatch[j].gwDeepFlowExpr = NULL;                                     //(5.1.007)
         Subcatch[j].snowpack    = NULL;
         Subcatch[j].lidArea     = 0.0;
@@ -1113,7 +1126,7 @@ void deleteObjects()
         }
         FREE(Subcatch[j].landFactor);
         FREE(Subcatch[j].groundwater);
-		gwater_deleteFlowExpression(j);
+        gwater_deleteFlowExpression(j);
         FREE(Subcatch[j].snowpack);
     }
 
@@ -1142,7 +1155,7 @@ void deleteObjects()
     {
         FREE(Link[j].oldQual);
         FREE(Link[j].newQual);
-	    FREE(Link[j].totalLoad);
+        FREE(Link[j].totalLoad);
     }
 
     // --- free memory used for rainfall infiltration
@@ -1212,6 +1225,7 @@ void deleteObjects()
     FREE(UnitHyd);
     FREE(Snowmelt);
     FREE(Shape);
+    FREE(Event);                                                               //(5.1.011)
 }
 
 //=============================================================================
@@ -1226,8 +1240,8 @@ void createHashTables()
     MemPoolAllocated = FALSE;
     for (j = 0; j < MAX_OBJ_TYPES ; j++)
     {
-         Htable[j] = HTcreate();
-         if ( Htable[j] == NULL ) report_writeErrorMsg(ERR_MEMORY, "");
+        Htable[j] = HTcreate();
+        if ( Htable[j] == NULL ) report_writeErrorMsg(ERR_MEMORY, "");
     }
 
     // --- initialize memory pool used to store object ID's

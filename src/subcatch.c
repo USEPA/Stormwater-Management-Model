@@ -8,6 +8,7 @@
 //             03/19/15  (Build 5.1.008)
 //             04/30/15  (Build 5.1.009)
 //             08/05/15  (Build 5.1.010)
+//             08/01/16  (Build 5.1.011)
 //   Author:   L. Rossman
 //
 //   Subcatchment runoff functions.
@@ -27,6 +28,9 @@
 //   Build 5.1.010:
 //   - Fixed a bug introduced in 5.1.008 that forgot to include LID
 //     exfiltration as inflow sent to GW routine.
+//
+//   Build 5.1.011:
+//   - Subcatchment percent imperviousness not allowed to exceed 100.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -162,7 +166,7 @@ int  subcatch_readParams(int j, char* tok[], int ntoks)
     Subcatch[j].outNode     = (int)x[1];
     Subcatch[j].outSubcatch = (int)x[2];
     Subcatch[j].area        = x[3] / UCF(LANDAREA);
-    Subcatch[j].fracImperv  = x[4] / 100.0;
+    Subcatch[j].fracImperv  = MIN(x[4], 100.0) / 100.0;                        //(5.1.011)
     Subcatch[j].width       = x[5] / UCF(LENGTH);
     Subcatch[j].slope       = x[6] / 100.0;
     Subcatch[j].curbLength  = x[7];
@@ -381,6 +385,11 @@ void  subcatch_validate(int j)
              area = Subcatch[j].fracImperv * nonLidArea;
         }
         Subcatch[j].subArea[i].alpha = 0.0;
+
+////  Possible change to how sub-area width should be assigned.  ////
+////        area = nonLidArea;                                                     //(5.1.011)
+/////////////////////////////////////////////////////////////////////
+
         if ( area > 0.0 && Subcatch[j].subArea[i].N > 0.0 )
         {
             Subcatch[j].subArea[i].alpha = MCOEFF * Subcatch[j].width / area *

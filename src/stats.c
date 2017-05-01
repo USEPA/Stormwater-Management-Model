@@ -6,6 +6,7 @@
 //   Date:     03/20/14   (Build 5.1.001)
 //             09/15/14   (Build 5.1.007)
 //             03/19/15   (Build 5.1.008)
+//             08/01/16   (Build 5.1.011)
 //   Author:   L. Rossman (EPA)
 //             R. Dickinson (CDM)
 //
@@ -19,6 +20,10 @@
 //   - Support for updating maximum reported nodal depths added.
 //   - OpenMP parallelization applied to updating node and link flow statistics.
 //   - Updating of time that conduit is upstrm/dnstrm full was modified.
+//
+//   Build 5.1.011:
+//   - Surcharging is now evaluated only under dynamic wave flow routing and
+//     storage nodes cannot be classified as surcharged.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -495,7 +500,11 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
                 MAX(NodeStats[j].maxPondedVol,
                     (newVolume - Node[j].fullVolume));
         }
-        if ( newDepth + Node[j].invertElev + FUDGE >= Node[j].crownElev )
+
+        // --- for dynamic wave routing, classify a non-storage node as        //(5.1.011)
+        //     surcharged if its water level exceeds its crown elev.           //(5.1.011)
+        if ( RouteModel == DW && Node[j].type != STORAGE &&                    //(5.1.011)
+             newDepth + Node[j].invertElev + FUDGE >= Node[j].crownElev )
         {
             NodeStats[j].timeSurcharged += tStep;
         }

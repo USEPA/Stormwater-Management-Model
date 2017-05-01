@@ -7,6 +7,7 @@
 //             03/28/14   (5.1.002)
 //             09/15/14   (5.1.007)
 //             03/19/15   (5.1.008)
+//             08/01/16   (5.1.011)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -32,6 +33,10 @@
 //   - Node crown elevations found here instead of in flowrout.c module.
 //   - OpenMP use to parallelize findLinkFlows() & findNodeDepths().
 //   - Bug in finding complete list of capacity limited links fixed.
+//
+//   Build 5.1.011:
+//   - Added test for failed memory allocation.
+//   - Fixed illegal array index bug for Ideal Pumps.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -114,6 +119,15 @@ void dynwave_init()
 
     VariableStep = 0.0;
     Xnode = (TXnode *) calloc(Nobjects[NODE], sizeof(TXnode));
+
+////  Added to release 5.1.011.  ////                                          //(5.1.011)
+    if ( Xnode == NULL )
+    {
+        report_writeErrorMsg(ERR_MEMORY,
+            " Not enough memory for dynamic wave routing.");
+        return;
+    }
+//////////////////////////////////////
 
     // --- initialize node surface areas & crown elev.
     for (i = 0; i < Nobjects[NODE]; i++ )
@@ -221,9 +235,9 @@ int dynwave_execute(double tStep)
     while ( Steps < MaxTrials )
     {
         // --- execute a routing step & check for nodal convergence
-	    initNodeStates();
-	    findLinkFlows(tStep);
-	    converged = findNodeDepths(tStep);
+        initNodeStates();
+        findLinkFlows(tStep);
+        converged = findNodeDepths(tStep);
         Steps++;
         if ( Steps > 1 )
         {
@@ -371,7 +385,7 @@ void findLinkFlows(double dt)
     // --- update inflow/outflows for nodes attached to non-dummy conduits
     for ( i = 0; i < Nobjects[LINK]; i++)
     {
-	    if ( isTrueConduit(i) ) updateNodeFlows(i);
+        if ( isTrueConduit(i) ) updateNodeFlows(i);
     }
 
     // --- find new flows for all dummy conduits, pumps & regulators
@@ -487,7 +501,7 @@ void  findNonConduitSurfArea(int i)
         Link[i].surfArea1 = Orifice[Link[i].subIndex].surfArea / 2.;
     }
 
-	// --- no surface area for weirs to maintain SWMM 4 compatibility
+    // --- no surface area for weirs to maintain SWMM 4 compatibility
 /*
     else if ( Link[i].type == WEIR )
     {
@@ -513,7 +527,7 @@ void updateNodeFlows(int i)
 //  Purpose: updates cumulative inflow & outflow at link's end nodes.
 //
 {
-    int    k, m;
+    int    k;                                                                  //(5.1.011)
     int    barrels = 1;
     int    n1 = Link[i].node1;
     int    n2 = Link[i].node2;
@@ -549,8 +563,7 @@ void updateNodeFlows(int i)
     if ( Link[i].type == PUMP )
     {
         k = Link[i].subIndex;
-        m = Pump[k].pumpCurve;
-        if ( Curve[m].curveType != PUMP4_CURVE )
+        if ( Pump[k].type != TYPE4_PUMP )                                      //(5.1.011)
         {
             Xnode[n2].sumdqdh += Link[i].dqdh;
         }
@@ -793,7 +806,7 @@ double getLinkStep(double tMin, int *minLink)
     {
         if ( Link[i].type == CONDUIT )
         {
-           // --- skip conduits with negligible flow, area or Fr
+            // --- skip conduits with negligible flow, area or Fr
             k = Link[i].subIndex;
             q = fabs(Link[i].newFlow) / Conduit[k].barrels;
             if ( q <= 0.05 * Link[i].qFull

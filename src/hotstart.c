@@ -7,6 +7,7 @@
 //             03/28/14  (Build 5.1.002)
 //             04/23/14  (Build 5.1.005)
 //             03/19/15  (Build 5.1.008)
+//             08/01/16  (Build 5.1.011)
 //   Author:   L. Rossman (EPA)
 //
 //   Hot Start file functions.
@@ -31,7 +32,10 @@
 //   - Storage node hydraulic residence time (HRT) was added to the file.
 //   - Link control settings are now applied when reading a hot start file.
 //   - Runoff read from file assigned to newRunoff property instead of oldRunoff.
-//   - Array indexing bug when reading snowpack state from file fixed. 
+//   - Array indexing bug when reading snowpack state from file fixed.
+//
+//   Build 5.1.011:
+//   - Link control setting bug when reading a hot start file fixed.    
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -347,18 +351,18 @@ void readRouting()
         Link[i].newDepth = x;
         if ( !readFloat(&x, f) ) return;
         Link[i].setting = x;
-        for (j = 0; j < Nobjects[POLLUT]; j++)
-        {
-            if ( !readFloat(&x, f) ) return;
-            Link[i].newQual[j] = x;
-        }
 
-////  New code added to release 5.1.008.  ////                                 //(5.1.008)
+////  Following code section moved to here.  ////                              //(5.1.011)
         // --- set link's target setting to saved setting 
         Link[i].targetSetting = x;
         link_setTargetSetting(i);
         link_setSetting(i, 0.0);
 ////
+        for (j = 0; j < Nobjects[POLLUT]; j++)
+        {
+            if ( !readFloat(&x, f) ) return;
+            Link[i].newQual[j] = x;
+        }
 
     }
 }

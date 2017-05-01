@@ -7,6 +7,7 @@
 //            04/14/14  (Build 5.1.004)
 //            09/15/14  (Build 5.1.007)
 //            03/19/15  (Build 5.1.008)
+//            08/01/16  (Build 5.1.011)
 //   Author:  L. Rossman
 //
 //   Global Variables
@@ -21,6 +22,11 @@
 //   - Number of parallel threads for dynamic wave routing added.
 //   - Minimum dynamic wave routing variable time step added.
 //
+//   Build 5.1.011:
+//   - Changed WarningCode to Warnings (# warnings issued)
+//   - Added error message text as a variable. 
+//   - Added elapsed simulation time (in decimal days) variable.
+//   - Added variables associated with detailed routing events.
 //-----------------------------------------------------------------------------
 
 EXTERN TFile
@@ -43,6 +49,7 @@ EXTERN long
 
 EXTERN char
                   Msg[MAXMSG+1],            // Text of output message
+                  ErrorMsg[MAXMSG+1],       // Text of error message           //(5.1.011)
                   Title[MAXTITLE][MAXMSG+1],// Project title
                   TempDir[MAXFNAME+1];      // Temporary file directory
 
@@ -72,14 +79,16 @@ EXTERN int
                   IgnoreRouting,            // Ignore flow routing
                   IgnoreQuality,            // Ignore water quality
                   ErrorCode,                // Error code number
-                  WarningCode,              // Warning code number
+                  Warnings,                 // Number of warning messages      //(5.1.011)
                   WetStep,                  // Runoff wet time step (sec)
                   DryStep,                  // Runoff dry time step (sec)
                   ReportStep,               // Reporting time step (sec)
                   SweepStart,               // Day of year when sweeping starts
                   SweepEnd,                 // Day of year when sweeping ends
                   MaxTrials,                // Max. trials for DW routing
-                  NumThreads;               // Number of parallel threads used //(5.1.008)
+                  NumThreads,               // Number of parallel threads used //(5.1.008)
+                  NumEvents,                // Number of detailed events       //(5.1.011)
+                  InSteadyState;            // System flows remain constant    //(5.1.011)
 
 EXTERN double
                   RouteStep,                // Routing time step (sec)
@@ -114,7 +123,8 @@ EXTERN double
                   NewRunoffTime,            // Current runoff time (msec)
                   OldRoutingTime,           // Previous routing time (msec)
                   NewRoutingTime,           // Current routing time (msec)
-                  TotalDuration;            // Simulation duration (msec)
+                  TotalDuration,            // Simulation duration (msec)
+                  ElapsedTime;              // Current elapsed time (days)     //(5.1.011)
 
 EXTERN TTemp      Temp;                     // Temperature data
 EXTERN TEvap      Evap;                     // Evaporation data
@@ -144,3 +154,4 @@ EXTERN TTable*    Curve;                    // Array of curve tables
 EXTERN TTable*    Tseries;                  // Array of time series tables
 EXTERN TTransect* Transect;                 // Array of transect data
 EXTERN TShape*    Shape;                    // Array of custom conduit shapes
+EXTERN TEvent*    Event;                    // Array of routing events         //(5.1.011)

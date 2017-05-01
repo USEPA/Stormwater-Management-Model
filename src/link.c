@@ -7,6 +7,7 @@
 //             09/15/14   (Build 5.1.007)
 //             03/19/15   (Build 5.1.008)
 //             08/05/15   (Build 5.1.010)
+//             08/01/16   (Build 5.1.011)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -21,10 +22,16 @@
 //   - Monthly conductivity adjustment applied to conduit seepage.
 //   - Conduit seepage limited by conduit's flow rate.
 //
-//  Build 5.1.010:
-//  - Support added for new ROADWAY_WEIR object.
-//  - Time of last setting change initialized for links.
+//   Build 5.1.010:
+//   - Support added for new ROADWAY_WEIR object.
+//   - Time of last setting change initialized for links.
 //
+//   Build 5.1.011:
+//   - Crest elevation of regulator links raised to downstream invert.
+//   - Fixed converting roadWidth weir parameter to internal units.
+//   - Weir shape parameter deprecated.
+//   - Extra geometric parameters ignored for non-conduit open rectangular
+//     cross sections.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -189,6 +196,15 @@ int link_readXsectParams(char* tok[], int ntoks)
             if ( !getDouble(tok[i], &x[i-2]) )
                 return error_setInpError(ERR_NUMBER, tok[i]);
         }
+
+////  Following code segment added to release 5.1.011.  ////                   //(5.1.011)
+        // --- ignore extra parameters for non-conduit open rectangular shapes 
+        if ( Link[j].type != CONDUIT && k == RECT_OPEN )
+        {
+            x[2] = 0.0;
+            x[3] = 0.0;
+        }
+////
         if ( !xsect_setParams(&Link[j].xsect, k, x, UCF(LENGTH)) )
         {
             return error_setInpError(ERR_NUMBER, "");
@@ -326,9 +342,9 @@ void  link_setParams(int j, int type, int n1, int n2, int k, double x[])
         Weir[k].endCon       = x[4];
         Weir[k].cDisch2      = x[5];
         Weir[k].canSurcharge = (int)x[6];                                      //(5.1.007)
-        Weir[k].roadWidth    = x[7];                                           //(5.1.010)
+        Weir[k].roadWidth    = x[7] / UCF(LENGTH);                             //(5.1.011)
         Weir[k].roadSurface  = (int)x[8];                                      //(5.1.010)
-        Weir[k].shape        = -(int)x[9];                                     //(5.1.010)
+//      Weir[k].shape        = -(int)x[9];  //DELETED//                        //(5.1.011)
         break;
 
       case OUTLET:
@@ -374,8 +390,12 @@ void  link_validate(int j)
       case OUTLET:
           if ( Node[Link[j].node1].invertElev + Link[j].offset1 <
                Node[Link[j].node2].invertElev )
-               report_writeWarningMsg(WARN10, Link[j].ID);
-    }
+          {
+              Link[j].offset1 = Node[Link[j].node2].invertElev -               //(5.1.011)
+                                Node[Link[j].node1].invertElev;                //(5.1.011)
+              report_writeWarningMsg(WARN10, Link[j].ID);
+          }
+    }    
 
     // --- force max. depth of end nodes to be >= link crown height
     //     at non-storage nodes

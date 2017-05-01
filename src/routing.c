@@ -7,6 +7,7 @@
 //             09/15/14  (Build 5.1.007)
 //             04/02/15  (Build 5.1.008)
 //             08/05/15  (Build 5.1.010)
+//             08/01/16  (Build 5.1.011)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -28,6 +29,9 @@
 //   Build 5.1.010:
 //   - Time when a link's setting is changed is recorded.
 //
+//   Build 5.1.011:
+//   - Support added for limiting flow routing to specific events.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -42,6 +46,7 @@
 // Shared variables
 //-----------------------------------------------------------------------------
 static int* SortedLinks;
+static int  NextEvent;                                                         //(5.1.011)
 
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
@@ -65,6 +70,7 @@ static void removeStorageLosses(double tStep);
 static void removeConduitLosses(void);
 static void removeOutflows(double tStep);                                      //(5.1.008)
 static int  inflowHasChanged(void);
+static void sortEvents(void);                                                  //(5.1.011)
 
 //=============================================================================
 
@@ -99,6 +105,10 @@ int routing_open()
     flowrout_init(RouteModel);                                                 //(5.1.008)
     if ( Fhotstart1.mode == NO_FILE ) qualrout_init();                         //(5.1.008)
 
+    // --- initialize routing events                                           //(5.1.011)
+    if ( NumEvents > 0 ) sortEvents();                                         //(5.1.011)
+    NextEvent = 0;                                                             //(5.1.011)
+    InSteadyState = (NumEvents > 0);                                           //(5.1.011)
     return ErrorCode;
 }
 
@@ -122,6 +132,8 @@ void routing_close(int routingModel)
 
 //=============================================================================
 
+////  This function was re-written for release 5.1.011.  ////                  //(5.1.011)
+
 double routing_getRoutingStep(int routingModel, double fixedStep)
 //
 //  Input:   routingModel = routing method code
@@ -130,8 +142,29 @@ double routing_getRoutingStep(int routingModel, double fixedStep)
 //  Purpose: determines time step used for flow routing at current time period.
 //
 {
+    double date1, date2, nextTime;
+
     if ( Nobjects[LINK] == 0 ) return fixedStep;
-    else return flowrout_getRoutingStep(routingModel, fixedStep);
+
+    // --- find largest step possible if between routing events
+    if ( NumEvents > 0 && InSteadyState )
+    {
+        nextTime = MIN(NewRunoffTime, ReportTime);
+        date1 = getDateTime(NewRoutingTime);
+        date2 = getDateTime(nextTime);
+        if ( date2 > date1 && date2 < Event[NextEvent].start )
+        {
+            return (nextTime - NewRoutingTime) / 1000.0;
+        }
+        else
+        {
+            date1 = getDateTime(NewRoutingTime + 1000.0 * fixedStep);
+            if ( date1 < Event[NextEvent].start ) return fixedStep;
+        }
+    }
+
+    // --- otherwise use a regular flow-routing based time step
+    return flowrout_getRoutingStep(routingModel, fixedStep); 
 }
 
 //=============================================================================
@@ -147,7 +180,7 @@ void routing_execute(int routingModel, double routingStep)
     int      j;
     int      stepCount = 1;
     int      actionCount = 0;
-    int      inSteadyState = FALSE;
+//  int      inSteadyState = FALSE;  //Deleted                                 //(5.1.011)
     DateTime currentDate;
     double   stepFlowError;
 
@@ -156,20 +189,31 @@ void routing_execute(int routingModel, double routingStep)
     if ( ErrorCode ) return;
     massbal_updateRoutingTotals(routingStep/2.);
 
-    // --- evaluate control rules at current date and elapsed time
-    currentDate = getDateTime(NewRoutingTime);
+////  Following code block modified for release 5.1.011.  ////                 //(5.1.011)
+    // --- find new link target settings that are not related to
+    // --- control rules (e.g., pump on/off depth limits)
     for (j=0; j<Nobjects[LINK]; j++) link_setTargetSetting(j);
+
+    // --- find new target settings due to control rules
+    currentDate = getDateTime(NewRoutingTime);
     controls_evaluate(currentDate, currentDate - StartDateTime,
                       routingStep/SECperDAY);
+
+    // --- change each link's actual setting if it differs from its target
     for (j=0; j<Nobjects[LINK]; j++)
     {
         if ( Link[j].targetSetting != Link[j].setting )
         {
-            Link[j].timeLastSet = currentDate;                                 //(5.1.010)
+            // --- update time when link was switched between open & closed
+            if ( Link[j].targetSetting * Link[j].setting == 0.0 )
+                Link[j].timeLastSet = currentDate;
+
+            // --- implement the change in the link's setting
             link_setSetting(j, routingStep);
             actionCount++;
         } 
     }
+////
 
     // --- update value of elapsed routing time (in milliseconds)
     OldRoutingTime = NewRoutingTime;
@@ -187,33 +231,57 @@ void routing_execute(int routingModel, double routingStep)
         for (j=0; j<Nobjects[LINK]; j++) link_setOldQualState(j);
     }
 
-    // --- add lateral inflows and evap/seepage losses at nodes                //(5.1.007)
+////  Following code block modified for release 5.1.011.  ////                 //(5.1.011)
+    // --- initialize lateral inflows at nodes
     for (j = 0; j < Nobjects[NODE]; j++)
     {
         Node[j].oldLatFlow  = Node[j].newLatFlow;
         Node[j].newLatFlow  = 0.0;
-        Node[j].losses      = node_getLosses(j, routingStep);                  //(5.1.007)
     }
-    addExternalInflows(currentDate);
-    addDryWeatherInflows(currentDate);
-    addWetWeatherInflows(OldRoutingTime);                                      //(5.1.008)
-    addGroundwaterInflows(OldRoutingTime);                                     //(5.1.008)
-    addLidDrainInflows(OldRoutingTime);                                        //(5.1.008)
-    addRdiiInflows(currentDate);
-    addIfaceInflows(currentDate);
 
-    // --- check if can skip steady state periods
+    // --- check if can skip non-event periods
+    if ( NumEvents > 0 )
+    {
+        if ( currentDate > Event[NextEvent].end )
+        {
+            InSteadyState = TRUE;
+            NextEvent++;
+        }
+        else if ( currentDate >= Event[NextEvent].start && InSteadyState == TRUE )
+        {
+            InSteadyState = FALSE;
+        }
+    }
+
+    // --- add lateral inflows and evap/seepage losses at nodes                //(5.1.007)
+    if ( InSteadyState == FALSE )
+    {
+        for (j = 0; j < Nobjects[NODE]; j++)
+        {
+            Node[j].losses = node_getLosses(j, routingStep); 
+        }
+        addExternalInflows(currentDate);
+        addDryWeatherInflows(currentDate);
+        addWetWeatherInflows(OldRoutingTime);                                  //(5.1.008)
+        addGroundwaterInflows(OldRoutingTime);                                 //(5.1.008)
+        addLidDrainInflows(OldRoutingTime);                                    //(5.1.008)
+        addRdiiInflows(currentDate);
+        addIfaceInflows(currentDate);
+    }
+////
+
+    // --- check if can skip steady state periods based on flows               //(5.1.011)
     if ( SkipSteadyState )
     {
         if ( OldRoutingTime == 0.0
         ||   actionCount > 0
         ||   fabs(stepFlowError) > SysFlowTol
-        ||   inflowHasChanged() ) inSteadyState = FALSE;
-        else inSteadyState = TRUE;
+        ||   inflowHasChanged() ) InSteadyState = FALSE;                       //(5.1.011)
+        else InSteadyState = TRUE;                                             //(5.1.011)
     }
 
     // --- find new hydraulic state if system has changed
-    if ( inSteadyState == FALSE )
+    if ( InSteadyState == FALSE )                                              //(5.1.011)
     {
         // --- replace old hydraulic state values with current ones
         for (j = 0; j < Nobjects[LINK]; j++) link_setOldHydState(j);
@@ -249,7 +317,7 @@ void routing_execute(int routingModel, double routingStep)
     if ( RptFlags.flowStats && Nobjects[LINK] > 0 )
     {
         stats_updateFlowStats(routingStep, getDateTime(NewRoutingTime),        //(5.1.008)
-                              stepCount, inSteadyState);
+                              stepCount, InSteadyState);                       //(5.1.011)
     }
 }
 
@@ -748,6 +816,41 @@ void removeOutflows(double tStep)
             }
         }
 
+    }
+}
+
+//=============================================================================
+
+////  New function added for release 5.1.011.  ////                            //(5.1.011)
+
+void sortEvents()
+//
+//  Input:   none
+//  Output:  none
+//  Purpose: sorts the entries of the Event array in chronological order.
+//
+{
+    int i, j;
+    TEvent temp;
+
+    // Apply simple exchange sort to event list
+    for (i = 0; i < NumEvents-1; i++)
+    {
+        for (j = i+1; j < NumEvents; j++)
+        {
+            if ( Event[i].start > Event[j].start )
+            {
+                temp = Event[j];
+                Event[j] = Event[i];
+                Event[i] = temp;
+            }
+        }
+    }
+
+    // Adjust for overlapping events
+    for (i = 0; i < NumEvents-1; i++)
+    {
+        if ( Event[i].end > Event[i+1].start ) Event[i].end = Event[i+1].start;
     }
 }
 

@@ -8,6 +8,7 @@
 //            09/15/14  (Build 5.1.007)
 //            03/19/15  (Build 5.1.008)
 //            08/05/15  (Build 5.1.010)
+//            08/01/16  (Build 5.1.011)
 //   Author:  L. Rossman
 //
 //   Enumerated variables
@@ -27,6 +28,9 @@
 //   Build 5.1.010:
 //   - New ROADWAY_WEIR type of weir added.
 //   - Potential evapotranspiration (PET) added as a system output variable.
+//
+//   Build 5.1.011:
+//   - s_EVENT added to InputSectionType enumeration.
 //
 //-----------------------------------------------------------------------------
 
@@ -441,7 +445,7 @@ enum  CompatibilityType {
       s_COORDINATE,   s_VERTICES,     s_POLYGON,      s_LABEL,
       s_SYMBOL,       s_BACKDROP,     s_TAG,          s_PROFILE,
       s_MAP,          s_LID_CONTROL,  s_LID_USAGE,    s_GWF,                   //(5.1.007)
-      s_ADJUST};                                                               //(5.1.007)
+      s_ADJUST,       s_EVENT};                                                //(5.1.011)
 
  enum InputOptionType {
       FLOW_UNITS,        INFIL_MODEL,       ROUTE_MODEL, 

@@ -7,6 +7,7 @@
 //             09/15/14  (Build 5.1.007)
 //             04/02/15  (Build 5.1.008)
 //             08/05/15  (Build 5.1.010)
+//             08/01/16  (Build 5.1.011)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -25,6 +26,8 @@
 //   Build 5.1.010:
 //   - Remaining pollutant mass in "dry" elements now added to final storage.
 //
+//   Build 5.1.011
+//   - Final stored pollutant mass in links ignored for Steady Flow routing.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -1068,7 +1071,7 @@ double massbal_getStoredMass(int p)
         storedMass += Node[j].newVolume * Node[j].newQual[p];
 
     // --- get mass stored in links (except for Steady Flow routing)
-//    if ( RouteModel != SF )
+    if ( RouteModel != SF )                                                    //(5.1.011)
     {
         for (j = 0; j < Nobjects[LINK]; j++)
             storedMass += Link[j].newVolume * Link[j].newQual[p];
