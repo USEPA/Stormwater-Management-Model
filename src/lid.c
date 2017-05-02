@@ -10,6 +10,7 @@
 //             04/30/15   (Build 5.1.009)
 //             08/05/15   (Build 5.1.010)
 //             08/01/16   (Build 5.1.011)
+//             03/14/17   (Build 5.1.012)
 //   Author:   L. Rossman (US EPA)
 //
 //   This module handles all data processing involving LID (Low Impact
@@ -60,6 +61,9 @@
 //   - The top of the storage layer is no longer used as a limit for an
 //     underdrain offset thus allowing upturned drains to be modeled.
 //   - Column headings for the detailed LID report file were modified.
+//
+//   Build 5.1.012:
+//   - Redefined initialization of wasDry for LID reporting.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -1898,5 +1902,6 @@ void initLidRptFile(char* title, char* lidID, char* subcatchID, TLidUnit* lidUni
     for ( i = 1; i < colCount; i++) fprintf(f, "\t%s", line9);
 
     //... initialize LID dryness state
-    lidUnit->rptFile->wasDry = TRUE;
+    lidUnit->rptFile->wasDry = 1;                                              //(5.1.012)
+    strcpy(lidUnit->rptFile->results, "");                                     //(5.1.012)
 }

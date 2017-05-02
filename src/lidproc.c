@@ -10,6 +10,7 @@
 //             04/30/15   (Build 5.1.009)
 //             08/05/15   (Build 5.1.010)
 //             08/01/16   (Build 5.1.011)
+//             03/14/17   (Build 5.1.012)
 //   Author:   L. Rossman (US EPA)
 //
 //   This module computes the hydrologic performance of an LID (Low Impact
@@ -45,6 +46,12 @@
 //   - Flux rate routines for LIDs with underdrains modified to produce more
 //     physically meaningful results.
 //   - Reporting of detailed results re-written.
+//
+//   Build 5.1.012:
+//   - Modified upper limit for soil layer percolation.
+//   - Modified upper limit on surface infiltration into rain gardens.
+//   - Modified upper limit on drain flow for LIDs with storage layers.
+//   - Used re-defined wasDry variable for LID reports to fix duplicate lines.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -378,14 +385,15 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
     if ( SurfaceInflow  < MINFLOW &&
          SurfaceOutflow < MINFLOW &&
          StorageDrain   < MINFLOW &&
-         StorageExfil   < MINFLOW && 
-         totalEvap      < MINFLOW ) isDry = TRUE;
+         StorageExfil   < MINFLOW &&
+		 totalEvap      < MINFLOW
+       ) isDry = TRUE;
 
     //... update status of HasWetLids
     if ( !isDry ) HasWetLids = TRUE;
 
-    //... write results to LID report file if at a reporting time              //(5.1.011)
-    if ( lidUnit->rptFile && fabs(NewRunoffTime - ReportTime) < 10. )          //(5.1.011)
+    //... write results to LID report file                                     //(5.1.012)
+    if ( lidUnit->rptFile )                                                    //(5.1.012)
     {
         //... convert rate results to original units (in/hr or mm/hr)
         ucf = ucfRainfall;
@@ -406,11 +414,13 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
         rptVars[STOR_DEPTH] = theLidUnit->storageDepth*ucf;
 
         //... if the current LID state is wet but the previous state was dry
-        //    then write the saved previous results to the report file thus
-        //    marking the end of a dry period
-        if ( !isDry && theLidUnit->rptFile->wasDry )
+        //    for more than one period then write the saved previous results   //(5.1.012)
+        //    to the report file thus marking the end of a dry period          //(5.10012)
+        if ( !isDry && theLidUnit->rptFile->wasDry > 1)                        //(5.1.012)
+        {
             fprintf(theLidUnit->rptFile->file, "%s",
-            theLidUnit->rptFile->results);
+				  theLidUnit->rptFile->results);
+        }
 
         //... write the current results to a string which is saved between
         //    reporting periods
@@ -428,20 +438,25 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
         {
             //... if the previous state was wet then write the current
             //    results to file marking the start of a dry period
-            if ( !theLidUnit->rptFile->wasDry )
+            if ( theLidUnit->rptFile->wasDry == 0 )                            //(5.1.012)
             {
-                fprintf(theLidUnit->rptFile->file, "%s", theLidUnit->rptFile->results);
+                fprintf(theLidUnit->rptFile->file, "%s",
+					theLidUnit->rptFile->results);
             }
-            theLidUnit->rptFile->wasDry = TRUE;
+
+            //... increment the number of successive dry periods               //(5.1.012)
+            theLidUnit->rptFile->wasDry++;                                     //(5.1.012)
         }
 
         //... if the current LID state is wet
         else
-
         {
             //... write the current results to the report file
-            fprintf(theLidUnit->rptFile->file, "%s", theLidUnit->rptFile->results);
-            theLidUnit->rptFile->wasDry = FALSE;
+			fprintf(theLidUnit->rptFile->file, "%s",
+			    theLidUnit->rptFile->results);
+
+            //... re-set the number of successive dry periods to 0             //(5.1.012)
+            theLidUnit->rptFile->wasDry = 0;                                   //(5.1.012)
         }
     }
 }
@@ -518,7 +533,7 @@ void greenRoofFluxRates(double x[], double f[])
 
     //... limit perc rate by available water
     availVolume = (soilTheta - soilFieldCap) * soilThickness;
-    maxRate = SurfaceInfil - SoilEvap + MAX(availVolume, 0.0) / Tstep;
+    maxRate = MAX(availVolume, 0.0) / Tstep - SoilEvap;                        //(5.1.012)
     SoilPerc = MIN(SoilPerc, maxRate);
     SoilPerc = MAX(SoilPerc, 0.0);
 
@@ -542,8 +557,8 @@ void greenRoofFluxRates(double x[], double f[])
     else
     {
         //... limit drainmat outflow by available storage volume
-        maxRate = storageDepth * storageVoidFrac / Tstep +
-                  SoilPerc - StorageEvap;
+        maxRate = storageDepth * storageVoidFrac / Tstep - StorageEvap;        //(5.1.012)
+        if ( storageDepth >= storageThickness ) maxRate += SoilPerc;           //(5.1.012)
         maxRate = MAX(maxRate, 0.0);
         StorageDrain = MIN(StorageDrain, maxRate);
 
@@ -618,7 +633,7 @@ void biocellFluxRates(double x[], double f[])
 
     //... limit perc rate by available water
     availVolume =  (soilTheta - soilFieldCap) * soilThickness;
-    maxRate = SurfaceInfil - SoilEvap + MAX(availVolume, 0.0) / Tstep;
+    maxRate = MAX(availVolume, 0.0) / Tstep - SoilEvap;                        //(5.1.012)
     SoilPerc = MIN(SoilPerc, maxRate);
     SoilPerc = MAX(SoilPerc, 0.0);
 
@@ -640,7 +655,15 @@ void biocellFluxRates(double x[], double f[])
         maxRate = MIN(SoilPerc, StorageExfil);
         SoilPerc = maxRate;
         StorageExfil = maxRate;
-    }
+
+////  Following code segment added to release 5.1.012  ////                    //(5.1.012)
+        //... limit surface infil. by unused soil volume
+        maxRate = (soilPorosity - soilTheta) * soilThickness / Tstep +
+                  SoilPerc + SoilEvap;
+        SurfaceInfil = MIN(SurfaceInfil, maxRate);
+//////////////////////////////////////////////////////////
+
+	}
 
     //... storage & soil layers are full
     else if ( soilTheta >= soilPorosity && storageDepth >= storageThickness )
@@ -668,13 +691,14 @@ void biocellFluxRates(double x[], double f[])
     {
         //... limit storage exfiltration by available storage volume
         maxRate = SoilPerc - StorageEvap + storageDepth*storageVoidFrac/Tstep;
-        maxRate = MAX(maxRate, 0.0);
         StorageExfil = MIN(StorageExfil, maxRate);
+        StorageExfil = MAX(StorageExfil, 0.0);
 
         //... limit underdrain flow by volume above drain offset
         if ( StorageDrain > 0.0 )
         {
-            maxRate = SoilPerc - StorageExfil - StorageEvap;
+            maxRate = -StorageExfil - StorageEvap;                              //(5.1.012)
+            if ( storageDepth >= storageThickness) maxRate += SoilPerc;         //(5.1.012)
             if ( theLidProc->drain.offset <= storageDepth )
             {
                 maxRate += (storageDepth - theLidProc->drain.offset) *
@@ -766,14 +790,15 @@ void trenchFluxRates(double x[], double f[])
     StorageExfil = MIN(StorageExfil, maxRate);
     StorageExfil = MAX(StorageExfil, 0.0);
 
-    //... limit underdrain flow by available storage volume
+    //... limit underdrain flow by volume above drain offset
     if ( StorageDrain > 0.0 )
     {
-        maxRate = StorageInflow - StorageExfil - StorageEvap;
+        maxRate = -StorageExfil - StorageEvap;                                 //(5.1.012)
+        if (storageDepth >= storageThickness ) maxRate += StorageInflow;       //(5.1.012)
         if ( theLidProc->drain.offset <= storageDepth )
         {
             maxRate += (storageDepth - theLidProc->drain.offset) *
-                           storageVoidFrac/Tstep;
+                       storageVoidFrac/Tstep;
         }
         maxRate = MAX(maxRate, 0.0);
         StorageDrain = MIN(StorageDrain, maxRate);
@@ -869,7 +894,7 @@ void pavementFluxRates(double x[], double f[])
     {
         SoilPerc = getSoilPercRate(soilTheta);
         availVolume = (soilTheta - soilFieldCap) * soilThickness;
-        maxRate = PavePerc - SoilEvap + MAX(availVolume, 0.0) / Tstep;
+        maxRate = MAX(availVolume, 0.0) / Tstep - SoilEvap;                    //(5.1.012)
         SoilPerc = MIN(SoilPerc, maxRate);
         SoilPerc = MAX(SoilPerc, 0.0);
     }
@@ -982,8 +1007,9 @@ void pavementFluxRates(double x[], double f[])
         //... limit underdrain flow by volume above drain offset
         if ( StorageDrain > 0.0 )
         {
-            maxRate = SoilPerc - StorageExfil - StorageEvap;
-            if ( theLidProc->drain.offset <= storageDepth )
+            maxRate = -StorageExfil - StorageEvap;                             //(5.1.012)
+            if (storageDepth >= storageThickness ) maxRate += SoilPerc;        //(5.1.012)
+            if ( theLidProc->drain.offset <= storageDepth ) 
             {
                 maxRate += (storageDepth - theLidProc->drain.offset) *
                            storageVoidFrac/Tstep;

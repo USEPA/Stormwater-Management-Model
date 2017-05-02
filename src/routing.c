@@ -8,6 +8,7 @@
 //             04/02/15  (Build 5.1.008)
 //             08/05/15  (Build 5.1.010)
 //             08/01/16  (Build 5.1.011)
+//             03/14/17  (Build 5.1.012)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -32,6 +33,10 @@
 //   Build 5.1.011:
 //   - Support added for limiting flow routing to specific events.
 //
+//   Build 5.1.012:
+//   - routing_execute() was re-written so that Routing Events and
+//     Skip Steady Flow options work together correctly.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -47,6 +52,7 @@
 //-----------------------------------------------------------------------------
 static int* SortedLinks;
 static int  NextEvent;                                                         //(5.1.011)
+static int  BetweenEvents;                                                     //(5.1.012)
 
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
@@ -108,7 +114,8 @@ int routing_open()
     // --- initialize routing events                                           //(5.1.011)
     if ( NumEvents > 0 ) sortEvents();                                         //(5.1.011)
     NextEvent = 0;                                                             //(5.1.011)
-    InSteadyState = (NumEvents > 0);                                           //(5.1.011)
+    //InSteadyState = (NumEvents > 0);                                         //(5.1.012)
+    BetweenEvents = (NumEvents > 0);                                           //(5.1.012)
     return ErrorCode;
 }
 
@@ -147,7 +154,7 @@ double routing_getRoutingStep(int routingModel, double fixedStep)
     if ( Nobjects[LINK] == 0 ) return fixedStep;
 
     // --- find largest step possible if between routing events
-    if ( NumEvents > 0 && InSteadyState )
+    if ( NumEvents > 0 && BetweenEvents )                                      //(5.1.012)
     {
         nextTime = MIN(NewRunoffTime, ReportTime);
         date1 = getDateTime(NewRoutingTime);
@@ -169,6 +176,8 @@ double routing_getRoutingStep(int routingModel, double fixedStep)
 
 //=============================================================================
 
+////  This function was re-written for release 5.1.012.  ////                  //(5.1.012)
+
 void routing_execute(int routingModel, double routingStep)
 //
 //  Input:   routingModel = routing method code
@@ -180,7 +189,7 @@ void routing_execute(int routingModel, double routingStep)
     int      j;
     int      stepCount = 1;
     int      actionCount = 0;
-//  int      inSteadyState = FALSE;  //Deleted                                 //(5.1.011)
+    int      inSteadyState = FALSE;
     DateTime currentDate;
     double   stepFlowError;
 
@@ -189,7 +198,6 @@ void routing_execute(int routingModel, double routingStep)
     if ( ErrorCode ) return;
     massbal_updateRoutingTotals(routingStep/2.);
 
-////  Following code block modified for release 5.1.011.  ////                 //(5.1.011)
     // --- find new link target settings that are not related to
     // --- control rules (e.g., pump on/off depth limits)
     for (j=0; j<Nobjects[LINK]; j++) link_setTargetSetting(j);
@@ -213,12 +221,10 @@ void routing_execute(int routingModel, double routingStep)
             actionCount++;
         } 
     }
-////
 
     // --- update value of elapsed routing time (in milliseconds)
     OldRoutingTime = NewRoutingTime;
     NewRoutingTime = NewRoutingTime + 1000.0 * routingStep;
-//    currentDate = getDateTime(NewRoutingTime);   //Deleted                   //(5.1.008)             
 
     // --- initialize mass balance totals for time step
     stepFlowError = massbal_getStepFlowError();
@@ -231,7 +237,6 @@ void routing_execute(int routingModel, double routingStep)
         for (j=0; j<Nobjects[LINK]; j++) link_setOldQualState(j);
     }
 
-////  Following code block modified for release 5.1.011.  ////                 //(5.1.011)
     // --- initialize lateral inflows at nodes
     for (j = 0; j < Nobjects[NODE]; j++)
     {
@@ -244,70 +249,73 @@ void routing_execute(int routingModel, double routingStep)
     {
         if ( currentDate > Event[NextEvent].end )
         {
-            InSteadyState = TRUE;
+            BetweenEvents = TRUE;
             NextEvent++;
         }
-        else if ( currentDate >= Event[NextEvent].start && InSteadyState == TRUE )
+        else if ( currentDate >= Event[NextEvent].start && BetweenEvents == TRUE )
         {
-            InSteadyState = FALSE;
+			BetweenEvents = FALSE;
         }
     }
 
-    // --- add lateral inflows and evap/seepage losses at nodes                //(5.1.007)
-    if ( InSteadyState == FALSE )
+    // --- if not between routing events
+    if ( BetweenEvents == FALSE )
     {
+        // --- find evap. & seepage losses from storage nodes
         for (j = 0; j < Nobjects[NODE]; j++)
         {
             Node[j].losses = node_getLosses(j, routingStep); 
         }
+
+        // --- add lateral inflows and evap/seepage losses at nodes
         addExternalInflows(currentDate);
         addDryWeatherInflows(currentDate);
-        addWetWeatherInflows(OldRoutingTime);                                  //(5.1.008)
-        addGroundwaterInflows(OldRoutingTime);                                 //(5.1.008)
-        addLidDrainInflows(OldRoutingTime);                                    //(5.1.008)
+        addWetWeatherInflows(OldRoutingTime);
+        addGroundwaterInflows(OldRoutingTime);
+        addLidDrainInflows(OldRoutingTime);
         addRdiiInflows(currentDate);
         addIfaceInflows(currentDate);
-    }
-////
 
-    // --- check if can skip steady state periods based on flows               //(5.1.011)
-    if ( SkipSteadyState )
-    {
-        if ( OldRoutingTime == 0.0
-        ||   actionCount > 0
-        ||   fabs(stepFlowError) > SysFlowTol
-        ||   inflowHasChanged() ) InSteadyState = FALSE;                       //(5.1.011)
-        else InSteadyState = TRUE;                                             //(5.1.011)
-    }
-
-    // --- find new hydraulic state if system has changed
-    if ( InSteadyState == FALSE )                                              //(5.1.011)
-    {
-        // --- replace old hydraulic state values with current ones
-        for (j = 0; j < Nobjects[LINK]; j++) link_setOldHydState(j);
-        for (j = 0; j < Nobjects[NODE]; j++)
+        // --- check if can skip steady state periods based on flows
+        if ( SkipSteadyState )
         {
-            node_setOldHydState(j);
-            node_initInflow(j, routingStep);
+            if ( OldRoutingTime == 0.0
+            ||   actionCount > 0
+            ||   fabs(stepFlowError) > SysFlowTol
+            ||   inflowHasChanged() ) inSteadyState = FALSE;
+            else inSteadyState = TRUE;
         }
 
-        // --- route flow through the drainage network
-        if ( Nobjects[LINK] > 0 )
+        // --- find new hydraulic state if system has changed
+        if ( inSteadyState == FALSE )
         {
-            stepCount = flowrout_execute(SortedLinks, routingModel, routingStep);
+            // --- replace old hydraulic state values with current ones
+            for (j = 0; j < Nobjects[LINK]; j++) link_setOldHydState(j);
+            for (j = 0; j < Nobjects[NODE]; j++)
+            {
+                node_setOldHydState(j);
+                node_initInflow(j, routingStep);
+            }
+
+            // --- route flow through the drainage network
+            if ( Nobjects[LINK] > 0 )
+            {
+                stepCount = flowrout_execute(SortedLinks, routingModel, routingStep);
+            }
         }
-    }
 
-    // --- route quality through the drainage network
-    if ( Nobjects[POLLUT] > 0 && !IgnoreQuality ) 
-    {
-        qualrout_execute(routingStep);
-    }
+        // --- route quality through the drainage network
+        if ( Nobjects[POLLUT] > 0 && !IgnoreQuality ) 
+        {
+            qualrout_execute(routingStep);
+        }
 
-    // --- remove evaporation, infiltration & outflows from system
-    removeStorageLosses(routingStep);
-    removeConduitLosses();
-    removeOutflows(routingStep);                                               //(5.1.008)
+        // --- remove evaporation, infiltration & outflows from system
+        removeStorageLosses(routingStep);
+        removeConduitLosses();
+        removeOutflows(routingStep);
+    }
+    else inSteadyState = TRUE;
 	
     // --- update continuity with new totals
     //     applied over 1/2 of routing step
@@ -316,8 +324,8 @@ void routing_execute(int routingModel, double routingStep)
     // --- update summary statistics
     if ( RptFlags.flowStats && Nobjects[LINK] > 0 )
     {
-        stats_updateFlowStats(routingStep, getDateTime(NewRoutingTime),        //(5.1.008)
-                              stepCount, InSteadyState);                       //(5.1.011)
+        stats_updateFlowStats(routingStep, getDateTime(NewRoutingTime),
+                              stepCount, inSteadyState);
     }
 }
 

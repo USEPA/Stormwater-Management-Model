@@ -8,6 +8,7 @@
 //            09/15/14  (Build 5.1.007)
 //            03/19/15  (Build 5.1.008)
 //            08/01/16  (Build 5.1.011)
+//            03/14/17  (Build 5.1.012)
 //   Author:  L. Rossman
 //
 //   Global Variables
@@ -27,6 +28,9 @@
 //   - Added error message text as a variable. 
 //   - Added elapsed simulation time (in decimal days) variable.
 //   - Added variables associated with detailed routing events.
+//
+//   Build 5.1.012:
+//   - InSteadyState variable made local to routing_execute in routing.c.
 //-----------------------------------------------------------------------------
 
 EXTERN TFile
@@ -87,8 +91,8 @@ EXTERN int
                   SweepEnd,                 // Day of year when sweeping ends
                   MaxTrials,                // Max. trials for DW routing
                   NumThreads,               // Number of parallel threads used //(5.1.008)
-                  NumEvents,                // Number of detailed events       //(5.1.011)
-                  InSteadyState;            // System flows remain constant    //(5.1.011)
+                  NumEvents;                // Number of detailed events       //(5.1.011)
+                //InSteadyState;            // System flows remain constant    //(5.1.012)
 
 EXTERN double
                   RouteStep,                // Routing time step (sec)

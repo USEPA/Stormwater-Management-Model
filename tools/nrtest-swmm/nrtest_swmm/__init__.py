@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+'''
+Numerical regression testing (nrtest) plugin for comparing SWMM binary results 
+files and SWMM text based report files. 
+'''
 
 # system imports
 import itertools as it
@@ -7,8 +11,21 @@ import itertools as it
 import header_detail_footer as hdf
 import numpy as np
 
-# project import
+# project imports
 import swmm_reader as sr
+
+
+__author__ = "Michael Tryby"
+__copyright__ = "None"
+__credits__ = "Colleen Barr, Maurizio Cingi, Mark Gray, David Hall, Bryant McDonnell"
+__license__ = "CC0 1.0 Universal"
+
+__version__ = "0.2.0"
+__date__ = "September 20, 2016"
+
+__maintainer__ = "Michael Tryby"
+__email__ = "tryby.michael@epa.gov"
+__status  = "Development"
 
 
 def swmm_allclose_compare(path_test, path_ref, rtol, atol):
@@ -25,18 +42,6 @@ def swmm_allclose_compare(path_test, path_ref, rtol, atol):
     are checked to see if they are equal before being compared using the 
     allclose criteria. This reduces comparison times significantly. 
     
-    Allclose raises the question, "To what values should the relative and 
-    absolute tolerances be set?" In theory, this turns out to be a difficult 
-    question to answer. 
-    
-    The choice of the allclose critera itself implies a pragmatic approach to 
-    answering this question. In practice, the tolerances values should be 
-    selected based on the purpose for running the test. 
-    
-    Values selected to screen for unanticipated changes in results can be more 
-    stringent than those for engine development work that is likely to 
-    significantly change benchmark results.   
-    
     Arguments: 
         path_test - path to result file being tested
         path_ref  - path to reference result file
@@ -51,7 +56,8 @@ def swmm_allclose_compare(path_test, path_ref, rtol, atol):
         AssertionError()
         ...
     '''
-    for (test, ref) in it.izip(sr.reader(path_test), sr.reader(path_ref)):
+    for (test, ref) in it.izip(sr.swmm_output_generator(path_test), 
+                               sr.swmm_output_generator(path_ref)):
         
         if test.size != ref.size:
             raise ValueError('Inconsistent lengths')

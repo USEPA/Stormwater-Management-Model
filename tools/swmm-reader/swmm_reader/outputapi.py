@@ -3,11 +3,11 @@
 '''Wrapper for outputapi.h
 
 Generated with:
-C:\Users\mtryby\dev\Anaconda2\Scripts\ctypesgen.py -a -l libswmm-output -L C:\Users\mtryby\Workspace\GitRepo\Local\swmm-output\Release\ -o outputapi.py .\src\outputapi.h
+C:\Users\mtryby\dev\Anaconda2\Scripts\ctypesgen.py -a -l libswmm-output -o outputapi.py .\src\outputapi.h
 
 Do not modify this file ... 
 
-This file HAS been modified! Path to dll was add because dll search is broken on Winblows (See line 592)
+THIS FILE HAS BEEN MODIFIED! See WindowsLibraryLoader.genplatformpaths() starting on line 560
 '''
 
 __docformat__ =  'restructuredtext'
@@ -307,7 +307,7 @@ class _variadic_function(object):
 # End preamble
 
 _libs = {}
-_libdirs = ['C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-output\\Release\\']
+_libdirs = []
 
 # Begin loader
 
@@ -554,16 +554,31 @@ class WindowsLibraryLoader(LibraryLoader):
 
     def load(self, path):
         return _WindowsLibrary(path)
-
+    
+###############################################################################
+###### THIS NEEDS TO BE HAND CODED OR LIBRARY LOAD WILL BREAK ON WINDOWS ######
     def getplatformpaths(self, libname):
         if os.path.sep not in libname:
             for name in self.name_formats:
+                # search the directory where this file is executing
+                dll_in_package_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), name % libname)
+                if os.path.exists(dll_in_package_dir):
+                    yield dll_in_package_dir    
+                # search in directories passed as arguments to wrapper generator       
+                for dir in self.other_dirs:
+                    dll_in_other_dirs = os.path.join(dir, name % libname)
+                    if os.path.exists(dll_in_other_dirs):
+                        yield dll_in_other_dirs
+                # searches current working directory
                 dll_in_current_dir = os.path.abspath(name % libname)
                 if os.path.exists(dll_in_current_dir):
-                    yield dll_in_current_dir
+                    yield dll_in_current_dir    
+                # searches system path     
                 path = ctypes.util.find_library(name % libname)
                 if path:
                     yield path
+###############################################################################
+###############################################################################
 
 # Platform switching
 
@@ -590,12 +605,8 @@ del loaderclass
 add_library_search_dirs([])
 
 # Begin libraries
-###############################################################################
-###### THIS NEEDS TO BE HAND CODED OR LIBRARY LOAD WILL BREAK ON WINDOWS ######
-import site
-_libs["libswmm-output"] = load_library(site.getsitepackages()[1] + "\swmm_reader-0.2.0-py2.7.egg\swmm_reader\libswmm-output")
-###############################################################################
-###############################################################################
+
+_libs["libswmm-output"] = load_library("libswmm-output")
 
 # 1 libraries
 # End libraries

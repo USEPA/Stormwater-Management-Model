@@ -8,6 +8,7 @@
 //             04/02/15  (Build 5.1.008)
 //             08/05/15  (Build 5.1.010)
 //             08/01/16  (Build 5.1.011)
+//             03/14/17  (Build 5.1.012)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -26,8 +27,12 @@
 //   Build 5.1.010:
 //   - Remaining pollutant mass in "dry" elements now added to final storage.
 //
-//   Build 5.1.011
+//   Build 5.1.011:
 //   - Final stored pollutant mass in links ignored for Steady Flow routing.
+//
+//   Build 5.1.012:
+//   - Terminal storage nodes no longer treated as non-storage terminal
+//     nodes are when updating total outflow volume.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -640,7 +645,8 @@ void massbal_updateRoutingTotals(double tStep)
     for ( j = 0; j < Nobjects[NODE]; j++)
     {
         NodeInflow[j] += Node[j].inflow * tStep;
-        if ( Node[j].type == OUTFALL || Node[j].degree == 0 )
+        if ( Node[j].type == OUTFALL || 
+            (Node[j].degree == 0 && Node[j].type != STORAGE) )                 //(5.1.012)
         {
             NodeOutflow[j] += Node[j].inflow * tStep;
         }

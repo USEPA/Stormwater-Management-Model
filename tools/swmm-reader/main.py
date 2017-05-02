@@ -1,9 +1,14 @@
+# -*- coding: utf-8 -*-
+'''
+Provides entry point main. Useful for development and testing purposes. 
+'''
+
+import cStringIO
+import itertools as it
+import time
 
 import header_detail_footer as hdf
-import itertools as it
 import numpy as np
-import time
-import cStringIO
 
 import swmm_reader as sr
 
@@ -20,8 +25,8 @@ def result_compare(path_test, path_ref, comp_args):
     
     start = time.time()
     
-    test_reader = sr.reader(path_test)
-    ref_reader = sr.reader(path_ref)
+    test_reader = sr.swmm_output_generator(path_test)
+    ref_reader = sr.swmm_output_generator(path_ref)
     
     for test, ref in it.izip(test_reader, ref_reader):
         total += 1
@@ -37,7 +42,7 @@ def result_compare(path_test, path_ref, comp_args):
             continue
         else:
             try:
-                np.testing.assert_allclose(test, ref, 1.0e-06, 2*eps)
+                np.testing.assert_allclose(test, ref, comp_args[0], comp_args[1])
                 close += 1
                 
             except AssertionError as ae:
@@ -78,10 +83,11 @@ def report_compare(path_test, path_ref, (comp_args)):
 
 
 import logging    
-from nrtest.testsuite import TestSuite
-from nrtest.compare import compare_testsuite, validate_testsuite
 from os import listdir
 from os.path import exists, isfile, isdir, join
+
+from nrtest.testsuite import TestSuite
+from nrtest.compare import compare_testsuite, validate_testsuite
 from nrtest.execute import execute_testsuite
     
 def nrtest_compare(path_test, path_ref, rtol, atol): 
@@ -151,9 +157,9 @@ if __name__ == "__main__":
 #    path_test = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5111\\Example_4\\Example4.out"
 #    path_ref  = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5110\\Example_4\\Example4.out"    
 #    result_compare(path_test, path_ref, (0.001, 0.0))
-    
-    path_test = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5111_x64\\gate_control_3\\gate_control_3.out"
-    path_ref  = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5111_x86\\gate_control_3\\gate_control_3.out"
-    print(result_compare(path_test, path_ref, (0.0001, 0.0)))
+
+    path_test = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5111_bf\\lid_cat\\lid_cat.out"
+    path_ref  = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5110\\lid_cat\\lid_cat.out"
+    print(result_compare(path_test, path_ref, (1.0, 0.0)))
 
     

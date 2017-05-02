@@ -2,7 +2,8 @@
 * outputAPI.c
 *
 *      Author: Colleen Barr
-*      Modified by: Michael E. Tryby
+*      Modified by: Michael E. Tryby,
+*                   Bryant McDonnell
 *
 *
 */
@@ -197,14 +198,13 @@ int DLLEXPORT SMO_getUnits(SMOutputAPI* smoapi, SMO_unit code, int* unitFlag)
 //
 //   Purpose: Returns flow rate units.
 //
-//	 Note:    Concentration units are located after the pollutant ID names and before the object properties start,
-//			  and can differ for each pollutant.  They're stored as 4-byte integers with the following codes:
-//		          0: mg/L
-//				  1: ug/L
-//				  2: counts/L
-//		      Probably the best way to do this would not be here -- instead write a function that takes
-//	          NPolluts and ObjPropPos, jump to ObjPropPos, count backward (NPolluts * 4), then read forward
-//			  to get the units for each pollutant
+//   Returns:
+//            0: CFS  (cubic feet per second)
+//            1: GPM  (gallons per minute)
+//            2: MGD  (million gallons per day)
+//            3: CMS  (cubic meters per second)
+//            4: LPS  (liters per second)
+//            5: MLD  (million liters per day)
 //
 {
 	int errorcode = 0;
@@ -226,6 +226,33 @@ int DLLEXPORT SMO_getUnits(SMOutputAPI* smoapi, SMO_unit code, int* unitFlag)
 
 	return errorcode;
 }
+
+
+int DLLEXPORT SMO_getPollutantUnits(SMOutputAPI* smoapi, int pollutantIndex, int* unitFlag)
+//
+//   Purpose: Return integer flag representing the units that the given pollutant is measured in.
+//	          Concentration units are located after the pollutant ID names and before the object properties start,
+//			  and are stored for each pollutant.  They're stored as 4-byte integers with the following codes:
+//		          0: mg/L
+//				  1: ug/L
+//				  2: count/L
+//
+//   pollutantIndex: valid values are 0 to Npolluts-1
+{
+	int errorcode = 0;
+    if (smoapi == NULL) errorcode = 410;
+    else if (smoapi->file == NULL) errorcode = 411;
+	else if (pollutantIndex < 0 || pollutantIndex >= smoapi->Npolluts) errorcode = 423;
+    else
+    {
+        int offset = smoapi->ObjPropPos - (smoapi->Npolluts - pollutantIndex) * RECORDSIZE;
+        fseek(smoapi->file, offset, SEEK_SET);
+        fread(unitFlag, RECORDSIZE, 1, smoapi->file);
+    }
+
+	return errorcode;
+}
+
 
 int DLLEXPORT SMO_getStartTime(SMOutputAPI* smoapi, double* time)
 //

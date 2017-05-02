@@ -7,6 +7,7 @@
 //             09/15/14   (Build 5.1.007)
 //             03/19/15   (Build 5.1.008)
 //             08/01/16   (Build 5.1.011)
+//             03/14/17   (Build 5.1.012)
 //   Author:   L. Rossman
 //             M. Tryby
 //
@@ -25,6 +26,9 @@
 //   Build 5.1.011:
 //   - Runoff wet time step kept aligned with reporting times.
 //   - Prior runoff time step used to convert returned outfall volume to flow.
+//
+//   Build 5.1.012:
+//   - Runoff wet time step no longer kept aligned with reporting times.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -310,14 +314,11 @@ double runoff_getTimeStep(DateTime currentDate)
         if ( timeStep > 0 && timeStep < maxStep ) maxStep = timeStep;
     }
 
-////  Following code segment modified for release 5.1.011.  ////               //(5.1.011)
+////  Following code segment modified for release 5.1.012.  ////               //(5.1.012)
     // --- determine whether wet or dry time step applies
     if ( IsRaining || HasSnow || HasRunoff || HasWetLids )
     {
-        // --- when wet stay aligned with report time
-        timeStep = datetime_timeDiff(getDateTime(ReportTime), currentDate);
-        if ( timeStep > 0 ) timeStep = MIN(timeStep, WetStep);
-		else timeStep = WetStep;
+        timeStep = WetStep;
     }
 ////
     else timeStep = DryStep;

@@ -2,7 +2,8 @@
 * outputAPI.h
 *
 *      Author: Colleen Barr
-*      Modified by: Michael E. Tryby
+*      Modified by: Michael Tryby,
+*                   Bryant McDonnell
 *
 *
 */
@@ -10,7 +11,7 @@
 #ifndef OUTPUTAPI_H_
 #define OUTPUTAPI_H_
 
-#define MAXFILENAME     259   //
+#define MAXFILENAME     259   // Max characters in file path
 #define MAXELENAME       31   // Max characters in element name
 
 /*------------------- Error Messages --------------------*/
@@ -29,6 +30,7 @@
 #define ERR437 "File Error 437: invalid file - model run issued warnings"
 
 #define ERR440 "ERROR 440: an unspecified error has occurred"
+
 
 typedef struct SMOutputAPI SMOutputAPI; // opaque pointer
 
@@ -138,7 +140,8 @@ typedef enum {
 SMOutputAPI* DLLEXPORT SMO_init(void);
 int DLLEXPORT SMO_open(SMOutputAPI* smoapi, const char* path);
 
-int DLLEXPORT SMO_getProjectSize(SMOutputAPI* smoapi, SMO_elementCount code, int* count);
+int DLLEXPORT SMO_getProjectSize(SMOutputAPI* smoapi, SMO_elementCount code,
+		int* count);
 
 int DLLEXPORT SMO_getUnits(SMOutputAPI* smoapi, SMO_unit code, int* unitFlag);
 int DLLEXPORT SMO_getStartTime(SMOutputAPI* smoapi, double* time);
@@ -150,7 +153,7 @@ int DLLEXPORT SMO_getElementName(SMOutputAPI* smoapi, SMO_elementType type,
 float* DLLEXPORT SMO_newOutValueSeries(SMOutputAPI* smoapi, long seriesStart,
 	long seriesLength, long* length, int* errcode);
 float* DLLEXPORT SMO_newOutValueArray(SMOutputAPI* smoapi, SMO_apiFunction func,
-	SMO_elementType type, long* length, int* errcode);
+		SMO_elementType type, long* length, int* errcode);
 
 int DLLEXPORT SMO_getSubcatchSeries(SMOutputAPI* smoapi, int subcatchIndex,
 	SMO_subcatchAttribute attr, long timeIndex, long length, float* outValueSeries);

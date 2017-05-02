@@ -8,6 +8,7 @@
 //             09/15/14    (Build 5.1.007)
 //             04/02/15    (Build 5.1.008)
 //             08/01/16    (Build 5.1.011)
+//             03/14/17    (Build 5.1.012)
 //   Author:   L. Rossman (EPA)
 //
 //   Report writing functions.
@@ -29,6 +30,9 @@
 //   - Blank line added after writing project title.
 //   - Text of error message saved to global variable ErrorMsg.
 //   - Global variable Warnings incremented after warning message issued.
+//
+//   Build 5.1.012:
+//   - System time step statistics adjusted for time in steady state.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -1008,8 +1012,10 @@ void report_writeSysStats(TSysStats* sysStats)
 //
 {
     double x;
+    double eventStepCount = (double)StepCount - sysStats->steadyStateCount;    //(5.1.012)
 
-    if ( Nobjects[LINK] == 0 || StepCount == 0 ) return;
+    if ( Nobjects[LINK] == 0 || StepCount == 0
+	                     || eventStepCount == 0.0 ) return;                //(5.1.012)   
     WRITE("");
     WRITE("*************************");
     WRITE("Routing Time Step Summary");
@@ -1019,19 +1025,19 @@ void report_writeSysStats(TSysStats* sysStats)
         sysStats->minTimeStep);
     fprintf(Frpt.file,
         "\n  Average Time Step           :  %7.2f sec",
-        sysStats->avgTimeStep / StepCount);
+        sysStats->avgTimeStep / eventStepCount);                               //(5.1.012)
     fprintf(Frpt.file,
         "\n  Maximum Time Step           :  %7.2f sec",
         sysStats->maxTimeStep);
-    x = sysStats->steadyStateCount / StepCount * 100.0;
+    x = (1.0 - sysStats->avgTimeStep * 1000.0 / NewRoutingTime) * 100.0;       //(5.1.012)
     fprintf(Frpt.file,
         "\n  Percent in Steady State     :  %7.2f", MIN(x, 100.0));
     fprintf(Frpt.file,
         "\n  Average Iterations per Step :  %7.2f",
-        sysStats->avgStepCount / StepCount);
+        sysStats->avgStepCount / eventStepCount);                              //(5.1.012)
     fprintf(Frpt.file,
         "\n  Percent Not Converging      :  %7.2f",
-        100.0 * (double)NonConvergeCount / StepCount);
+        100.0 * (double)NonConvergeCount / eventStepCount);                    //(5.1.012)
     WRITE("");
 }
 

@@ -9,6 +9,7 @@
 //             04/30/15  (Build 5.1.009)
 //             08/05/15  (Build 5.1.010)
 //             08/01/16  (Build 5.1.011)
+//             03/14/17  (Build 5.1.012)
 //   Author:   L. Rossman
 //
 //   Subcatchment runoff functions.
@@ -31,6 +32,10 @@
 //
 //   Build 5.1.011:
 //   - Subcatchment percent imperviousness not allowed to exceed 100.
+//
+//   Build 5.1.012:
+//   - Subcatchment bottom elevation used instead of aquifer's when
+//     saving water table value to results file.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -874,7 +879,7 @@ void  subcatch_getResults(int j, double f, float x[])
     {
         z = (f1 * gw->oldFlow + f * gw->newFlow) * Subcatch[j].area * UCF(FLOW);
         x[SUBCATCH_GW_FLOW] = (float)z;
-        z = (Aquifer[gw->aquifer].bottomElev + gw->lowerDepth) * UCF(LENGTH);
+        z = (gw->bottomElev + gw->lowerDepth) * UCF(LENGTH);                   //(5.1.012)
         x[SUBCATCH_GW_ELEV] = (float)z;
         z = gw->theta;
         x[SUBCATCH_SOIL_MOIST] = (float)z;

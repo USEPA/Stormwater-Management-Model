@@ -6,6 +6,7 @@
 //   Date:    03/20/14   (Build 5.1.001)
 //            03/19/15   (Build 5.1.008)
 //            08/01/16   (Build 5.1.011)
+//            03/14/17   (Build 5.1.012)
 //   Author:  L. Rossman (US EPA)
 //
 //   Public interface for LID functions.
@@ -18,6 +19,9 @@
 //   Build 5.1.011:
 //   - Water depth replaces moisture content for LID's pavement layer. 
 //   - Arguments for lidproc_saveResults() modified.
+//
+//   Build 5.1.012:
+//   - Redefined meaning of wasDry in TLidRptFile structure.
 //
 //-----------------------------------------------------------------------------
 
@@ -141,7 +145,7 @@ typedef struct
 typedef struct
 {
     FILE*     file;               // file pointer
-    int       wasDry;             // true if LID was dry                       //(5.1.008)
+    int       wasDry;             // number of successive dry periods          //(5.1.012)
     char      results[256];       // results for current time period           //(5.1.008)
 }   TLidRptFile;
 

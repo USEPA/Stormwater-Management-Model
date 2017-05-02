@@ -21,6 +21,7 @@
 //
 //   Build 5.1.011:
 //   - Redundant units conversion on max. reported node depth removed.
+//   - Node Surcharge table only produced for dynamic wave routing.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -104,7 +105,7 @@ void statsrpt_writeReport()
     {
         writeNodeDepths();
         writeNodeFlows();
-        writeNodeSurcharge();
+        if ( RouteModel == DW ) writeNodeSurcharge();                          //(5.1.011)
         writeNodeFlooding();
         writeStorageVolumes();
         writeOutfallLoads();

@@ -6,6 +6,7 @@
 //   Date:     03/19/14  (Build 5.1.001)
 //             09/15/14  (Build 5.1.007)
 //             03/19/15  (Build 5.1.008)
+//             03/14/11  (Build 5.1.012)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -19,6 +20,10 @@
 //   Build 5.1.008:
 //   - Determination of node crown elevations moved to dynwave.c.
 //   - Support added for new way of recording conduit's fullness state.
+//
+//   Build 5.1.012:
+//   - Overflow computed in updateStorageState() must be non-negative.
+//   - Terminal storage nodes now updated corectly.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -570,6 +575,7 @@ void updateStorageState(int i, int j, int links[], double dt)
         {
             Node[i].overflow = (v2 - MAX(Node[i].oldVolume,
                                          Node[i].fullVolume)) / dt;
+            if ( Node[i].overflow < FUDGE ) Node[i].overflow = 0.0;            //(5.1.012)
             if ( !AllowPonding || Node[i].pondedArea == 0.0 )
                 v2 = Node[i].fullVolume;
         }
@@ -632,8 +638,15 @@ void setNewNodeState(int j, double dt)
     int   canPond;                     // TRUE if ponding can occur at node  
     double newNetInflow;               // inflow - outflow at node (cfs)
 
-    // --- storage nodes have already been updated
-    if ( Node[j].type == STORAGE ) return; 
+////  Following section revised for release 5.1.012.  ////                     //(5.1.012)
+    // --- update terminal storage nodes
+    if ( Node[j].type == STORAGE )
+    {	
+	if ( Node[j].updated == FALSE )
+	    updateStorageState(j, Nobjects[LINK], NULL, dt);
+        return; 
+    }
+//////////////////////////////////////////////////////////
 
     // --- update stored volume using mid-point integration
     newNetInflow = Node[j].inflow - Node[j].outflow - Node[j].losses;          //(5.1.007)
@@ -778,6 +791,11 @@ int steadyflow_execute(int j, double* qin, double* qout, double tStep)
             }
         }
         Conduit[k].a2 = Conduit[k].a1;
+
+        Conduit[k].q1Old = Conduit[k].q1;
+        Conduit[k].q2Old = Conduit[k].q2;
+
+
         Conduit[k].q1 = q;
         Conduit[k].q2 = q;
         (*qout) = q * Conduit[k].barrels;

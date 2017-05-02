@@ -1,7 +1,8 @@
 /*
 * main.c
-* TODO
-*	Error handling from getID functions (and check other error handling)
+*
+*      Author: Colleen Barr
+*      Modified by: Michael E. Tryby
 *
 */
 

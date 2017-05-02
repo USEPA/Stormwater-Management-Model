@@ -6,6 +6,7 @@
 //   Date:     03/19/14  (Build 5.1.001)
 //             03/19/15  (Build 5.1.008)
 //             08/01/16  (Build 5.1.011)
+//             03/14/17  (Build 5.1.012)
 //   Author:   L. Rossman
 //
 //   This is the main module of the computational engine for Version 5 of
@@ -31,6 +32,9 @@
 //   - Changed WarningCode to Warnings (# warnings issued).
 //   - Added swmm_getWarnings() function to retrieve value of Warnings.
 //   - Fixed error code returned on swmm_xxx functions.
+//
+//   Build 5.1.012:
+//   - #include <direct.h> only used when compiled for Windows.
 //     
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -66,13 +70,13 @@
 // --- include Windows & exception handling headers
 #ifdef WINDOWS
   #include <windows.h>
+  #include <direct.h>                                                          //(5.1.012)
 #endif
 #ifdef EXH
   #include <excpt.h>
 #endif
 ////
 
-#include <direct.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
