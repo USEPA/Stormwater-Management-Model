@@ -9,6 +9,8 @@
 //             03/19/15   (Build 5.1.008)
 //             04/30/15   (Build 5.1.009)
 //             08/05/15   (Build 5.1.010)
+//             08/01/16   (Build 5.1.011)
+//             03/14/17   (Build 5.1.012)
 //   Author:   L. Rossman (US EPA)
 //
 //   This module handles all data processing involving LID (Low Impact
@@ -55,6 +57,13 @@
 //   - Initial state of reporting (lidUnit->rptFile->wasDry) changed to
 //     prevent duplicate printing of first line of detailed report file.
 //
+//   Build 5.1.011:
+//   - The top of the storage layer is no longer used as a limit for an
+//     underdrain offset thus allowing upturned drains to be modeled.
+//   - Column headings for the detailed LID report file were modified.
+//
+//   Build 5.1.012:
+//   - Redefined initialization of wasDry for LID reporting.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -910,8 +919,11 @@ void validateLidProc(int j)
         LidProcs[j].drain.offset = 0.0;
     }
 
+////  Removed for release 5.1.011 to allow for upturned drain pipes.  ////     //(5.1.011)
+/*
     //... check underdrain parameters
     if ( LidProcs[j].drain.offset > LidProcs[j].storage.thickness )
+////
 
 ////  Modified for release 5.1.008.  ////                                      //(5.1.008)
     {
@@ -919,6 +931,7 @@ void validateLidProc(int j)
         strcat(Msg, ERR_DRAIN_OFFSET);
         report_writeErrorMsg(ERR_LID_PARAMS, Msg);
     }
+*/
 ////
 
     //... compute the surface layer's overland flow constant (alpha)
@@ -1150,7 +1163,7 @@ void lid_initState()
             lidUnit->surfaceDepth = 0.0;
             lidUnit->storageDepth = 0.0;
             lidUnit->soilMoisture = 0.0;
-            lidUnit->paveMoisture = 0.0;                                       //(5.1.008)
+            lidUnit->paveDepth = 0.0;                                          //(5.1.011)
             lidUnit->dryTime = initDryTime;
             initVol = 0.0;
             if ( LidProcs[k].soil.thickness > 0.0 )
@@ -1740,7 +1753,7 @@ void evalLidUnit(int j, TLidUnit* lidUnit, double lidArea, double lidInflow,
     else lidUnit->dryTime += tStep;
 
     //... update LID water balance and save results
-    lidproc_saveResults(lidUnit, lidProc, UCF(RAINFALL), UCF(RAINDEPTH));      //(5.1.008)
+    lidproc_saveResults(lidUnit, UCF(RAINFALL), UCF(RAINDEPTH));               //(5.1.011)
 
     //... update LID group totals
     *qRunoff += lidRunoff;
@@ -1832,6 +1845,8 @@ void lid_writeWaterBalance()
 
 //=============================================================================
 
+////  This function was re-written for release 5.1.011.  ////                  //(5.1.011)
+
 void initLidRptFile(char* title, char* lidID, char* subcatchID, TLidUnit* lidUnit)
 //
 //  Purpose: initializes the report file used for a specific LID unit
@@ -1842,6 +1857,29 @@ void initLidRptFile(char* title, char* lidID, char* subcatchID, TLidUnit* lidUni
 //  Output:  none
 //
 {
+    static int colCount = 14;
+    static char* head1[] = {
+        "\n                    \t", "  Elapsed\t",
+        "    Total\t", "    Total\t", "  Surface\t", " Pavement\t", "     Soil\t",
+        "  Storage\t", "  Surface\t", "    Drain\t", "  Surface\t", " Pavement\t",
+        "     Soil\t", "  Storage"};
+    static char* head2[] = {
+        "\n                    \t", "     Time\t",
+        "   Inflow\t", "     Evap\t", "    Infil\t", "     Perc\t", "     Perc\t",
+        "    Exfil\t", "   Runoff\t", "  OutFlow\t", "    Level\t", "    Level\t",
+        " Moisture\t", "    Level"};
+    static char* units1[] = {
+        "\nDate        Time    \t", "    Hours\t",
+        "    in/hr\t", "    in/hr\t", "    in/hr\t", "    in/hr\t", "    in/hr\t",
+        "    in/hr\t", "    in/hr\t", "    in/hr\t", "   inches\t", "   inches\t",
+        "  Content\t", "   inches"};
+    static char* units2[] = {
+        "\nDate        Time    \t", "    Hours\t",
+        "    mm/hr\t", "    mm/hr\t", "    mm/hr\t", "    mm/hr\t", "    mm/hr\t",
+        "    mm/hr\t", "    mm/hr\t", "    mm/hr\t", "       mm\t", "       mm\t",
+        "  Content\t", "       mm"};
+    static char line9[] = " ---------";
+    int   i;
     FILE* f = lidUnit->rptFile->file;
 
     //... check that file was opened
@@ -1853,18 +1891,17 @@ void initLidRptFile(char* title, char* lidID, char* subcatchID, TLidUnit* lidUni
     fprintf(f, "\nLID Unit: %s in Subcatchment %s\n", lidID, subcatchID);
 
     //... write column headings
-    fprintf(f, 
-"\nElapsed\t    Total\t    Total\t  Surface\t     Soil\t   Bottom\t  Surface\t    Drain\t  Surface\t    Soil/\t  Storage" 
-"\n   Time\t   Inflow\t     Evap\t    Infil\t     Perc\t    Infil\t   Runoff\t  Outflow\t    Depth\t    Pave \t    Depth");
-fprintf(f, 
-"\n  Hours\t");
-    if ( UnitSystem == US ) fprintf(f,
-           "    in/hr\t    in/hr\t    in/hr\t    in/hr\t    in/hr\t    in/hr\t    in/hr\t   inches\t    Moist\t   inches");
-    else fprintf(f,
-           "    mm/hr\t    mm/hr\t    mm/hr\t    mm/hr\t    mm/hr\t    mm/hr\t    mm/hr\t       mm\t    Moist\t       mm");
-    fprintf(f,
-"\n-------\t --------\t --------\t --------\t --------\t --------\t --------\t --------\t --------\t --------\t --------" );
+    for ( i = 0; i < colCount; i++) fprintf(f, "%s", head1[i]);
+    for ( i = 0; i < colCount; i++) fprintf(f, "%s", head2[i]);
+    if (  UnitSystem == US )
+    {
+        for ( i = 0; i < colCount; i++) fprintf(f, "%s", units1[i]);
+    }
+    else for ( i = 0; i < colCount; i++) fprintf(f, "%s", units2[i]);
+    fprintf(f, "\n----------- --------");
+    for ( i = 1; i < colCount; i++) fprintf(f, "\t%s", line9);
 
-    //... initialize LID dryness state                                         //(5.1.008)
-    lidUnit->rptFile->wasDry = TRUE;                                           //(5.1.010)
+    //... initialize LID dryness state
+    lidUnit->rptFile->wasDry = 1;                                              //(5.1.012)
+    strcpy(lidUnit->rptFile->results, "");                                     //(5.1.012)
 }

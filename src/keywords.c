@@ -8,6 +8,7 @@
 //            09/15/14  (Build 5.1.007)
 //            03/19/15  (Build 5.1.008)
 //            08/05/15  (Build 5.1.010)
+//            08/01/16  (Build 5.1.011)
 //   Author:  L. Rossman
 //
 //   Exportable keyword dictionary
@@ -28,6 +29,9 @@
 //   Build 5.1.010:
 //   - New Modified Green Ampt keyword added to InfilModelWords.
 //   - New Roadway weir keyword added to WeirTypeWords.
+//
+//   Build 5.1.011:
+//   - New section keyword for [EVENTS] added.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -129,7 +133,8 @@ char* SectWords[]          = { ws_TITLE,          ws_OPTION,
                                ws_TAG,            ws_PROFILE,
                                ws_MAP,            ws_LID_CONTROL,
                                ws_LID_USAGE,      ws_GWF,                      //(5.1.007)
-                               ws_ADJUST,         NULL};                       //(5.1.007)
+                               ws_ADJUST,         ws_EVENT,                    //(5.1.011)
+                               NULL};                       
 char* SnowmeltWords[]      = { w_PLOWABLE, w_IMPERV, w_PERV, w_REMOVAL, NULL};
 char* TempKeyWords[]       = { w_TIMESERIES, w_FILE, w_WINDSPEED, w_SNOWMELT,
                                w_ADC, NULL};

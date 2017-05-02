@@ -7,6 +7,7 @@
 //             03/19/15 (Build 5.1.008)
 //             04/30/15 (Build 5.1.009)
 //             08/05/15 (Build 5.1.010)
+//             08/01/16 (Build 5.1.011)
 //   Author:   L. Rossman
 //
 //   Rule-based controls functions.
@@ -45,6 +46,10 @@
 //  Build 5.1.010:
 //  - Support added for link TIMEOPEN & TIMECLOSED premises.
 //
+//  Build 5.1.011:
+//  - Support added for DAYOFYEAR attribute.
+//  - Modulated controls no longer included in reported control actions.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -62,7 +67,7 @@ enum RuleObject   {r_NODE, r_LINK, r_CONDUIT, r_PUMP, r_ORIFICE, r_WEIR,
 	               r_OUTLET, r_SIMULATION};
 enum RuleAttrib   {r_DEPTH, r_HEAD, r_VOLUME, r_INFLOW, r_FLOW, r_STATUS,      //(5.1.008)
                    r_SETTING, r_TIMEOPEN, r_TIMECLOSED, r_TIME, r_DATE,        //(5.1.010)
-                   r_CLOCKTIME, r_DAY, r_MONTH};
+                   r_CLOCKTIME, r_DAYOFYEAR, r_DAY, r_MONTH};                  //(5.1.011)
 enum RuleRelation {EQ, NE, LT, LE, GT, GE};
 enum RuleSetting  {r_CURVE, r_TIMESERIES, r_PID, r_NUMERIC};
 
@@ -71,8 +76,8 @@ static char* ObjectWords[] =
 	 "SIMULATION", NULL};
 static char* AttribWords[] =
     {"DEPTH", "HEAD", "VOLUME", "INFLOW", "FLOW", "STATUS", "SETTING",         //(5.1.008)
-     "TIMEOPEN", "TIMECLOSED","TIME", "DATE", "CLOCKTIME", "DAY", "MONTH",     //(5.1.010)
-     NULL};
+     "TIMEOPEN", "TIMECLOSED","TIME", "DATE", "CLOCKTIME", "DAYOFYEAR",        //(5.1.011)
+     "DAY", "MONTH", NULL};                                                    //(5.1.011)
 static char* RelOpWords[] = {"=", "<>", "<", "<=", ">", ">=", NULL};
 static char* StatusWords[]  = {"OFF", "ON", NULL};
 static char* ConduitWords[] = {"CLOSED", "OPEN", NULL};
@@ -514,7 +519,8 @@ int getPremiseVariable(char* tok[], int* k, struct TVariable* v)
       case r_DATE:
       case r_CLOCKTIME:
       case r_DAY:
-      case r_MONTH: break;
+      case r_MONTH:
+      case r_DAYOFYEAR: break;                                                 //(5.1.011)
       default: return error_setInpError(ERR_KEYWORD, tok[n]);
     }
 
@@ -538,6 +544,7 @@ int getPremiseValue(char* token, int attrib, double* value)
 //           in the premise clause of a control rule.
 //
 {
+    char   strDate[25];                                                        //(5.1.011)
     switch (attrib)
     {
       case r_STATUS:
@@ -572,6 +579,19 @@ int getPremiseValue(char* token, int attrib, double* value)
         if ( *value < 1.0 || *value > 12.0 )
              return error_setInpError(ERR_DATETIME, token);
         break;
+
+////  This code block added to release 5.1.011.  ////                          //(5.1.011)
+      case r_DAYOFYEAR:
+        strncpy(strDate, token, 6);
+        strcat(strDate, "/1947");
+        if ( datetime_strToDate(strDate, value) )
+        {
+            *value = datetime_dayOfYear(*value);
+        }
+        else if ( !getDouble(token, value) || *value < 1 || *value > 365 )
+            return error_setInpError(ERR_DATETIME, token);
+        break;
+////////////////////////////////////////////////////
        
       default: if ( !getDouble(token, value) )
           return error_setInpError(ERR_NUMBER, token);
@@ -642,7 +662,7 @@ int  addAction(int r, char* tok[], int nToks)
     if ( obj == r_CONDUIT )
     {
         if ( attrib == r_STATUS )
-	{
+        {
             values[0] = findmatch(tok[5], ConduitWords);
             if ( values[0] < 0.0 )
                 return error_setInpError(ERR_KEYWORD, tok[5]);
@@ -920,7 +940,8 @@ int executeActionList(DateTime currentTime)
             if ( Link[a1->link].targetSetting != a1->value )
             {
                 Link[a1->link].targetSetting = a1->value;
-                if ( RptFlags.controls )
+                if ( RptFlags.controls && a1->curve < 0                        //(5.1.011)
+                     && a1->tseries < 0 && a1->attribute != r_PID )            //(5.1.011)
                     report_writeControlAction(currentTime, Link[a1->link].ID,
                                               a1->value, Rules[a1->rule].ID);
                 count++;
@@ -934,6 +955,8 @@ int executeActionList(DateTime currentTime)
 
 //=============================================================================
 
+////  This function was re-written for release 5.1.011.  ////                  //(5.1.011)
+
 int evaluatePremise(struct TPremise* p, double tStep)
 //
 //  Input:   p = a control rule premise condition
@@ -943,18 +966,22 @@ int evaluatePremise(struct TPremise* p, double tStep)
 //
 {
     double lhsValue, rhsValue;
+    int    result = FALSE;
 
     lhsValue = getVariableValue(p->lhsVar);
-    if ( p->value == MISSING ) rhsValue = getVariableValue(p->rhsVar);         //(5.1.008)
-    else                       rhsValue = p->value;                            //(5.1.008)
+    if ( p->value == MISSING ) rhsValue = getVariableValue(p->rhsVar);
+    else                       rhsValue = p->value;
     if ( lhsValue == MISSING || rhsValue == MISSING ) return FALSE;
     switch (p->lhsVar.attribute)
     {
     case r_TIME:
     case r_CLOCKTIME:
-    case r_TIMEOPEN:                                                           //(5.1.010)
-    case r_TIMECLOSED:                                                         //(5.1.010)
         return compareTimes(lhsValue, p->relation, rhsValue, tStep/2.0); 
+    case r_TIMEOPEN:
+    case r_TIMECLOSED:
+        result = compareTimes(lhsValue, p->relation, rhsValue, tStep/2.0);
+        ControlValue = lhsValue * 24.0;  // convert time from days to hours
+        return result;
     default:
         return compareValues(lhsValue, p->relation, rhsValue);
     }
@@ -983,6 +1010,9 @@ double getVariableValue(struct TVariable v)
 
       case r_MONTH:
         return datetime_monthOfYear(CurrentDate);
+
+      case r_DAYOFYEAR:                                                        //(5.1.011)
+        return datetime_dayOfYear(CurrentDate);                                //(5.1.011)
 
       case r_STATUS:
         if ( j < 0 ||

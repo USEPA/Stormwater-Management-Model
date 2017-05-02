@@ -8,6 +8,8 @@
 //             03/19/15  (Build 5.1.008)
 //             04/30/15  (Build 5.1.009)
 //             08/05/15  (Build 5.1.010)
+//             08/01/16  (Build 5.1.011)
+//             03/14/17  (Build 5.1.012)
 //   Author:   L. Rossman
 //
 //   Subcatchment runoff functions.
@@ -27,6 +29,13 @@
 //   Build 5.1.010:
 //   - Fixed a bug introduced in 5.1.008 that forgot to include LID
 //     exfiltration as inflow sent to GW routine.
+//
+//   Build 5.1.011:
+//   - Subcatchment percent imperviousness not allowed to exceed 100.
+//
+//   Build 5.1.012:
+//   - Subcatchment bottom elevation used instead of aquifer's when
+//     saving water table value to results file.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -162,7 +171,7 @@ int  subcatch_readParams(int j, char* tok[], int ntoks)
     Subcatch[j].outNode     = (int)x[1];
     Subcatch[j].outSubcatch = (int)x[2];
     Subcatch[j].area        = x[3] / UCF(LANDAREA);
-    Subcatch[j].fracImperv  = x[4] / 100.0;
+    Subcatch[j].fracImperv  = MIN(x[4], 100.0) / 100.0;                        //(5.1.011)
     Subcatch[j].width       = x[5] / UCF(LENGTH);
     Subcatch[j].slope       = x[6] / 100.0;
     Subcatch[j].curbLength  = x[7];
@@ -381,6 +390,11 @@ void  subcatch_validate(int j)
              area = Subcatch[j].fracImperv * nonLidArea;
         }
         Subcatch[j].subArea[i].alpha = 0.0;
+
+////  Possible change to how sub-area width should be assigned.  ////
+////        area = nonLidArea;                                                     //(5.1.011)
+/////////////////////////////////////////////////////////////////////
+
         if ( area > 0.0 && Subcatch[j].subArea[i].N > 0.0 )
         {
             Subcatch[j].subArea[i].alpha = MCOEFF * Subcatch[j].width / area *
@@ -865,7 +879,7 @@ void  subcatch_getResults(int j, double f, float x[])
     {
         z = (f1 * gw->oldFlow + f * gw->newFlow) * Subcatch[j].area * UCF(FLOW);
         x[SUBCATCH_GW_FLOW] = (float)z;
-        z = (Aquifer[gw->aquifer].bottomElev + gw->lowerDepth) * UCF(LENGTH);
+        z = (gw->bottomElev + gw->lowerDepth) * UCF(LENGTH);                   //(5.1.012)
         x[SUBCATCH_GW_ELEV] = (float)z;
         z = gw->theta;
         x[SUBCATCH_SOIL_MOIST] = (float)z;

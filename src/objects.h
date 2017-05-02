@@ -7,6 +7,7 @@
 //            09/15/14  (Build 5.1.007)
 //            03/19/15  (Build 5.1.008)
 //            08/05/15  (Build 5.1.010)
+//            08/01/16  (Build 5.1.011)
 //   Author:  L. Rossman (EPA)
 //            M. Tryby (EPA)
 //            R. Dickinson (CDM)
@@ -40,6 +41,11 @@
 //   - Additional fields added to Weir object to support ROADWAY_WEIR type.
 //   - New field added to Link object to record when its setting was changed.
 //   - q1Old and q2Old of Link object restored.
+//
+//   Build 5.1.011:
+//   - Description of oldFlow & newFlow for TGroundwater object modified.
+//   - Weir shape parameter deprecated.
+//   - Added definition of a hydraulic event time period (TEvent).
 //-----------------------------------------------------------------------------
 
 #include "mathexpr.h"
@@ -201,6 +207,17 @@ typedef struct
 }   TAdjust;
 
 
+////  Added for release 5.1.011  ////                                          //(5.1.011)
+//-------------
+// EVENT OBJECT
+//-------------
+typedef struct
+{
+    DateTime    start;            // event start date
+    DateTime    end;              // event end date
+}   TEvent;
+
+
 //-------------------
 // AQUIFER OBJECT
 //-------------------
@@ -260,8 +277,8 @@ typedef struct
     //----------------------------
     double        theta;          // upper zone moisture content
     double        lowerDepth;     // depth of saturated zone (ft)
-    double        oldFlow;        // gw outflow from previous time period (cfs)
-    double        newFlow;        // gw outflow from current time period (cfs)
+    double        oldFlow;        // gw outflow from previous time period (fps)  //(5.1.011)
+    double        newFlow;        // gw outflow from current time period (fps)   //(5.1.011)
     double        evapLoss;       // evaporation loss rate (ft/sec)
     double        maxInfilVol;    // max. infil. upper zone can accept (ft)
     TGWaterStats  stats;          // gw statistics                             //(5.1.008)
@@ -735,7 +752,7 @@ typedef struct
 typedef struct
 {
    int           type;            // weir type code
-   int           shape;           // weir shape code
+// int           shape;           // weir shape code  //DELETED//              //(5.1.011)
    double        cDisch1;         // discharge coeff.
    double        cDisch2;         // discharge coeff. for ends
    double        endCon;          // end contractions
