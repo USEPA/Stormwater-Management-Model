@@ -77,6 +77,22 @@
 #endif
 ////
 
+
+// --- define DLLEXPORT
+
+//#ifndef DLLEXPORT
+#ifdef WINDOWS
+	#ifdef __MINGW32__
+		// Seems to be more wrapper friendly
+		#define DLLEXPORT __declspec(dllexport) __cdecl 
+	#else
+		#define DLLEXPORT __declspec(dllexport) __stdcall
+	#endif
+#else
+	#define DLLEXPORT
+#endif
+//#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -102,6 +118,7 @@
 #include "globals.h"                   // declaration of all global variables
 
 #include "swmm5.h"                     // declaration of exportable functions
+#include "toolkitAPI.h"
                                        //   callable from other programs
 #define  MAX_EXCEPTIONS 100            // max. number of exceptions handled
 
@@ -258,7 +275,8 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
                     theDay = (long)elapsedTime;
                     theHour = (long)((elapsedTime - floor(elapsedTime)) * 24.0);
                     writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-                    sprintf(Msg, "%-5d hour: %-2d", theDay, theHour);
+                    //sprintf(Msg, "%-5d hour: %-2d", theDay, theHour);
+					sprintf(Msg, "%-5ld hour: %-2ld", theDay, theHour);
                     writecon(Msg);
                     oldHour = newHour;
                 }
@@ -862,7 +880,8 @@ void  writecon(char *s)
 //
 {
 #ifdef CLE 
-   fprintf(stdout,s);
+   //fprintf(stdout,s);
+   fprintf(stdout,"%c", *s);
    fflush(stdout);
 #endif
 }
@@ -941,5 +960,19 @@ int xfilter(int xc, char* module, double elapsedTime, long step)               /
 }
 #endif
 
-//=============================================================================
-    
+
+int swmm_IsOpenFlag()
+//
+// Check if Project is Open
+{
+	// TRUE if a project has been opened
+	return IsOpenFlag;
+}
+
+int swmm_IsStartedFlag()
+//
+// Check if Simulation has started
+{
+	// TRUE if a simulation has been started
+	return IsStartedFlag;
+}

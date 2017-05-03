@@ -1,0 +1,5 @@
+Copyright 2016 Bryant E. McDonnell (EmNet LLC)
+
+Also contains code in the public domain.
+
+We will be deciding on Licensing as the project evolves.
