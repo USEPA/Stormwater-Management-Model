@@ -1,0 +1,10 @@
+language: c
+
+before_script:
+  - cd build
+  - mkdir buildproducts
+  - cd buildproducts
+  - cmake ..
+
+script:
+  - make
