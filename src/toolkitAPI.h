@@ -10,6 +10,8 @@
 //
 //-----------------------------------------------------------------------------
 
+#include <math.h>
+
 //#ifndef DLLEXPORT
 #ifdef WINDOWS
 	#ifdef __MINGW32__

@@ -309,12 +309,9 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
 //  Purpose: opens a SWMM project.
 //
 {
-#ifdef DLL
-   _fpreset();              
-#endif
-
 #ifdef EXH                                                                     //(5.1.011)
     // --- begin exception handling here
+	_fpreset();
     __try
 #endif
     {
