@@ -17,9 +17,9 @@ while (<>) {
   next if /orquina.jessica\@epa.gov/; ## this individual never authored code; just init-ed the repo
   next if /Bryant M/;
   next if /tryby.michael\@epa.gov/;
+  next if /Pena-Castellanos/;
   $seen{$_} = push @authors, $_;
 }
-push @authors, "Luis A. Montestruque <lmontest\@emnet.net>\n";
 push @authors, " \n";
 push @authors, "EmNet LLC <EmNet.net>\n";
 END {
