@@ -94,10 +94,8 @@ double   TotalArea;               // total drainage area (ft2)
 double massbal_getBuildup(int pollut);
 double massbal_getStorage(char isFinalStorage);
 double massbal_getStoredMass(int pollut);
-double massbal_getRunoffError(void);
 double massbal_getLoadingError(void);
 double massbal_getGwaterError(void);
-double massbal_getFlowError(void);
 double massbal_getQualError(void);
 
 
@@ -1086,3 +1084,30 @@ double massbal_getStoredMass(int p)
 }
 
 //=============================================================================
+
+void massbal_getRunoffTotalsPtr(TRunoffTotals *runofftotals)
+//
+// Output:   runofftotals = refernce to RunoffTotals
+// Purpose:  Gets the runoff totals pointer for toolkitAPI
+//
+{
+	runofftotals = &RunoffTotals;
+}
+
+double massbal_getTotalArea()
+//
+// Return:   TotalArea = Total Runoff Surface Area
+// Purpose:  Gets the Area for toolkitAPI
+//
+{
+	return TotalArea;
+}
+
+void massbal_getFlowTotalsPtr(TRoutingTotals *routingtotals)
+//
+// Output:   runofftotals = refernce to RunoffTotals
+// Purpose:  Gets the flow totals totals pointer for toolkitAPI
+//
+{
+	routingtotals = &FlowTotals;
+}

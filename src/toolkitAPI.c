@@ -27,6 +27,7 @@ void DLLEXPORT swmm_getAPIError(int errcode, char *s)
 //
 // Input: 	errcode = error code
 // Output: 	errmessage String 
+// Return:  API Error
 // Purpose: Get an error message
 {
 	char *errmsg = error_getMsg(errcode);
@@ -37,6 +38,7 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, char *dtimestr)
 //
 // Input: 	timetype = time type to return
 // Output: 	DateTime String 
+// Return:  API Error
 // Purpose: Get the simulation start, end and report date times
 {
 	
@@ -75,6 +77,7 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr)
 //
 // Input: 	timetype = time type to return
 //          DateTime String 
+// Return:  API Error
 // Purpose: Get the simulation start, end and report date times
 {
 	// Check if Open
@@ -124,7 +127,7 @@ int DLLEXPORT  swmm_getSimulationUnit(int type, int *value)
 //
 // Input: 	type = simulation unit type
 // Output: 	enum representation of units
-// Returns: error code
+// Returns: API Error
 // Purpose: get simulation unit types
 {
 	// Check if Open
@@ -150,7 +153,7 @@ int DLLEXPORT  swmm_getSimulationAnalysisSetting(int type, int *value)
 //
 // Input: 	type = analysis type
 // Output: 	setting True or False
-// Returns: error code
+// Returns: API Error
 // Purpose: get simulation analysis setting
 {
 	// Check if Open
@@ -232,8 +235,8 @@ int DLLEXPORT  swmm_getSimulationParam(int type, double *value)
 int DLLEXPORT  swmm_countObjects(int type, int *count)
 //
 // Input: 	type = object type (Based on ObjectType enum)
-//			count = pointer to integer
-// Output: 	returns API Error
+// Output: 	count = pointer to integer
+// Returns: API Error
 // Purpose: uses Object Count table to find number of elements of an object
 {	
 	if(type >= MAX_OBJ_TYPES)return ERR_API_OUTBOUNDS;
@@ -245,8 +248,8 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
 //
 // Input: 	type = object type (Based on ObjectType enum)
 //			index = Index of desired ID
-//			id = pointer to id pass by reference
-// Output: 	returns API Error
+// Output: 	id = pointer to id pass by reference
+// Return:  API Error
 // Purpose: Gets ID for any object
 {
 	//Provide Empty Character Array 
@@ -300,7 +303,7 @@ int DLLEXPORT swmm_getNodeType(int index, int *Ntype)
 //
 // Input: 	index = Index of desired ID
 //			Ntype = Node type (Based on enum NodeType)
-// Output: 	returns API Error
+// Return:  API Error
 // Purpose: Gets Node Type
 {
 	// Check if Open
@@ -315,7 +318,7 @@ int DLLEXPORT swmm_getLinkType(int index, int *Ltype)
 //
 // Input: 	index = Index of desired ID
 //			Ltype = Link type (Based on enum NodeType)
-// Output: 	returns API Error
+// Return:  API Error
 // Purpose: Gets Link Type
 {
 	// Check if Open
@@ -331,6 +334,7 @@ int DLLEXPORT swmm_getLinkConnections(int index, int *Node1, int *Node2)
 // Input: 	type = object type (Based on ObjectType enum)
 //			index = Index of desired ID
 // Output: 	Node1 and Node2
+// Return:  API Error
 // Purpose: Gets link Connection ID Indeces
 {
 	// Check if Open
@@ -347,6 +351,7 @@ int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value)
 // Input: 	index = Index of desired ID
 //			param = Parameter desired (Perhaps define enum )
 // Output: 	value = value to be output
+// Return:  API Error
 // Purpose: Gets Node Parameter
 {
 	// Check if Open
@@ -377,6 +382,7 @@ int DLLEXPORT swmm_setNodeParam(int index, int Param, double value)
 // Input: 	index = Index of desired ID
 //			param = Parameter desired (Perhaps define enum )
 //          value = value to be input
+// Return:  API Error
 // Purpose: Sets Node Parameter
 {
 	// Check if Open
@@ -412,6 +418,7 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
 // Input: 	index = Index of desired ID
 //			param = Parameter desired (Perhaps define enum )
 // Output: 	value = value to be output
+// Return:  API Error
 // Purpose: Gets Link Parameter
 {
 	// Check if Open
@@ -448,7 +455,7 @@ int DLLEXPORT swmm_setLinkParam(int index, int Param, double value)
 // Input: 	index = Index of desired ID
 //			param = Parameter desired (Perhaps define enum )
 //			value = value to be input
-// Output: 	returns API Error
+// Return:  API Error
 // Purpose: Gets Link Parameter
 {
 	// Check if Open
@@ -496,6 +503,7 @@ int DLLEXPORT swmm_getLinkDirection(int index, signed char *value)
 //
 // Input: 	index = Index of desired ID
 // Output: 	Link Direction (Only changes is slope < 0)
+// Return:  API Error
 // Purpose: Gets Link Direction
 {
 	// Check if Open
@@ -513,6 +521,7 @@ int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value)
 // Input: 	index = Index of desired ID
 //			param = Parameter desired (Perhaps define enum )
 // Output: 	value = value to be output
+// Return:  API Error
 // Purpose: Gets Subcatchment Parameter
 {
 	// Check if Open
@@ -545,6 +554,7 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
 // Input: 	index = Index of desired ID
 //			param = Parameter desired (Perhaps define enum )
 //          value = value to be output
+// Return:  API Error
 // Purpose: Sets Subcatchment Parameter
 {
 	// Check if Open
@@ -582,6 +592,7 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index )
 // Input: 	type = object type (Based on ObjectType enum) (Subcatchments can load to Node or another Subcatchment)
 //			index = Index of desired ID
 // Output: 	Node1 and Node2
+// Return:  API Error
 // Purpose: Gets Subcatchment Connection ID Indeces for either Node or Subcatchment
 {
 	// Check if Open
@@ -615,6 +626,7 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index )
 int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr)
 //
 // Output: 	DateTime String 
+// Return:  API Error
 // Purpose: Get the current simulation time
 {
 	// Check if Simulation is Running
@@ -648,7 +660,7 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result)
 // Input: 	index = Index of desired ID	
 //			type = Result Type
 // Output: 	result = result data desired (byref)
-// Return: 	
+// Return: 	API Error
 // Purpose: Gets Node Simulated Value
 {
 	// Check if Simulation is Running
@@ -685,7 +697,7 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
 // Input: 	index = Index of desired ID	
 //			type = Result Type
 // Output: 	result = result data desired (byref)
-// Return: 	
+// Return: 	API Error
 // Purpose: Gets Node Simulated Value
 {
 	// Check if Simulation is Running
@@ -722,7 +734,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 // Input: 	index = Index of desired ID	
 //			type = Result Type
 // Output: 	result = result data desired (byref)
-// Return: 	
+// Return: 	API Error
 // Purpose: Gets Node Simulated Value
 {
 	// Check if Simulation is Running
@@ -751,7 +763,97 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 }
 
 
+int DLLEXPORT swmm_getSystemRoutingTotals(int type, double *value)
+//
+// Input: 	type = Result Type
+// Output: 	volume = total data desired (Cu. Ft, Cu Meter)
+// Return: 	API Error
+// Purpose: Gets System Routing Totals
+{
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 
+	// Check if Simulation is Running
+	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
+
+	TRoutingTotals totals;
+	massbal_getRunoffTotalsPtr(&totals);
+
+	switch (type)
+	{
+		// Cumulative Dry Weather Inflow Volume
+		case 0: *value = totals.dwInflow * UCF(VOLUME); break;
+		// Cumulative Wet Weather Inflow Volume
+		case 1: *value = totals.wwInflow * UCF(VOLUME); break;
+		// Cumulative Groundwater Inflow Volume
+		case 2: *value = totals.gwInflow * UCF(VOLUME); break;
+		// Cumulative I&I Inflow Volume
+		case 3: *value = totals.iiInflow * UCF(VOLUME); break;
+		// Cumulative External Inflow Volume
+		case 4: *value = totals.exInflow * UCF(VOLUME); break;
+		// Cumulative Flooding Volume
+		case 5: *value = totals.flooding * UCF(VOLUME); break;
+		// Cumulative Outflow Volume
+		case 6: *value = totals.outflow  * UCF(VOLUME); break;
+		// Cumulative Evaporation Loss
+		case 7: *value = totals.evapLoss * UCF(VOLUME); break;
+		// Cumulative Seepage Loss
+		case 8: *value = totals.seepLoss * UCF(VOLUME); break;
+		// Routing Error
+		case 9: *value = massbal_getFlowError(); break;
+		// Type not available
+		default: return(ERR_API_OUTBOUNDS);
+	}
+	return(0);
+}
+
+int DLLEXPORT swmm_getSystemRunoffTotals(int type, double *value)
+//
+// Input: 	type = Result Type
+// Output: 	volume = total data desired 
+// Return: 	API Error
+// Purpose: Gets System Runoff Totals
+{
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
+
+	// Check if Simulation is Running
+	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
+
+	// Get Runoff Totals
+	TRunoffTotals totals;
+	massbal_getRunoffTotalsPtr(&totals);
+
+	// Get Total Area
+	double totalarea = massbal_getTotalArea();
+
+	switch (type)
+	{
+		// Cumulative Rainfall Volume
+		case 0: *value = totals.rainfall / totalarea * UCF(RAINDEPTH); break;
+		// Cumulative Evaporation Volume
+		case 1: *value = totals.evap / totalarea * UCF(RAINDEPTH); break;
+		// Cumulative Infiltration Volume
+		case 2: *value = totals.infil / totalarea * UCF(RAINDEPTH); break;
+		// Cumulative Runoff Volume
+		case 3: *value = totals.runoff / totalarea * UCF(RAINDEPTH); break;
+		// Cumulative Runon Volume
+		case 4: *value = totals.runon / totalarea * UCF(RAINDEPTH); break;
+		// Cumulative Drain Volume
+		case 5: *value = totals.drains / totalarea * UCF(RAINDEPTH); break;
+		// Cumulative Snow Removed Volume
+		case 6: *value = totals.snowRemoved / totalarea * UCF(RAINDEPTH); break;
+		// Initial Storage Volume
+		case 7: *value = totals.initStorage / totalarea * UCF(RAINDEPTH); break;
+		// Initial Snow Cover Volume
+		case 8: *value = totals.initSnowCover / totalarea * UCF(RAINDEPTH); break;
+		// Routing Error
+		case 9: *value = massbal_getRunoffError(); break;
+		// Type not available
+		default: return(ERR_API_OUTBOUNDS);
+	}
+	return(0);
+}
 
 
 //-------------------------------
