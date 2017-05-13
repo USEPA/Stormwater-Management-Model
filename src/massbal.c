@@ -1085,6 +1085,15 @@ double massbal_getStoredMass(int p)
 
 //=============================================================================
 
+void massbal_getFlowTotalsPtr(TRoutingTotals *routingtotals)
+//
+// Output:   runofftotals = refernce to RunoffTotals
+// Purpose:  Gets the flow totals totals pointer for toolkitAPI
+//
+{
+	routingtotals = &FlowTotals;
+}
+
 void massbal_getRunoffTotalsPtr(TRunoffTotals *runofftotals)
 //
 // Output:   runofftotals = refernce to RunoffTotals
@@ -1101,13 +1110,4 @@ double massbal_getTotalArea()
 //
 {
 	return TotalArea;
-}
-
-void massbal_getFlowTotalsPtr(TRoutingTotals *routingtotals)
-//
-// Output:   runofftotals = refernce to RunoffTotals
-// Purpose:  Gets the flow totals totals pointer for toolkitAPI
-//
-{
-	routingtotals = &FlowTotals;
 }

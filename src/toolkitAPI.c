@@ -777,7 +777,7 @@ int DLLEXPORT swmm_getSystemRoutingTotals(int type, double *value)
 	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 
 	TRoutingTotals totals;
-	massbal_getRunoffTotalsPtr(&totals);
+	massbal_getFlowTotalsPtr(&totals);
 
 	switch (type)
 	{
