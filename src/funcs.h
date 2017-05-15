@@ -290,10 +290,8 @@ void    massbal_addToFinalStorage(int pollut, double mass);                    /
 double  massbal_getStepFlowError(void);
 double  massbal_getRunoffError(void);
 double  massbal_getFlowError(void);
-
-void massbal_getRunoffTotalsPtr(TRunoffTotals *runofftotals);
-void massbal_getFlowTotalsPtr(TRoutingTotals *routingtotals);
-double massbal_getTotalArea(void);
+double  massbal_getRoutingFlowTotal(int element); // For API
+double  massbal_getRunoffTotal(int element);      // For API
 
 //-----------------------------------------------------------------------------
 //   Simulation Statistics Methods

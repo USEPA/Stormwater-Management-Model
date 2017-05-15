@@ -767,6 +767,7 @@ int DLLEXPORT swmm_getSystemRoutingTotals(int type, double *value)
 //
 // Input: 	type = Result Type
 // Output: 	volume = total data desired (Cu. Ft, Cu Meter)
+//          routing error (decimal)
 // Return: 	API Error
 // Purpose: Gets System Routing Totals
 {
@@ -776,41 +777,20 @@ int DLLEXPORT swmm_getSystemRoutingTotals(int type, double *value)
 	// Check if Simulation is Running
 	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 
-	TRoutingTotals totals;
-	massbal_getFlowTotalsPtr(&totals);
-
-	switch (type)
+	// Check if in bounds
+	if (type >= 0 && type < 10)
 	{
-		// Cumulative Dry Weather Inflow Volume
-		case 0: *value = totals.dwInflow * UCF(VOLUME); break;
-		// Cumulative Wet Weather Inflow Volume
-		case 1: *value = totals.wwInflow * UCF(VOLUME); break;
-		// Cumulative Groundwater Inflow Volume
-		case 2: *value = totals.gwInflow * UCF(VOLUME); break;
-		// Cumulative I&I Inflow Volume
-		case 3: *value = totals.iiInflow * UCF(VOLUME); break;
-		// Cumulative External Inflow Volume
-		case 4: *value = totals.exInflow * UCF(VOLUME); break;
-		// Cumulative Flooding Volume
-		case 5: *value = totals.flooding * UCF(VOLUME); break;
-		// Cumulative Outflow Volume
-		case 6: *value = totals.outflow  * UCF(VOLUME); break;
-		// Cumulative Evaporation Loss
-		case 7: *value = totals.evapLoss * UCF(VOLUME); break;
-		// Cumulative Seepage Loss
-		case 8: *value = totals.seepLoss * UCF(VOLUME); break;
-		// Routing Error
-		case 9: *value = massbal_getFlowError(); break;
-		// Type not available
-		default: return(ERR_API_OUTBOUNDS);
+		*value = massbal_getRoutingFlowTotal(type);
+		return(0);
 	}
-	return(0);
+	else return(ERR_API_OUTBOUNDS);
 }
 
 int DLLEXPORT swmm_getSystemRunoffTotals(int type, double *value)
 //
 // Input: 	type = Result Type
 // Output: 	volume = total data desired 
+//          routing error (decimal)
 // Return: 	API Error
 // Purpose: Gets System Runoff Totals
 {
@@ -820,39 +800,13 @@ int DLLEXPORT swmm_getSystemRunoffTotals(int type, double *value)
 	// Check if Simulation is Running
 	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 
-	// Get Runoff Totals
-	TRunoffTotals totals;
-	massbal_getRunoffTotalsPtr(&totals);
-
-	// Get Total Area
-	double totalarea = massbal_getTotalArea();
-
-	switch (type)
+	// Check if in bounds
+	if (type >= 0 && type < 10)
 	{
-		// Cumulative Rainfall Volume
-		case 0: *value = totals.rainfall / totalarea * UCF(RAINDEPTH); break;
-		// Cumulative Evaporation Volume
-		case 1: *value = totals.evap / totalarea * UCF(RAINDEPTH); break;
-		// Cumulative Infiltration Volume
-		case 2: *value = totals.infil / totalarea * UCF(RAINDEPTH); break;
-		// Cumulative Runoff Volume
-		case 3: *value = totals.runoff / totalarea * UCF(RAINDEPTH); break;
-		// Cumulative Runon Volume
-		case 4: *value = totals.runon / totalarea * UCF(RAINDEPTH); break;
-		// Cumulative Drain Volume
-		case 5: *value = totals.drains / totalarea * UCF(RAINDEPTH); break;
-		// Cumulative Snow Removed Volume
-		case 6: *value = totals.snowRemoved / totalarea * UCF(RAINDEPTH); break;
-		// Initial Storage Volume
-		case 7: *value = totals.initStorage / totalarea * UCF(RAINDEPTH); break;
-		// Initial Snow Cover Volume
-		case 8: *value = totals.initSnowCover / totalarea * UCF(RAINDEPTH); break;
-		// Routing Error
-		case 9: *value = massbal_getRunoffError(); break;
-		// Type not available
-		default: return(ERR_API_OUTBOUNDS);
+		*value = massbal_getRunoffTotal(type);
+		return(0);
 	}
-	return(0);
+	else return(ERR_API_OUTBOUNDS);
 }
 
 
