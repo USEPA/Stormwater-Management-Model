@@ -787,3 +787,188 @@ void  stats_updateMaxStats(TMaxStats maxStats[], int i, int j, double x)
 }
 
 //=============================================================================
+
+double stats_getNodeStat(int index, int element)
+//
+// Input:    index
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Node Stat for toolkitAPI
+//
+{
+	double value;
+
+	switch (element)
+	{
+		// Current Average Depth
+		case 0: value = NodeStats[index].avgDepth * UCF(LENGTH); break;
+		// Current Maximum Depth
+		case 1: value = NodeStats[index].maxDepth * UCF(LENGTH); break;
+		// Cumulative Flooded Volume
+		case 2: value = NodeStats[index].volFlooded * UCF(VOLUME); break;
+		// Time Flooded (hrs)
+		case 3: value = NodeStats[index].timeFlooded / 3600.0; break;
+		// Time Surcharged 
+		case 4: value = NodeStats[index].timeSurcharged / 3600.0; break;
+		// Time Courant Critical (hrs)
+		case 5: value = NodeStats[index].timeCourantCritical / 3600.0; break;
+		// Cumulative Lateral Inflow
+		case 6: value = NodeStats[index].totLatFlow  * UCF(FLOW); break;
+		// Current Maximum Lateral Inflow
+		case 7: value = NodeStats[index].maxLatFlow * UCF(FLOW); break;
+		// Current Maximum Inflow
+		case 8: value = NodeStats[index].maxInflow * UCF(FLOW); break;
+		// Current Maximum Overflow
+		case 9: value = NodeStats[index].maxOverflow * UCF(FLOW); break;
+		// Current Maximum Ponding Volume
+		case 10: value = NodeStats[index].maxPondedVol * UCF(VOLUME); break;
+	}
+	return value;
+}
+
+double stats_getStorageStat(int subindex, int element)
+//
+// Input:    subindex
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Storage Stat for toolkitAPI
+//
+{
+	double value;
+
+	switch (element)
+	{
+		// Initial Volume
+		case 11: value = StorageStats[subindex].initVol * UCF(VOLUME); break;
+		// Current Average Volume
+		case 12: value = StorageStats[subindex].avgVol * UCF(VOLUME); break;
+		// Current Maximum Volume
+		case 13: value = StorageStats[subindex].maxVol * UCF(VOLUME); break;
+		// Current Maximum Flow
+		case 14: value = StorageStats[subindex].maxFlow * UCF(FLOW); break;
+		// Current Evaporation Volume
+		case 15: value = StorageStats[subindex].evapLosses * UCF(VOLUME); break;
+		// Current Exfiltration Volume
+		case 16: value = StorageStats[subindex].exfilLosses * UCF(VOLUME); break;
+	}
+	return value;
+}
+
+double stats_getOutfallStat(int subindex, int element)
+//
+// Input:    subindex
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Outfall Stat for toolkitAPI
+//
+{
+	double value;
+
+	switch (element)
+	{
+		// Current Average Flow
+		case 17: value = OutfallStats[subindex].avgFlow * UCF(FLOW); break;
+		// Current Maximum Flow
+		case 18: value = OutfallStats[subindex].maxFlow * UCF(FLOW); break;
+		// Cumulative Outfall Volume
+		case 19: value = OutfallStats[subindex].avgFlow * UCF(FLOW) /
+			(double)OutfallStats[subindex].totalPeriods; break;
+	}
+	return value;
+}
+
+double stats_getLinkStat(int index, int element)
+//
+// Input:    index
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Link Stat for toolkitAPI
+//
+{
+	double value;
+
+	switch (element)
+	{
+		// Cumulative Dry Weather Inflow Volume
+		case 0: value = LinkStats[index].maxFlow * UCF(FLOW); break;
+		// Cumulative Wet Weather Inflow Volume
+		case 1: value = LinkStats[index].maxVeloc * UCF(LENGTH); break;
+		// Cumulative Groundwater Inflow Volume
+		case 2: value = LinkStats[index].maxDepth * UCF(LENGTH); break;
+		// Cumulative I&I Inflow Volume
+		case 3: value = LinkStats[index].timeNormalFlow / 3600.0; break;
+		// Cumulative External Inflow Volume
+		case 4: value = LinkStats[index].timeInletControl / 3600.0; break;
+		// Cumulative Flooding Volume
+		case 5: value = LinkStats[index].timeSurcharged / 3600.0; break;
+		// Cumulative Outflow Volume
+		case 6: value = LinkStats[index].timeFullUpstream / 3600.0; break;
+		// Cumulative Evaporation Loss
+		case 7: value = LinkStats[index].timeFullDnstream / 3600.0; break;
+		// Cumulative Seepage Loss
+		case 8: value = LinkStats[index].timeFullFlow / 3600.0; break;
+		// Cumulative Seepage Loss
+		case 9: value = LinkStats[index].timeCapacityLimited / 3600.0; break;
+		// Cumulative Seepage Loss
+		case 10: value = LinkStats[index].timeCourantCritical / 3600.0; break;
+	}
+	return value;
+}
+
+double stats_getPumpStat(int subindex, int element)
+//
+// Input:    subindex
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Pump Stat for toolkitAPI
+//
+{
+	double value;
+
+	switch (element)
+	{
+		// Cumulative Fraction Time On
+		case 11: value = PumpStats[subindex].utilized; break;
+		// Cumulative Minimum Flow
+		case 12: value = PumpStats[subindex].minFlow * UCF(FLOW); break;
+		// Cumulative Average Flow
+		case 13: value = PumpStats[subindex].avgFlow * UCF(FLOW); break;
+		// Cumulative Maximum Flow
+		case 14: value = PumpStats[subindex].maxFlow * UCF(FLOW); break;
+		// Cumulative Pumping Volume
+		case 15: value = PumpStats[subindex].volume * UCF(VOLUME); break;
+		// Cumulative Emergy Consumed
+		case 16: value = PumpStats[subindex].energy; break;
+		// Number of Start ups
+		case 17: value = PumpStats[subindex].startUps; break;
+	}
+	return value;
+}
+
+double stats_getSubcatchStat(int index, int element)
+//
+// Input:    index
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Subcatchment Stat for toolkitAPI
+//
+{
+	double value;
+
+	switch (element)
+	{
+		// Cumulative Rainfall Depth
+		case 0: value = SubcatchStats[index].precip * UCF(RAINDEPTH); break;
+		// Cumulative Runon Volume
+		case 1: value = SubcatchStats[index].runon * UCF(VOLUME); break;
+		// Cumulative Evaporation Volume
+		case 2: value = SubcatchStats[index].evap * UCF(VOLUME); break;
+		// Cumulative Infiltration Volume
+		case 3: value = SubcatchStats[index].infil * UCF(VOLUME); break;
+		// Cumulative Runoff Volume
+		case 4: value = SubcatchStats[index].runoff * UCF(VOLUME); break;
+		// Cumulative Emergy Consumed
+		case 5: value = SubcatchStats[index].maxFlow * UCF(FLOW); break;
+	}
+	return value;
+}

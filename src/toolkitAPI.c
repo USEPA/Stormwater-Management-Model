@@ -762,6 +762,90 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 	return(0);
 }
 
+int DLLEXPORT swmm_getNodeStats(int index, int type, double *value)
+{
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
+
+	// Check if object index is within bounds
+	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OUTBOUNDS);
+
+	// Check if Simulation is Running
+	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
+	
+	// Check if in bounds
+	if (type >= 0 && type < 10)
+	// Common Node Stats
+	{
+		*value = stats_getNodeStat(index, type);
+		return(0);
+	}
+	else if(type >= 10 && type < 16)
+	// Storage Stats
+	{
+		if (Node[index].type != STORAGE) return(ERR_API_WRONG_TYPE);
+		int k = Node[index].subIndex;
+		*value = stats_getStorageStat(k, type);
+		return(0);
+	}
+	else if (type < 20)
+	// Outfall Stats
+	{
+		if (Node[index].type != OUTFALL) return(ERR_API_WRONG_TYPE);
+		int k = Node[index].subIndex;
+		*value = stats_getOutfallStat(k, type);
+		return(0);
+	}
+	else return(ERR_API_OUTBOUNDS);
+}
+
+int DLLEXPORT swmm_getLinkStats(int index, int type, double *value)
+{
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
+
+	// Check if object index is within bounds
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
+
+	// Check if Simulation is Running
+	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
+
+	// Check if in bounds
+	if (type >= 0 && type < 10)
+	{
+		*value = stats_getLinkStat(index, type);
+		return(0);
+	}
+	else if (type >= 10 && type < 18)
+	// Pump Stats
+	{
+		if (Link[index].type != PUMP) return(ERR_API_WRONG_TYPE);
+		int k = Link[index].subIndex;
+		*value = stats_getPumpStat(k, type);
+		return(0);
+	}
+	else return(ERR_API_OUTBOUNDS);
+}
+
+int DLLEXPORT swmm_getSubcatchStats(int index, int type, double *value)
+{
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
+	
+	// Check if object index is within bounds	
+	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OUTBOUNDS);
+
+	// Check if Simulation is Running
+	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
+
+	// Check if in bounds
+	if (type >= 0 && type < 6)
+	{
+		*value = stats_getSubcatchStat(index, type);
+		return(0);
+	}
+	else return(ERR_API_OUTBOUNDS);
+}
 
 int DLLEXPORT swmm_getSystemRoutingTotals(int type, double *value)
 //
