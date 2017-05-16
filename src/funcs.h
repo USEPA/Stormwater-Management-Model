@@ -288,6 +288,10 @@ void    massbal_addReactedMass(int pollut, double mass);
 void    massbal_addSeepageLoss(int pollut, double seepLoss);                   //(5.1.008)
 void    massbal_addToFinalStorage(int pollut, double mass);                    //(5.1.008)
 double  massbal_getStepFlowError(void);
+double  massbal_getRunoffError(void);
+double  massbal_getFlowError(void);
+double  massbal_getRoutingFlowTotal(int element); // For API
+double  massbal_getRunoffTotal(int element);      // For API
 
 //-----------------------------------------------------------------------------
 //   Simulation Statistics Methods

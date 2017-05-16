@@ -94,10 +94,8 @@ double   TotalArea;               // total drainage area (ft2)
 double massbal_getBuildup(int pollut);
 double massbal_getStorage(char isFinalStorage);
 double massbal_getStoredMass(int pollut);
-double massbal_getRunoffError(void);
 double massbal_getLoadingError(void);
 double massbal_getGwaterError(void);
-double massbal_getFlowError(void);
 double massbal_getQualError(void);
 
 
@@ -1086,3 +1084,73 @@ double massbal_getStoredMass(int p)
 }
 
 //=============================================================================
+
+double massbal_getRoutingFlowTotal(int element)
+//
+// Input:    element = element to return
+// Return:   value
+// Purpose:  Gets the routing total for toolkitAPI
+//
+{
+	double value;
+
+	switch (element)
+	{
+		// Cumulative Dry Weather Inflow Volume
+		case 0: value = FlowTotals.dwInflow * UCF(VOLUME); break;
+		// Cumulative Wet Weather Inflow Volume
+		case 1: value = FlowTotals.wwInflow * UCF(VOLUME); break;
+		// Cumulative Groundwater Inflow Volume
+		case 2: value = FlowTotals.gwInflow * UCF(VOLUME); break;
+		// Cumulative I&I Inflow Volume
+		case 3: value = FlowTotals.iiInflow * UCF(VOLUME); break;
+		// Cumulative External Inflow Volume
+		case 4: value = FlowTotals.exInflow * UCF(VOLUME); break;
+		// Cumulative Flooding Volume
+		case 5: value = FlowTotals.flooding * UCF(VOLUME); break;
+		// Cumulative Outflow Volume
+		case 6: value = FlowTotals.outflow  * UCF(VOLUME); break;
+		// Cumulative Evaporation Loss
+		case 7: value = FlowTotals.evapLoss * UCF(VOLUME); break;
+		// Cumulative Seepage Loss
+		case 8: value = FlowTotals.seepLoss * UCF(VOLUME); break;
+		// Routing Error
+		case 9: value = massbal_getFlowError(); break;
+	}
+	return value;
+}
+
+double massbal_getRunoffTotal(int element)
+//
+// Input:    element = element to return
+// Return:   value
+// Purpose:  Gets the runoff total for toolkitAPI
+//
+{
+	double value;
+
+	switch (element)
+	{
+		// Cumulative Rainfall Volume
+		case 0: value = RunoffTotals.rainfall / TotalArea * UCF(RAINDEPTH); break;
+		// Cumulative Evaporation Volume
+		case 1: value = RunoffTotals.evap / TotalArea * UCF(RAINDEPTH); break;
+		// Cumulative Infiltration Volume
+		case 2: value = RunoffTotals.infil / TotalArea * UCF(RAINDEPTH); break;
+		// Cumulative Runoff Volume
+		case 3: value = RunoffTotals.runoff / TotalArea * UCF(RAINDEPTH); break;
+		// Cumulative Runon Volume
+		case 4: value = RunoffTotals.runon / TotalArea * UCF(RAINDEPTH); break;
+		// Cumulative Drain Volume
+		case 5: value = RunoffTotals.drains / TotalArea * UCF(RAINDEPTH); break;
+		// Cumulative Snow Removed Volume
+		case 6: value = RunoffTotals.snowRemoved / TotalArea * UCF(RAINDEPTH); break;
+		// Initial Storage Volume
+		case 7: value = RunoffTotals.initStorage / TotalArea * UCF(RAINDEPTH); break;
+		// Initial Snow Cover Volume
+		case 8: value = RunoffTotals.initSnowCover / TotalArea * UCF(RAINDEPTH); break;
+		// Routing Error
+		case 9: value = massbal_getRunoffError(); break;
+	}
+	return value;
+}
