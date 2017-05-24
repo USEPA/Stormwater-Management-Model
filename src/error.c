@@ -172,6 +172,7 @@
 #define ERR501 "\n API Key Error: Object Type Outside Bonds"
 #define ERR502 "\n API Key Error: Network Not Initialized (Input file open?)"
 #define ERR503 "\n API Key Error: Simulation Not Running"
+#define ERR504 "\n API Key Error: Incorrect object type for parameter chosen"
 
 ////////////////////////////////////////////////////////////////////////////
 //  NOTE: Need to update ErrorMsgs[], ErrorCodes[], and ErrorType
@@ -190,7 +191,7 @@ char* ErrorMsgs[] =
       ERR313, ERR315, ERR317, ERR318, ERR319, ERR320, ERR321, ERR323, ERR325,
       ERR327, ERR329, ERR330, ERR331, ERR333, ERR335, ERR336, ERR337, ERR338,
       ERR339, ERR341, ERR343, ERR345, ERR351, ERR353, ERR355, ERR357, ERR361,
-      ERR363, ERR401, ERR402, ERR403, ERR405, ERR501, ERR502, ERR503};
+      ERR363, ERR401, ERR402, ERR403, ERR405, ERR501, ERR502, ERR503, ERR504};
 
 int ErrorCodes[] =
     { 0,      101,    103,    105,    107,    108,    109,    110,    111,
@@ -204,7 +205,7 @@ int ErrorCodes[] =
       313,    315,    317,    318,    319,    320,    321,    323,    325,
       327,    329,    330,    331,    333,    335,    336,    337,    338,
       339,    341,    343,    345,    351,    353,    355,    357,    361,
-      363,    401,    402,    403,    405,    501,    502,    503};
+      363,    401,    402,    403,    405,    501,    502,    503,    504};
 
 char  ErrString[256];
 

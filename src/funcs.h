@@ -311,6 +311,13 @@ void    stats_updateGwaterStats(int j, double infil, double evap,              /
 void    stats_updateMaxRunoff(void);
 void    stats_updateMaxNodeDepth(int node, double depth);                      //(5.1.008)
 
+double  stats_getNodeStat(int index, int element);       // For API
+double  stats_getStorageStat(int subindex, int element); // For API
+double  stats_getOutfallStat(int subindex, int element); // For API
+double  stats_getLinkStat(int index, int element);       // For API
+double  stats_getPumpStat(int subindex, int element);     // For API
+double  stats_getSubcatchStat(int index, int element);   // For API
+
 //-----------------------------------------------------------------------------
 //   Raingage Methods
 //-----------------------------------------------------------------------------
