@@ -9,6 +9,8 @@
 //   Exportable Functions for Project Definition API.
 //
 //-----------------------------------------------------------------------------
+#define _CRT_SECURE_NO_DEPRECATE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -762,92 +764,57 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 	return(0);
 }
 
-int DLLEXPORT swmm_getNodeStats(int index, int type, double *value)
+int DLLEXPORT swmm_getNodeStats(int index, int paramtype, double *value)
 {
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
+	int errorcode = 0;
 
-	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OUTBOUNDS);
-
-	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
-	
 	// Check if in bounds
-	if (type >= 0 && type < 10)
+	if (paramtype >= 0 && paramtype < 10)
 	// Common Node Stats
 	{
-		*value = stats_getNodeStat(index, type);
-		return(0);
+		errorcode = stats_getNodeStat(index, paramtype, value);
 	}
-	else if(type >= 10 && type < 16)
+	else if (paramtype >= 10 && paramtype < 16)
 	// Storage Stats
 	{
-		if (Node[index].type != STORAGE) return(ERR_API_WRONG_TYPE);
-		int k = Node[index].subIndex;
-		*value = stats_getStorageStat(k, type);
-		return(0);
+		errorcode = stats_getStorageStat(index, paramtype, value);
 	}
-	else if (type < 20)
+	else if (paramtype < 20)
 	// Outfall Stats
 	{
-		if (Node[index].type != OUTFALL) return(ERR_API_WRONG_TYPE);
-		int k = Node[index].subIndex;
-		*value = stats_getOutfallStat(k, type);
-		return(0);
+		errorcode = stats_getOutfallStat(index, paramtype, value);
 	}
-	else return(ERR_API_OUTBOUNDS);
+	else errorcode = ERR_API_OUTBOUNDS;
+
+	return errorcode;
 }
 
-int DLLEXPORT swmm_getLinkStats(int index, int type, double *value)
+int DLLEXPORT swmm_getLinkStats(int index, int paramtype, double *value)
 {
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
-
-	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
-
-	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
+	int errorcode = 0;
 
 	// Check if in bounds
-	if (type >= 0 && type < 10)
+	if (paramtype >= 0 && paramtype < 10)
 	{
-		*value = stats_getLinkStat(index, type);
-		return(0);
+		errorcode = stats_getLinkStat(index, paramtype, value);
 	}
-	else if (type >= 10 && type < 18)
+	else if (paramtype >= 10 && paramtype < 18)
 	// Pump Stats
 	{
-		if (Link[index].type != PUMP) return(ERR_API_WRONG_TYPE);
-		int k = Link[index].subIndex;
-		*value = stats_getPumpStat(k, type);
-		return(0);
+		errorcode = stats_getPumpStat(index, paramtype, value);
 	}
-	else return(ERR_API_OUTBOUNDS);
+	else errorcode = ERR_API_OUTBOUNDS;
+
+	return errorcode;
 }
 
-int DLLEXPORT swmm_getSubcatchStats(int index, int type, double *value)
+int DLLEXPORT swmm_getSubcatchStats(int index, int paramtype, double *value)
 {
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
-	
-	// Check if object index is within bounds	
-	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OUTBOUNDS);
-
-	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
-
-	// Check if in bounds
-	if (type >= 0 && type < 6)
-	{
-		*value = stats_getSubcatchStat(index, type);
-		return(0);
-	}
-	else return(ERR_API_OUTBOUNDS);
+	int errorcode = stats_getSubcatchStat(index, paramtype, value);
+	return errorcode;
 }
 
-int DLLEXPORT swmm_getSystemRoutingTotals(int type, double *value)
+int DLLEXPORT swmm_getSystemRoutingTotals(int paramtype, double *value)
 //
 // Input: 	type = Result Type
 // Output: 	volume = total data desired (Cu. Ft, Cu Meter)
@@ -855,22 +822,11 @@ int DLLEXPORT swmm_getSystemRoutingTotals(int type, double *value)
 // Return: 	API Error
 // Purpose: Gets System Routing Totals
 {
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
-
-	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
-
-	// Check if in bounds
-	if (type >= 0 && type < 10)
-	{
-		*value = massbal_getRoutingFlowTotal(type);
-		return(0);
-	}
-	else return(ERR_API_OUTBOUNDS);
+	int errorcode = massbal_getRoutingFlowTotal(paramtype, value);
+	return errorcode;
 }
 
-int DLLEXPORT swmm_getSystemRunoffTotals(int type, double *value)
+int DLLEXPORT swmm_getSystemRunoffTotals(int paramtype, double *value)
 //
 // Input: 	type = Result Type
 // Output: 	volume = total data desired 
@@ -878,19 +834,8 @@ int DLLEXPORT swmm_getSystemRunoffTotals(int type, double *value)
 // Return: 	API Error
 // Purpose: Gets System Runoff Totals
 {
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
-
-	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
-
-	// Check if in bounds
-	if (type >= 0 && type < 10)
-	{
-		*value = massbal_getRunoffTotal(type);
-		return(0);
-	}
-	else return(ERR_API_OUTBOUNDS);
+	int errorcode = massbal_getRunoffTotal(paramtype, value);
+	return errorcode;
 }
 
 
