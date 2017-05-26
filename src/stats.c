@@ -789,7 +789,7 @@ void  stats_updateMaxStats(TMaxStats maxStats[], int i, int j, double x)
 
 //=============================================================================
 
-int stats_getNodeStat(int index, int paramtype, double* value)
+int stats_getNodeStat(int index, API_nodeStats paramtype, double* value)
 //
 // Input:    index
 //           element = element to return
@@ -806,42 +806,54 @@ int stats_getNodeStat(int index, int paramtype, double* value)
 	}
 
 	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE)
+	else if (swmm_IsStartedFlag() == FALSE)
 	{
 		errorcode = ERR_API_SIM_NRUNNING;
 	}
 
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE])
+	else if (index < 0 || index >= Nobjects[NODE])
 	{
-		errorcode = ERR_API_OUTBOUNDS;
+		errorcode = ERR_API_OBJECT_INDEX;
 	}
-	if (errorcode == 0)
+
+	else
 	{
 		switch (paramtype)
 		{
 		// Current Average Depth
-		case 0: *value = NodeStats[index].avgDepth * UCF(LENGTH); break;
+		case node_ave_depth:
+			*value = NodeStats[index].avgDepth * UCF(LENGTH); break;
 		// Current Maximum Depth
-		case 1: *value = NodeStats[index].maxDepth * UCF(LENGTH); break;
+		case node_max_depth: 
+			*value = NodeStats[index].maxDepth * UCF(LENGTH); break;
 		// Cumulative Flooded Volume
-		case 2: *value = NodeStats[index].volFlooded * UCF(VOLUME); break;
+		case node_flooded_vol:
+			*value = NodeStats[index].volFlooded * UCF(VOLUME); break;
 		// Time Flooded (hrs)
-		case 3: *value = NodeStats[index].timeFlooded / 3600.0; break;
+		case node_time_flooded: 
+			*value = NodeStats[index].timeFlooded / 3600.0; break;
 		// Time Surcharged 
-		case 4: *value = NodeStats[index].timeSurcharged / 3600.0; break;
+		case node_time_surcharged: 
+			*value = NodeStats[index].timeSurcharged / 3600.0; break;
 		// Time Courant Critical (hrs)
-		case 5: *value = NodeStats[index].timeCourantCritical / 3600.0; break;
+		case node_time_cour_crit: 
+			*value = NodeStats[index].timeCourantCritical / 3600.0; break;
 		// Cumulative Lateral Inflow
-		case 6: *value = NodeStats[index].totLatFlow  * UCF(FLOW); break;
+		case node_cu_lat_inflow_vol:
+			*value = NodeStats[index].totLatFlow  * UCF(FLOW); break;
 		// Current Maximum Lateral Inflow
-		case 7: *value = NodeStats[index].maxLatFlow * UCF(FLOW); break;
+		case node_max_lat_inflowrate:
+			*value = NodeStats[index].maxLatFlow * UCF(FLOW); break;
 		// Current Maximum Inflow
-		case 8: *value = NodeStats[index].maxInflow * UCF(FLOW); break;
+		case node_max_inflowrate: 
+			*value = NodeStats[index].maxInflow * UCF(FLOW); break;
 		// Current Maximum Overflow
-		case 9: *value = NodeStats[index].maxOverflow * UCF(FLOW); break;
+		case node_max_overflowrate: 
+			*value = NodeStats[index].maxOverflow * UCF(FLOW); break;
 		// Current Maximum Ponding Volume
-		case 10: *value = NodeStats[index].maxPondedVol * UCF(VOLUME); break;
+		case node_max_ponded_vol: 
+			*value = NodeStats[index].maxPondedVol * UCF(VOLUME); break;
 		// Default
 		default: errorcode = ERR_API_OUTBOUNDS; break;
 		}
@@ -849,7 +861,7 @@ int stats_getNodeStat(int index, int paramtype, double* value)
 	return errorcode;
 }
 
-int stats_getStorageStat(int index, int paramtype, double *value)
+int stats_getStorageStat(int index, API_nodeStats paramtype, double *value)
 //
 // Input:    subindex
 //           element = element to return
@@ -866,24 +878,24 @@ int stats_getStorageStat(int index, int paramtype, double *value)
 	}
 
 	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE)
+	else if (swmm_IsStartedFlag() == FALSE)
 	{
 		errorcode = ERR_API_SIM_NRUNNING;
 	}
 
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE])
+	else if (index < 0 || index >= Nobjects[NODE])
 	{
-		errorcode = ERR_API_OUTBOUNDS;
+		errorcode = ERR_API_OBJECT_INDEX;
 	}
 
 	// Check Node Type is storage
-	if (Node[index].type != STORAGE)
+	else if (Node[index].type != STORAGE)
 	{
 		errorcode = ERR_API_WRONG_TYPE;
 	}
 
-	if (errorcode == 0)
+	else
 	{
 		// fetch sub index
 		int k = Node[index].subIndex;
@@ -891,17 +903,23 @@ int stats_getStorageStat(int index, int paramtype, double *value)
 		switch (paramtype)
 		{
 		// Initial Volume
-		case 11: *value = StorageStats[k].initVol * UCF(VOLUME); break;
+		case stor_init_vol: 
+			*value = StorageStats[k].initVol * UCF(VOLUME); break;
 		// Current Average Volume
-		case 12: *value = StorageStats[k].avgVol * UCF(VOLUME); break;
+		case stor_ave_vol: 
+			*value = StorageStats[k].avgVol * UCF(VOLUME); break;
 		// Current Maximum Volume
-		case 13: *value = StorageStats[k].maxVol * UCF(VOLUME); break;
+		case stor_max_vol: 
+			*value = StorageStats[k].maxVol * UCF(VOLUME); break;
 		// Current Maximum Flow
-		case 14: *value = StorageStats[k].maxFlow * UCF(FLOW); break;
+		case stor_max_outflowrate: 
+			*value = StorageStats[k].maxFlow * UCF(FLOW); break;
 		// Current Evaporation Volume
-		case 15: *value = StorageStats[k].evapLosses * UCF(VOLUME); break;
+		case stor_cu_evap_vol:
+			*value = StorageStats[k].evapLosses * UCF(VOLUME); break;
 		// Current Exfiltration Volume
-		case 16: *value = StorageStats[k].exfilLosses * UCF(VOLUME); break;
+		case stor_cu_exfil_vol:
+			*value = StorageStats[k].exfilLosses * UCF(VOLUME); break;
 		// Default
 		default: errorcode = ERR_API_OUTBOUNDS; break;
 		}
@@ -909,7 +927,7 @@ int stats_getStorageStat(int index, int paramtype, double *value)
 	return errorcode;
 }
 
-int stats_getOutfallStat(int index, int paramtype, double *value)
+int stats_getOutfallStat(int index, API_nodeStats paramtype, double *value)
 //
 // Input:    subindex
 //           element = element to return
@@ -926,44 +944,47 @@ int stats_getOutfallStat(int index, int paramtype, double *value)
 	}
 
 	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE)
+	else if (swmm_IsStartedFlag() == FALSE)
 	{
 		errorcode = ERR_API_SIM_NRUNNING;
 	}
 
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE])
+	else if (index < 0 || index >= Nobjects[NODE])
 	{
-		errorcode = ERR_API_OUTBOUNDS;
+		errorcode = ERR_API_OBJECT_INDEX;
 	}
 
 	// Check Node Type is outfall
-	if (Node[index].type != OUTFALL)
+	else if (Node[index].type != OUTFALL)
 	{
 		errorcode = ERR_API_WRONG_TYPE;
 	}
 
-	if (errorcode == 0)
+	else
 	{
 		int k = Node[index].subIndex;
 
 		switch (paramtype)
 		{
-			// Current Average Flow
-		case 17: *value = OutfallStats[k].avgFlow * UCF(FLOW); break;
-			// Current Maximum Flow
-		case 18: *value = OutfallStats[k].maxFlow * UCF(FLOW); break;
-			// Cumulative Outfall Volume
-		case 19: *value = OutfallStats[k].avgFlow * UCF(FLOW) /
+		// Current Average Flow
+		case out_ave_inflowrate: 
+			*value = OutfallStats[k].avgFlow * UCF(FLOW); break;
+		// Current Maximum Flow
+		case out_max_inflowrate: 
+			*value = OutfallStats[k].maxFlow * UCF(FLOW); break;
+		// Cumulative Outfall Volume
+		case out_cu_vol:
+			*value = OutfallStats[k].avgFlow * UCF(FLOW) /
 			(double)OutfallStats[k].totalPeriods; break;
-			// Default
+		// Default
 		default: errorcode = ERR_API_OUTBOUNDS; break;
 		}
 	}
 	return errorcode;
 }
 
-int stats_getLinkStat(int index, int paramtype, double *value)
+int stats_getLinkStat(int index, API_linkStats paramtype, double *value)
 //
 // Input:    index
 //           element = element to return
@@ -980,43 +1001,54 @@ int stats_getLinkStat(int index, int paramtype, double *value)
 	}
 
 	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE)
+	else if (swmm_IsStartedFlag() == FALSE)
 	{
 		errorcode = ERR_API_SIM_NRUNNING;
 	}
 
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK])
+	else if (index < 0 || index >= Nobjects[LINK])
 	{
-		errorcode = ERR_API_OUTBOUNDS;
+		errorcode = ERR_API_OBJECT_INDEX;
 	}
 
-	if (errorcode == 0)
+	else
 	{
 		switch (paramtype)
 		{
-		// Cumulative Dry Weather Inflow Volume
-		case 0: *value = LinkStats[index].maxFlow * UCF(FLOW); break;
-		// Cumulative Wet Weather Inflow Volume
-		case 1: *value = LinkStats[index].maxVeloc * UCF(LENGTH); break;
-		// Cumulative Groundwater Inflow Volume
-		case 2: *value = LinkStats[index].maxDepth * UCF(LENGTH); break;
-		// Cumulative I&I Inflow Volume
-		case 3: *value = LinkStats[index].timeNormalFlow / 3600.0; break;
-		// Cumulative External Inflow Volume
-		case 4: *value = LinkStats[index].timeInletControl / 3600.0; break;
-		// Cumulative Flooding Volume
-		case 5: *value = LinkStats[index].timeSurcharged / 3600.0; break;
-		// Cumulative Outflow Volume
-		case 6: *value = LinkStats[index].timeFullUpstream / 3600.0; break;
-		// Cumulative Evaporation Loss
-		case 7: *value = LinkStats[index].timeFullDnstream / 3600.0; break;
-		// Cumulative Seepage Loss
-		case 8: *value = LinkStats[index].timeFullFlow / 3600.0; break;
-		// Cumulative Seepage Loss
-		case 9: *value = LinkStats[index].timeCapacityLimited / 3600.0; break;
-		// Cumulative Seepage Loss
-		case 10: *value = LinkStats[index].timeCourantCritical / 3600.0; break;
+		// Cumulative Maximum Flowrate
+		case link_max_flowrate: 
+			*value = LinkStats[index].maxFlow * UCF(FLOW); break;
+		// Cumulative Maximum Velocity
+		case link_max_velocity: 
+			*value = LinkStats[index].maxVeloc * UCF(LENGTH); break;
+		// Cumulative Maximum Depth
+		case link_max_depth: 
+			*value = LinkStats[index].maxDepth * UCF(LENGTH); break;
+		// Cumulative Time Normal Flow
+		case link_time_norm_flow: 
+			*value = LinkStats[index].timeNormalFlow / 3600.0; break;
+		// Cumulative Time Inlet Control
+		case link_time_inlet_control: 
+			*value = LinkStats[index].timeInletControl / 3600.0; break;
+		// Cumulative Time Surcharged
+		case link_time_surcharged: 
+			*value = LinkStats[index].timeSurcharged / 3600.0; break;
+		// Cumulative Time Upstream Full
+		case link_time_upstream_full: 
+			*value = LinkStats[index].timeFullUpstream / 3600.0; break;
+		// Cumulative Time Downstream Full
+		case link_time_downstream_full: 
+			*value = LinkStats[index].timeFullDnstream / 3600.0; break;
+		// Cumulative Time Full Flow
+		case link_time_full_flow: 
+			*value = LinkStats[index].timeFullFlow / 3600.0; break;
+		// Cumulative Time Capacity limited
+		case link_time_capacity_limited: 
+			*value = LinkStats[index].timeCapacityLimited / 3600.0; break;
+		// Cumulative Time Courant Critical Flow
+		case link_time_cour_crit: 
+			*value = LinkStats[index].timeCourantCritical / 3600.0; break;
 		// Default
 		default: errorcode = ERR_API_OUTBOUNDS; break;
 		}
@@ -1024,7 +1056,7 @@ int stats_getLinkStat(int index, int paramtype, double *value)
 	return errorcode;
 }
 
-int stats_getPumpStat(int index, int paramtype, double *value)
+int stats_getPumpStat(int index, API_linkStats paramtype, double *value)
 //
 // Input:    subindex
 //           element = element to return
@@ -1041,43 +1073,50 @@ int stats_getPumpStat(int index, int paramtype, double *value)
 	}
 
 	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE)
+	else if (swmm_IsStartedFlag() == FALSE)
 	{
 		errorcode = ERR_API_SIM_NRUNNING;
 	}
 
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK])
+	else if (index < 0 || index >= Nobjects[LINK])
 	{
-		errorcode = ERR_API_OUTBOUNDS;
+		errorcode = ERR_API_OBJECT_INDEX;
 	}
 	
 	// Check if pump
-	if (Link[index].type != PUMP)
+	else if (Link[index].type != PUMP)
 	{
 		errorcode = ERR_API_WRONG_TYPE;
 	}
 
-	if (errorcode == 0)
+	else
 	{
 		int k = Link[index].subIndex;
 
 		switch (paramtype)
 		{
 		// Cumulative Fraction Time On
-		case 11: *value = PumpStats[k].utilized; break;
+		case pump_fraction_time_on: 
+			*value = PumpStats[k].utilized; break;
 		// Cumulative Minimum Flow
-		case 12: *value = PumpStats[k].minFlow * UCF(FLOW); break;
+		case pump_min_flow: 
+			*value = PumpStats[k].minFlow * UCF(FLOW); break;
 		// Cumulative Average Flow
-		case 13: *value = PumpStats[k].avgFlow * UCF(FLOW); break;
+		case pump_ave_flow: 
+			*value = PumpStats[k].avgFlow * UCF(FLOW); break;
 		// Cumulative Maximum Flow
-		case 14: *value = PumpStats[k].maxFlow * UCF(FLOW); break;
+		case pump_max_flow: 
+			*value = PumpStats[k].maxFlow * UCF(FLOW); break;
 		// Cumulative Pumping Volume
-		case 15: *value = PumpStats[k].volume * UCF(VOLUME); break;
+		case pump_cu_vol:
+			*value = PumpStats[k].volume * UCF(VOLUME); break;
 		// Cumulative Emergy Consumed
-		case 16: *value = PumpStats[k].energy; break;
+		case pump_energy_consumed: 
+			*value = PumpStats[k].energy; break;
 		// Number of Start ups
-		case 17: *value = PumpStats[k].startUps; break;
+		case pump_total_startups: 
+			*value = PumpStats[k].startUps; break;
 		// Default
 		default: errorcode = ERR_API_OUTBOUNDS; break;
 		}
@@ -1085,7 +1124,7 @@ int stats_getPumpStat(int index, int paramtype, double *value)
 	return errorcode;
 }
 
-int stats_getSubcatchStat(int index, int paramtype, double *value)
+int stats_getSubcatchStat(int index, API_subcatchStats paramtype, double *value)
 //
 // Input:    index
 //           element = element to return
@@ -1102,33 +1141,39 @@ int stats_getSubcatchStat(int index, int paramtype, double *value)
 	}
 
 	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE)
+	else if (swmm_IsStartedFlag() == FALSE)
 	{
 		errorcode = ERR_API_SIM_NRUNNING;
 	}
 
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[SUBCATCH])
+	else if (index < 0 || index >= Nobjects[SUBCATCH])
 	{
-		errorcode = ERR_API_OUTBOUNDS;
+		errorcode = ERR_API_OBJECT_INDEX;
 	}
 
-	if (errorcode == 0)
+	else
 	{
 		switch (paramtype)
 		{
 		// Cumulative Rainfall Depth
-		case 0: *value = SubcatchStats[index].precip * UCF(RAINDEPTH); break;
+		case subc_cu_precip:
+			*value = SubcatchStats[index].precip * UCF(RAINDEPTH); break;
 		// Cumulative Runon Volume
-		case 1: *value = SubcatchStats[index].runon * UCF(VOLUME); break;
+		case subc_cu_runon_vol:
+			*value = SubcatchStats[index].runon * UCF(VOLUME); break;
 		// Cumulative Evaporation Volume
-		case 2: *value = SubcatchStats[index].evap * UCF(VOLUME); break;
+		case subc_cu_evap_vol:
+			*value = SubcatchStats[index].evap * UCF(VOLUME); break;
 		// Cumulative Infiltration Volume
-		case 3: *value = SubcatchStats[index].infil * UCF(VOLUME); break;
+		case subc_cu_infil_vol:
+			*value = SubcatchStats[index].infil * UCF(VOLUME); break;
 		// Cumulative Runoff Volume
-		case 4: *value = SubcatchStats[index].runoff * UCF(VOLUME); break;
-		// Cumulative Emergy Consumed
-		case 5: *value = SubcatchStats[index].maxFlow * UCF(FLOW); break;
+		case subc_cu_runoff_vol:
+			*value = SubcatchStats[index].runoff * UCF(VOLUME); break;
+		// Maximum Runoff Rate
+		case subc_max_flowrate: 
+			*value = SubcatchStats[index].maxFlow * UCF(FLOW); break;
 		// Default
 		default: errorcode = ERR_API_OUTBOUNDS; break;
 		}

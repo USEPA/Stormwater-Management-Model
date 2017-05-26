@@ -471,3 +471,102 @@ enum  NoneAllType {
       NONE,
       ALL,
       SOME};
+
+
+//=============================================================================
+// API 
+//=============================================================================
+
+//-------------------------------------
+// API Node Stats Enum
+//-------------------------------------
+typedef enum {
+	node_ave_depth,
+	node_max_depth,
+	node_flooded_vol,
+	node_time_flooded,
+	node_time_surcharged,
+	node_time_cour_crit,
+	node_cu_lat_inflow_vol,
+	node_max_lat_inflowrate,
+	node_max_inflowrate,
+	node_max_overflowrate,
+	node_max_ponded_vol,
+	stor_init_vol,
+	stor_ave_vol,
+	stor_max_vol,
+	stor_max_outflowrate,
+	stor_cu_evap_vol,
+	stor_cu_exfil_vol,
+	out_ave_inflowrate,
+	out_max_inflowrate,
+	out_cu_vol
+} API_nodeStats;
+
+//-------------------------------------
+// API Link Stats Enum
+//-------------------------------------
+typedef enum {
+	link_max_flowrate,
+	link_max_velocity,
+	link_max_depth,
+	link_time_norm_flow,
+	link_time_inlet_control,
+	link_time_surcharged,
+	link_time_upstream_full,
+	link_time_downstream_full,
+	link_time_full_flow,
+	link_time_capacity_limited,
+	link_time_cour_crit,
+	pump_fraction_time_on,
+	pump_min_flow,
+	pump_ave_flow,
+	pump_max_flow,
+	pump_cu_vol,
+	pump_energy_consumed,
+	pump_total_startups
+} API_linkStats;
+
+//-------------------------------------
+// API Subcatchment Stats Enum
+//-------------------------------------
+typedef enum {
+	subc_cu_precip,
+	subc_cu_runon_vol,
+	subc_cu_evap_vol,
+	subc_cu_infil_vol,
+	subc_cu_runoff_vol,
+	subc_max_flowrate,
+} API_subcatchStats;
+
+//-------------------------------------
+// API System Routing Stats Enum
+//-------------------------------------
+typedef enum {
+	sys_cu_dwf_vol,
+	sys_cu_wwf_vol,
+	sys_cu_gw_vol,
+	sys_cu_ii_vol,
+	sys_cu_ext_inflow_vol,
+	sys_cu_flooding_vol,
+	sys_cu_outflow_vol,
+	sys_cu_evap_loss_vol,
+	sys_cu_seepage_loss_vol,
+	sys_routing_error,
+} API_sysRoutingTotals;
+
+//-------------------------------------
+// API System Runoff Routing Stats Enum
+//-------------------------------------
+typedef enum {
+	sys_cu_precip,
+	sys_cu_evap_vol,
+	sys_cu_infil_vol,
+	sys_cu_runoff_vol,
+	sys_cu_runon_vol,
+	sys_cu_drain_vol,
+	sys_cu_snow_removed_vol,
+	sys_init_stor_vol,
+	sys_init_snow_vol,
+	sys_runoff_error
+} API_sysRunoffTotals;

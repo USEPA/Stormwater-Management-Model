@@ -311,7 +311,7 @@ int DLLEXPORT swmm_getNodeType(int index, int *Ntype)
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OBJECT_INDEX);
 	*Ntype = Node[index].type;
 	return(0);
 }
@@ -326,7 +326,7 @@ int DLLEXPORT swmm_getLinkType(int index, int *Ltype)
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OBJECT_INDEX);
 	*Ltype = Link[index].type;
 	return(0);
 }
@@ -342,7 +342,7 @@ int DLLEXPORT swmm_getLinkConnections(int index, int *Node1, int *Node2)
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OBJECT_INDEX);
 	*Node1 = Link[index].node1;
 	*Node2 = Link[index].node2;
 	return(0);
@@ -359,7 +359,7 @@ int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value)
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OBJECT_INDEX);
 	
 	switch(Param)
 	{
@@ -392,7 +392,7 @@ int DLLEXPORT swmm_setNodeParam(int index, int Param, double value)
 	// Check if Simulation is Running
 	if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);
 	// Check if object index is within bounds	
-	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OBJECT_INDEX);
 	
 	switch(Param)
 	{
@@ -426,7 +426,7 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OBJECT_INDEX);
 	
 	switch(Param)
 	{
@@ -463,7 +463,7 @@ int DLLEXPORT swmm_setLinkParam(int index, int Param, double value)
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OBJECT_INDEX);
 	
 	switch(Param)
 	{
@@ -511,7 +511,7 @@ int DLLEXPORT swmm_getLinkDirection(int index, signed char *value)
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 		// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OBJECT_INDEX);
 	*value = Link[index].direction;
 	return(0);
 }
@@ -529,7 +529,7 @@ int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value)
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 		// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OBJECT_INDEX);
 	
 	switch(Param)
 	{
@@ -564,7 +564,7 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
 	// Check if Simulation is Running
 	if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OBJECT_INDEX);
 	
 	switch(Param)
 	{
@@ -600,7 +600,7 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index )
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 		// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OBJECT_INDEX);
 	
 	if (Subcatch[index].outNode == -1 && Subcatch[index].outSubcatch == -1)
 	{
@@ -668,7 +668,7 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result)
 	// Check if Simulation is Running
 	if(swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 		// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OBJECT_INDEX);
 	
 	switch (type)
 	{
@@ -705,7 +705,7 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
 	// Check if Simulation is Running
 	if(swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 		// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OBJECT_INDEX);
 	
 	switch (type)
 	{
@@ -742,7 +742,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 	// Check if Simulation is Running
 	if(swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 	// Check if object index is within bounds	
-	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OBJECT_INDEX);
 	
 	switch (type)
 	{
@@ -764,22 +764,22 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 	return(0);
 }
 
-int DLLEXPORT swmm_getNodeStats(int index, int paramtype, double *value)
+int DLLEXPORT swmm_getNodeStats(int index, API_nodeStats paramtype, double *value)
 {
 	int errorcode = 0;
 
 	// Check if in bounds
-	if (paramtype >= 0 && paramtype < 10)
+	if (paramtype >= node_ave_depth && paramtype <= node_max_ponded_vol)
 	// Common Node Stats
 	{
 		errorcode = stats_getNodeStat(index, paramtype, value);
 	}
-	else if (paramtype >= 10 && paramtype < 16)
+	else if (paramtype >= stor_init_vol && paramtype <= stor_cu_evap_vol)
 	// Storage Stats
 	{
 		errorcode = stats_getStorageStat(index, paramtype, value);
 	}
-	else if (paramtype < 20)
+	else if (paramtype >= out_ave_inflowrate && paramtype <= out_cu_vol)
 	// Outfall Stats
 	{
 		errorcode = stats_getOutfallStat(index, paramtype, value);
@@ -789,16 +789,16 @@ int DLLEXPORT swmm_getNodeStats(int index, int paramtype, double *value)
 	return errorcode;
 }
 
-int DLLEXPORT swmm_getLinkStats(int index, int paramtype, double *value)
+int DLLEXPORT swmm_getLinkStats(int index, API_linkStats paramtype, double *value)
 {
 	int errorcode = 0;
 
 	// Check if in bounds
-	if (paramtype >= 0 && paramtype < 10)
+	if (paramtype >= link_max_flowrate && paramtype <= link_time_cour_crit)
 	{
 		errorcode = stats_getLinkStat(index, paramtype, value);
 	}
-	else if (paramtype >= 10 && paramtype < 18)
+	else if (paramtype >= pump_fraction_time_on && paramtype <= pump_total_startups)
 	// Pump Stats
 	{
 		errorcode = stats_getPumpStat(index, paramtype, value);
@@ -808,13 +808,12 @@ int DLLEXPORT swmm_getLinkStats(int index, int paramtype, double *value)
 	return errorcode;
 }
 
-int DLLEXPORT swmm_getSubcatchStats(int index, int paramtype, double *value)
+int DLLEXPORT swmm_getSubcatchStats(int index, API_subcatchStats paramtype, double *value)
 {
-	int errorcode = stats_getSubcatchStat(index, paramtype, value);
-	return errorcode;
+	return stats_getSubcatchStat(index, paramtype, value);
 }
 
-int DLLEXPORT swmm_getSystemRoutingTotals(int paramtype, double *value)
+int DLLEXPORT swmm_getSystemRoutingTotals(API_sysRoutingTotals paramtype, double *value)
 //
 // Input: 	type = Result Type
 // Output: 	volume = total data desired (Cu. Ft, Cu Meter)
@@ -822,11 +821,10 @@ int DLLEXPORT swmm_getSystemRoutingTotals(int paramtype, double *value)
 // Return: 	API Error
 // Purpose: Gets System Routing Totals
 {
-	int errorcode = massbal_getRoutingFlowTotal(paramtype, value);
-	return errorcode;
+	return massbal_getRoutingFlowTotal(paramtype, value);
 }
 
-int DLLEXPORT swmm_getSystemRunoffTotals(int paramtype, double *value)
+int DLLEXPORT swmm_getSystemRunoffTotals(API_sysRunoffTotals paramtype, double *value)
 //
 // Input: 	type = Result Type
 // Output: 	volume = total data desired 
@@ -834,8 +832,7 @@ int DLLEXPORT swmm_getSystemRunoffTotals(int paramtype, double *value)
 // Return: 	API Error
 // Purpose: Gets System Runoff Totals
 {
-	int errorcode = massbal_getRunoffTotal(paramtype, value);
-	return errorcode;
+	return massbal_getRunoffTotal(paramtype, value);
 }
 
 
@@ -853,7 +850,7 @@ int DLLEXPORT swmm_setLinkSetting(int index, double targetSetting)
 	// Check if Simulation is Running
 	if(swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 	// Check if object index is within bounds	
-	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OBJECT_INDEX);
 	
 	int l_type, errcode;
 	
@@ -888,7 +885,7 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 	// Check if Simulation is Running
 	if(swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OUTBOUNDS);
+	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OBJECT_INDEX);
 	
 	// Check to see if node has an assigned inflow object
 	TExtInflow* inflow;

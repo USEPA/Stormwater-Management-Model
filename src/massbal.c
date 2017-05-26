@@ -1086,7 +1086,7 @@ double massbal_getStoredMass(int p)
 
 //=============================================================================
 
-int massbal_getRoutingFlowTotal(int paramtype, double *value)
+int massbal_getRoutingFlowTotal(API_sysRoutingTotals paramtype, double *value)
 //
 // Input:    element = element to return
 // Return:   value
@@ -1102,35 +1102,45 @@ int massbal_getRoutingFlowTotal(int paramtype, double *value)
 	}
 
 	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE)
+	else if (swmm_IsStartedFlag() == FALSE)
 	{
 		errorcode = ERR_API_SIM_NRUNNING;
 	}
 
-	if (errorcode == 0)
+	else
 	{
 		switch (paramtype)
 		{
 		// Cumulative Dry Weather Inflow Volume
-		case 0: *value = FlowTotals.dwInflow * UCF(VOLUME); break;
+		case sys_cu_dwf_vol:
+			*value = FlowTotals.dwInflow * UCF(VOLUME); break;
 		// Cumulative Wet Weather Inflow Volume
-		case 1: *value = FlowTotals.wwInflow * UCF(VOLUME); break;
+		case sys_cu_wwf_vol:
+			*value = FlowTotals.wwInflow * UCF(VOLUME); break;
 		// Cumulative Groundwater Inflow Volume
-		case 2: *value = FlowTotals.gwInflow * UCF(VOLUME); break;
+		case sys_cu_gw_vol:
+			*value = FlowTotals.gwInflow * UCF(VOLUME); break;
 		// Cumulative I&I Inflow Volume
-		case 3: *value = FlowTotals.iiInflow * UCF(VOLUME); break;
+		case sys_cu_ii_vol:
+			*value = FlowTotals.iiInflow * UCF(VOLUME); break;
 		// Cumulative External Inflow Volume
-		case 4: *value = FlowTotals.exInflow * UCF(VOLUME); break;
+		case sys_cu_ext_inflow_vol:
+			*value = FlowTotals.exInflow * UCF(VOLUME); break;
 		// Cumulative Flooding Volume
-		case 5: *value = FlowTotals.flooding * UCF(VOLUME); break;
+		case sys_cu_flooding_vol:
+			*value = FlowTotals.flooding * UCF(VOLUME); break;
 		// Cumulative Outflow Volume
-		case 6: *value = FlowTotals.outflow  * UCF(VOLUME); break;
+		case sys_cu_outflow_vol:
+			*value = FlowTotals.outflow  * UCF(VOLUME); break;
 		// Cumulative Evaporation Loss
-		case 7: *value = FlowTotals.evapLoss * UCF(VOLUME); break;
+		case sys_cu_evap_loss_vol:
+			*value = FlowTotals.evapLoss * UCF(VOLUME); break;
 		// Cumulative Seepage Loss
-		case 8: *value = FlowTotals.seepLoss * UCF(VOLUME); break;
+		case sys_cu_seepage_loss_vol:
+			*value = FlowTotals.seepLoss * UCF(VOLUME); break;
 		// Routing Error
-		case 9: *value = massbal_getFlowError(); break;
+		case sys_routing_error:
+			*value = massbal_getFlowError(); break;
 		// default
 		default: errorcode = ERR_API_OUTBOUNDS; break;
 		}
@@ -1139,7 +1149,7 @@ int massbal_getRoutingFlowTotal(int paramtype, double *value)
 	return errorcode;
 }
 
-int massbal_getRunoffTotal(int paramtype, double *value)
+int massbal_getRunoffTotal(API_sysRunoffTotals paramtype, double *value)
 //
 // Input:    element = element to return
 // Return:   value
@@ -1155,35 +1165,48 @@ int massbal_getRunoffTotal(int paramtype, double *value)
 	}
 
 	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE)
+	else if (swmm_IsStartedFlag() == FALSE)
 	{
 		errorcode = ERR_API_SIM_NRUNNING;
 	}
 
-	switch (paramtype)
+	else
 	{
+		switch (paramtype)
+		{
 		// Cumulative Rainfall Volume
-		case 0: *value = RunoffTotals.rainfall / TotalArea * UCF(RAINDEPTH); break;
+		case sys_cu_precip:
+			*value = RunoffTotals.rainfall / TotalArea * UCF(RAINDEPTH); break;
 		// Cumulative Evaporation Volume
-		case 1: *value = RunoffTotals.evap / TotalArea * UCF(RAINDEPTH); break;
+		case sys_cu_evap_vol:
+			*value = RunoffTotals.evap / TotalArea * UCF(RAINDEPTH); break;
 		// Cumulative Infiltration Volume
-		case 2: *value = RunoffTotals.infil / TotalArea * UCF(RAINDEPTH); break;
+		case sys_cu_infil_vol:
+			*value = RunoffTotals.infil / TotalArea * UCF(RAINDEPTH); break;
 		// Cumulative Runoff Volume
-		case 3: *value = RunoffTotals.runoff / TotalArea * UCF(RAINDEPTH); break;
+		case sys_cu_runoff_vol:
+			*value = RunoffTotals.runoff / TotalArea * UCF(RAINDEPTH); break;
 		// Cumulative Runon Volume
-		case 4: *value = RunoffTotals.runon / TotalArea * UCF(RAINDEPTH); break;
+		case sys_cu_runon_vol:
+			*value = RunoffTotals.runon / TotalArea * UCF(RAINDEPTH); break;
 		// Cumulative Drain Volume
-		case 5: *value = RunoffTotals.drains / TotalArea * UCF(RAINDEPTH); break;
+		case sys_cu_drain_vol:
+			*value = RunoffTotals.drains / TotalArea * UCF(RAINDEPTH); break;
 		// Cumulative Snow Removed Volume
-		case 6: *value = RunoffTotals.snowRemoved / TotalArea * UCF(RAINDEPTH); break;
+		case sys_cu_snow_removed_vol:
+			*value = RunoffTotals.snowRemoved / TotalArea * UCF(RAINDEPTH); break;
 		// Initial Storage Volume
-		case 7: *value = RunoffTotals.initStorage / TotalArea * UCF(RAINDEPTH); break;
+		case sys_init_stor_vol:
+			*value = RunoffTotals.initStorage / TotalArea * UCF(RAINDEPTH); break;
 		// Initial Snow Cover Volume
-		case 8: *value = RunoffTotals.initSnowCover / TotalArea * UCF(RAINDEPTH); break;
+		case sys_init_snow_vol:
+			*value = RunoffTotals.initSnowCover / TotalArea * UCF(RAINDEPTH); break;
 		// Routing Error
-		case 9: *value = massbal_getRunoffError(); break;
+		case sys_runoff_error:
+			*value = massbal_getRunoffError(); break;
 		// Default
 		default: errorcode = ERR_API_OUTBOUNDS; break;
+		}
 	}
 	return errorcode;
 }

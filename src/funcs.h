@@ -51,6 +51,8 @@
 	#define DLLEXPORT
 #endif
 
+#include "toolkitAPI.h"
+
 void     project_open(char *f1, char *f2, char *f3);
 void     project_close(void);
 
@@ -290,8 +292,8 @@ void    massbal_addToFinalStorage(int pollut, double mass);                    /
 double  massbal_getStepFlowError(void);
 double  massbal_getRunoffError(void);
 double  massbal_getFlowError(void);
-int  massbal_getRoutingFlowTotal(int paramtype, double *value); // For API
-int  massbal_getRunoffTotal(int paramtype, double *value);      // For API
+int  massbal_getRoutingFlowTotal(API_sysRoutingTotals paramtype, double *value); // For API
+int  massbal_getRunoffTotal(API_sysRunoffTotals paramtype, double *value);      // For API
 
 //-----------------------------------------------------------------------------
 //   Simulation Statistics Methods
@@ -311,12 +313,12 @@ void    stats_updateGwaterStats(int j, double infil, double evap,              /
 void    stats_updateMaxRunoff(void);
 void    stats_updateMaxNodeDepth(int node, double depth);                      //(5.1.008)
 
-int  stats_getNodeStat(int index, int paramtype, double *value);       // For API
-int  stats_getStorageStat(int subindex, int paramtype, double *value); // For API
-int  stats_getOutfallStat(int subindex, int paramtype, double *value); // For API
-int  stats_getLinkStat(int index, int paramtype, double *value);       // For API
-int  stats_getPumpStat(int subindex, int paramtype, double *value);     // For API
-int  stats_getSubcatchStat(int index, int paramtype, double *value);   // For API
+int  stats_getNodeStat(int index, API_nodeStats paramtype, double *value);       // For API
+int  stats_getStorageStat(int subindex, API_nodeStats paramtype, double *value); // For API
+int  stats_getOutfallStat(int subindex, API_nodeStats paramtype, double *value); // For API
+int  stats_getLinkStat(int index, API_linkStats paramtype, double *value);       // For API
+int  stats_getPumpStat(int subindex, API_linkStats paramtype, double *value);     // For API
+int  stats_getSubcatchStat(int index, API_subcatchStats paramtype, double *value);   // For API
 
 //-----------------------------------------------------------------------------
 //   Raingage Methods

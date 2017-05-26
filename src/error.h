@@ -165,6 +165,7 @@ enum  ErrorType {
       ERR_API_INPUTNOTOPEN,     //502  105
       ERR_API_SIM_NRUNNING,     //503  106
 	  ERR_API_WRONG_TYPE,       //504  107
+      ERR_API_OBJECT_INDEX,     //505  108
       MAXERRMSG};
       
 char* error_getMsg(int i);
