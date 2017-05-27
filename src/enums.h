@@ -536,7 +536,7 @@ typedef enum {
 	subc_cu_evap_vol,
 	subc_cu_infil_vol,
 	subc_cu_runoff_vol,
-	subc_max_flowrate,
+	subc_max_flowrate
 } API_subcatchStats;
 
 //-------------------------------------
@@ -552,7 +552,7 @@ typedef enum {
 	sys_cu_outflow_vol,
 	sys_cu_evap_loss_vol,
 	sys_cu_seepage_loss_vol,
-	sys_routing_error,
+	sys_routing_error
 } API_sysRoutingTotals;
 
 //-------------------------------------
