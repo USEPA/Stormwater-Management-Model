@@ -62,17 +62,23 @@ int DLLEXPORT  swmm_getSimulationDateTime(int timetype, char *dtimestr);
 int DLLEXPORT  swmm_setSimulationDateTime(int timetype, char *dtimestr);
 
 //-------------------------------
+// Initialize Results Array API
+//-------------------------------
+__declspec(dllexport) double* __stdcall swmm_newOutValueArray(API_statObjectType object_type,
+	int stat_type, int* length, int* errorcode);
+void DLLEXPORT swmm_free(float *array);
+
+//-------------------------------
 // Active Simulation Results API
 //-------------------------------
 int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr);
-int DLLEXPORT swmm_getNodeResult(int index, int type, double *result);
-int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
-int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
+int DLLEXPORT swmm_getNodeResult(int index, int paramtype, double *result);
+int DLLEXPORT swmm_getLinkResult(int index, int paramtype, double *result);
+int DLLEXPORT swmm_getSubcatchResult(int index, int paramtype, double *result);
 int DLLEXPORT swmm_getNodeStats(int index, API_nodeStats paramtype, double *value);
 int DLLEXPORT swmm_getLinkStats(int index, API_linkStats typaramtypepe, double *value);
-int DLLEXPORT swmm_getSubcatchStats(int index, API_subcatchStats paramtype, double *value);
-int DLLEXPORT swmm_getSystemRoutingTotals(API_sysRoutingTotals paramtype, double *value);
-int DLLEXPORT swmm_getSystemRunoffTotals(API_sysRunoffTotals paramtype, double *value);
+int DLLEXPORT swmm_getSubcatchStats(int index, API_subcatchmentStats paramtype, double *value);
+int DLLEXPORT swmm_getSystemStats(API_systemStats paramtype, double *value);
 
 //-------------------------------
 // Setters API

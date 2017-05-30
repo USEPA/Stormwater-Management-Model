@@ -1086,7 +1086,7 @@ double massbal_getStoredMass(int p)
 
 //=============================================================================
 
-int massbal_getRoutingFlowTotal(API_sysRoutingTotals paramtype, double *value)
+int massbal_getRoutingFlowTotal(API_sysRoutingTotals paramtype, double *array)
 //
 // Input:    element = element to return
 // Return:   value
@@ -1109,47 +1109,32 @@ int massbal_getRoutingFlowTotal(API_sysRoutingTotals paramtype, double *value)
 
 	else
 	{
-		switch (paramtype)
-		{
 		// Cumulative Dry Weather Inflow Volume
-		case sys_cu_dwf_vol:
-			*value = FlowTotals.dwInflow * UCF(VOLUME); break;
+		array[sys_cu_dwf_vol] = FlowTotals.dwInflow * UCF(VOLUME);
 		// Cumulative Wet Weather Inflow Volume
-		case sys_cu_wwf_vol:
-			*value = FlowTotals.wwInflow * UCF(VOLUME); break;
+		array[sys_cu_wwf_vol] = FlowTotals.wwInflow * UCF(VOLUME);
 		// Cumulative Groundwater Inflow Volume
-		case sys_cu_gw_vol:
-			*value = FlowTotals.gwInflow * UCF(VOLUME); break;
+		array[sys_cu_gw_vol] = FlowTotals.gwInflow * UCF(VOLUME);
 		// Cumulative I&I Inflow Volume
-		case sys_cu_ii_vol:
-			*value = FlowTotals.iiInflow * UCF(VOLUME); break;
+		array[sys_cu_ii_vol] = FlowTotals.iiInflow * UCF(VOLUME);
 		// Cumulative External Inflow Volume
-		case sys_cu_ext_inflow_vol:
-			*value = FlowTotals.exInflow * UCF(VOLUME); break;
+		array[sys_cu_ext_inflow_vol] = FlowTotals.exInflow * UCF(VOLUME);
 		// Cumulative Flooding Volume
-		case sys_cu_flooding_vol:
-			*value = FlowTotals.flooding * UCF(VOLUME); break;
+		array[sys_cu_flooding_vol] = FlowTotals.flooding * UCF(VOLUME);
 		// Cumulative Outflow Volume
-		case sys_cu_outflow_vol:
-			*value = FlowTotals.outflow  * UCF(VOLUME); break;
+		array[sys_cu_outflow_vol] = FlowTotals.outflow  * UCF(VOLUME);
 		// Cumulative Evaporation Loss
-		case sys_cu_evap_loss_vol:
-			*value = FlowTotals.evapLoss * UCF(VOLUME); break;
+		array[sys_cu_evap_loss_vol] = FlowTotals.evapLoss * UCF(VOLUME);
 		// Cumulative Seepage Loss
-		case sys_cu_seepage_loss_vol:
-			*value = FlowTotals.seepLoss * UCF(VOLUME); break;
+		array[sys_cu_seepage_loss_vol] = FlowTotals.seepLoss * UCF(VOLUME);
 		// Routing Error
-		case sys_routing_error:
-			*value = massbal_getFlowError(); break;
-		// default
-		default: errorcode = ERR_API_OUTBOUNDS; break;
-		}
+		array[sys_routing_error] = massbal_getFlowError();
 	}
 
 	return errorcode;
 }
 
-int massbal_getRunoffTotal(API_sysRunoffTotals paramtype, double *value)
+int massbal_getRunoffTotal(API_sysRunoffTotals paramtype, double *array)
 //
 // Input:    element = element to return
 // Return:   value
@@ -1172,41 +1157,26 @@ int massbal_getRunoffTotal(API_sysRunoffTotals paramtype, double *value)
 
 	else
 	{
-		switch (paramtype)
-		{
 		// Cumulative Rainfall Volume
-		case sys_cu_precip:
-			*value = RunoffTotals.rainfall / TotalArea * UCF(RAINDEPTH); break;
+		array[sys_cu_precip] = RunoffTotals.rainfall / TotalArea * UCF(RAINDEPTH);
 		// Cumulative Evaporation Volume
-		case sys_cu_evap_vol:
-			*value = RunoffTotals.evap / TotalArea * UCF(RAINDEPTH); break;
+		array[sys_cu_evap_vol] = RunoffTotals.evap / TotalArea * UCF(RAINDEPTH);
 		// Cumulative Infiltration Volume
-		case sys_cu_infil_vol:
-			*value = RunoffTotals.infil / TotalArea * UCF(RAINDEPTH); break;
+		array[sys_cu_infil_vol] = RunoffTotals.infil / TotalArea * UCF(RAINDEPTH);
 		// Cumulative Runoff Volume
-		case sys_cu_runoff_vol:
-			*value = RunoffTotals.runoff / TotalArea * UCF(RAINDEPTH); break;
+		array[sys_cu_runoff_vol] = RunoffTotals.runoff / TotalArea * UCF(RAINDEPTH);
 		// Cumulative Runon Volume
-		case sys_cu_runon_vol:
-			*value = RunoffTotals.runon / TotalArea * UCF(RAINDEPTH); break;
+		array[sys_cu_runon_vol] = RunoffTotals.runon / TotalArea * UCF(RAINDEPTH);
 		// Cumulative Drain Volume
-		case sys_cu_drain_vol:
-			*value = RunoffTotals.drains / TotalArea * UCF(RAINDEPTH); break;
+		array[sys_cu_drain_vol] = RunoffTotals.drains / TotalArea * UCF(RAINDEPTH);
 		// Cumulative Snow Removed Volume
-		case sys_cu_snow_removed_vol:
-			*value = RunoffTotals.snowRemoved / TotalArea * UCF(RAINDEPTH); break;
+		array[sys_cu_snow_removed_vol] = RunoffTotals.snowRemoved / TotalArea * UCF(RAINDEPTH);
 		// Initial Storage Volume
-		case sys_init_stor_vol:
-			*value = RunoffTotals.initStorage / TotalArea * UCF(RAINDEPTH); break;
+		array[sys_init_stor_vol] = RunoffTotals.initStorage / TotalArea * UCF(RAINDEPTH);
 		// Initial Snow Cover Volume
-		case sys_init_snow_vol:
-			*value = RunoffTotals.initSnowCover / TotalArea * UCF(RAINDEPTH); break;
+		array[sys_init_snow_vol] = RunoffTotals.initSnowCover / TotalArea * UCF(RAINDEPTH);
 		// Routing Error
-		case sys_runoff_error:
-			*value = massbal_getRunoffError(); break;
-		// Default
-		default: errorcode = ERR_API_OUTBOUNDS; break;
-		}
+		array[sys_runoff_error] = massbal_getRunoffError();
 	}
 	return errorcode;
 }

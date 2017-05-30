@@ -621,6 +621,92 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index )
 	return(0);
 } 
 
+
+//-------------------------------
+// Initialize Results Array API
+//-------------------------------
+__declspec(dllexport) double* __stdcall swmm_newOutValueArray(API_statObjectType object_type,
+	int stat_type, int* length, int* errorcode)
+// Input:   Stat Object Type
+//          Stat type
+// Output: 	Array Length
+//          Error Code
+// Return:  Array Ptr
+// Purpose: Initializes Stats Array
+{
+	int size = 0;
+	double* array;
+
+	*errorcode = 0;
+
+	switch (object_type)
+	{
+	case API_node:
+		if (stat_type == node_depth_stats)
+			size = MAX_NUM_DEPTH_STATS;
+		else if (stat_type == node_inflow_stats)
+			size = MAX_NUM_INFLOW_STATS;
+		else if (stat_type == node_flood_stats)
+			size = MAX_NUM_FLOOD_STATS;
+		else if (stat_type == storage_volume_stats)
+			size = MAX_NUM_STORE_STATS;
+		else if (stat_type == outfall_load_stats)
+			size = MAX_NUM_OUTFALL_STATS;
+		else
+			*errorcode = ERR_API_OUTBOUNDS;
+		break;
+	case API_link:
+		if (stat_type == link_flow_stats)
+			size = MAX_NUM_LINK_FLOW_STATS;
+		else if (stat_type == conduit_surcharge_stats)
+			size = MAX_NUM_CONDUIT_STATS;
+		else if (stat_type == pump_stats)
+			size = MAX_NUM_PUMP_STATS;
+		else
+			*errorcode = ERR_API_OUTBOUNDS;
+		break;
+	case API_subcatch:
+		if (stat_type == subc_flow_stats)
+			size = MAX_NUM_SUBCATCH_FLOW_STATS;
+		else if (stat_type == subc_climate_stats)
+			size = MAX_NUM_SUBCATCH_CLIM_STATS;
+		else
+			*errorcode = ERR_API_OUTBOUNDS;
+		break;
+	case API_sys:
+		if (stat_type == sys_flow_routing)
+			size = MAX_SYS_FLOW_ROUTE_STATS;
+		else if (stat_type == sys_runoff_routing)
+			size = MAX_SYS_RUNOFF_ROUTE_STATS;
+		else
+			*errorcode = ERR_API_OUTBOUNDS;
+		break;
+	default:
+		*errorcode = ERR_API_OUTBOUNDS; 
+		break;
+	}
+
+	if (*errorcode == 0)
+	{
+		array = (double*)calloc(size, sizeof(double));
+		*errorcode = (MEMCHECK(array));
+
+		*length = size;
+		return array;
+	}
+	else return NULL;
+}
+
+void DLLEXPORT swmm_free(float *array)
+//
+//  Purpose: frees memory allocated using SMO_newOutValueSeries() or
+//  SMO_newOutValueArray().
+//
+{
+	if (array != NULL)
+		free(array);
+}
+
 //-------------------------------
 // Active Simulation Results API
 //-------------------------------
@@ -764,56 +850,56 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 	return(0);
 }
 
-int DLLEXPORT swmm_getNodeStats(int index, API_nodeStats paramtype, double *value)
+int DLLEXPORT swmm_getNodeStats(int index, API_nodeStats paramtype, double *array)
 {
 	int errorcode = 0;
 
 	// Check if in bounds
-	if (paramtype >= node_ave_depth && paramtype <= node_max_ponded_vol)
+	if (paramtype >= node_depth_stats && paramtype <= node_flood_stats)
 	// Common Node Stats
 	{
-		errorcode = stats_getNodeStat(index, paramtype, value);
+		errorcode = stats_getNodeStat(index, paramtype, array);
 	}
-	else if (paramtype >= stor_init_vol && paramtype <= stor_cu_evap_vol)
+	else if (paramtype == storage_volume_stats)
 	// Storage Stats
 	{
-		errorcode = stats_getStorageStat(index, paramtype, value);
+		errorcode = stats_getStorageStat(index, array);
 	}
-	else if (paramtype >= out_ave_inflowrate && paramtype <= out_cu_vol)
+	else if (paramtype == outfall_load_stats)
 	// Outfall Stats
 	{
-		errorcode = stats_getOutfallStat(index, paramtype, value);
+		errorcode = stats_getOutfallStat(index, array);
 	}
 	else errorcode = ERR_API_OUTBOUNDS;
 
 	return errorcode;
 }
 
-int DLLEXPORT swmm_getLinkStats(int index, API_linkStats paramtype, double *value)
+int DLLEXPORT swmm_getLinkStats(int index, API_linkStats paramtype, double *array)
 {
 	int errorcode = 0;
 
 	// Check if in bounds
-	if (paramtype >= link_max_flowrate && paramtype <= link_time_cour_crit)
+	if (paramtype >= link_flow_stats && paramtype <= conduit_surcharge_stats)
 	{
-		errorcode = stats_getLinkStat(index, paramtype, value);
+		errorcode = stats_getLinkStat(index, paramtype, array);
 	}
-	else if (paramtype >= pump_fraction_time_on && paramtype <= pump_total_startups)
+	else if (paramtype == pump_stats)
 	// Pump Stats
 	{
-		errorcode = stats_getPumpStat(index, paramtype, value);
+		errorcode = stats_getPumpStat(index, array);
 	}
 	else errorcode = ERR_API_OUTBOUNDS;
 
 	return errorcode;
 }
 
-int DLLEXPORT swmm_getSubcatchStats(int index, API_subcatchStats paramtype, double *value)
+int DLLEXPORT swmm_getSubcatchStats(int index, API_subcatchmentStats paramtype, double *value)
 {
 	return stats_getSubcatchStat(index, paramtype, value);
 }
 
-int DLLEXPORT swmm_getSystemRoutingTotals(API_sysRoutingTotals paramtype, double *value)
+int DLLEXPORT swmm_getSystemStats(API_systemStats paramtype, double *value)
 //
 // Input: 	type = Result Type
 // Output: 	volume = total data desired (Cu. Ft, Cu Meter)
@@ -821,18 +907,20 @@ int DLLEXPORT swmm_getSystemRoutingTotals(API_sysRoutingTotals paramtype, double
 // Return: 	API Error
 // Purpose: Gets System Routing Totals
 {
-	return massbal_getRoutingFlowTotal(paramtype, value);
-}
+	int errorcode = 0;
 
-int DLLEXPORT swmm_getSystemRunoffTotals(API_sysRunoffTotals paramtype, double *value)
-//
-// Input: 	type = Result Type
-// Output: 	volume = total data desired 
-//          routing error (decimal)
-// Return: 	API Error
-// Purpose: Gets System Runoff Totals
-{
-	return massbal_getRunoffTotal(paramtype, value);
+	// Check if in bounds
+	if (paramtype == sys_flow_routing)
+	{
+		errorcode = massbal_getRoutingFlowTotal(paramtype, value);
+	}
+	else if (paramtype == sys_runoff_routing)
+	{
+		errorcode = massbal_getRunoffTotal(paramtype, value);
+	}
+	else errorcode = ERR_API_OUTBOUNDS;
+
+	return errorcode;
 }
 
 

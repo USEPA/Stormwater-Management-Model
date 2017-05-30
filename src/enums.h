@@ -481,27 +481,80 @@ enum  NoneAllType {
 // API Node Stats Enum
 //-------------------------------------
 typedef enum {
+	API_node,
+	API_link,
+	API_subcatch,
+	API_sys
+} API_statObjectType;
+
+typedef enum {
+	node_depth_stats,
+	node_inflow_stats,
+	node_flood_stats,
+	storage_volume_stats,
+	outfall_load_stats,
+} API_nodeStats;
+
+typedef enum {
+	link_flow_stats,
+	conduit_surcharge_stats,
+	pump_stats
+} API_linkStats;
+
+typedef enum {
+	subc_flow_stats,
+	subc_climate_stats
+} API_subcatchmentStats;
+
+typedef enum {
+	sys_flow_routing,
+	sys_runoff_routing
+} API_systemStats;
+
+//-------------------------------------
+// API Node Stats Enums
+//-------------------------------------
+typedef enum {
 	node_ave_depth,
 	node_max_depth,
-	node_flooded_vol,
-	node_time_flooded,
-	node_time_surcharged,
-	node_time_cour_crit,
-	node_cu_lat_inflow_vol,
+	MAX_NUM_DEPTH_STATS
+} API_nodeDepthStats;
+
+typedef enum {
 	node_max_lat_inflowrate,
 	node_max_inflowrate,
+	node_cu_lat_inflow_vol,
+	node_cu_inflow_vol,
+	node_time_cour_crit,
+	MAX_NUM_INFLOW_STATS
+} API_nodeInflowStats;
+
+typedef enum {
+	node_flooded_vol,
+	node_time_flooded,
 	node_max_overflowrate,
 	node_max_ponded_vol,
+	node_time_surcharged,
+	MAX_NUM_FLOOD_STATS
+} API_nodeFloodingStats;
+
+typedef enum {
 	stor_init_vol,
 	stor_ave_vol,
 	stor_max_vol,
 	stor_max_outflowrate,
 	stor_cu_evap_vol,
 	stor_cu_exfil_vol,
+	MAX_NUM_STORE_STATS
+} API_storageVolumeStats;
+
+typedef enum {
 	out_ave_inflowrate,
 	out_max_inflowrate,
-	out_cu_vol
-} API_nodeStats;
+	out_cu_vol,
+	MAX_NUM_OUTFALL_STATS
+} API_outfallStats;
+
 
 //-------------------------------------
 // API Link Stats Enum
@@ -510,6 +563,10 @@ typedef enum {
 	link_max_flowrate,
 	link_max_velocity,
 	link_max_depth,
+	MAX_NUM_LINK_FLOW_STATS
+} API_linkFlowStats;
+
+typedef enum {
 	link_time_norm_flow,
 	link_time_inlet_control,
 	link_time_surcharged,
@@ -518,26 +575,36 @@ typedef enum {
 	link_time_full_flow,
 	link_time_capacity_limited,
 	link_time_cour_crit,
+	MAX_NUM_CONDUIT_STATS
+} API_ConduitStats;
+
+typedef enum{
 	pump_fraction_time_on,
 	pump_min_flow,
 	pump_ave_flow,
 	pump_max_flow,
 	pump_cu_vol,
 	pump_energy_consumed,
-	pump_total_startups
-} API_linkStats;
+	pump_total_startups,
+	MAX_NUM_PUMP_STATS
+} API_pumpStats;
 
 //-------------------------------------
 // API Subcatchment Stats Enum
 //-------------------------------------
 typedef enum {
-	subc_cu_precip,
 	subc_cu_runon_vol,
-	subc_cu_evap_vol,
 	subc_cu_infil_vol,
 	subc_cu_runoff_vol,
-	subc_max_flowrate
-} API_subcatchStats;
+	subc_max_flowrate,
+	MAX_NUM_SUBCATCH_FLOW_STATS
+} API_subcatchFlowStats;
+
+typedef enum {
+	subc_cu_precip,
+	subc_cu_evap_vol,
+	MAX_NUM_SUBCATCH_CLIM_STATS
+} API_subcatchClimateStats;
 
 //-------------------------------------
 // API System Routing Stats Enum
@@ -552,7 +619,8 @@ typedef enum {
 	sys_cu_outflow_vol,
 	sys_cu_evap_loss_vol,
 	sys_cu_seepage_loss_vol,
-	sys_routing_error
+	sys_routing_error,
+	MAX_SYS_FLOW_ROUTE_STATS
 } API_sysRoutingTotals;
 
 //-------------------------------------
@@ -568,5 +636,6 @@ typedef enum {
 	sys_cu_snow_removed_vol,
 	sys_init_stor_vol,
 	sys_init_snow_vol,
-	sys_runoff_error
+	sys_runoff_error,
+	MAX_SYS_RUNOFF_ROUTE_STATS
 } API_sysRunoffTotals;

@@ -314,11 +314,11 @@ void    stats_updateMaxRunoff(void);
 void    stats_updateMaxNodeDepth(int node, double depth);                      //(5.1.008)
 
 int  stats_getNodeStat(int index, API_nodeStats paramtype, double *value);       // For API
-int  stats_getStorageStat(int subindex, API_nodeStats paramtype, double *value); // For API
-int  stats_getOutfallStat(int subindex, API_nodeStats paramtype, double *value); // For API
+int  stats_getStorageStat(int subindex, double *value);                          // For API
+int  stats_getOutfallStat(int subindex, double *value);                          // For API
 int  stats_getLinkStat(int index, API_linkStats paramtype, double *value);       // For API
-int  stats_getPumpStat(int subindex, API_linkStats paramtype, double *value);     // For API
-int  stats_getSubcatchStat(int index, API_subcatchStats paramtype, double *value);   // For API
+int  stats_getPumpStat(int subindex, double *value);                             // For API
+int  stats_getSubcatchStat(int index, API_subcatchmentStats paramtype, double *value);   // For API
 
 //-----------------------------------------------------------------------------
 //   Raingage Methods
