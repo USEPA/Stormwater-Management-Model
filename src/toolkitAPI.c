@@ -973,7 +973,10 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 		line[4] = "1.0";
 		line[5] = "1";
 		line[6] = "0";
-		
+			
+		// Add external inflow to linked list
+		inflow_readExtInflow(line, Ntokens);
+
 		free(line[0]);
 		free(line[1]);
 		free(line[2]);
@@ -981,9 +984,6 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 		free(line[4]);
 		free(line[5]);
 		free(line[6]);
-		
-		// Add external inflow to linked list
-		inflow_readExtInflow(line, Ntokens);
 		
 		// Get inflow
 		inflow = Node[index].extInflow;
