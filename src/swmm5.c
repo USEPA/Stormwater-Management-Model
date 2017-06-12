@@ -291,7 +291,7 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
 //  Purpose: opens a SWMM project.
 //
 {
-#ifndef __APPLE__
+#ifndef __unix__
 #ifdef DLL
    _fpreset();              
 #endif
