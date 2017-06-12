@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>
 #include "headers.h"
 #include "lid.h"
