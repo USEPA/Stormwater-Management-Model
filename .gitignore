@@ -2,3 +2,9 @@
 # Eclipse Stuff
 .metadata/
 .settings/
+
+# OSX files
+.DS_Store
+
+# Build files
+/build/
