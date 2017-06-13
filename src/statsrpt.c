@@ -7,6 +7,7 @@
 //             09/15/14 (Build 5.1.007)
 //             03/19/15 (Build 5.1.008)
 //             04/30/15 (Build 5.1.009)
+//             08/01/16 (Build 5.1.011)
 //   Author:   L. Rossman
 //
 //   Report writing functions for summary statistics.
@@ -18,6 +19,9 @@
 //   Build 5.1.009:
 //   - Units on column heading in Node Inflow Summary table fixed.
 //
+//   Build 5.1.011:
+//   - Redundant units conversion on max. reported node depth removed.
+//   - Node Surcharge table only produced for dynamic wave routing.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -101,7 +105,7 @@ void statsrpt_writeReport()
     {
         writeNodeDepths();
         writeNodeFlows();
-        writeNodeSurcharge();
+        if ( RouteModel == DW ) writeNodeSurcharge();                          //(5.1.011)
         writeNodeFlooding();
         writeStorageVolumes();
         writeOutfallLoads();
@@ -109,7 +113,7 @@ void statsrpt_writeReport()
         writeFlowClass();
         writeLinkSurcharge();
         writePumpFlows();
-	    if ( Nobjects[POLLUT] > 0 && !IgnoreQuality) writeLinkLoads();
+        if ( Nobjects[POLLUT] > 0 && !IgnoreQuality) writeLinkLoads();
     }
 }
 
@@ -156,7 +160,7 @@ void writeSubcatchRunoff()
         x = SubcatchStats[j].runoff * UCF(RAINDEPTH);
         fprintf(Frpt.file, " %10.2f", x/a);
         x = SubcatchStats[j].runoff * Vcf;
-		fprintf(Frpt.file, "%12.2f", x);
+	fprintf(Frpt.file, "%12.2f", x);
         x = SubcatchStats[j].maxFlow * UCF(FLOW);
         fprintf(Frpt.file, " %8.2f", x);
         r = SubcatchStats[j].precip + SubcatchStats[j].runon;
@@ -328,7 +332,7 @@ void writeNodeDepths()
             NodeStats[j].avgDepth / StepCount * UCF(LENGTH),
             NodeStats[j].maxDepth * UCF(LENGTH),
             (NodeStats[j].maxDepth + Node[j].invertElev) * UCF(LENGTH),
-            days, hrs, mins, NodeStats[j].maxRptDepth * UCF(LENGTH));
+            days, hrs, mins, NodeStats[j].maxRptDepth);                        //(5.1.011)
     }
     WRITE("");
 }
@@ -635,8 +639,8 @@ void writeOutfallLoads()
             fprintf(Frpt.file, FlowFmt, x);
             fprintf(Frpt.file, " ");
             fprintf(Frpt.file, FlowFmt, OutfallStats[k].maxFlow*UCF(FLOW));
-			fprintf(Frpt.file, "%12.3f", NodeInflow[j] * Vcf);
-			volSum += NodeInflow[j];
+            fprintf(Frpt.file, "%12.3f", NodeInflow[j] * Vcf);
+            volSum += NodeInflow[j];
 
             // --- print load of each pollutant for outfall
             for (p=0; p<Nobjects[POLLUT]; p++)
@@ -644,7 +648,7 @@ void writeOutfallLoads()
                 x = OutfallStats[k].totalLoad[p] * LperFT3 * Pollut[p].mcf;
                 totals[p] += x;
                 if ( Pollut[p].units == COUNT ) x = LOG10(x);
-				fprintf(Frpt.file, "%14.3f", x); 
+		fprintf(Frpt.file, "%14.3f", x); 
             }
         }
 
@@ -663,9 +667,9 @@ void writeOutfallLoads()
 
         for (p = 0; p < Nobjects[POLLUT]; p++)
         {
-			x = totals[p];
+            x = totals[p];
             if ( Pollut[p].units == COUNT ) x = LOG10(x);
-			fprintf(Frpt.file, "%14.3f", x); 
+            fprintf(Frpt.file, "%14.3f", x); 
         }
         WRITE("");
         free(totals);
@@ -937,7 +941,7 @@ void writeLinkLoads()
             x = Link[j].totalLoad[p] * LperFT3 * Pollut[p].mcf;
             if ( Pollut[p].units == COUNT ) x = LOG10(x);
             if ( x < 10000. ) fprintf(Frpt.file, "%14.3f", x);
-		else fprintf(Frpt.file, "%14.3e", x);
+            else fprintf(Frpt.file, "%14.3e", x);
         }
     }
     WRITE("");

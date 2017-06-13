@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     08/05/15   (Build 5.1.010)
+//             03/14/17   (Build 5.1.012)
 //   Author:   L. Rossman
 //
 //   Roadway Weir module for SWMM5
@@ -15,6 +16,8 @@
 //   weir has the same upstream node but with an offset equal to the height
 //   of the roadway.
 //
+//   Build 5.1.012:
+//   - Entries in discharge coeff. table for gravel roadways corrected.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -40,7 +43,7 @@ static const double Cr_Low_Paved[4][2] = {
 static const int N_Cr_Low_Gravel = 8;
 static const double Cr_Low_Gravel[8][2] = {
     {0.0, 2.5}, {0.5, 2.7},  {1.0, 2.8}, {1.5, 2.9}, {2.0, 2.98},
-    {2.5, 3.2}, {3.0, 3.03}, {4.0, 3.05} };
+    {2.5, 3.02}, {3.0, 3.03}, {4.0, 3.05} };                                   //(5.1.012)
 
 // Discharge Coefficients for (head / road width) > 0.15
 static const int N_Cr_High_Paved = 2;

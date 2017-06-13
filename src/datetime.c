@@ -4,9 +4,15 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
+//             08/01/16   (Build 5.1.011)
 //   Author:   L. Rossman
 //
 //   DateTime functions.
+//
+//   Build 5.1.011
+//   - decodeTime() no longer rounds up.
+//   - New getTimeStamp function added.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -225,7 +231,9 @@ void datetime_decodeTime(DateTime time, int* h, int* m, int* s)
 {
     int secs;
     int mins;
-    secs = (int)(floor((time - floor(time))*SecsPerDay + 0.5));
+    double fracDay = (time - floor(time)) * SecsPerDay;                        //(5.1.011)
+    secs = (int)(floor(fracDay + 0.5));                                        //(5.1.011)
+    if ( secs >= 86400 ) secs = 86399;                                         //(5.1.011)
     divMod(secs, 60, &mins, s);
     divMod(mins, 60, h, m);
     if ( *h > 23 ) *h = 0;
@@ -250,7 +258,8 @@ void datetime_dateToStr(DateTime date, char* s)
         break;
 
       case M_D_Y:
-        sprintf(dateStr, "%3s-%02d-%4d", MonthTxt[m-1], d, y);
+        //sprintf(dateStr, "%3s-%02d-%4d", MonthTxt[m-1], d, y);
+        sprintf(dateStr, "%02d/%02d/%04d", m, d, y);
         break;
 
       default:
@@ -502,3 +511,25 @@ int  datetime_daysPerMonth(int year, int month)
 }
 
 //=============================================================================
+
+////  New function added to release 5.1.011.  ////                             //(5.1.011)
+
+void datetime_getTimeStamp(int fmt, DateTime aDate, int stampSize, char* timeStamp)
+
+//  Input:   fmt = desired date format code
+//           aDate = a date/time value in decimal days
+//           stampSize = the number of bytes allocated for the time stamp
+//  Output:  returns a time stamp string (e.g., Year-Month-Day Hr:Min:Sec)
+//  Purpose: Expresses a decimal day date by a time stamp.
+{
+    char dateStr[DATE_STR_SIZE];
+    char timeStr[TIME_STR_SIZE];
+    int  oldDateFormat = DateFormat;
+    
+    if ( stampSize < DATE_STR_SIZE + TIME_STR_SIZE + 2 ) return;
+    datetime_setDateFormat(fmt);     
+    datetime_dateToStr(aDate, dateStr);
+    DateFormat = oldDateFormat;
+    datetime_timeToStr(aDate, timeStr);
+    sprintf(timeStamp, "%s %s", dateStr, timeStr);
+}

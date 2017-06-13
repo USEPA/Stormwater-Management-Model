@@ -6,7 +6,10 @@
 //   Date:     03/20/14   (Build 5.1.001)
 //             09/15/14   (Build 5.1.007)
 //             03/19/15   (Build 5.1.008)
+//             08/01/16   (Build 5.1.011)
+//             03/14/17   (Build 5.1.012)
 //   Author:   L. Rossman
+//             M. Tryby
 //
 //   Runoff analysis functions.
 //
@@ -20,6 +23,12 @@
 //   - More checks added to skip over subcatchments with zero area.
 //   - Support added for sending outfall node discharge onto a subcatchment.
 //
+//   Build 5.1.011:
+//   - Runoff wet time step kept aligned with reporting times.
+//   - Prior runoff time step used to convert returned outfall volume to flow.
+//
+//   Build 5.1.012:
+//   - Runoff wet time step no longer kept aligned with reporting times.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -154,11 +163,15 @@ void runoff_execute()
     int      j;                        // object index
     int      day;                      // day of calendar year
     double   runoffStep;               // runoff time step (sec)
+    double   oldRunoffStep;            // previous runoff time step (sec)      //(5.1.011)
     double   runoff;                   // subcatchment runoff (ft/sec)
     DateTime currentDate;              // current date/time 
     char     canSweep;                 // TRUE if street sweeping can occur
 
     if ( ErrorCode ) return;
+
+    // --- find previous runoff time step in sec                               //(5.1.011)
+    oldRunoffStep = (NewRunoffTime - OldRunoffTime) / 1000.0;                  //(5.1.011)
 
     // --- convert elapsed runoff time in milliseconds to a calendar date
     currentDate = getDateTime(NewRunoffTime);
@@ -170,7 +183,7 @@ void runoff_execute()
     if ( Nobjects[SUBCATCH] == 0 )
     {
         OldRunoffTime = NewRunoffTime;
-        NewRunoffTime += (double)(1000.0 * DryStep);
+        NewRunoffTime += (double)(1000 * DryStep);
         NewRunoffTime = MIN(NewRunoffTime, TotalDuration);                     //(5.1.008)
         return;
     }
@@ -207,7 +220,7 @@ void runoff_execute()
 
     // --- update runoff time clock (in milliseconds)
     OldRunoffTime = NewRunoffTime;
-    NewRunoffTime += (double)(1000.0 * runoffStep);
+    NewRunoffTime += (double)(1000 * runoffStep);
 
 ////  Following code segment added to release 5.1.008.  ////                   //(5.1.008)
 ////
@@ -223,7 +236,7 @@ void runoff_execute()
     for (j = 0; j < Nobjects[SUBCATCH]; j++) subcatch_setOldState(j);
 
     // --- determine any runon from drainage system outfall nodes              //(5.1.008)
-    runoff_getOutfallRunon(runoffStep);                                        //(5.1.008)
+    if ( oldRunoffStep > 0.0 ) runoff_getOutfallRunon(oldRunoffStep);          //(5.1.011)
 
     // --- determine runon from upstream subcatchments, and implement snow removal
     for (j = 0; j < Nobjects[SUBCATCH]; j++)
@@ -301,8 +314,13 @@ double runoff_getTimeStep(DateTime currentDate)
         if ( timeStep > 0 && timeStep < maxStep ) maxStep = timeStep;
     }
 
+////  Following code segment modified for release 5.1.012.  ////               //(5.1.012)
     // --- determine whether wet or dry time step applies
-    if ( IsRaining || HasSnow || HasRunoff || HasWetLids ) timeStep = WetStep; //(5.1.008)
+    if ( IsRaining || HasSnow || HasRunoff || HasWetLids )
+    {
+        timeStep = WetStep;
+    }
+////
     else timeStep = DryStep;
 
     // --- limit time step if necessary
@@ -471,10 +489,10 @@ void  runoff_readFromFile(void)
 
 void runoff_getOutfallRunon(double tStep)
 //
-//  Input:   tStep = runoff time step (sec)
+//  Input:   tStep = previous runoff time step (sec)                           //(5.1.011)
 //  Output:  none
-//  Purpose: adds any flow and pollutant loads returned from drainage system
-//           outfalls to runoff system subcatchments.
+//  Purpose: adds flow and pollutant loads leaving drainage system outfalls    //(5.1.011)
+//           during the previous runoff time step to designated subcatchments. //(5.1.011)
 //
 {
     int i, k, p;

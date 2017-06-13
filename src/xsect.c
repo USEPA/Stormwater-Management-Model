@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
+//             03/14/17   (Build 5.1.012)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -23,6 +24,9 @@
 //      A = flow area
 //      R = hyd. radius
 //      S = section factor = A*R^(2/3)
+//
+//   Build 5.1.012:
+//   - Height at max. width for Modified Baskethandle shape corrected.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -442,7 +446,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
 
         // --- height of circular arc
         xsect->yBot = xsect->rBot * (1.0 - cos(theta/2.0));
-        xsect->ywMax = xsect->yBot;
+        xsect->ywMax = xsect->yFull - xsect->yBot;                             //(5.1.012)
 
         // --- area of circular arc
         xsect->aBot = xsect->rBot * xsect->rBot /

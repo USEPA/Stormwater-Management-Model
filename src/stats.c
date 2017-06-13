@@ -6,6 +6,8 @@
 //   Date:     03/20/14   (Build 5.1.001)
 //             09/15/14   (Build 5.1.007)
 //             03/19/15   (Build 5.1.008)
+//             08/01/16   (Build 5.1.011)
+//             03/14/17   (Build 5.1.012)
 //   Author:   L. Rossman (EPA)
 //             R. Dickinson (CDM)
 //
@@ -19,6 +21,14 @@
 //   - Support for updating maximum reported nodal depths added.
 //   - OpenMP parallelization applied to updating node and link flow statistics.
 //   - Updating of time that conduit is upstrm/dnstrm full was modified.
+//
+//   Build 5.1.011:
+//   - Surcharging is now evaluated only under dynamic wave flow routing and
+//     storage nodes cannot be classified as surcharged.
+//
+//   Build 5.1.012:
+//   - Time step statistics now evaluated only in non-steady state periods.
+//   - Check for full conduit flow now accounts for number of barrels.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -425,20 +435,27 @@ void   stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
         stats_updateLinkStats(j, tStep, aDate);
 }
 
-    // --- update time step stats
-    //     (skip initial time step for min. value)
-    if ( OldRoutingTime > 0 )                                                  //(5.1.008)
-    {
-        SysStats.minTimeStep = MIN(SysStats.minTimeStep, tStep);
-    }
-    SysStats.avgTimeStep += tStep;
-    SysStats.maxTimeStep = MAX(SysStats.maxTimeStep, tStep);
-
-    // --- update iteration step count stats
-    SysStats.avgStepCount += stepCount;
+////  Following code segment modified for release 5.1.012.  ////               //(5.1.012)
 
     // --- update count of times in steady state
     SysStats.steadyStateCount += steadyState;
+
+    // --- update time step stats if not in steady state
+	if ( steadyState == FALSE )
+	{
+        // --- skip initial time step for min. value)
+        if ( OldRoutingTime > 0 )
+        {
+            SysStats.minTimeStep = MIN(SysStats.minTimeStep, tStep);
+        }
+        SysStats.avgTimeStep += tStep;
+        SysStats.maxTimeStep = MAX(SysStats.maxTimeStep, tStep);
+
+        // --- update iteration step count stats
+        SysStats.avgStepCount += stepCount;
+	}
+
+////
 
     // --- update max. system outfall flow
     MaxOutfallFlow = MAX(MaxOutfallFlow, SysOutfallFlow);
@@ -495,7 +512,11 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
                 MAX(NodeStats[j].maxPondedVol,
                     (newVolume - Node[j].fullVolume));
         }
-        if ( newDepth + Node[j].invertElev + FUDGE >= Node[j].crownElev )
+
+        // --- for dynamic wave routing, classify a non-storage node as        //(5.1.011)
+        //     surcharged if its water level exceeds its crown elev.           //(5.1.011)
+        if ( RouteModel == DW && Node[j].type != STORAGE &&                    //(5.1.011)
+             newDepth + Node[j].invertElev + FUDGE >= Node[j].crownElev )
         {
             NodeStats[j].timeSurcharged += tStep;
         }
@@ -636,7 +657,8 @@ void  stats_updateLinkStats(int j, double tStep, DateTime aDate)
 
         // --- update time conduit is full
         k = Link[j].subIndex;
-        if ( q >= Link[j].qFull ) LinkStats[j].timeFullFlow += tStep; 
+        if ( q >= Link[j].qFull * (double)Conduit[k].barrels )                 //(5.1.012)
+            LinkStats[j].timeFullFlow += tStep; 
         if ( Conduit[k].capacityLimited )
             LinkStats[j].timeCapacityLimited += tStep;
 

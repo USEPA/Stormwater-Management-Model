@@ -5,6 +5,8 @@
 //   Version: 5.1
 //   Date:    03/20/14   (Build 5.1.001)
 //            03/19/15   (Build 5.1.008)
+//            08/01/16   (Build 5.1.011)
+//            03/14/17   (Build 5.1.012)
 //   Author:  L. Rossman (US EPA)
 //
 //   Public interface for LID functions.
@@ -13,6 +15,13 @@
 //   - Support added for Roof Disconnection LID.
 //   - Support added for separate routing of LID drain flows.
 //   - Detailed LID reporting modified.
+//
+//   Build 5.1.011:
+//   - Water depth replaces moisture content for LID's pavement layer. 
+//   - Arguments for lidproc_saveResults() modified.
+//
+//   Build 5.1.012:
+//   - Redefined meaning of wasDry in TLidRptFile structure.
 //
 //-----------------------------------------------------------------------------
 
@@ -136,7 +145,7 @@ typedef struct
 typedef struct
 {
     FILE*     file;               // file pointer
-    int       wasDry;             // true if LID was dry                       //(5.1.008)
+    int       wasDry;             // number of successive dry periods          //(5.1.012)
     char      results[256];       // results for current time period           //(5.1.008)
 }   TLidRptFile;
 
@@ -157,7 +166,7 @@ typedef struct
 
     TGrnAmpt soilInfil;      // infil. object for biocell soil layer 
     double   surfaceDepth;   // depth of ponded water on surface layer (ft)
-    double   paveMoisture;   // moisture content of porous pavement layer      //(5.1.008)
+    double   paveDepth;      // depth of water in porous pavement layer        //(5.1.011)
     double   soilMoisture;   // moisture content of biocell soil layer
     double   storageDepth;   // depth of water in storage layer (ft)
 
@@ -208,7 +217,7 @@ double   lidproc_getOutflow(TLidUnit* lidUnit, TLidProc* lidProc,
          double inflow, double evap, double infil, double maxInfil,            //(5.1.008)
          double tStep, double* lidEvap, double* lidInfil, double* lidDrain);   //(5.1.008)
 
-void     lidproc_saveResults(TLidUnit* lidUnit, TLidProc* lidProc,             //(5.1.008)
-         double ucfRainfall, double ucfRainDepth);
+void     lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall,            //(5.1.011)
+         double ucfRainDepth);
 
 #endif

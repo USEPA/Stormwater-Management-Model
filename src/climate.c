@@ -7,6 +7,7 @@
 //            09/15/14 (Build 5.1.007)
 //            03/19/15 (Build 5.1.008)
 //            08/05/15 (Build 5.1.010)
+//            08/01/16 (Build 5.1.011)
 //   Author:  L. Rossman
 //
 //   Climate related functions.
@@ -24,7 +25,9 @@
 //   Build 5.1.010:
 //   - Hargreaves evaporation now computed using 7-day average temperatures.
 //             
-//-----------------------------------------------------------------------------
+//   Build 5.1.011:
+//   - Monthly adjustment for hyd. conductivity <= 0 is ignored.
+///-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <stdlib.h>
@@ -414,6 +417,7 @@ int climate_readAdjustments(char* tok[], int ntoks)
         {
             if ( !getDouble(tok[i], &Adjust.hydcon[i-1]) )
                 return error_setInpError(ERR_NUMBER, tok[i]);
+            if ( Adjust.hydcon[i-1] <= 0.0 ) Adjust.hydcon[i-1] = 1.0;         //(5.1.011)
         }
         return 0;
     }

@@ -5,6 +5,7 @@
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
 //             03/19/15   (Build 5.1.008)
+//             03/14/17   (Build 5.1.012)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -15,6 +16,8 @@
 //   Build 5.1.008:
 //   - Bug in finding if conduit was upstrm/dnstrm full was fixed.
 //
+//   Build 5.1.012:
+//   - Modified uniform loss rate term of conduit momentum equation.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -75,6 +78,8 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     TXsect* xsect = &Link[j].xsect;    // ptr. to conduit's cross section data
     char   isFull = FALSE;             // TRUE if conduit flowing full
     char   isClosed = FALSE;           // TRUE if conduit closed
+
+
 
     // --- adjust isClosed status by any control action
     if ( Link[j].setting == 0 ) isClosed = TRUE;
@@ -208,7 +213,7 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     }
 
     // --- 6. term for evap and seepage losses per unit length
-    dq6 = link_getLossRate(j, qOld, dt) * 1.5 * dt * v / link_getLength(j);    //(5.1.008)
+    dq6 = link_getLossRate(j, qOld, dt) * 2.5 * dt * v / link_getLength(j);    //(5.1.012)
 
     // --- combine terms to find new conduit flow
     denom = 1.0 + dq1 + dq5;
