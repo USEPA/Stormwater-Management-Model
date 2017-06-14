@@ -1,0 +1,17 @@
+{
+    "name": "Example 6",
+    "version": "1.0",
+    "description": "Routing - Culvert with roadway overtopping",
+    "args": [
+        "Example6.inp",
+        "Example6.rpt", 
+        "Example6.out"
+    ],
+    "input_files": [
+        "Example6.inp"
+    ],
+    "output_files": {
+        "Example6.rpt": "swmm report", 
+        "Example6.out": "swmm allclose"
+    }
+}

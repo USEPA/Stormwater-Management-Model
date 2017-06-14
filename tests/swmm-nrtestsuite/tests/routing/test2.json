@@ -1,0 +1,17 @@
+{
+    "name": "test 2",
+    "version": "1.0",
+    "description": "Flow through a constriction",
+    "args": [
+        "test2.inp",
+        "test2.rpt", 
+        "test2.out"
+    ],
+    "input_files": [
+        "test2.inp"
+    ],
+    "output_files": {
+        "test2.rpt": "swmm report", 
+        "test2.out": "swmm allclose"
+    }
+}
