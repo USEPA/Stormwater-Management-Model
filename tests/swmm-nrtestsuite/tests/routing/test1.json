@@ -1,0 +1,17 @@
+{
+    "name": "test 1",
+    "version": "1.0",
+    "description": "Flat slope example.",
+    "args": [
+        "test1.inp",
+        "test1.rpt", 
+        "test1.out"
+    ],
+    "input_files": [
+        "test1.inp"
+    ],
+    "output_files": {
+        "test1.rpt": "swmm report", 
+        "test1.out": "swmm allclose"
+    }
+}
