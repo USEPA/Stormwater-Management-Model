@@ -72,7 +72,7 @@ int inflow_readExtInflow(char* tok[], int ntoks)
     }
 
     // --- do the same for a pollutant inflow
-    else if ( ntoks >= 4 )
+    if ( ntoks >= 4 && param > -1)
     {
         if      ( match(tok[3], w_CONCEN) ) type = CONCEN_INFLOW;
         else if ( match(tok[3], w_MASS) )   type = MASS_INFLOW;
@@ -132,10 +132,10 @@ int inflow_validate(int param, int type, int tseries, int basePat, double *cf)
 	}
 	// Validate Type
 	else if (type != FLOW_INFLOW 
-	         || type != CONCEN_INFLOW 
-	         || type != MASS_INFLOW)
+	         && type != CONCEN_INFLOW 
+	         && type != MASS_INFLOW)
 	{
-		errcode = ERR_API_INFLOWTYPE;
+		errcode = ERR_KEYWORD;
 	}
 	// Validate Timeseries Index
 	else if (tseries >= Nobjects[TSERIES])

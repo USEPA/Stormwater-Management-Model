@@ -36,43 +36,40 @@ void DLLEXPORT swmm_getAPIError(int errcode, char *s)
 	strcpy(s, errmsg);
 }
 
-int DLLEXPORT swmm_getSimulationDateTime(int timetype, char *dtimestr)
+int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month, int *day,
+	                                     int *hours, int *minutes, int *seconds)
 //
 // Input: 	timetype = time type to return
-// Output: 	DateTime String 
+// Output: 	year, month, day, hours, minutes, seconds = int
 // Return:  API Error
 // Purpose: Get the simulation start, end and report date times
 {
-	
+	int errcode = 0;
 	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
-	
-	char     theDate[12];
-    char     theTime[9];
-	char     _DTimeStr[22];
-	DateTime _dtime;
-	strcpy(dtimestr, "");
-	
-	switch(timetype)
+	if (swmm_IsOpenFlag() == FALSE)
 	{
-		//StartDateTime (globals.h)
-		case 0: _dtime = StartDateTime; break;
-		//EndDateTime (globals.h)
-		case 1: _dtime = EndDateTime;  break;
-		//ReportStart (globals.h)
-		case 2: _dtime = ReportStart;  break;
-		default: return(ERR_API_OUTBOUNDS);
+		errcode = ERR_API_INPUTNOTOPEN;
 	}
-	datetime_dateToStr(_dtime, theDate);
-	datetime_timeToStr(_dtime, theTime);
+	else
+	{
+		DateTime _dtime;
+		switch (timetype)
+		{
+			//StartDateTime (globals.h)
+		case 0: _dtime = StartDateTime; break;
+			//EndDateTime (globals.h)
+		case 1: _dtime = EndDateTime;  break;
+			//ReportStart (globals.h)
+		case 2: _dtime = ReportStart;  break;
+			//Current Routing Time
+		case 3: _dtime = NewRoutingTime; break;
+		default: return(ERR_API_OUTBOUNDS);
+		}
+		datetime_decodeDate(_dtime, year, month, day);
+		datetime_decodeTime(_dtime, hours, minutes, seconds);
+	}
 
-	strcpy(_DTimeStr, theDate);
-	strcat(_DTimeStr, " ");
-	strcat(_DTimeStr, theTime);
-	
-	strcpy(dtimestr, _DTimeStr);
-	
-	return (0);
+	return (errcode);
 }
 
 int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr)
