@@ -14,7 +14,10 @@
 // General Constants
 //------------------
 
-#define   VERSION            51011                                             //(5.1.011)
+// Update VERSION and SEMVERSION Simultaneously 
+#define   VERSION            51013          // Eventually will be deprecated. 
+#define   SEMVERSION         "5.1.13.dev0"  // Semantic Version
+
 #define   MAGICNUMBER        516114522
 #define   EOFMARK            0x1A           // Use 0x04 for UNIX systems
 #define   MAXTITLE           3              // Max. # title lines

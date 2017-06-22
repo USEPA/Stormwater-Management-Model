@@ -196,7 +196,9 @@ int  main(int argc, char *argv[])
         reportFile = argv[2];
         if (argc > 3) binaryFile = argv[3];
         else          binaryFile = blank;
-        writecon(FMT02);
+        
+		sprintf(Msg, "\n... EPA-SWMM 5.1 (Build %s)\n", SEMVERSION);
+		writecon(Msg);
 
         // --- run SWMM
         swmm_run(inputFile, reportFile, binaryFile);
@@ -675,9 +677,23 @@ int  DLLEXPORT swmm_getVersion(void)
 //           uses a format of xyzzz where x = major version number,
 //           y = minor version number, and zzz = build number.
 //
+//  NOTE: Each New Release should be updated in consts.h
+//        THIS FUNCTION WILL EVENTUALLY BE DEPRECATED 
 {
     return VERSION;
 }
+
+int DLLEXPORT swmm_getSemVersion(char* semver)
+//
+//  Output: Returns Semantic Version
+//  Purpose: retrieves the current semantic version
+//  
+//  NOTE: Each New Release should be updated in consts.h
+{
+	strcpy(semver, SEMVERSION);
+	return(0);
+}
+
 
 //=============================================================================
 
