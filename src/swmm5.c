@@ -197,6 +197,9 @@ int  main(int argc, char *argv[])
         if (argc > 3) binaryFile = argv[3];
         else          binaryFile = blank;
         
+		char SEMVERSION[SEMVERSION_LEN];
+		getSemVersion(SEMVERSION);
+
 		sprintf(Msg, "\n... EPA-SWMM 5.1 (Build %s)\n", SEMVERSION);
 		writecon(Msg);
 
@@ -683,17 +686,27 @@ int  DLLEXPORT swmm_getVersion(void)
     return VERSION;
 }
 
-int DLLEXPORT swmm_getSemVersion(char* semver)
+void DLLEXPORT swmm_getSemVersion(char* semver)
 //
 //  Output: Returns Semantic Version
 //  Purpose: retrieves the current semantic version
 //  
 //  NOTE: Each New Release should be updated in consts.h
 {
-	strcpy(semver, SEMVERSION);
-	return(0);
+	getSemVersion(semver);
 }
 
+void DLLEXPORT swmm_getVersionInfo(char* major, char* minor, char* patch)
+//
+//  Output: Returns Semantic Version Info
+//  Purpose: retrieves the current semantic version
+//  
+//  NOTE: Each New Release should be updated in consts.h
+{
+	strcpy(major, SEMVERSION_MAJOR);
+	strcpy(minor, SEMVERSION_MINOR);
+	strcpy(patch, SEMVERSION_PATCH);
+}
 
 //=============================================================================
 
@@ -958,6 +971,20 @@ int xfilter(int xc, char* module, double elapsedTime, long step)               /
     return rc;
 }
 #endif
+
+void getSemVersion(char* semver)
+//
+//  Output: Returns Semantic Version
+//  Purpose: retrieves the current semantic version
+//  
+//  NOTE: Each New Release should be updated in consts.h
+{
+	strcpy(semver, SEMVERSION_MAJOR);
+	strcat(semver, ".");
+	strcat(semver, SEMVERSION_MINOR);
+	strcat(semver, ".");
+	strcat(semver, SEMVERSION_PATCH);
+}
 
 //=============================================================================
     

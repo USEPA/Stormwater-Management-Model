@@ -16,7 +16,10 @@
 
 // Update VERSION and SEMVERSION Simultaneously 
 #define   VERSION            51013          // Eventually will be deprecated. 
-#define   SEMVERSION         "5.1.13.dev0"  // Semantic Version
+#define   SEMVERSION_MAJOR   "5"            // Major Semantic Version
+#define   SEMVERSION_MINOR   "1"            // Minor Semantic Version
+#define   SEMVERSION_PATCH   "13.dev0"      // Patch Semantic Version
+#define   SEMVERSION_LEN     20             // Version String Len
 
 #define   MAGICNUMBER        516114522
 #define   EOFMARK            0x1A           // Use 0x04 for UNIX systems

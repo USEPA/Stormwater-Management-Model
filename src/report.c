@@ -220,6 +220,9 @@ void report_writeLogo()
 //  Purpose: writes report header lines to report file.
 //
 {
+	char SEMVERSION[SEMVERSION_LEN];
+	getSemVersion(SEMVERSION);
+
 	sprintf(Msg, \
 		"\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build %s)", SEMVERSION);
 
