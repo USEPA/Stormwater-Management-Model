@@ -20,7 +20,7 @@
 //-----------------------------------------------------------------------------
 
 #define FMT01 \
- "\n Correct syntax is:\n swmm5 <input file> <report file> <output file>\n"
+ "\tswmm5 <input file> <report file> <output file>\n"
 
 #define FMT03 " There are errors.\n"
 #define FMT04 " There are warnings.\n"

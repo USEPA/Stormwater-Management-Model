@@ -45,7 +45,7 @@
 //**********************************************************
 //#define CLE     /* Compile as a command line executable */
 //#define SOL     /* Compile as a shared object library */
-#define DLL     /* Compile as a Windows DLL */
+//#define DLL     /* Compile as a Windows DLL */
 
 // --- define WINDOWS
 #undef WINDOWS
@@ -174,12 +174,20 @@ int  main(int argc, char *argv[])
 //  f3 = name of binary output file if saved (or blank if not saved).
 //
 {
-    char *inputFile;
-    char *reportFile;
-    char *binaryFile;
+	char *inputFile;
+	char *reportFile;
+	char *binaryFile;
+	char *arg1;
     char blank[] = "";
+	char SEMVERSION[SEMVERSION_LEN];
+	
+	// Fetch SWMM Engine Version
+	getSemVersion(SEMVERSION);
+
     time_t start;
     double runTime;
+
+	start = time(0);
 
     // --- initialize flags
     IsOpenFlag = FALSE;
@@ -187,8 +195,36 @@ int  main(int argc, char *argv[])
     SaveResultsFlag = TRUE;
 
     // --- check for proper number of command line arguments
-    start = time(0);
-    if (argc < 3) writecon(FMT01);
+	if (argc == 1)
+	{
+		writecon("\nNot Enough Arguments (See Help --help)\n\n");
+	}
+	else if (argc == 2)
+	{
+		// --- extract first argument
+		arg1 = argv[1];
+
+		if (strcmp(arg1, "--help") == 0 || strcmp(arg1, "-h") == 0)
+		{
+			// Help
+			//sprintf(Msg, "\n\n\n", SEMVERSION);
+			writecon("\n\nSTORMWATER MANAGEMENT MODEL (SWMM5) HELP\n\n");
+			writecon("COMMANDS:\n");
+			writecon("\t--help (-h)       Help Docs\n");
+			writecon("\t--version (-v)    Build Version\n");
+			sprintf(Msg, "\nRUNNING A SIMULATION:\n%s\n\n\n", FMT01);
+			writecon(Msg);
+		}
+		else if (strcmp(arg1, "--version") == 0 || strcmp(arg1, "-v") == 0)
+		{
+			// Output version number
+			writecon(SEMVERSION);
+		}
+		else
+		{
+			writecon("\nUnknown Argument (See Help --help)\n\n");
+		}
+	}
     else
     {
         // --- extract file names from command line arguments
@@ -197,9 +233,6 @@ int  main(int argc, char *argv[])
         if (argc > 3) binaryFile = argv[3];
         else          binaryFile = blank;
         
-		char SEMVERSION[SEMVERSION_LEN];
-		getSemVersion(SEMVERSION);
-
 		sprintf(Msg, "\n... EPA-SWMM 5.1 (Build %s)\n", SEMVERSION);
 		writecon(Msg);
 
