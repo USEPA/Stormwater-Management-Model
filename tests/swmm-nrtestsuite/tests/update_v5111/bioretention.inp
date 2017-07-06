@@ -1,0 +1,175 @@
+[TITLE]
+;;Project Title/Notes
+Data from "North" Bioretention Cell in Graham, NC
+Data entered on August 22, 2013 by E. Hirschmann
+BMP ID 15, STRM ID 115
+
+[OPTIONS]
+;;Option             Value
+FLOW_UNITS           LPS
+INFILTRATION         GREEN_AMPT
+FLOW_ROUTING         DYNWAVE
+LINK_OFFSETS         DEPTH
+MIN_SLOPE            0
+ALLOW_PONDING        YES
+SKIP_STEADY_STATE    NO
+
+START_DATE           05/09/2007
+START_TIME           17:14:00
+REPORT_START_DATE    05/09/2007
+REPORT_START_TIME    18:40:00
+END_DATE             05/10/2007
+END_TIME             09:15:00
+SWEEP_START          01/01
+SWEEP_END            12/31
+DRY_DAYS             0
+REPORT_STEP          00:05:00
+WET_STEP             00:05:00
+DRY_STEP             00:05:00
+ROUTING_STEP         0:00:05 
+
+INERTIAL_DAMPING     PARTIAL
+NORMAL_FLOW_LIMITED  BOTH
+FORCE_MAIN_EQUATION  H-W
+VARIABLE_STEP        0.00
+LENGTHENING_STEP     0
+MIN_SURFAREA         0
+MAX_TRIALS           0
+HEAD_TOLERANCE       0
+SYS_FLOW_TOL         5
+LAT_FLOW_TOL         5
+
+[EVAPORATION]
+;;Evap Data      Parameters
+;;-------------- ----------------
+CONSTANT         0.0
+DRY_ONLY         NO
+
+[RAINGAGES]
+;;Gage           Format    Interval SCF      Source    
+;;-------------- --------- ------ ------ ----------
+5/09/07_Storm    INTENSITY 0:02     1.0      TIMESERIES Storm115        
+
+[SUBCATCHMENTS]
+;;Subcatchment   Rain Gage        Outlet           Area     %Imperv  Width    %Slope   CurbLen  Snow Pack       
+;;-------------- ---------------- ---------------- -------- -------- -------- -------- -------- ----------------
+;Subcatchment for NC Bioretention (BMP ID 15)
+NC_Bioretention  5/09/07_Storm    1                1        100      500      1        0                        
+
+[SUBAREAS]
+;;Subcatchment   N-Imperv   N-Perv     S-Imperv   S-Perv     PctZero    RouteTo    PctRouted 
+;;-------------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
+NC_Bioretention  0.01       0.1        0          0          25         OUTLET    
+
+[INFILTRATION]
+;;Subcatchment   Suction    HydCon     IMDmax    
+;;-------------- ---------- ---------- ----------
+NC_Bioretention  3.0        0.5        4         
+
+[LID_CONTROLS]
+;;               Type/Layer Parameters
+;;-------------- ---------- ----------
+NC_Bioretention_North BC
+NC_Bioretention_North SURFACE    230        0.086      .41        0          5         
+NC_Bioretention_North SOIL       300        .45        .27        .04        150        5          49        
+NC_Bioretention_North STORAGE    450        .9         1          0         
+NC_Bioretention_North DRAIN      30         .55        500        6         
+
+[LID_USAGE]
+;;Subcatchment   LID Process      Number  Area       Width      InitSatur  FromImprv  ToPerv     
+;;-------------- ---------------- ------- ---------- ---------- ---------- ---------- ---------- 
+NC_Bioretention  NC_Bioretention_North 1       102.00     0          80         100        0          "bc_sncb.txt"
+
+[OUTFALLS]
+;;Outfall        Invert     Type       Stage Data       Gated   
+;;-------------- ---------- ---------- ---------------- --------
+1                0          FREE                        NO
+
+[TIMESERIES]
+;;Time Series    Date       Time       Value     
+;;-------------- ---------- ---------- ----------
+;05/09/2007 NC Bioretention Storm (mm/hr)
+Storm115         5/9/2007   17:16      1.404663332
+Storm115         5/9/2007   17:18      2.429888018
+Storm115         5/9/2007   17:20      1.827703675
+Storm115         5/9/2007   17:22      1.696957545
+Storm115         5/9/2007   17:24      1.285097315
+Storm115         5/9/2007   17:26      0.913035367
+Storm115         5/9/2007   17:28      0.710903754
+Storm115         5/9/2007   17:30      0.497363523
+Storm115         5/9/2007   17:32      0.413885506
+Storm115         5/9/2007   17:34      0.335666499
+Storm115         5/9/2007   17:36      0.175975382
+Storm115         5/9/2007   17:38      0.240238357
+Storm115         5/9/2007   17:40      0.118743921
+Storm115         5/9/2007   17:42      0.118743921
+Storm115         5/9/2007   17:44      0.118743921
+Storm115         5/9/2007   17:46      0.069555733
+Storm115         5/9/2007   17:48      0.069555733
+Storm115         5/9/2007   17:50      0.069555733
+Storm115         5/9/2007   18:58      0.175975382
+Storm115         5/9/2007   19:0       0.335666499
+Storm115         5/9/2007   19:2       0.175975382
+Storm115         5/9/2007   19:4       0.335666499
+Storm115         5/9/2007   19:6       0.335666499
+Storm115         5/9/2007   19:8       0.335666499
+Storm115         5/9/2007   19:10      0.335666499
+Storm115         5/9/2007   19:12      0.497363523
+Storm115         5/9/2007   19:14      0.175975382
+Storm115         5/9/2007   19:16      0.118743921
+Storm115         5/9/2007   19:18      0.118743921
+Storm115         5/9/2007   19:20      0.335666499
+Storm115         5/9/2007   19:22      0.175975382
+Storm115         5/9/2007   19:24      0.118743921
+Storm115         5/9/2007   19:26      0.118743921
+Storm115         5/9/2007   19:28      0.118743921
+Storm115         5/9/2007   19:30      0.069555733
+Storm115         5/9/2007   19:32      0.019519426
+Storm115         5/9/2007   19:34      0.069555733
+Storm115         5/9/2007   19:36      0.069555733
+Storm115         5/9/2007   19:38      0.069555733
+Storm115         5/9/2007   19:40      0.019519426
+Storm115         5/9/2007   19:42      0.069555733
+
+[REPORT]
+;;Reporting Options
+INPUT      YES
+CONTROLS   YES
+SUBCATCHMENTS ALL
+NODES ALL
+LINKS ALL
+
+[TAGS]
+
+[MAP]
+DIMENSIONS 0.000 0.000 10000.000 10000.000
+Units      None
+
+[COORDINATES]
+;;Node           X-Coord            Y-Coord           
+;;-------------- ------------------ ------------------
+1                6674.234           6265.607          
+
+[VERTICES]
+;;Link           X-Coord            Y-Coord           
+;;-------------- ------------------ ------------------
+
+[Polygons]
+;;Subcatchment   X-Coord            Y-Coord           
+;;-------------- ------------------ ------------------
+NC_Bioretention  1783.781           7951.079          
+NC_Bioretention  2564.846           8223.268          
+NC_Bioretention  3570.764           8033.919          
+NC_Bioretention  4103.308           7465.871          
+NC_Bioretention  4624.018           6637.469          
+NC_Bioretention  3570.764           6270.605          
+NC_Bioretention  2647.687           6175.931          
+NC_Bioretention  1570.764           6696.641          
+NC_Bioretention  1464.255           7501.374          
+NC_Bioretention  1795.616           7915.576          
+
+[SYMBOLS]
+;;Gage           X-Coord            Y-Coord           
+;;-------------- ------------------ ------------------
+5/09/07_Storm    1328.036           8127.128          
+
