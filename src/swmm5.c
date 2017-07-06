@@ -45,7 +45,7 @@
 //**********************************************************
 //#define CLE     /* Compile as a command line executable */
 //#define SOL     /* Compile as a shared object library */
-#define DLL     /* Compile as a Windows DLL */
+//#define DLL     /* Compile as a Windows DLL */
 
 // --- define WINDOWS
 #undef WINDOWS
@@ -174,12 +174,20 @@ int  main(int argc, char *argv[])
 //  f3 = name of binary output file if saved (or blank if not saved).
 //
 {
-    char *inputFile;
-    char *reportFile;
-    char *binaryFile;
+	char *inputFile;
+	char *reportFile;
+	char *binaryFile;
+	char *arg1;
     char blank[] = "";
+	char SEMVERSION[SEMVERSION_LEN];
+	
+	// Fetch SWMM Engine Version
+	getSemVersion(SEMVERSION);
+
     time_t start;
     double runTime;
+
+	start = time(0);
 
     // --- initialize flags
     IsOpenFlag = FALSE;
@@ -187,8 +195,35 @@ int  main(int argc, char *argv[])
     SaveResultsFlag = TRUE;
 
     // --- check for proper number of command line arguments
-    start = time(0);
-    if (argc < 3) writecon(FMT01);
+	if (argc == 1)
+	{
+		writecon("\nNot Enough Arguments (See Help --help)\n\n");
+	}
+	else if (argc == 2)
+	{
+		// --- extract first argument
+		arg1 = argv[1];
+
+		if (strcmp(arg1, "--help") == 0 || strcmp(arg1, "-h") == 0)
+		{
+			// Help
+			writecon("\n\nSTORMWATER MANAGEMENT MODEL (SWMM5) HELP\n\n");
+			writecon("COMMANDS:\n");
+			writecon("\t--help (-h)       Help Docs\n");
+			writecon("\t--version (-v)    Build Version\n");
+			sprintf(Msg, "\nRUNNING A SIMULATION:\n%s\n\n\n", FMT01);
+			writecon(Msg);
+		}
+		else if (strcmp(arg1, "--version") == 0 || strcmp(arg1, "-v") == 0)
+		{
+			// Output version number
+			writecon(SEMVERSION);
+		}
+		else
+		{
+			writecon("\nUnknown Argument (See Help --help)\n\n");
+		}
+	}
     else
     {
         // --- extract file names from command line arguments
@@ -196,7 +231,9 @@ int  main(int argc, char *argv[])
         reportFile = argv[2];
         if (argc > 3) binaryFile = argv[3];
         else          binaryFile = blank;
-        writecon(FMT02);
+        
+		sprintf(Msg, "\n... EPA-SWMM 5.1 (Build %s)\n", SEMVERSION);
+		writecon(Msg);
 
         // --- run SWMM
         swmm_run(inputFile, reportFile, binaryFile);
@@ -675,8 +712,32 @@ int  DLLEXPORT swmm_getVersion(void)
 //           uses a format of xyzzz where x = major version number,
 //           y = minor version number, and zzz = build number.
 //
+//  NOTE: Each New Release should be updated in consts.h
+//        THIS FUNCTION WILL EVENTUALLY BE DEPRECATED 
 {
     return VERSION;
+}
+
+void DLLEXPORT swmm_getSemVersion(char* semver)
+//
+//  Output: Returns Semantic Version
+//  Purpose: retrieves the current semantic version
+//  
+//  NOTE: Each New Release should be updated in consts.h
+{
+	getSemVersion(semver);
+}
+
+void DLLEXPORT swmm_getVersionInfo(char* major, char* minor, char* patch)
+//
+//  Output: Returns Semantic Version Info
+//  Purpose: retrieves the current semantic version
+//  
+//  NOTE: Each New Release should be updated in consts.h
+{
+	strcpy_s(major, sizeof major, SEMVERSION_MAJOR);
+	strcpy_s(minor, sizeof minor, SEMVERSION_MINOR);
+	strcpy_s(patch, sizeof patch, SEMVERSION_PATCH);
 }
 
 //=============================================================================
@@ -942,6 +1003,17 @@ int xfilter(int xc, char* module, double elapsedTime, long step)               /
     return rc;
 }
 #endif
+
+void getSemVersion(char* semver)
+//
+//  Output: Returns Semantic Version
+//  Purpose: retrieves the current semantic version
+//  
+//  NOTE: Each New Release should be updated in consts.h
+{
+	sprintf_s(semver, SEMVERSION_LEN, "%s.%s.%s", 
+		SEMVERSION_MAJOR, SEMVERSION_MINOR, SEMVERSION_PATCH);
+}
 
 //=============================================================================
     

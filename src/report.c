@@ -220,7 +220,13 @@ void report_writeLogo()
 //  Purpose: writes report header lines to report file.
 //
 {
-    fprintf(Frpt.file, FMT08);
+	char SEMVERSION[SEMVERSION_LEN];
+	getSemVersion(SEMVERSION);
+
+	sprintf(Msg, \
+		"\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build %s)", SEMVERSION);
+
+    fprintf(Frpt.file, Msg);
     fprintf(Frpt.file, FMT09);
     fprintf(Frpt.file, FMT10);
     time(&SysTime);                    // Save starting wall clock time
