@@ -207,7 +207,6 @@ int  main(int argc, char *argv[])
 		if (strcmp(arg1, "--help") == 0 || strcmp(arg1, "-h") == 0)
 		{
 			// Help
-			//sprintf(Msg, "\n\n\n", SEMVERSION);
 			writecon("\n\nSTORMWATER MANAGEMENT MODEL (SWMM5) HELP\n\n");
 			writecon("COMMANDS:\n");
 			writecon("\t--help (-h)       Help Docs\n");
@@ -736,9 +735,9 @@ void DLLEXPORT swmm_getVersionInfo(char* major, char* minor, char* patch)
 //  
 //  NOTE: Each New Release should be updated in consts.h
 {
-	strcpy(major, SEMVERSION_MAJOR);
-	strcpy(minor, SEMVERSION_MINOR);
-	strcpy(patch, SEMVERSION_PATCH);
+	strcpy_s(major, sizeof major, SEMVERSION_MAJOR);
+	strcpy_s(minor, sizeof minor, SEMVERSION_MINOR);
+	strcpy_s(patch, sizeof patch, SEMVERSION_PATCH);
 }
 
 //=============================================================================
@@ -1012,11 +1011,8 @@ void getSemVersion(char* semver)
 //  
 //  NOTE: Each New Release should be updated in consts.h
 {
-	strcpy(semver, SEMVERSION_MAJOR);
-	strcat(semver, ".");
-	strcat(semver, SEMVERSION_MINOR);
-	strcat(semver, ".");
-	strcat(semver, SEMVERSION_PATCH);
+	sprintf_s(semver, SEMVERSION_LEN, "%s.%s.%s", 
+		SEMVERSION_MAJOR, SEMVERSION_MINOR, SEMVERSION_PATCH);
 }
 
 //=============================================================================
