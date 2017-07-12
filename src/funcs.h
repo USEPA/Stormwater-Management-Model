@@ -292,8 +292,9 @@ void    massbal_addToFinalStorage(int pollut, double mass);                    /
 double  massbal_getStepFlowError(void);
 double  massbal_getRunoffError(void);
 double  massbal_getFlowError(void);
-int  massbal_getRoutingFlowTotal(API_sysRoutingTotals paramtype, double *value); // For API
-int  massbal_getRunoffTotal(API_sysRunoffTotals paramtype, double *value);      // For API
+int     massbal_getRoutingFlowTotal(TRoutingTotals *routingTot);      // For API
+int     massbal_getRunoffTotal(TRunoffTotals *runoffTot);             // For API
+double  massbal_getTotalArea(void);                                  // For API
 
 //-----------------------------------------------------------------------------
 //   Simulation Statistics Methods
@@ -313,12 +314,12 @@ void    stats_updateGwaterStats(int j, double infil, double evap,              /
 void    stats_updateMaxRunoff(void);
 void    stats_updateMaxNodeDepth(int node, double depth);                      //(5.1.008)
 
-int  stats_getNodeStat(int index, API_nodeStats paramtype, double *value);       // For API
-int  stats_getStorageStat(int subindex, double *value);                          // For API
-int  stats_getOutfallStat(int subindex, double *value);                          // For API
-int  stats_getLinkStat(int index, API_linkStats paramtype, double *value);       // For API
-int  stats_getPumpStat(int subindex, double *value);                             // For API
-int  stats_getSubcatchStat(int index, API_subcatchmentStats paramtype, double *value);   // For API
+int  stats_getNodeStat(int index, TNodeStats *nodeStats);                       // For API
+int  stats_getStorageStat(int index, TStorageStats *storageStats);              // For API
+int  stats_getOutfallStat(int index, TOutfallStats *outfallStats);              // For API
+int  stats_getLinkStat(int index, TLinkStats *linkStats);                       // For API
+int  stats_getPumpStat(int index, TPumpStats *pumpStats);                       // For API
+int  stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats);           // For API
 
 //-----------------------------------------------------------------------------
 //   Raingage Methods

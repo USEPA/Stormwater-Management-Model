@@ -788,8 +788,8 @@ void  stats_updateMaxStats(TMaxStats maxStats[], int i, int j, double x)
 }
 
 //=============================================================================
-
-int stats_getNodeStat(int index, API_nodeStats paramtype, double* array)
+//
+int stats_getNodeStat(int index, TNodeStats *nodeStats)
 //
 // Input:    index
 //           element = element to return
@@ -819,46 +819,12 @@ int stats_getNodeStat(int index, API_nodeStats paramtype, double* array)
 
 	else
 	{
-		switch (paramtype)
-		{
-		case node_depth_stats:
-			// Current Average Depth
-			array[node_ave_depth] = NodeStats[index].avgDepth * UCF(LENGTH);
-			// Current Maximum Depth
-			array[node_max_depth] = NodeStats[index].maxDepth * UCF(LENGTH);
-			break;
-		case node_inflow_stats:
-			// Current Maximum Lateral Inflow
-			array[node_max_lat_inflowrate] = NodeStats[index].maxLatFlow * UCF(FLOW);
-			// Current Maximum Inflow
-			array[node_max_inflowrate] = NodeStats[index].maxInflow * UCF(FLOW);
-			// Cumulative Lateral Inflow
-			array[node_cu_lat_inflow_vol] = NodeStats[index].totLatFlow * UCF(VOLUME);
-			// Cumulative Total Inflow
-			array[node_cu_inflow_vol] = NodeInflow[index] * UCF(VOLUME);
-			// Time Courant Critical (hrs)
-			array[node_time_cour_crit] = NodeStats[index].timeCourantCritical / 3600.0;
-			break;
-		case node_flood_stats:
-			// Cumulative Flooded Volume
-			array[node_flooded_vol] = NodeStats[index].volFlooded * UCF(VOLUME);
-			// Time Flooded (hrs)
-			array[node_time_flooded] = NodeStats[index].timeFlooded / 3600.0;
-			// Current Maximum Overflow
-			array[node_max_overflowrate] = NodeStats[index].maxOverflow * UCF(FLOW);
-			// Current Maximum Ponding Volume
-			array[node_max_ponded_vol] = NodeStats[index].maxPondedVol * UCF(VOLUME);
-			// Time Surcharged 
-			array[node_time_surcharged] = NodeStats[index].timeSurcharged / 3600.0;
-			break;
-		// Default
-		default: errorcode = ERR_API_OUTBOUNDS; break;
-		}
+		memcpy(nodeStats, &NodeStats[index], sizeof(TNodeStats));
 	}
 	return errorcode;
 }
 
-int stats_getStorageStat(int index, double *array)
+int stats_getStorageStat(int index, TStorageStats *storageStats)
 //
 // Input:    subindex
 //           element = element to return
@@ -896,24 +862,13 @@ int stats_getStorageStat(int index, double *array)
 	{
 		// fetch sub index
 		int k = Node[index].subIndex;
-
-		// Initial Volume
-		array[stor_init_vol] = StorageStats[k].initVol * UCF(VOLUME);
-		// Current Average Volume
-		array[stor_ave_vol] = StorageStats[k].avgVol * UCF(VOLUME);
-		// Current Maximum Volume
-		array[stor_max_vol] = StorageStats[k].maxVol * UCF(VOLUME);
-		// Current Maximum Flow
-		array[stor_max_outflowrate] = StorageStats[k].maxFlow * UCF(FLOW);
-		// Current Evaporation Volume
-		array[stor_cu_evap_vol] = StorageStats[k].evapLosses * UCF(VOLUME);
-		// Current Exfiltration Volume
-		array[stor_cu_exfil_vol] = StorageStats[k].exfilLosses * UCF(VOLUME);
+		// Copy Structure
+		memcpy(storageStats, &StorageStats[k], sizeof(TStorageStats));
 	}
 	return errorcode;
 }
 
-int stats_getOutfallStat(int index, double *array)
+int stats_getOutfallStat(int index, TOutfallStats *outfallStats)
 //
 // Input:    subindex
 //           element = element to return
@@ -949,20 +904,32 @@ int stats_getOutfallStat(int index, double *array)
 
 	else
 	{
+		// fetch sub index
 		int k = Node[index].subIndex;
-
-		// Current Average Flow
-		array[out_ave_inflowrate] = OutfallStats[k].avgFlow * UCF(FLOW);
-		// Current Maximum Flow
-		array[out_max_inflowrate] = OutfallStats[k].maxFlow * UCF(FLOW);
-		// Cumulative Outfall Volume
-		array[out_cu_vol] = OutfallStats[k].avgFlow * UCF(FLOW) /
-			(double)OutfallStats[k].totalPeriods;
+		// Copy Structure
+		memcpy(outfallStats, &OutfallStats[k], sizeof(TOutfallStats));
+		
+		// Perform Deep Copy of Pollutants Results
+		if (Nobjects[POLLUT] > 0)
+		{
+			outfallStats->totalLoad =
+				(double *)calloc(Nobjects[POLLUT], sizeof(double));
+			if (!outfallStats->totalLoad)
+			{
+				errorcode = ERR_MEMORY;
+			}
+			if (errorcode == 0)
+			{
+				for (k = 0; k < Nobjects[POLLUT]; k++)
+					outfallStats->totalLoad[k] = OutfallStats[k].totalLoad[k];
+			}
+		}
+		else outfallStats->totalLoad = NULL;
 	}
 	return errorcode;
 }
 
-int stats_getLinkStat(int index, API_linkStats paramtype, double *array)
+int stats_getLinkStat(int index, TLinkStats *linkStats)
 //
 // Input:    index
 //           element = element to return
@@ -992,42 +959,13 @@ int stats_getLinkStat(int index, API_linkStats paramtype, double *array)
 
 	else
 	{
-		switch (paramtype)
-		{
-		case link_flow_stats:
-			// Cumulative Maximum Flowrate
-			array[link_max_flowrate] = LinkStats[index].maxFlow * UCF(FLOW);
-			// Cumulative Maximum Velocity
-			array[link_max_velocity] = LinkStats[index].maxVeloc * UCF(LENGTH);
-			// Cumulative Maximum Depth
-			array[link_max_depth] = LinkStats[index].maxDepth * UCF(LENGTH);
-			break;
-		case conduit_surcharge_stats:
-			// Cumulative Time Normal Flow
-			array[link_time_norm_flow] = LinkStats[index].timeNormalFlow / 3600.0;
-			// Cumulative Time Inlet Control
-			array[link_time_inlet_control] = LinkStats[index].timeInletControl / 3600.0;
-			// Cumulative Time Surcharged
-			array[link_time_surcharged] = LinkStats[index].timeSurcharged / 3600.0;
-			// Cumulative Time Upstream Full
-			array[link_time_upstream_full] = LinkStats[index].timeFullUpstream / 3600.0;
-			// Cumulative Time Downstream Full
-			array[link_time_downstream_full] = LinkStats[index].timeFullDnstream / 3600.0;
-			// Cumulative Time Full Flow
-			array[link_time_full_flow] = LinkStats[index].timeFullFlow / 3600.0;
-			// Cumulative Time Capacity limited
-			array[link_time_capacity_limited] = LinkStats[index].timeCapacityLimited / 3600.0;
-			// Cumulative Time Courant Critical Flow
-			array[link_time_cour_crit] = LinkStats[index].timeCourantCritical / 3600.0;
-			break;
-		// Default
-		default: errorcode = ERR_API_OUTBOUNDS; break;
-		}
+		// Copy Structure
+		memcpy(linkStats, &LinkStats[index], sizeof(TLinkStats));
 	}
 	return errorcode;
 }
 
-int stats_getPumpStat(int index, double *array)
+int stats_getPumpStat(int index, TPumpStats *pumpStats)
 //
 // Input:    subindex
 //           element = element to return
@@ -1063,27 +1001,15 @@ int stats_getPumpStat(int index, double *array)
 
 	else
 	{
+		// fetch sub index
 		int k = Link[index].subIndex;
-
-		// Cumulative Fraction Time On
-		array[pump_fraction_time_on] = PumpStats[k].utilized;
-		// Cumulative Minimum Flow
-		array[pump_min_flow] = PumpStats[k].minFlow * UCF(FLOW);
-		// Cumulative Average Flow
-		array[pump_ave_flow] = PumpStats[k].avgFlow * UCF(FLOW);
-		// Cumulative Maximum Flow
-		array[pump_max_flow] = PumpStats[k].maxFlow * UCF(FLOW);
-		// Cumulative Pumping Volume
-		array[pump_cu_vol] = PumpStats[k].volume * UCF(VOLUME);
-		// Cumulative Emergy Consumed
-		array[pump_energy_consumed] = PumpStats[k].energy;
-		// Number of Start ups
-		array[pump_total_startups] = PumpStats[k].startUps;
+		// Copy Structure
+		memcpy(pumpStats, &PumpStats[k], sizeof(TPumpStats));
 	}
 	return errorcode;
 }
 
-int stats_getSubcatchStat(int index, API_subcatchmentStats paramtype, double *array)
+int stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats)
 //
 // Input:    index
 //           element = element to return
@@ -1113,27 +1039,8 @@ int stats_getSubcatchStat(int index, API_subcatchmentStats paramtype, double *ar
 
 	else
 	{
-		switch (paramtype)
-		{
-		
-		case subc_flow_stats:
-			// Cumulative Runon Volume
-			array[subc_cu_runon_vol] = SubcatchStats[index].runon * UCF(VOLUME);
-			// Cumulative Infiltration Volume
-			array[subc_cu_infil_vol] = SubcatchStats[index].infil * UCF(VOLUME);
-			// Cumulative Runoff Volume
-			array[subc_cu_runoff_vol] = SubcatchStats[index].runoff * UCF(VOLUME);
-			// Maximum Runoff Rate
-			array[subc_max_flowrate] = SubcatchStats[index].maxFlow * UCF(FLOW);
-			break;
-		case subc_climate_stats:
-			// Cumulative Rainfall Depth
-			array[subc_cu_precip] = SubcatchStats[index].precip * UCF(RAINDEPTH);
-			// Cumulative Evaporation Volume
-			array[subc_cu_evap_vol] = SubcatchStats[index].evap * UCF(VOLUME);
-			break;
-		default: errorcode = ERR_API_OUTBOUNDS; break;
-		}
+		// Copy Structure
+		memcpy(subcatchStats, &SubcatchStats[index], sizeof(TSubcatchStats));
 	}
 	return errorcode;
 }
