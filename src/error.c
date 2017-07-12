@@ -179,7 +179,6 @@
 #define ERR508 "\n API Key Error: Invalid Timeseries Index"
 #define ERR509 "\n API Key Error: Invalid Pattern Index"
 
-
 ////////////////////////////////////////////////////////////////////////////
 //  NOTE: Need to update ErrorMsgs[], ErrorCodes[], and ErrorType
 //        (in error.h) whenever a new error message is added.
@@ -200,7 +199,6 @@ char* ErrorMsgs[] =
       ERR363, ERR401, ERR402, ERR403, ERR405, ERR501, ERR502, ERR503, ERR504,
 	  ERR505, ERR506, ERR507, ERR508, ERR509};
 
-
 int ErrorCodes[] =
     { 0,      101,    103,    105,    107,    108,    109,    110,    111,
       112,    113,    114,    115,    117,    119,    121,    122,    131,
@@ -215,7 +213,6 @@ int ErrorCodes[] =
       339,    341,    343,    345,    351,    353,    355,    357,    361,
       363,    401,    402,    403,    405,    501,    502,    503,    504,
 	  505,    506,    507,    508,    509};
-
 
 char  ErrString[256];
 
