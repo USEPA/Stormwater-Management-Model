@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "headers.h"
+#include "swmm5.h"
 
 //-----------------------------------------------------------------------------
 //  Constants   
@@ -1085,72 +1086,67 @@ double massbal_getStoredMass(int p)
 
 //=============================================================================
 
-double massbal_getRoutingFlowTotal(int element)
+int massbal_getRoutingFlowTotal(TRoutingTotals *RoutingTotal)
 //
 // Input:    element = element to return
 // Return:   value
 // Purpose:  Gets the routing total for toolkitAPI
 //
 {
-	double value;
+	int errorcode = 0;
 
-	switch (element)
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
 	{
-		// Cumulative Dry Weather Inflow Volume
-		case 0: value = FlowTotals.dwInflow * UCF(VOLUME); break;
-		// Cumulative Wet Weather Inflow Volume
-		case 1: value = FlowTotals.wwInflow * UCF(VOLUME); break;
-		// Cumulative Groundwater Inflow Volume
-		case 2: value = FlowTotals.gwInflow * UCF(VOLUME); break;
-		// Cumulative I&I Inflow Volume
-		case 3: value = FlowTotals.iiInflow * UCF(VOLUME); break;
-		// Cumulative External Inflow Volume
-		case 4: value = FlowTotals.exInflow * UCF(VOLUME); break;
-		// Cumulative Flooding Volume
-		case 5: value = FlowTotals.flooding * UCF(VOLUME); break;
-		// Cumulative Outflow Volume
-		case 6: value = FlowTotals.outflow  * UCF(VOLUME); break;
-		// Cumulative Evaporation Loss
-		case 7: value = FlowTotals.evapLoss * UCF(VOLUME); break;
-		// Cumulative Seepage Loss
-		case 8: value = FlowTotals.seepLoss * UCF(VOLUME); break;
-		// Routing Error
-		case 9: value = massbal_getFlowError(); break;
+		errorcode = ERR_API_INPUTNOTOPEN;
 	}
-	return value;
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	else
+	{
+		memcpy(RoutingTotal, &FlowTotals, sizeof(TRoutingTotals));
+	}
+
+	return errorcode;
 }
 
-double massbal_getRunoffTotal(int element)
+int massbal_getRunoffTotal(TRunoffTotals *runoffTot)
 //
 // Input:    element = element to return
 // Return:   value
 // Purpose:  Gets the runoff total for toolkitAPI
 //
 {
-	double value;
+	int errorcode = 0;
 
-	switch (element)
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
 	{
-		// Cumulative Rainfall Volume
-		case 0: value = RunoffTotals.rainfall / TotalArea * UCF(RAINDEPTH); break;
-		// Cumulative Evaporation Volume
-		case 1: value = RunoffTotals.evap / TotalArea * UCF(RAINDEPTH); break;
-		// Cumulative Infiltration Volume
-		case 2: value = RunoffTotals.infil / TotalArea * UCF(RAINDEPTH); break;
-		// Cumulative Runoff Volume
-		case 3: value = RunoffTotals.runoff / TotalArea * UCF(RAINDEPTH); break;
-		// Cumulative Runon Volume
-		case 4: value = RunoffTotals.runon / TotalArea * UCF(RAINDEPTH); break;
-		// Cumulative Drain Volume
-		case 5: value = RunoffTotals.drains / TotalArea * UCF(RAINDEPTH); break;
-		// Cumulative Snow Removed Volume
-		case 6: value = RunoffTotals.snowRemoved / TotalArea * UCF(RAINDEPTH); break;
-		// Initial Storage Volume
-		case 7: value = RunoffTotals.initStorage / TotalArea * UCF(RAINDEPTH); break;
-		// Initial Snow Cover Volume
-		case 8: value = RunoffTotals.initSnowCover / TotalArea * UCF(RAINDEPTH); break;
-		// Routing Error
-		case 9: value = massbal_getRunoffError(); break;
+		errorcode = ERR_API_INPUTNOTOPEN;
 	}
-	return value;
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	else
+	{
+		memcpy(runoffTot, &RunoffTotals, sizeof(TRunoffTotals));
+	}
+	return errorcode;
+}
+
+double massbal_getTotalArea(void)
+//
+// Return: Total Area for Runoff Surface
+// Purpose: Used for Toolkit API Unit Conversion
+{
+	return TotalArea;
 }

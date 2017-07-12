@@ -66,14 +66,19 @@ int DLLEXPORT  swmm_setSimulationDateTime(int timetype, char *dtimestr);
 // Active Simulation Results API
 //-------------------------------
 int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr);
-int DLLEXPORT swmm_getNodeResult(int index, int type, double *result);
-int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
-int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
-int DLLEXPORT swmm_getNodeStats(int index, int type, double *value);
-int DLLEXPORT swmm_getLinkStats(int index, int type, double *value);
-int DLLEXPORT swmm_getSubcatchStats(int index, int type, double *value);
-int DLLEXPORT swmm_getSystemRoutingTotals(int type, double *value);
-int DLLEXPORT swmm_getSystemRunoffTotals(int type, double *value);
+
+int DLLEXPORT swmm_getNodeStats(int index, TNodeStats *nodeStats);
+int DLLEXPORT swmm_getStorageStats(int index, TStorageStats *storageStats);
+int DLLEXPORT swmm_getOutfallStats(int index, TOutfallStats *outfallStats);
+void DLLEXPORT swmm_freeOutfallStats(TOutfallStats *outfallStats);
+
+int DLLEXPORT swmm_getLinkStats(int index, TLinkStats *linkStats);
+int DLLEXPORT swmm_getPumpStats(int index, TPumpStats *pumpStats);
+
+int DLLEXPORT swmm_getSubcatchStats(int index, TSubcatchStats *subcatchStats);
+
+int DLLEXPORT swmm_getSystemRoutingStats(TRoutingTotals *routingTot);
+int DLLEXPORT swmm_getSystemRunoffStats(TRunoffTotals *runoffTot);
 
 //-------------------------------
 // Setters API

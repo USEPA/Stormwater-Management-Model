@@ -37,6 +37,7 @@
 #include <math.h>
 #include <omp.h>                                                               //(5.1.008)
 #include "headers.h"
+#include "swmm5.h"
 
 //-----------------------------------------------------------------------------
 //  Shared variables
@@ -787,8 +788,8 @@ void  stats_updateMaxStats(TMaxStats maxStats[], int i, int j, double x)
 }
 
 //=============================================================================
-
-double stats_getNodeStat(int index, int element)
+//
+int stats_getNodeStat(int index, TNodeStats *nodeStats)
 //
 // Input:    index
 //           element = element to return
@@ -796,37 +797,34 @@ double stats_getNodeStat(int index, int element)
 // Purpose:  Gets a Node Stat for toolkitAPI
 //
 {
-	double value;
+	int errorcode = 0;
 
-	switch (element)
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
 	{
-		// Current Average Depth
-		case 0: value = NodeStats[index].avgDepth * UCF(LENGTH); break;
-		// Current Maximum Depth
-		case 1: value = NodeStats[index].maxDepth * UCF(LENGTH); break;
-		// Cumulative Flooded Volume
-		case 2: value = NodeStats[index].volFlooded * UCF(VOLUME); break;
-		// Time Flooded (hrs)
-		case 3: value = NodeStats[index].timeFlooded / 3600.0; break;
-		// Time Surcharged 
-		case 4: value = NodeStats[index].timeSurcharged / 3600.0; break;
-		// Time Courant Critical (hrs)
-		case 5: value = NodeStats[index].timeCourantCritical / 3600.0; break;
-		// Cumulative Lateral Inflow
-		case 6: value = NodeStats[index].totLatFlow  * UCF(FLOW); break;
-		// Current Maximum Lateral Inflow
-		case 7: value = NodeStats[index].maxLatFlow * UCF(FLOW); break;
-		// Current Maximum Inflow
-		case 8: value = NodeStats[index].maxInflow * UCF(FLOW); break;
-		// Current Maximum Overflow
-		case 9: value = NodeStats[index].maxOverflow * UCF(FLOW); break;
-		// Current Maximum Ponding Volume
-		case 10: value = NodeStats[index].maxPondedVol * UCF(VOLUME); break;
+		errorcode = ERR_API_INPUTNOTOPEN;
 	}
-	return value;
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[NODE])
+	{
+		errorcode = ERR_API_OBJECT_INDEX;
+	}
+
+	else
+	{
+		memcpy(nodeStats, &NodeStats[index], sizeof(TNodeStats));
+	}
+	return errorcode;
 }
 
-double stats_getStorageStat(int subindex, int element)
+int stats_getStorageStat(int index, TStorageStats *storageStats)
 //
 // Input:    subindex
 //           element = element to return
@@ -834,27 +832,43 @@ double stats_getStorageStat(int subindex, int element)
 // Purpose:  Gets a Storage Stat for toolkitAPI
 //
 {
-	double value;
+	int errorcode = 0;
 
-	switch (element)
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
 	{
-		// Initial Volume
-		case 11: value = StorageStats[subindex].initVol * UCF(VOLUME); break;
-		// Current Average Volume
-		case 12: value = StorageStats[subindex].avgVol * UCF(VOLUME); break;
-		// Current Maximum Volume
-		case 13: value = StorageStats[subindex].maxVol * UCF(VOLUME); break;
-		// Current Maximum Flow
-		case 14: value = StorageStats[subindex].maxFlow * UCF(FLOW); break;
-		// Current Evaporation Volume
-		case 15: value = StorageStats[subindex].evapLosses * UCF(VOLUME); break;
-		// Current Exfiltration Volume
-		case 16: value = StorageStats[subindex].exfilLosses * UCF(VOLUME); break;
+		errorcode = ERR_API_INPUTNOTOPEN;
 	}
-	return value;
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[NODE])
+	{
+		errorcode = ERR_API_OBJECT_INDEX;
+	}
+
+	// Check Node Type is storage
+	else if (Node[index].type != STORAGE)
+	{
+		errorcode = ERR_API_WRONG_TYPE;
+	}
+
+	else
+	{
+		// fetch sub index
+		int k = Node[index].subIndex;
+		// Copy Structure
+		memcpy(storageStats, &StorageStats[k], sizeof(TStorageStats));
+	}
+	return errorcode;
 }
 
-double stats_getOutfallStat(int subindex, int element)
+int stats_getOutfallStat(int index, TOutfallStats *outfallStats)
 //
 // Input:    subindex
 //           element = element to return
@@ -862,22 +876,60 @@ double stats_getOutfallStat(int subindex, int element)
 // Purpose:  Gets a Outfall Stat for toolkitAPI
 //
 {
-	double value;
+	int errorcode = 0;
 
-	switch (element)
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
 	{
-		// Current Average Flow
-		case 17: value = OutfallStats[subindex].avgFlow * UCF(FLOW); break;
-		// Current Maximum Flow
-		case 18: value = OutfallStats[subindex].maxFlow * UCF(FLOW); break;
-		// Cumulative Outfall Volume
-		case 19: value = OutfallStats[subindex].avgFlow * UCF(FLOW) /
-			(double)OutfallStats[subindex].totalPeriods; break;
+		errorcode = ERR_API_INPUTNOTOPEN;
 	}
-	return value;
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[NODE])
+	{
+		errorcode = ERR_API_OBJECT_INDEX;
+	}
+
+	// Check Node Type is outfall
+	else if (Node[index].type != OUTFALL)
+	{
+		errorcode = ERR_API_WRONG_TYPE;
+	}
+
+	else
+	{
+		// fetch sub index
+		int k = Node[index].subIndex;
+		// Copy Structure
+		memcpy(outfallStats, &OutfallStats[k], sizeof(TOutfallStats));
+		
+		// Perform Deep Copy of Pollutants Results
+		if (Nobjects[POLLUT] > 0)
+		{
+			outfallStats->totalLoad =
+				(double *)calloc(Nobjects[POLLUT], sizeof(double));
+			if (!outfallStats->totalLoad)
+			{
+				errorcode = ERR_MEMORY;
+			}
+			if (errorcode == 0)
+			{
+				for (k = 0; k < Nobjects[POLLUT]; k++)
+					outfallStats->totalLoad[k] = OutfallStats[k].totalLoad[k];
+			}
+		}
+		else outfallStats->totalLoad = NULL;
+	}
+	return errorcode;
 }
 
-double stats_getLinkStat(int index, int element)
+int stats_getLinkStat(int index, TLinkStats *linkStats)
 //
 // Input:    index
 //           element = element to return
@@ -885,37 +937,35 @@ double stats_getLinkStat(int index, int element)
 // Purpose:  Gets a Link Stat for toolkitAPI
 //
 {
-	double value;
+	int errorcode = 0;
 
-	switch (element)
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
 	{
-		// Cumulative Dry Weather Inflow Volume
-		case 0: value = LinkStats[index].maxFlow * UCF(FLOW); break;
-		// Cumulative Wet Weather Inflow Volume
-		case 1: value = LinkStats[index].maxVeloc * UCF(LENGTH); break;
-		// Cumulative Groundwater Inflow Volume
-		case 2: value = LinkStats[index].maxDepth * UCF(LENGTH); break;
-		// Cumulative I&I Inflow Volume
-		case 3: value = LinkStats[index].timeNormalFlow / 3600.0; break;
-		// Cumulative External Inflow Volume
-		case 4: value = LinkStats[index].timeInletControl / 3600.0; break;
-		// Cumulative Flooding Volume
-		case 5: value = LinkStats[index].timeSurcharged / 3600.0; break;
-		// Cumulative Outflow Volume
-		case 6: value = LinkStats[index].timeFullUpstream / 3600.0; break;
-		// Cumulative Evaporation Loss
-		case 7: value = LinkStats[index].timeFullDnstream / 3600.0; break;
-		// Cumulative Seepage Loss
-		case 8: value = LinkStats[index].timeFullFlow / 3600.0; break;
-		// Cumulative Seepage Loss
-		case 9: value = LinkStats[index].timeCapacityLimited / 3600.0; break;
-		// Cumulative Seepage Loss
-		case 10: value = LinkStats[index].timeCourantCritical / 3600.0; break;
+		errorcode = ERR_API_INPUTNOTOPEN;
 	}
-	return value;
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[LINK])
+	{
+		errorcode = ERR_API_OBJECT_INDEX;
+	}
+
+	else
+	{
+		// Copy Structure
+		memcpy(linkStats, &LinkStats[index], sizeof(TLinkStats));
+	}
+	return errorcode;
 }
 
-double stats_getPumpStat(int subindex, int element)
+int stats_getPumpStat(int index, TPumpStats *pumpStats)
 //
 // Input:    subindex
 //           element = element to return
@@ -923,29 +973,43 @@ double stats_getPumpStat(int subindex, int element)
 // Purpose:  Gets a Pump Stat for toolkitAPI
 //
 {
-	double value;
+	int errorcode = 0;
 
-	switch (element)
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
 	{
-		// Cumulative Fraction Time On
-		case 11: value = PumpStats[subindex].utilized; break;
-		// Cumulative Minimum Flow
-		case 12: value = PumpStats[subindex].minFlow * UCF(FLOW); break;
-		// Cumulative Average Flow
-		case 13: value = PumpStats[subindex].avgFlow * UCF(FLOW); break;
-		// Cumulative Maximum Flow
-		case 14: value = PumpStats[subindex].maxFlow * UCF(FLOW); break;
-		// Cumulative Pumping Volume
-		case 15: value = PumpStats[subindex].volume * UCF(VOLUME); break;
-		// Cumulative Emergy Consumed
-		case 16: value = PumpStats[subindex].energy; break;
-		// Number of Start ups
-		case 17: value = PumpStats[subindex].startUps; break;
+		errorcode = ERR_API_INPUTNOTOPEN;
 	}
-	return value;
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[LINK])
+	{
+		errorcode = ERR_API_OBJECT_INDEX;
+	}
+	
+	// Check if pump
+	else if (Link[index].type != PUMP)
+	{
+		errorcode = ERR_API_WRONG_TYPE;
+	}
+
+	else
+	{
+		// fetch sub index
+		int k = Link[index].subIndex;
+		// Copy Structure
+		memcpy(pumpStats, &PumpStats[k], sizeof(TPumpStats));
+	}
+	return errorcode;
 }
 
-double stats_getSubcatchStat(int index, int element)
+int stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats)
 //
 // Input:    index
 //           element = element to return
@@ -953,22 +1017,30 @@ double stats_getSubcatchStat(int index, int element)
 // Purpose:  Gets a Subcatchment Stat for toolkitAPI
 //
 {
-	double value;
+	int errorcode = 0;
 
-	switch (element)
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
 	{
-		// Cumulative Rainfall Depth
-		case 0: value = SubcatchStats[index].precip * UCF(RAINDEPTH); break;
-		// Cumulative Runon Volume
-		case 1: value = SubcatchStats[index].runon * UCF(VOLUME); break;
-		// Cumulative Evaporation Volume
-		case 2: value = SubcatchStats[index].evap * UCF(VOLUME); break;
-		// Cumulative Infiltration Volume
-		case 3: value = SubcatchStats[index].infil * UCF(VOLUME); break;
-		// Cumulative Runoff Volume
-		case 4: value = SubcatchStats[index].runoff * UCF(VOLUME); break;
-		// Cumulative Emergy Consumed
-		case 5: value = SubcatchStats[index].maxFlow * UCF(FLOW); break;
+		errorcode = ERR_API_INPUTNOTOPEN;
 	}
-	return value;
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[SUBCATCH])
+	{
+		errorcode = ERR_API_OBJECT_INDEX;
+	}
+
+	else
+	{
+		// Copy Structure
+		memcpy(subcatchStats, &SubcatchStats[index], sizeof(TSubcatchStats));
+	}
+	return errorcode;
 }

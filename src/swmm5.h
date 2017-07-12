@@ -10,6 +10,7 @@
 //   Prototypes for SWMM5 functions exported to swmm5.dll.
 //
 //-----------------------------------------------------------------------------
+
 #ifndef SWMM5_H
 #define SWMM5_H
 

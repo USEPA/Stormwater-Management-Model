@@ -51,6 +51,8 @@
 	#define DLLEXPORT
 #endif
 
+#include "toolkitAPI.h"
+
 void     project_open(char *f1, char *f2, char *f3);
 void     project_close(void);
 
@@ -290,8 +292,9 @@ void    massbal_addToFinalStorage(int pollut, double mass);                    /
 double  massbal_getStepFlowError(void);
 double  massbal_getRunoffError(void);
 double  massbal_getFlowError(void);
-double  massbal_getRoutingFlowTotal(int element); // For API
-double  massbal_getRunoffTotal(int element);      // For API
+int     massbal_getRoutingFlowTotal(TRoutingTotals *routingTot);      // For API
+int     massbal_getRunoffTotal(TRunoffTotals *runoffTot);             // For API
+double  massbal_getTotalArea(void);                                  // For API
 
 //-----------------------------------------------------------------------------
 //   Simulation Statistics Methods
@@ -311,12 +314,12 @@ void    stats_updateGwaterStats(int j, double infil, double evap,              /
 void    stats_updateMaxRunoff(void);
 void    stats_updateMaxNodeDepth(int node, double depth);                      //(5.1.008)
 
-double  stats_getNodeStat(int index, int element);       // For API
-double  stats_getStorageStat(int subindex, int element); // For API
-double  stats_getOutfallStat(int subindex, int element); // For API
-double  stats_getLinkStat(int index, int element);       // For API
-double  stats_getPumpStat(int subindex, int element);     // For API
-double  stats_getSubcatchStat(int index, int element);   // For API
+int  stats_getNodeStat(int index, TNodeStats *nodeStats);                       // For API
+int  stats_getStorageStat(int index, TStorageStats *storageStats);              // For API
+int  stats_getOutfallStat(int index, TOutfallStats *outfallStats);              // For API
+int  stats_getLinkStat(int index, TLinkStats *linkStats);                       // For API
+int  stats_getPumpStat(int index, TPumpStats *pumpStats);                       // For API
+int  stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats);           // For API
 
 //-----------------------------------------------------------------------------
 //   Raingage Methods
@@ -397,7 +400,8 @@ int     inflow_readDwfPattern(char* tok[], int ntoks);
 int     inflow_setExtInflow(int j, int param, int type, 
 						int tSeries, int basePat, double cf, 
 						double baseline, double sf);
-int     inflow_validate(int param, int type, int tSeries, int basePat);					
+int     inflow_validate(int param, int type, int tSeries, 
+						int basePat, double cf);					
 						
 void    inflow_initDwfInflow(TDwfInflow* inflow);
 void    inflow_initDwfPattern(int pattern);

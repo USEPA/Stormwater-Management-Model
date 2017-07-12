@@ -618,6 +618,7 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index )
 	return(0);
 } 
 
+
 //-------------------------------
 // Active Simulation Results API
 //-------------------------------
@@ -761,135 +762,277 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 	return(0);
 }
 
-int DLLEXPORT swmm_getNodeStats(int index, int type, double *value)
-{
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
 
-	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE]) return(ERR_API_OBJECT_INDEX);
-
-	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
-	
-	// Check if in bounds
-	if (type >= 0 && type < 10)
-	// Common Node Stats
-	{
-		*value = stats_getNodeStat(index, type);
-		return(0);
-	}
-	else if(type >= 10 && type < 16)
-	// Storage Stats
-	{
-		if (Node[index].type != STORAGE) return(ERR_API_WRONG_TYPE);
-		int k = Node[index].subIndex;
-		*value = stats_getStorageStat(k, type);
-		return(0);
-	}
-	else if (type < 20)
-	// Outfall Stats
-	{
-		if (Node[index].type != OUTFALL) return(ERR_API_WRONG_TYPE);
-		int k = Node[index].subIndex;
-		*value = stats_getOutfallStat(k, type);
-		return(0);
-	}
-	else return(ERR_API_OUTBOUNDS);
-}
-
-int DLLEXPORT swmm_getLinkStats(int index, int type, double *value)
-{
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
-
-	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OBJECT_INDEX);
-
-	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
-
-	// Check if in bounds
-	if (type >= 0 && type < 10)
-	{
-		*value = stats_getLinkStat(index, type);
-		return(0);
-	}
-	else if (type >= 10 && type < 18)
-	// Pump Stats
-	{
-		if (Link[index].type != PUMP) return(ERR_API_WRONG_TYPE);
-		int k = Link[index].subIndex;
-		*value = stats_getPumpStat(k, type);
-		return(0);
-	}
-	else return(ERR_API_OUTBOUNDS);
-}
-
-int DLLEXPORT swmm_getSubcatchStats(int index, int type, double *value)
-{
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
-	
-	// Check if object index is within bounds	
-	if (index < 0 || index >= Nobjects[SUBCATCH]) return(ERR_API_OBJECT_INDEX);
-
-	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
-
-	// Check if in bounds
-	if (type >= 0 && type < 6)
-	{
-		*value = stats_getSubcatchStat(index, type);
-		return(0);
-	}
-	else return(ERR_API_OUTBOUNDS);
-}
-
-int DLLEXPORT swmm_getSystemRoutingTotals(int type, double *value)
+int DLLEXPORT swmm_getNodeStats(int index, TNodeStats *nodeStats)
 //
-// Input: 	type = Result Type
-// Output: 	volume = total data desired (Cu. Ft, Cu Meter)
-//          routing error (decimal)
+// Output: 	Node Stats Structure (TNodeStats)
 // Return: 	API Error
-// Purpose: Gets System Routing Totals
+// Purpose: Gets Node Stats and Converts Units 
 {
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
-
-	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
-
-	// Check if in bounds
-	if (type >= 0 && type < 10)
+	int errorcode = stats_getNodeStat(index, nodeStats);
+	
+	if (errorcode == 0)
 	{
-		*value = massbal_getRoutingFlowTotal(type);
-		return(0);
+		// Current Average Depth
+		nodeStats->avgDepth *= (UCF(LENGTH) / StepCount);
+		// Current Maximum Depth
+		nodeStats->maxDepth *= UCF(LENGTH);
+		// Current Maximum Lateral Inflow
+		nodeStats->maxLatFlow *= UCF(FLOW);
+		// Current Maximum Inflow
+		nodeStats->maxInflow *= UCF(FLOW);
+		// Cumulative Lateral Inflow
+		nodeStats->totLatFlow *= UCF(VOLUME);
+		// Time Courant Critical (hrs)
+		nodeStats->timeCourantCritical /= 3600.0;
+		// Cumulative Flooded Volume
+		nodeStats->volFlooded *= UCF(VOLUME);
+		// Time Flooded (hrs)
+		nodeStats->timeFlooded /= 3600.0;
+		// Current Maximum Overflow
+		nodeStats->maxOverflow *= UCF(FLOW);
+		// Current Maximum Ponding Volume
+		nodeStats->maxPondedVol *= UCF(VOLUME);
+		// Time Surcharged 
+		nodeStats->timeSurcharged /= 3600.0;
 	}
-	else return(ERR_API_OUTBOUNDS);
+	
+	return (errorcode);
 }
 
-int DLLEXPORT swmm_getSystemRunoffTotals(int type, double *value)
+int DLLEXPORT swmm_getStorageStats(int index, TStorageStats *storageStats)
 //
-// Input: 	type = Result Type
-// Output: 	volume = total data desired 
-//          routing error (decimal)
+// Output: 	Storage Node Stats Structure (TStorageStats)
 // Return: 	API Error
-// Purpose: Gets System Runoff Totals
+// Purpose: Gets Storage Node Stats and Converts Units 
 {
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
-
-	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
-
-	// Check if in bounds
-	if (type >= 0 && type < 10)
+	int errorcode = stats_getStorageStat(index, storageStats);
+	
+	if (errorcode == 0)
 	{
-		*value = massbal_getRunoffTotal(type);
-		return(0);
+		// Initial Volume
+		storageStats->initVol *= UCF(VOLUME);
+		// Current Average Volume
+		storageStats->avgVol *= (UCF(VOLUME) / StepCount);
+		// Current Maximum Volume
+		storageStats->maxVol *= UCF(VOLUME);
+		// Current Maximum Flow
+		storageStats->maxFlow *= UCF(FLOW);
+		// Current Evaporation Volume
+		storageStats->evapLosses *= UCF(VOLUME);
+		// Current Exfiltration Volume
+		storageStats->exfilLosses *= UCF(VOLUME);
 	}
-	else return(ERR_API_OUTBOUNDS);
+	
+	return (errorcode);	
+}
+
+int DLLEXPORT swmm_getOutfallStats(int index, TOutfallStats *outfallStats)
+//
+// Output: 	Outfall Stats Structure (TOutfallStats)
+// Return: 	API Error
+// Purpose: Gets Outfall Node Stats and Converts Units 
+// Note:    Caller is responsible for calling swmm_freeOutfallStats
+//          to free the pollutants array.
+{
+	int p;
+	int errorcode = stats_getOutfallStat(index, outfallStats);
+
+	if (errorcode == 0)
+	{
+		// Current Average Flow
+		outfallStats->avgFlow *= (UCF(FLOW) / StepCount);
+		// Current Maximum Flow
+		outfallStats->maxFlow *= UCF(FLOW);
+		// Convert Mass Units
+		if (Nobjects[POLLUT] > 0)
+		{
+			for (p = 0; p < Nobjects[POLLUT]; p++)
+				outfallStats->totalLoad[p] *= (LperFT3 * Pollut[p].mcf);
+				if (Pollut[p].units == COUNT)
+				{
+					outfallStats->totalLoad[p] = LOG10(outfallStats->totalLoad[p]);
+				}
+		}
+	}
+	
+	return (errorcode);	
+}
+
+void DLLEXPORT swmm_freeOutfallStats(TOutfallStats *outfallStats)
+//
+// Return: 	API Error
+// Purpose: Frees Outfall Node Stats and Converts Units 
+// Note:    API user is responsible for calling swmm_freeOutfallStats
+//          since this function performs a memory allocation.
+{
+	FREE(outfallStats->totalLoad);
+}
+
+
+
+int DLLEXPORT swmm_getLinkStats(int index, TLinkStats *linkStats)
+//
+// Output: 	Link Stats Structure (TLinkStats)
+// Return: 	API Error
+// Purpose: Gets Link Stats and Converts Units 
+{
+	int errorcode = stats_getLinkStat(index, linkStats);
+	
+	if (errorcode == 0)
+	{
+		// Cumulative Maximum Flowrate
+		linkStats->maxFlow *= UCF(FLOW);
+		// Cumulative Maximum Velocity
+		linkStats->maxVeloc *= UCF(LENGTH);
+		// Cumulative Maximum Depth
+		linkStats->maxDepth *= UCF(LENGTH);
+		// Cumulative Time Normal Flow
+		linkStats->timeNormalFlow /= 3600.0;
+		// Cumulative Time Inlet Control
+		linkStats->timeInletControl /= 3600.0;
+		// Cumulative Time Surcharged
+		linkStats->timeSurcharged /= 3600.0;
+		// Cumulative Time Upstream Full
+		linkStats->timeFullUpstream /= 3600.0;
+		// Cumulative Time Downstream Full
+		linkStats->timeFullDnstream /= 3600.0;
+		// Cumulative Time Full Flow
+		linkStats->timeFullFlow /= 3600.0;
+		// Cumulative Time Capacity limited
+		linkStats->timeCapacityLimited /= 3600.0;
+		// Cumulative Time Courant Critical Flow
+		linkStats->timeCourantCritical /= 3600.0;
+	}
+	
+	return (errorcode);	
+}
+
+
+int DLLEXPORT swmm_getPumpStats(int index, TPumpStats *pumpStats)
+//
+// Output: 	Pump Link Stats Structure (TPumpStats)
+// Return: 	API Error
+// Purpose: Gets Pump Link Stats and Converts Units 
+{
+	int errorcode = stats_getPumpStat(index, pumpStats);
+
+	if (errorcode == 0)
+	{
+		// Cumulative Minimum Flow
+		pumpStats->minFlow *= UCF(FLOW);
+		// Cumulative Average Flow
+		pumpStats->avgFlow *= (UCF(FLOW) / StepCount);
+		// Cumulative Maximum Flow
+		pumpStats->maxFlow *= UCF(FLOW);
+		// Cumulative Pumping Volume
+		pumpStats->volume *= UCF(VOLUME);
+	}
+	
+	return (errorcode);	
+}
+
+
+
+int DLLEXPORT swmm_getSubcatchStats(int index, TSubcatchStats *subcatchStats)
+//
+// Output: 	Subcatchment Stats Structure (TSubcatchStats)
+// Return: 	API Error
+// Purpose: Gets Subcatchment Stats and Converts Units 
+{
+	int errorcode = stats_getSubcatchStat(index, subcatchStats);
+	
+	if (errorcode == 0)
+	{
+		double a = Subcatch[index].area;
+
+		// Cumulative Runon Volume
+		subcatchStats->runon *= (UCF(RAINDEPTH) / a);
+		// Cumulative Infiltration Volume
+		subcatchStats->infil *= (UCF(RAINDEPTH) / a);
+		// Cumulative Runoff Volume
+		subcatchStats->runoff *= (UCF(RAINDEPTH) / a);
+		// Maximum Runoff Rate
+		subcatchStats->maxFlow *= UCF(FLOW);
+		// Cumulative Rainfall Depth
+		subcatchStats->precip *= (UCF(RAINDEPTH) / a);
+		// Cumulative Evaporation Volume
+		subcatchStats->evap *= (UCF(RAINDEPTH) / a);
+	}
+	
+	return (errorcode);		
+}
+
+
+int DLLEXPORT swmm_getSystemRoutingStats(TRoutingTotals *routingTot)
+//
+// Output: 	System Routing Totals Structure (TRoutingTotals)
+// Return: 	API Error
+// Purpose: Gets System Flow Routing Totals and Converts Units 
+{
+	int errorcode = massbal_getRoutingFlowTotal(routingTot);
+
+	if (errorcode == 0)
+	{
+		// Cumulative Dry Weather Inflow Volume
+		routingTot->dwInflow *= UCF(VOLUME);
+		// Cumulative Wet Weather Inflow Volume
+		routingTot->wwInflow *= UCF(VOLUME);
+		// Cumulative Groundwater Inflow Volume
+		routingTot->gwInflow *= UCF(VOLUME);
+		// Cumulative I&I Inflow Volume
+		routingTot->iiInflow *= UCF(VOLUME);
+		// Cumulative External Inflow Volume
+		routingTot->exInflow *= UCF(VOLUME);
+		// Cumulative Flooding Volume
+		routingTot->flooding *= UCF(VOLUME);
+		// Cumulative Outflow Volume
+		routingTot->outflow  *= UCF(VOLUME);
+		// Cumulative Evaporation Loss
+		routingTot->evapLoss *= UCF(VOLUME);
+		// Cumulative Seepage Loss
+		routingTot->seepLoss *= UCF(VOLUME);
+		// Continuity Error
+		routingTot->pctError *= 100;
+	}
+	
+	return(errorcode);
+}
+
+int DLLEXPORT swmm_getSystemRunoffStats(TRunoffTotals *runoffTot)
+//
+// Output: 	System Runoff Totals Structure (TRunoffTotals)
+// Return: 	API Error
+// Purpose: Gets System Runoff Totals and Converts Units
+{
+	int errorcode =  massbal_getRunoffTotal(runoffTot);
+
+	if (errorcode == 0)
+	{
+		double TotalArea = massbal_getTotalArea();
+		// Cumulative Rainfall Volume
+		runoffTot->rainfall *= (UCF(RAINDEPTH) / TotalArea);
+		// Cumulative Evaporation Volume
+		runoffTot->evap *= (UCF(RAINDEPTH) / TotalArea);
+		// Cumulative Infiltration Volume
+		runoffTot->infil *= (UCF(RAINDEPTH) / TotalArea);
+		// Cumulative Runoff Volume
+		runoffTot->runoff *= (UCF(RAINDEPTH) / TotalArea);
+		// Cumulative Runon Volume
+		runoffTot->runon *= (UCF(RAINDEPTH) / TotalArea);
+		// Cumulative Drain Volume
+		runoffTot->drains *= (UCF(RAINDEPTH) / TotalArea);
+		// Cumulative Snow Removed Volume
+		runoffTot->snowRemoved *= (UCF(RAINDEPTH) / TotalArea);
+		// Initial Storage Volume
+		runoffTot->initStorage *= (UCF(RAINDEPTH) / TotalArea);
+		// Initial Snow Cover Volume
+		runoffTot->initSnowCover *= (UCF(RAINDEPTH) / TotalArea);
+		// Continuity Error
+		runoffTot->pctError *= 100;
+	}
+
+	return(errorcode);
 }
 
 
@@ -910,8 +1053,22 @@ int DLLEXPORT swmm_setLinkSetting(int index, double targetSetting)
 	{
 		errcode = ERR_API_SIM_NRUNNING;
 	}
-	// Check if object index is within bounds	
-	else if (index < 0 || index >= Nobjects[LINK])
+	// Check if object index is within bounds
+	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OBJECT_INDEX);
+	
+	int l_type;
+	
+	// Get Link Type
+	// errcode = swmm_getLinkType(index, &l_type);
+	// WEIR, ORIFICES, PUMPS can have any value between [0,1]
+	// CONDUIT can be only 0 or 1 * BEM 11/4/2016 investigate this...	
+	
+	Link[index].targetSetting  = targetSetting; 
+	// Use internal function to apply the new setting
+	link_setSetting(index, 0.0);
+	
+	// Add control action to RPT file if desired flagged
+	if (RptFlags.controls)
 	{
 		errcode = ERR_API_OBJECT_INDEX;
 	}
@@ -957,7 +1114,14 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 	{
 		// Check to see if node has an assigned inflow object
 		TExtInflow* inflow;
+		
+		// --- check if an external inflow object for this constituent already exists
 		inflow = Node[index].extInflow;
+		while (inflow)
+		{
+			if (inflow->param == -1) break;
+			inflow = inflow->next;
+		}
 		
 		if (!inflow)
 		{
