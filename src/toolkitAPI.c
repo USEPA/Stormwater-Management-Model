@@ -1114,7 +1114,14 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 	{
 		// Check to see if node has an assigned inflow object
 		TExtInflow* inflow;
+		
+		// --- check if an external inflow object for this constituent already exists
 		inflow = Node[index].extInflow;
+		while (inflow)
+		{
+			if (inflow->param == -1) break;
+			inflow = inflow->next;
+		}
 		
 		if (!inflow)
 		{
