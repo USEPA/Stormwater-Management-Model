@@ -945,8 +945,7 @@ void  writecon(char *s)
 //
 {
 #ifdef CLE 
-   //fprintf(stdout,s);
-   fprintf(stdout,"%c", *s);
+   fprintf(stdout,s);
    fflush(stdout);
 #endif
 }
