@@ -397,7 +397,11 @@ void    node_getResults(int node, double wt, float x[]);
 int     inflow_readExtInflow(char* tok[], int ntoks);
 int     inflow_readDwfInflow(char* tok[], int ntoks);
 int     inflow_readDwfPattern(char* tok[], int ntoks);
-
+int     inflow_setExtInflow(int j, int param, int type, 
+						int tSeries, int basePat, double cf, 
+						double baseline, double sf);
+int     inflow_validate(int param, int type, int tSeries, int basePat);					
+						
 void    inflow_initDwfInflow(TDwfInflow* inflow);
 void    inflow_initDwfPattern(int pattern);
 
@@ -555,4 +559,4 @@ void     writecon(char *s);                   // writes string to console
 DateTime getDateTime(double elapsedMsec);     // convert elapsed time to date
 void     getElapsedTime(DateTime aDate,       // convert elapsed date
          int* days, int* hrs, int* mins);
-	 
+void     getSemVersion(char* semver);         // get semantic version

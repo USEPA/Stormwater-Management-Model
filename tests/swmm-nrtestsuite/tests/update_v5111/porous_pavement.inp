@@ -1,0 +1,121 @@
+[TITLE]
+;;Project Title/Notes
+Porous pavement low impact development stormwater control
+
+[OPTIONS]
+;;Option            	Value
+FLOW_UNITS          	CFS
+INFILTRATION        	HORTON
+FLOW_ROUTING        	KINWAVE
+LINK_OFFSETS        	DEPTH
+MIN_SLOPE           	0
+ALLOW_PONDING       	NO
+SKIP_STEADY_STATE   	NO
+
+START_DATE          	05/17/2016
+START_TIME          	00:00:00
+REPORT_START_DATE   	05/17/2016
+REPORT_START_TIME   	00:00:00
+END_DATE            	05/17/2016
+END_TIME            	06:00:00
+SWEEP_START         	01/01
+SWEEP_END           	12/31
+DRY_DAYS            	0
+REPORT_STEP         	00:01:00
+WET_STEP            	00:01:00
+DRY_STEP            	00:01:00
+ROUTING_STEP        	0:00:30 
+
+INERTIAL_DAMPING    	PARTIAL
+NORMAL_FLOW_LIMITED 	BOTH
+FORCE_MAIN_EQUATION 	H-W
+VARIABLE_STEP       	0.75
+LENGTHENING_STEP    	0
+MIN_SURFAREA        	12.557
+MAX_TRIALS          	8
+HEAD_TOLERANCE      	0.005
+SYS_FLOW_TOL        	5
+LAT_FLOW_TOL        	5
+;MINIMUM_STEP        	0.5
+;THREADS             	1
+
+[EVAPORATION]
+;;Data Source   	Parameters
+;;--------------	----------------
+CONSTANT        	0.0
+DRY_ONLY        	NO
+
+[RAINGAGES]
+;;Name          	Format   	Interval	SCF     	Source    
+;;--------------	---------	------	------	----------
+1               	INTENSITY	1:00    	1.0     	TIMESERIES	Rain            
+
+[SUBCATCHMENTS]
+;;Name          	Rain Gage       	Outlet          	Area    	%Imperv 	Width   	%Slope  	CurbLen 	SnowPack        
+;;--------------	----------------	----------------	--------	--------	--------	--------	--------	----------------
+1               	1               	1               	0.1     	100     	500     	0.5     	0       	                
+
+[SUBAREAS]
+;;Subcatchment  	N-Imperv  	N-Perv    	S-Imperv  	S-Perv    	PctZero   	RouteTo   	PctRouted 
+;;--------------	----------	----------	----------	----------	----------	----------	----------
+1               	0.01      	0.1       	0.05      	0.05      	25        	OUTLET    
+
+[INFILTRATION]
+;;Subcatchment  	MaxRate   	MinRate   	Decay     	DryTime   	MaxInfil  
+;;--------------	----------	----------	----------	----------	----------
+1               	3.0       	0.5       	4         	7         	0         
+
+[LID_CONTROLS]
+;;Name          	Type/Layer	Parameters
+;;--------------	----------	----------
+PP              	PP
+PP              	SURFACE   	0.0       	0.0       	0         	1.0       	5         
+PP              	PAVEMENT  	6         	0.3       	0.82      	100       	0         
+PP              	STORAGE   	0.1       	0.75      	0.46      	0         
+PP              	DRAIN     	0         	0.5       	0         	6         
+
+[LID_USAGE]
+;;Subcatchment  	LID Process     	Number 	Area      	Width     	InitSat   	FromImp   	ToPerv    	RptFile                 	DrainTo         
+;;--------------	----------------	-------	----------	----------	----------	----------	----------	------------------------	----------------
+1               	PP              	1      	4356.00   	0         	0         	0         	0         	"pp_s1.txt"
+
+[TIMESERIES]
+;;Name          	Date      	Time      	Value     
+;;--------------	----------	----------	----------
+Rain            	          	0         	1         
+Rain            	          	1         	1         
+Rain            	          	2         	1         
+Rain            	          	3         	1         
+
+[REPORT]
+;;Reporting Options
+INPUT     	NO
+CONTROLS  	NO
+SUBCATCHMENTS	ALL
+NODES	ALL
+LINKS	ALL
+
+[TAGS]
+
+[MAP]
+DIMENSIONS	0.000	0.000	10000.000	10000.000
+Units     	None
+
+[COORDINATES]
+;;Node          	X-Coord           	Y-Coord           
+;;--------------	------------------	------------------
+
+[VERTICES]
+;;Link          	X-Coord           	Y-Coord           
+;;--------------	------------------	------------------
+
+[Polygons]
+;;Subcatchment  	X-Coord           	Y-Coord           
+;;--------------	------------------	------------------
+1               	3393.977          	7942.284          
+
+[SYMBOLS]
+;;Gage          	X-Coord           	Y-Coord           
+;;--------------	------------------	------------------
+1               	533.250           	7929.737          
+

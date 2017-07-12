@@ -1,0 +1,17 @@
+{
+    "name": "Example 5",
+    "version": "1.0",
+    "description": "Runoff/Groundwater example",
+    "args": [
+        "Example5.inp",
+        "Example5.rpt", 
+        "Example5.out"
+    ],
+    "input_files": [
+        "Example5.inp"
+    ],
+    "output_files": {
+        "Example5.rpt": "swmm report", 
+        "Example5.out": "swmm allclose"
+    }
+}

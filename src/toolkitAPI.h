@@ -58,7 +58,8 @@ int DLLEXPORT  swmm_getLinkDirection(int index, signed char *value);
 int DLLEXPORT  swmm_getSubcatchParam(int index, int Param, double *value);
 int DLLEXPORT  swmm_setSubcatchParam(int index, int Param, double value);
 // 
-int DLLEXPORT  swmm_getSimulationDateTime(int timetype, char *dtimestr);
+int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month, int *day,
+	int *hour, int *minute, int *seconds);
 int DLLEXPORT  swmm_setSimulationDateTime(int timetype, char *dtimestr);
 
 //-------------------------------
