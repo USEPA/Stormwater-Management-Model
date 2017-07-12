@@ -192,8 +192,6 @@ int inflow_setExtInflow(int j, int param, int type, int tseries, int basePat,
 	
 	if (errcode == 0)
 	{
-		// Initialize API Inflow Rate
-		double extIfaceInflow = 0.0;   // external inferfacing inflow
 		TExtInflow* inflow;            // external inflow object
 
 		// --- check if an external inflow object for this constituent already exists
@@ -224,7 +222,7 @@ int inflow_setExtInflow(int j, int param, int type, int tseries, int basePat,
 		inflow->sFactor  = sf;
 		inflow->baseline = baseline;
 		inflow->basePat  = basePat;
-		inflow->extIfaceInflow = extIfaceInflow;
+		inflow->extIfaceInflow = 0.0;
 	}
     return(errcode);
 }
