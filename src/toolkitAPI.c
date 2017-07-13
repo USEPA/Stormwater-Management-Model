@@ -1056,41 +1056,22 @@ int DLLEXPORT swmm_setLinkSetting(int index, double targetSetting)
 	// Check if object index is within bounds
 	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OBJECT_INDEX);
 	
-	int l_type;
-	
 	// Get Link Type
 	// errcode = swmm_getLinkType(index, &l_type);
 	// WEIR, ORIFICES, PUMPS can have any value between [0,1]
 	// CONDUIT can be only 0 or 1 * BEM 11/4/2016 investigate this...	
-	
-	Link[index].targetSetting  = targetSetting; 
+
+	Link[index].targetSetting = targetSetting;
 	// Use internal function to apply the new setting
 	link_setSetting(index, 0.0);
-	
+
 	// Add control action to RPT file if desired flagged
 	if (RptFlags.controls)
 	{
-		errcode = ERR_API_OBJECT_INDEX;
-	}
-	else
-	{
-		// Get Link Type
-		// errcode = swmm_getLinkType(index, &l_type);
-		// WEIR, ORIFICES, PUMPS can have any value between [0,1]
-		// CONDUIT can be only 0 or 1 * BEM 11/4/2016 investigate this...	
-
-		Link[index].targetSetting = targetSetting;
-		// Use internal function to apply the new setting
-		link_setSetting(index, 0.0);
-
-		// Add control action to RPT file if desired flagged
-		if (RptFlags.controls)
-		{
-			DateTime currentTime;
-			currentTime = getDateTime(NewRoutingTime);
-			char _rule_[11] = "ToolkitAPI";
-			report_writeControlAction(currentTime, Link[index].ID, targetSetting, _rule_);
-		}
+		DateTime currentTime;
+		currentTime = getDateTime(NewRoutingTime);
+		char _rule_[11] = "ToolkitAPI";
+		report_writeControlAction(currentTime, Link[index].ID, targetSetting, _rule_);
 	}
 	return(errcode);
 }
