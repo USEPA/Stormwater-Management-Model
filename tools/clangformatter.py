@@ -9,6 +9,7 @@ import subprocess
 import sys
 
 
+PY3 = sys.version_info[0] == 3
 WIN = sys.platform.startswith('win32')
 CLANG_FORMAT_EXE = 'clang-format.exe' if WIN else 'clang-format'
 STYLES = ['chromium', 'file', 'google', 'llvm', 'mozilla', 'webkit']
@@ -54,6 +55,8 @@ def format_file(filepath, style='file'):
             data = f.read()
         
         lines = data.split('\n')
+        if PY3:
+            stdout = stdout.decode()
         new_lines = stdout.split('\n')
         diff = difflib.unified_diff(lines, new_lines, fromfile=filepath,
                                     tofile=filepath)
@@ -105,6 +108,9 @@ def run_process():
         diff_lines = format_file(path)
         if diff_lines:
             file_errors.append(path)
+            print('*'*len(path))
+            print(path)
+            print('*'*len(path))
             print('\n'.join(diff_lines))
             print('\n\n')
 
