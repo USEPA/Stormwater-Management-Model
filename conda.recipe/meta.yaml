@@ -17,6 +17,7 @@ build:
 
 requirements:
   build:
+    - cmake
     - python  # [win]
     - vc 9  # [win and py27]
     - vc 14  # [win and py>=35]
