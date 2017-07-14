@@ -11,18 +11,19 @@ source:
 
 build:
   number: 0
-  features:
-    - vc9   # [win and py27]
-    - vc14  # [win and py>=35]
 
 requirements:
   build:
-    - python  # [win]
-    - vc 9  # [win and py27]
-    - vc 14  # [win and py>=35]
+    - cmake
+    - gcc  # [unix]
+    - m2-make  # [win]
+    - m2-filesystem  # [win]
+    - m2w64-toolchain  # [win]
+    - msys2-conda-epoch >=20160418  # [win]
   run:
-    - vc 9  # [win and py27]
-    - vc 14  # [win and py>=35]
+    - libgcc  # [unix]
+    - m2w64-gcc-libs  # [win]
+    - msys2-conda-epoch >=20160418  # [win]
 
 test:
   commands:
