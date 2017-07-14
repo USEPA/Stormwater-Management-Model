@@ -1,18 +1,16 @@
 # https://travis-ci.com/OpenWaterAnalytics/Stormwater-Management-Model/
-
-language: python
-sudo: false
-
 matrix:
   include:
     - os: osx
       language: generic
       env: TRAVIS_PYTHON_VERSION=3.6
 
+
 cache:
   directories:
     - $HOME/condacache/pkgs
     - $HOME/.cache/pip
+
 
 install:
   # Use Astropy ci helpers for initial setup
@@ -25,7 +23,12 @@ install:
   - conda-build conda.recipe
   - source activate test
   - conda install -n test libswmm=develop --use-local
+  - conda create -n format clangdev -c conda-forge
+
 
 script:
   - conda info --json
   - run-swmm --help
+  # Check file format with clang
+  - source activate format
+  - python tools/clangformatter.py src/
