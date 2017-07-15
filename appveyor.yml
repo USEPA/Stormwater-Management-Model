@@ -24,12 +24,14 @@ install:
   - "git clone git://github.com/astropy/ci-helpers.git"
   - "powershell ci-helpers/appveyor/install-miniconda.ps1"
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - "%CMD_IN_ENV% conda-build conda.recipe"
+  # Install dependencies
+  - "%CMD_IN_ENV% conda install conda-build -q -y"
 
 # Not a .NET project, we build in the install step instead
 build: false
 
-#test_script:
+test_script:
+  - "%CMD_IN_ENV% conda-build conda.recipe"
 #  - "%CMD_IN_ENV% ciocheck winpty --disable-tests"
 #  - "conda remove pytest-xdist"
 #  - "%CMD_IN_ENV% pytest winpty --cov=winpty --cov-report term-missing"
