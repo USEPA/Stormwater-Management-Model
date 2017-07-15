@@ -18,15 +18,18 @@ build:
 requirements:
   build:
     - cmake
+    - gcc     # [unix]
     - python  # [win]
-    - vc 9  # [win and py27]
-    - vc 14  # [win and py>=35]
+    - vc 9    # [win and py27]
+    - vc 14   # [win and py>=35]
   run:
-    - vc 9  # [win and py27]
-    - vc 14  # [win and py>=35]
+    - libgcc  # [unix]
+    - vc 9    # [win and py27]
+    - vc 14   # [win and py>=35]
 
 test:
   commands:
+    - run-swmm --help  
     - run-swmm --version
 
 about:
