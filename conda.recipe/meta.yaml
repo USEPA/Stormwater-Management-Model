@@ -27,7 +27,7 @@ requirements:
 
 test:
   commands:
-    - run-swmm
+    - run-swmm --version
 
 about:
   home: https://github.com/OpenWaterAnalytics/Stormwater-Management-Model

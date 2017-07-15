@@ -26,12 +26,15 @@ install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   # Install dependencies
   - "%CMD_IN_ENV% conda install conda-build -q -y"
+  - "%CMD_IN_ENV% conda-build conda.recipe"
+  - "%CMD_IN_ENV% conda install -n test libswmm --use-local"
+  - "%CMD_IN_ENV% activate test"
 
 # Not a .NET project, we build in the install step instead
 build: false
 
 test_script:
-  - "%CMD_IN_ENV% conda-build conda.recipe"
+  - "%CMD_IN_ENV% run-swmm --version"
 #  - "%CMD_IN_ENV% ciocheck winpty --disable-tests"
 #  - "conda remove pytest-xdist"
 #  - "%CMD_IN_ENV% pytest winpty --cov=winpty --cov-report term-missing"
