@@ -22,16 +22,14 @@ file(GLOB SWMM_SOURCES src/*.c)
 add_library(swmm5 SHARED ${SWMM_SOURCES})
 target_link_libraries(swmm5)
 
-
 # executable
 add_executable(run-swmm ${SWMM_SOURCES})
 target_compile_definitions(run-swmm PRIVATE CLE=TRUE)
-IF(UNIX)
-  target_link_libraries(run-swmm m pthread)
-ENDIF(UNIX)
 
 IF(WIN32)
   target_link_libraries(run-swmm)
+ELSE(WIN32)
+  target_link_libraries(run-swmm m pthread)
 ENDIF(WIN32)
 
 # install
