@@ -1,5 +1,5 @@
 {% set name = "libswmm" %}
-{% set version = "5.1.13" %}
+{% set version = "develop" %}
 
 package:
   name: {{ name|lower }}
