@@ -18,6 +18,14 @@ environment:
       PYTHON_ARCH: "64"
       ARCH: "amd64"
       platform: "x64"
+    - PYTHON_VERSION: "3.4"
+      PYTHON_ARCH: "32"
+      ARCH: "x86"
+      platform: "x86"
+    - PYTHON_VERSION: "3.4"
+      PYTHON_ARCH: "64"
+      ARCH: "amd64"
+      platform: "x64"
 
 install:
   # Astropy ci-helpers. See https://github.com/astropy/ci-helpers
