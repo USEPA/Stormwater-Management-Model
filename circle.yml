@@ -22,12 +22,18 @@ dependencies:
     - $CMD_CONDA update -n root conda -q --no-pin;
     - $CMD_CONDA install -n root conda-build -q --no-pin;
     - $CMD_CONDA config --add pkgs_dirs ~/condacache/pkgs;
+    - $CMD_CONDA create -n format clangdev -c conda-forge
     - conda-build conda.recipe;
     - $CMD_CONDA install -n test libswmm=develop --use-local;
 
 test:
   override:
-    # Install built package
+    # Check file format with clang
+    - export PATH="$HOME/miniconda/bin:$PATH" && source activate format && conda info --json: # note the colon
+        parallel: true
+    - export PATH="$HOME/miniconda/bin:$PATH" && source activate format && python tools/clangformatter.py src/: # note the colon
+        parallel: true
+    # Test built package
     - export PATH="$HOME/miniconda/bin:$PATH" && source activate test && conda info --json: # note the colon
         parallel: true
     - export PATH="$HOME/miniconda/bin:$PATH" && source activate test && run-swmm --help: # note the colon
