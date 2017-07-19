@@ -1,10 +1,31 @@
-language: c
+# https://travis-ci.com/OpenWaterAnalytics/Stormwater-Management-Model/
 
-before_script:
-  - cd build
-  - mkdir buildproducts
-  - cd buildproducts
-  - cmake ..
+language: python
+sudo: false
+
+matrix:
+  include:
+    - os: osx
+      language: generic
+      env: TRAVIS_PYTHON_VERSION=3.6
+
+cache:
+  directories:
+    - $HOME/condacache/pkgs
+    - $HOME/.cache/pip
+
+install:
+  # Use Astropy ci helpers for initial setup
+  - git clone git://github.com/astropy/ci-helpers.git
+  - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
+  # Install dependencies for building with conda (latests versions)
+  - conda update -n root conda -q --no-pin
+  - conda install -n root conda-build -q --no-pin
+  - conda config --add pkgs_dirs ~/condacache/pkgs
+  - conda-build conda.recipe
+  - source activate test
+  - conda install -n test libswmm=develop --use-local
 
 script:
-  - make
+  - conda info --json
+  - run-swmm --help
