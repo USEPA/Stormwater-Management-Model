@@ -64,6 +64,11 @@
   #ifdef _MSC_VER
     #define EXH
   #endif
+
+  // Use alias of methods unavailable before VS2015
+  #if _MSC_VER < 1900
+    #define snprintf _snprintf_s 
+  #endif
 #endif
 
 
