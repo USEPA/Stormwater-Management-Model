@@ -111,7 +111,8 @@ def run_process():
             print('*'*len(path))
             print(path)
             print('*'*len(path))
-            print('\n'.join(diff_lines))
+            # Avoid the long prints on CI while the style is settled
+            # print('\n'.join(diff_lines)
             print('\n\n')
 
     # If any errors found exit with code
