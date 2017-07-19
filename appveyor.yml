@@ -18,6 +18,14 @@ environment:
       PYTHON_ARCH: "64"
       ARCH: "amd64"
       platform: "x64"
+    - PYTHON_VERSION: "3.4"
+      PYTHON_ARCH: "32"
+      ARCH: "x86"
+      platform: "x86"
+    - PYTHON_VERSION: "3.4"
+      PYTHON_ARCH: "64"
+      ARCH: "amd64"
+      platform: "x64"
 
 install:
   # Astropy ci-helpers. See https://github.com/astropy/ci-helpers
@@ -27,8 +35,8 @@ install:
   # Install dependencies
   - "%CMD_IN_ENV% conda install conda-build -q -y"
   - "%CMD_IN_ENV% conda-build conda.recipe"
-  - "%CMD_IN_ENV% activate test"
   - "%CMD_IN_ENV% conda install -n test libswmm=develop --use-local"
+  - "%CMD_IN_ENV% activate test"
 
 # Not a .NET project, we build in the install step instead
 build: false
