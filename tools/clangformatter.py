@@ -102,7 +102,11 @@ def parse_arguments():
 def run_process():
     """Run main process."""
     options = parse_arguments()
-    paths = files(options.folder)
+    fullpath = options.folder
+    if os.path.isfile(fullpath):
+        paths = [fullpath]
+    else:
+        paths = files(fullpath)
     file_errors = []
     for path in paths:
         diff_lines = format_file(path)
@@ -112,7 +116,7 @@ def run_process():
             print(path)
             print('*'*len(path))
             # Avoid the long prints on CI while the style is settled
-            # print('\n'.join(diff_lines)
+            print('\n'.join(diff_lines))
             print('\n\n')
 
     # If any errors found exit with code
