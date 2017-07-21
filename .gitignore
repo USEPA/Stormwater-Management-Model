@@ -17,6 +17,7 @@
 
 # Build files
 /build/
+*.o
 
 
 *.orig
