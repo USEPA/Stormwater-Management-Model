@@ -47,15 +47,6 @@ def format_file(filepath, style='file', inplace=False):
         )
 
         stdout, stderr = p.communicate()
-        if inplace:
-            p2 = subprocess.Popen(
-                args + ['-i'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                stdin=subprocess.PIPE,
-                startupinfo=startupinfo,
-            )
-            _stdout, _stderr = p2.communicate()
     except Exception:
         print('ERROR: clang-format executable not found!')
         return -1
@@ -73,6 +64,19 @@ def format_file(filepath, style='file', inplace=False):
         # Make the diff of what changed
         with open(filepath, 'r') as f:
             data = f.read()
+
+        if inplace:
+            try:
+                p2 = subprocess.Popen(
+                    args + ['-i'],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    stdin=subprocess.PIPE,
+                    startupinfo=startupinfo,
+                )
+                _stdout, _stderr = p2.communicate()
+            except Exception:
+                pass
 
         lines = data.split('\n')
         if PY3:
