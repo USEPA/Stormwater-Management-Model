@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Run clang formatter on a file or directory."""
 
+# yapf: disable
+
 # Standard library imports
 import argparse
 import difflib
@@ -9,34 +11,36 @@ import subprocess
 import sys
 
 
+# yapf: enable
+
 PY3 = sys.version_info[0] == 3
 WIN = sys.platform.startswith('win32')
 CLANG_FORMAT_EXE = 'clang-format.exe' if WIN else 'clang-format'
 STYLES = ['chromium', 'file', 'google', 'llvm', 'mozilla', 'webkit']
 
 
-def format_file(filepath, style='file'):
+def format_file(filepath, style='file', inplace=False):
     """"""
     if not os.path.isfile(filepath):
         print('ERROR: File "{}" not found!\n'.format(filepath))
-        
+
     if style not in STYLES and style != 'file':
         raise Exception('Unknow style used.')
 
-    # Avoid flashing an ugly cmd prompt on Windows when invoking clang-format.
-
+    # Avoid flashing an ugly cmd prompt on Windows when invoking clang-format
     startupinfo = None
     if WIN:
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         startupinfo.wShowWindow = subprocess.SW_HIDE
 
-    # Call formatter.
+    # Call formatter
     args = [CLANG_FORMAT_EXE, filepath, '-style', style]
 
     p = subprocess.Popen(
         args,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         stdin=subprocess.PIPE,
         startupinfo=startupinfo,
     )
@@ -44,29 +48,32 @@ def format_file(filepath, style='file'):
     stdout, stderr = p.communicate()
 
     if stderr:
-      print('Formatting failed!')
+        print('Formatting failed!')
 
     if not stdout:
-        print('No output from clang-format (crashed?).\n'
-              'Please report to bugs.llvm.org.')
+        print(
+            'No output from clang-format (crashed?).\n'
+            'Please report to bugs.llvm.org.'
+        )
     else:
         # Make the diff of what changed
         with open(filepath, 'r') as f:
             data = f.read()
-        
+
         lines = data.split('\n')
         if PY3:
             stdout = stdout.decode()
         new_lines = stdout.split('\n')
-        diff = difflib.unified_diff(lines, new_lines, fromfile=filepath,
-                                    tofile=filepath)
+        diff = difflib.unified_diff(
+            lines, new_lines, fromfile=filepath, tofile=filepath
+        )
         diff_lines = [line for line in diff]
 
     return diff_lines
 
 
 def files(root_path, extensions=('cpp', 'c', 'h')):
-    """Search recursively for all files in `root_path` matching `extensions`."""
+    """Search for all files in `root_path` matching `extensions`."""
     paths = []
     for dir_name, subdir_list, file_list in os.walk(root_path):
         for fname in file_list:
@@ -81,11 +88,13 @@ def parse_arguments():
     """Parse CLI arguments."""
     parser = argparse.ArgumentParser(
         description='A tool to format C/C++/Java/JavaScript/'
-        'Objective-C/Protobuf code.')
+        'Objective-C/Protobuf code.'
+    )
 
     parser.add_argument(
         'folder',
-        help="Folder with files to format. Files are searched recursively.")
+        help="Folder with files to format. Files are searched recursively"
+    )
     parser.add_argument(
         '-s',
         '--style',
@@ -93,7 +102,16 @@ def parse_arguments():
         dest="style",
         default='file',
         choices=STYLES,
-        help="Style to use. By default uses `file` and expetcs .clang-format")
+        help="Style to use. By default uses `file` and expetcs .clang-format"
+    )
+    parser.add_argument(
+        '-i',
+        '--inplace',
+        action="store",
+        dest="inplace",
+        default=None,
+        help="Replace inplace the formating on selected files in path"
+    )
     options = parser.parse_args()
 
     return options
@@ -109,12 +127,12 @@ def run_process():
         paths = files(fullpath)
     file_errors = []
     for path in paths:
-        diff_lines = format_file(path)
+        diff_lines = format_file(path, inplace=options.inplace)
         if diff_lines:
             file_errors.append(path)
-            print('*'*len(path))
+            print('*' * len(path))
             print(path)
-            print('*'*len(path))
+            print('*' * len(path))
             # Avoid the long prints on CI while the style is settled
             print('\n'.join(diff_lines))
             print('\n\n')
