@@ -36,16 +36,22 @@ def format_file(filepath, style='file', inplace=False):
 
     # Call formatter
     args = [CLANG_FORMAT_EXE, filepath, '-style', style]
+    if inplace:
+        args.append('-i')
 
-    p = subprocess.Popen(
-        args,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        stdin=subprocess.PIPE,
-        startupinfo=startupinfo,
-    )
+    try:
+        p = subprocess.Popen(
+            args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            stdin=subprocess.PIPE,
+            startupinfo=startupinfo,
+        )
 
-    stdout, stderr = p.communicate()
+        stdout, stderr = p.communicate()
+    except Exception:
+        print('ERROR: clang-format executable not found!')
+        return -1
 
     if stderr:
         print('Formatting failed!')
@@ -107,9 +113,9 @@ def parse_arguments():
     parser.add_argument(
         '-i',
         '--inplace',
-        action="store",
+        action="store_const",
         dest="inplace",
-        default=None,
+        const=True,
         help="Replace inplace the formating on selected files in path"
     )
     options = parser.parse_args()
@@ -128,6 +134,9 @@ def run_process():
     file_errors = []
     for path in paths:
         diff_lines = format_file(path, inplace=options.inplace)
+        if diff_lines == -1:
+            return
+
         if diff_lines:
             file_errors.append(path)
             print('*' * len(path))
