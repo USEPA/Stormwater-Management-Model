@@ -36,8 +36,6 @@ def format_file(filepath, style='file', inplace=False):
 
     # Call formatter
     args = [CLANG_FORMAT_EXE, filepath, '-style', style]
-    if inplace:
-        args.append('-i')
 
     try:
         p = subprocess.Popen(
@@ -49,16 +47,26 @@ def format_file(filepath, style='file', inplace=False):
         )
 
         stdout, stderr = p.communicate()
+        if inplace:
+            p2 = subprocess.Popen(
+                args + ['-i'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                stdin=subprocess.PIPE,
+                startupinfo=startupinfo,
+            )
+            _stdout, _stderr = p2.communicate()
     except Exception:
         print('ERROR: clang-format executable not found!')
         return -1
 
     if stderr:
-        print('Formatting failed!')
+        print('ERROR: Formatting failed!')
+        print(stderr)
 
     if not stdout:
         print(
-            'No output from clang-format (crashed?).\n'
+            'ERROR: No output from clang-format (crashed?).\n'
             'Please report to bugs.llvm.org.'
         )
     else:
