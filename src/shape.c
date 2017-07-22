@@ -49,14 +49,11 @@ int shape_validate(TShape *shape, TTable *curve)
 //
 {
     if (!computeShapeTables(shape, curve))
-    {
         return FALSE;
-    }
 
     if (!normalizeShapeTables(shape))
-    {
         return FALSE;
-    }
+
     return TRUE;
 }
 
@@ -80,14 +77,11 @@ int computeShapeTables(TShape *shape, TTable *curve)
 
     // --- get first entry of user's shape curve
     if (!table_getFirstEntry(curve, &y1, &w1))
-    {
         return FALSE;
-    }
 
     if (y1 < 0.0 || y1 >= 1.0 || w1 < 0.0)
-    {
         return FALSE;
-    }
+
     wMax = w1;
 
     // --- if first entry not at zero ht. then add an initial entry
@@ -103,24 +97,16 @@ int computeShapeTables(TShape *shape, TTable *curve)
     else
     {
         if (!table_getNextEntry(curve, &y2, &w2))
-        {
             return FALSE;
-        }
 
         if (y2 < y1 || w2 < 0.0)
-        {
             return FALSE;
-        }
 
         if (y2 > 1.0)
-        {
             y2 = 1.0;
-        }
 
         if (w2 > wMax)
-        {
             wMax = w2;
-        }
     }
 
     // --- determine number of entries & interval size in geom. tables
@@ -146,9 +132,7 @@ int computeShapeTables(TShape *shape, TTable *curve)
 
         // --- do not allow height to exceed 1.0
         if (fabs(y - 1.0) < TINY)
-        {
             y = 1.0;
-        }
 
         // --- if height exceeds current shape curve interval,
         //     move to next interval of shape curve
@@ -156,9 +140,8 @@ int computeShapeTables(TShape *shape, TTable *curve)
         {
             if (!getNextInterval(curve, y, yLast, wLast, &y1, &y2, &w1, &w2,
                                  &wMax))
-            {
                 return FALSE;
-            }
+
             yLast = y1;
             wLast = w1;
         }
@@ -170,21 +153,15 @@ int computeShapeTables(TShape *shape, TTable *curve)
 
         // --- add top width to total perimeter if at top of shape
         if (y == 1.0)
-        {
             Ptotal += w2;
-        }
 
         // --- update table values
         shape->widthTbl[i] = w;
         shape->areaTbl[i]  = Atotal;
         if (Ptotal > 0.0)
-        {
             shape->hradTbl[i] = Atotal / Ptotal;
-        }
         else
-        {
             shape->hradTbl[i] = 0.0;
-        }
     }
 
     // --- assign values to shape'a area and hyd. radius when full
@@ -240,9 +217,7 @@ int normalizeShapeTables(TShape *shape)
 
     // --- check that normalizing factors are non-zero
     if (aFull == 0.0 || rFull == 0.0 || wMax == 0.0)
-    {
         return FALSE;
-    }
 
     // --- normalize entries in each table by their respective factors
     for (i = 0; i <= n; i++) {
@@ -300,20 +275,14 @@ int getNextInterval(TTable *curve, double y, double yLast, double wLast,
 
         // --- update curve table's max. width
         if (*w2 > *wMax)
-        {
             *wMax = *w2;
-        }
 
         // --- check for valid curve table values
         if (*y2 < *y1 || *w2 < 0.0)
-        {
             return FALSE;
-        }
 
         if (*y2 > 1.0)
-        {
             *y2 = 1.0;
-        }
     }
     return TRUE;
 }
@@ -333,9 +302,8 @@ double getWidth(double y, double y1, double y2, double w1, double w2)
 //
 {
     if (y2 == y1)
-    {
         return w2;
-    }
+
     return w1 + (y - y1) / (y2 - y1) * (w2 - w1);
 }
 
@@ -362,7 +330,7 @@ double getArea(double y, double w, double y1, double w1)
         wMin = w;
         wMax = w1;
     }
-    return (wMin + ((wMax - wMin) / 2.0)) * (y - y1);
+    return (wMin + (wMax - wMin) / 2.0) * (y - y1);
 }
 
 //=============================================================================
