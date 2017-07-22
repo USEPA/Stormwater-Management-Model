@@ -44,7 +44,7 @@ build: false
 test_script:
   # Check file format with clang
   - "%CMD_IN_ENV% activate format"
-  - "%CMD_IN_ENV% python tools\\clangformatter.py src\\"
+  #- "%CMD_IN_ENV% python tools\\clangformatter.py src\\"
   # Test built package
   - "%CMD_IN_ENV% activate test"
 #  - "%CMD_IN_ENV% run-swmm --version"
