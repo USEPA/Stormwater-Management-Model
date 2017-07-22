@@ -48,10 +48,13 @@ int shape_validate(TShape *shape, TTable *curve)
 //           tables from its user-supplied width v. height curve.
 //
 {
-    if (!computeShapeTables(shape, curve)) {
+    if (!computeShapeTables(shape, curve))
+    {
         return FALSE;
     }
-    if (!normalizeShapeTables(shape)) {
+
+    if (!normalizeShapeTables(shape))
+    {
         return FALSE;
     }
     return TRUE;
@@ -76,16 +79,20 @@ int computeShapeTables(TShape *shape, TTable *curve)
     double yLast, wLast, wMax;
 
     // --- get first entry of user's shape curve
-    if (!table_getFirstEntry(curve, &y1, &w1)) {
+    if (!table_getFirstEntry(curve, &y1, &w1))
+    {
         return FALSE;
     }
-    if (y1 < 0.0 || y1 >= 1.0 || w1 < 0.0) {
+
+    if (y1 < 0.0 || y1 >= 1.0 || w1 < 0.0)
+    {
         return FALSE;
     }
     wMax = w1;
 
     // --- if first entry not at zero ht. then add an initial entry
-    if (y1 != 0.0) {
+    if (y1 != 0.0)
+    {
         y2 = y1;
         w2 = w1;
         y1 = 0.0;
@@ -93,17 +100,25 @@ int computeShapeTables(TShape *shape, TTable *curve)
     }
 
     // --- otherwise get next entry in the user's shape curve
-    else {
-        if (!table_getNextEntry(curve, &y2, &w2)) {
+    else
+    {
+        if (!table_getNextEntry(curve, &y2, &w2))
+        {
             return FALSE;
         }
-        if (y2 < y1 || w2 < 0.0) {
+
+        if (y2 < y1 || w2 < 0.0)
+        {
             return FALSE;
         }
-        if (y2 > 1.0) {
+
+        if (y2 > 1.0)
+        {
             y2 = 1.0;
         }
-        if (w2 > wMax) {
+
+        if (w2 > wMax)
+        {
             wMax = w2;
         }
     }
@@ -130,15 +145,18 @@ int computeShapeTables(TShape *shape, TTable *curve)
         y     = y + dy;
 
         // --- do not allow height to exceed 1.0
-        if (fabs(y - 1.0) < TINY) {
+        if (fabs(y - 1.0) < TINY)
+        {
             y = 1.0;
         }
 
         // --- if height exceeds current shape curve interval,
         //     move to next interval of shape curve
-        if (y > y2) {
+        if (y > y2)
+        {
             if (!getNextInterval(curve, y, yLast, wLast, &y1, &y2, &w1, &w2,
-                                 &wMax)) {
+                                 &wMax))
+            {
                 return FALSE;
             }
             yLast = y1;
@@ -151,17 +169,20 @@ int computeShapeTables(TShape *shape, TTable *curve)
         Ptotal += getPerim(y, w, yLast, wLast);
 
         // --- add top width to total perimeter if at top of shape
-        if (y == 1.0) {
+        if (y == 1.0)
+        {
             Ptotal += w2;
         }
 
         // --- update table values
         shape->widthTbl[i] = w;
         shape->areaTbl[i]  = Atotal;
-        if (Ptotal > 0.0) {
+        if (Ptotal > 0.0)
+        {
             shape->hradTbl[i] = Atotal / Ptotal;
         }
-        else {
+        else
+        {
             shape->hradTbl[i] = 0.0;
         }
     }
@@ -194,7 +215,8 @@ void getSmax(TShape *shape)
     shape->aMax = 0.0;
     for (i = 1; i <= n; i++) {
         sf = shape->areaTbl[i] * pow(shape->hradTbl[i], 2. / 3.);
-        if (sf > shape->sMax) {
+        if (sf > shape->sMax)
+        {
             shape->sMax = sf;
             shape->aMax = shape->areaTbl[i];
         }
@@ -217,7 +239,8 @@ int normalizeShapeTables(TShape *shape)
     double wMax  = shape->wMax;      // max. width
 
     // --- check that normalizing factors are non-zero
-    if (aFull == 0.0 || rFull == 0.0 || wMax == 0.0) {
+    if (aFull == 0.0 || rFull == 0.0 || wMax == 0.0)
+    {
         return FALSE;
     }
 
@@ -258,7 +281,8 @@ int getNextInterval(TTable *curve, double y, double yLast, double wLast,
     while (y > *y2) {
         // --- move start of geom. table interval up to the end of
         //     the current curve table interval
-        if (*y2 > yLast) {
+        if (*y2 > yLast)
+        {
             Atotal += getArea(*y2, *w2, yLast, wLast);
             Ptotal += getPerim(*y2, *w2, yLast, wLast);
             yLast = *y2;
@@ -268,22 +292,26 @@ int getNextInterval(TTable *curve, double y, double yLast, double wLast,
         // --- move to the next curve table interval
         *y1 = *y2;
         *w1 = *w2;
-        if (!table_getNextEntry(curve, y2, w2)) {
+        if (!table_getNextEntry(curve, y2, w2))
+        {
             *y2 = 1.0;
             return TRUE;
         }
 
         // --- update curve table's max. width
-        if (*w2 > *wMax) {
+        if (*w2 > *wMax)
+        {
             *wMax = *w2;
         }
 
         // --- check for valid curve table values
-        if (*y2 < *y1 || *w2 < 0.0) {
+        if (*y2 < *y1 || *w2 < 0.0)
+        {
             return FALSE;
         }
 
-        if (*y2 > 1.0) {
+        if (*y2 > 1.0)
+        {
             *y2 = 1.0;
         }
     }
@@ -304,7 +332,8 @@ double getWidth(double y, double y1, double y2, double w1, double w2)
 //           x-section's shape curve.
 //
 {
-    if (y2 == y1) {
+    if (y2 == y1)
+    {
         return w2;
     }
     return w1 + (y - y1) / (y2 - y1) * (w2 - w1);
@@ -323,11 +352,13 @@ double getArea(double y, double w, double y1, double w1)
 //
 {
     double wMin, wMax;
-    if (w > w1) {
+    if (w > w1)
+    {
         wMin = w1;
         wMax = w;
     }
-    else {
+    else
+    {
         wMin = w;
         wMax = w1;
     }
