@@ -124,7 +124,8 @@ int computeShapeTables(TShape *shape, TTable *curve)
     // --- fill in rest of geometry tables
     y = 0.0;
     w = w1;
-    for (i = 1; i <= n; i++) {
+    for (i = 1; i <= n; i++)
+    {
         // --- advance to next relative height level
         yLast = y;
         wLast = w;
@@ -190,7 +191,8 @@ void getSmax(TShape *shape)
 
     shape->sMax = 0.0;
     shape->aMax = 0.0;
-    for (i = 1; i <= n; i++) {
+    for (i = 1; i <= n; i++)
+    {
         sf = shape->areaTbl[i] * pow(shape->hradTbl[i], 2. / 3.);
         if (sf > shape->sMax)
         {
@@ -210,17 +212,18 @@ int normalizeShapeTables(TShape *shape)
 //
 {
     int    i;
-    int    n     = shape->nTbl - 1;  // highest table entry index
-    double aFull = shape->aFull;     // area when full
-    double rFull = shape->rFull;     // hyd. radius when full
-    double wMax  = shape->wMax;      // max. width
+    int    n     = shape->nTbl - 1;    // highest table entry index
+    double aFull = shape->aFull;       // area when full
+    double rFull = shape->rFull;       // hyd. radius when full
+    double wMax  = shape->wMax;        // max. width
 
     // --- check that normalizing factors are non-zero
     if (aFull == 0.0 || rFull == 0.0 || wMax == 0.0)
         return FALSE;
 
     // --- normalize entries in each table by their respective factors
-    for (i = 0; i <= n; i++) {
+    for (i = 0; i <= n; i++)
+    {
         shape->areaTbl[i] /= aFull;
         shape->hradTbl[i] /= rFull;
         shape->widthTbl[i] /= wMax;
@@ -253,7 +256,8 @@ int getNextInterval(TTable *curve, double y, double yLast, double wLast,
 {
     // --- keep advancing while the current geom. table height is
     //     above the end of the curve table interval
-    while (y > *y2) {
+    while (y > *y2)
+    {
         // --- move start of geom. table interval up to the end of
         //     the current curve table interval
         if (*y2 > yLast)
