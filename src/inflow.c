@@ -120,7 +120,7 @@ int inflow_readExtInflow(char* tok[], int ntoks)
 		cf, baseline, sf));
 }
 
-int inflow_validate(int param, int type, int tseries, int basePat, double cf)
+int inflow_validate(int param, int type, int tseries, int basePat, double *cf)
 // 
 // Purpose: Validates Inflow
 // Input:  param = -1 for Flow or Index of Pollutant
@@ -158,12 +158,12 @@ int inflow_validate(int param, int type, int tseries, int basePat, double cf)
 		// --- assign type & cf values for a FLOW inflow
 		if ( type == FLOW_INFLOW )
 		{
-			cf = 1.0/UCF(FLOW);
+			*cf = 1.0/UCF(FLOW);
 		}
 		// --- include LperFT3 term in conversion factor for MASS_INFLOW
 		else if ( type == MASS_INFLOW ) 
 		{
-			cf /= LperFT3;		
+			*cf /= LperFT3;		
 		}
 	}
 	
@@ -188,7 +188,7 @@ int inflow_setExtInflow(int j, int param, int type, int tseries, int basePat,
 	int errcode = 0;
 
 	// Validate Inflow
-	errcode = inflow_validate(param, type, tseries, basePat, cf);
+	errcode = inflow_validate(param, type, tseries, basePat, &cf);
 	
 	if (errcode == 0)
 	{
