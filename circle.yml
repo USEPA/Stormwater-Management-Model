@@ -38,3 +38,9 @@ test:
         parallel: true
     - export PATH="$HOME/miniconda/bin:$PATH" && source activate test && run-swmm --help: # note the colon
         parallel: true
+
+deployment:
+  develop:
+    branch: develop
+    commands:
+      - export PATH="$HOME/miniconda/bin:$PATH" && source activate root && conda-build conda.recipe --user owa --token $SWWM_CI_UPLOAD_TOKEN;

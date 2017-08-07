@@ -48,3 +48,7 @@ test_script:
   # Test built package
   - "%CMD_IN_ENV% activate test"
 #  - "%CMD_IN_ENV% run-swmm --version"
+
+on_success:
+  - "%CMD_IN_ENV% activate root"
+  - IF DEFINED APPVEYOR_PULL_REQUEST_NUMBER (IF %APPVEYOR_REPO_BRANCH%=="develop" ("%CMD_IN_ENV% conda-build conda.recipe --user owa --token %SWWM_CI_UPLOAD_TOKEN%"))
