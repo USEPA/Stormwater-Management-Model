@@ -20,7 +20,7 @@ dependencies:
     - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
     # Install dependencies
     - $CMD_CONDA update -n root conda -q --no-pin;
-    - $CMD_CONDA install -n root conda-build -q --no-pin;
+    - $CMD_CONDA install -n root conda-build anaconda-client -q --no-pin;
     - $CMD_CONDA config --add pkgs_dirs ~/condacache/pkgs;
     - $CMD_CONDA create -n format clangdev -c conda-forge
     - conda-build conda.recipe;
