@@ -51,4 +51,4 @@ test_script:
 
 on_success:
   - "%CMD_IN_ENV% activate root"
-  - IF DEFINED APPVEYOR_PULL_REQUEST_NUMBER (IF %APPVEYOR_REPO_BRANCH%=="develop" ("%CMD_IN_ENV% conda-build conda.recipe --user owa --token %SWWM_CI_UPLOAD_TOKEN%"))
+#  - IF DEFINED APPVEYOR_PULL_REQUEST_NUMBER (IF %APPVEYOR_REPO_BRANCH%=="develop" ("%CMD_IN_ENV% conda-build conda.recipe --user owa --token %SWWM_CI_UPLOAD_TOKEN%"))
