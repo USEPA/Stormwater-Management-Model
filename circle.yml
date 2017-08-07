@@ -20,11 +20,11 @@ dependencies:
     - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
     # Install dependencies
     - $CMD_CONDA update -n root conda -q --no-pin;
-    - $CMD_CONDA install -n root conda-build -q --no-pin;
+    - $CMD_CONDA install -n root conda-build anaconda-client -q --no-pin;
     - $CMD_CONDA config --add pkgs_dirs ~/condacache/pkgs;
     - $CMD_CONDA create -n format clangdev -c conda-forge
     - conda-build conda.recipe;
-    - $CMD_CONDA install -n test libswmm=develop --use-local;
+    - $CMD_CONDA install -n test libswmm --use-local;
 
 test:
   override:
@@ -38,3 +38,9 @@ test:
         parallel: true
     - export PATH="$HOME/miniconda/bin:$PATH" && source activate test && run-swmm --help: # note the colon
         parallel: true
+
+deployment:
+  develop:
+    branch: develop
+    commands:
+      - export PATH="$HOME/miniconda/bin:$PATH" && source activate root && conda-build conda.recipe --user owa --token $SWWM_CI_UPLOAD_TOKEN;
