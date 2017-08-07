@@ -1,5 +1,5 @@
 {% set name = "libswmm" %}
-{% set version = "develop" %}
+{% set version = "5.2.0.dev0" %}
 
 package:
   name: {{ name|lower }}
@@ -10,10 +10,10 @@ source:
   git_tag: HEAD
 
 build:
-  number: 0
+  number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
   features:
     - vc9   # [win and py27]
-    - vc10   # [win and py34]
+    - vc10  # [win and py34]
     - vc14  # [win and py>=35]
 
 requirements:
