@@ -24,7 +24,7 @@ dependencies:
     - $CMD_CONDA config --add pkgs_dirs ~/condacache/pkgs;
     - $CMD_CONDA create -n format clangdev -c conda-forge
     - conda-build conda.recipe;
-    - $CMD_CONDA install -n test libswmm=develop --use-local;
+    - $CMD_CONDA install -n test libswmm --use-local;
 
 test:
   override:
