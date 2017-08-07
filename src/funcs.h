@@ -401,7 +401,7 @@ int     inflow_setExtInflow(int j, int param, int type,
 						int tSeries, int basePat, double cf, 
 						double baseline, double sf);
 int     inflow_validate(int param, int type, int tSeries, 
-						int basePat, double cf);					
+						int basePat, double *cf);					
 						
 void    inflow_initDwfInflow(TDwfInflow* inflow);
 void    inflow_initDwfPattern(int pattern);
