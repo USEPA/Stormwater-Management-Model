@@ -1055,7 +1055,7 @@ void getSemVersion(char* semver)
 //  
 //  NOTE: Each New Release should be updated in consts.h
 {
-	snprintf(semver, SEMVERSION_LEN, "%s.%s.%s\n", 
+	snprintf(semver, SEMVERSION_LEN, "%s.%s.%s", 
 		SEMVERSION_MAJOR, SEMVERSION_MINOR, SEMVERSION_PATCH);
 }
 
