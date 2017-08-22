@@ -34,7 +34,7 @@ install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   # Install dependencies
   - "%CMD_IN_ENV% conda install conda-build anaconda-client -q -y"
-  - "%CMD_IN_ENV% conda-build conda.recipe"
+  - "%CMD_IN_ENV% conda-build conda.recipe --python %PYTHON_VERSION% --old-build-string"
   - "%CMD_IN_ENV% conda install -n test libswmm --use-local"
   #- "%CMD_IN_ENV% conda create -n format clangdev -c conda-forge"
 
