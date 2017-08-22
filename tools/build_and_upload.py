@@ -7,16 +7,16 @@ import subprocess
 
 
 def main():
+    """Build and upload a package if on develop and PR is merged."""
     pr_number = os.environ.get('APPVEYOR_PULL_REQUEST_NUMBER')
     branch= os.environ.get('APPVEYOR_REPO_BRANCH')
-    cmd_in_env = os.environ.get('CMD_IN_ENV')
     token = os.environ.get('SWWM_CI_UPLOAD_TOKEN')
 
-    print([pr_number, branch, cmd_in_env])
+    print([pr_number, branch])
 
     if branch == 'develop' and pr_number is None:
-        cmd = [cmd_in_env, 'conda-build', 'conda.recipe', '--user', 'owa',
-               '--token', token]
+        cmd = ['conda-build', 'conda.recipe', '--user', 'owa',
+               '--token', token, '--old-build-string']
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()

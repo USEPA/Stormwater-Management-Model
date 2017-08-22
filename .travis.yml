@@ -36,6 +36,6 @@ script:
 
 deploy:
   - provider: script
-    script: "conda-build conda.recipe --user owa --token ${SWWM_CI_UPLOAD_TOKEN}"
+    script: "conda-build conda.recipe --user owa --token ${SWWM_CI_UPLOAD_TOKEN} --old-build-string"
     on:
        branch: develop
