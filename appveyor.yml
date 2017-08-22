@@ -36,19 +36,19 @@ install:
   - "%CMD_IN_ENV% conda install conda-build anaconda-client -q -y"
   - "%CMD_IN_ENV% conda-build conda.recipe"
   - "%CMD_IN_ENV% conda install -n test libswmm --use-local"
-  - "%CMD_IN_ENV% conda create -n format clangdev -c conda-forge"
+  #- "%CMD_IN_ENV% conda create -n format clangdev -c conda-forge"
 
 # Not a .NET project, we build in the install step instead
 build: false
 
 test_script:
   # Check file format with clang
-  - "%CMD_IN_ENV% activate format"
-#  - "%CMD_IN_ENV% python tools\\clangformatter.py src\\"
+  #- "%CMD_IN_ENV% activate format"
+  #- "%CMD_IN_ENV% python tools\\clangformatter.py src\\"
   # Test built package
-  - "%CMD_IN_ENV% activate test"
-#  - "%CMD_IN_ENV% run-swmm --version"
+  #- "%CMD_IN_ENV% activate test"
+  #- "%CMD_IN_ENV% run-swmm --version"
 
 on_success:
   - "%CMD_IN_ENV% activate root"
-#  - IF DEFINED APPVEYOR_PULL_REQUEST_NUMBER (IF %APPVEYOR_REPO_BRANCH%=="develop" ("%CMD_IN_ENV% conda-build conda.recipe --user owa --token %SWWM_CI_UPLOAD_TOKEN%"))
+  - "%CMD_IN_ENV% python tools\\build_and_upload.py"
