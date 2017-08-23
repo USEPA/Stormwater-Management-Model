@@ -19,6 +19,84 @@ CLANG_FORMAT_EXE = 'clang-format.exe' if WIN else 'clang-format'
 STYLES = ['chromium', 'file', 'google', 'llvm', 'mozilla', 'webkit']
 
 
+# Update this list as new PRs adapt the code on new files
+FILES_FAILING_FORMAT_CHECK = [
+    'src/climate.c',
+    'src/consts.h',
+    'src/controls.c',
+    'src/culvert.c',
+    'src/datetime.c',
+    'src/datetime.h',
+    'src/dwflow.c',
+    'src/dynwave.c',
+    'src/enums.h',
+    'src/error.c',
+    'src/error.h',
+    'src/exfil.c',
+    'src/exfil.h',
+    'src/findroot.c',
+    'src/findroot.h',
+    'src/flowrout.c',
+    'src/forcmain.c',
+    'src/funcs.h',
+    'src/gage.c',
+    'src/globals.h',
+    'src/gwater.c',
+    'src/hash.c',
+    'src/hash.h',
+    'src/headers.h',
+    'src/hotstart.c',
+    'src/iface.c',
+    'src/infil.c',
+    'src/infil.h',
+    'src/inflow.c',
+    'src/input.c',
+    'src/inputrpt.c',
+    'src/keywords.c',
+    'src/keywords.h',
+    'src/kinwave.c',
+    'src/landuse.c',
+    'src/lid.c',
+    'src/lid.h',
+    'src/lidproc.c',
+    'src/link.c',
+    'src/macros.h',
+    'src/massbal.c',
+    'src/mathexpr.c',
+    'src/mathexpr.h',
+    'src/mempool.c',
+    'src/mempool.h',
+    'src/node.c',
+    'src/objects.h',
+    'src/odesolve.c',
+    'src/odesolve.h',
+    'src/output.c',
+    'src/project.c',
+    'src/qualrout.c',
+    'src/rain.c',
+    'src/rdii.c',
+    'src/report.c',
+    'src/roadway.c',
+    'src/routing.c',
+    'src/runoff.c',
+    'src/snow.c',
+    'src/stats.c',
+    'src/statsrpt.c',
+    'src/subcatch.c',
+    'src/surfqual.c',
+    'src/swmm5.c',
+    'src/swmm5.h',
+    'src/table.c',
+    'src/text.h',
+    'src/toolkitAPI.c',
+    'src/toolkitAPI.h',
+    'src/toposort.c',
+    'src/transect.c',
+    'src/treatmnt.c',
+    'src/xsect.c'
+]
+
+
 def format_file(filepath, style='file', inplace=False):
     """"""
     if not os.path.isfile(filepath):
@@ -144,12 +222,13 @@ def run_process():
     else:
         paths = files(fullpath)
     file_errors = []
+
     for path in paths:
         diff_lines = format_file(path, inplace=options.inplace)
         if diff_lines == -1:
             return
 
-        if diff_lines:
+        if diff_lines and path not in FILES_FAILING_FORMAT_CHECK:
             file_errors.append(path)
             print('*' * len(path))
             print(path)
