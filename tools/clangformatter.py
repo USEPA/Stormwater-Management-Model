@@ -228,7 +228,8 @@ def run_process():
         if diff_lines == -1:
             return
 
-        if diff_lines and path not in FILES_FAILING_FORMAT_CHECK:
+        std_path = path.replace('\\', '/')
+        if diff_lines and std_path not in FILES_FAILING_FORMAT_CHECK:
             file_errors.append(path)
             print('*' * len(path))
             print(path)
