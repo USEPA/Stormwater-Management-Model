@@ -36,7 +36,7 @@ install:
   - "%CMD_IN_ENV% conda install conda-build anaconda-client -q -y"
   - "%CMD_IN_ENV% conda-build conda.recipe --python %PYTHON_VERSION% --old-build-string"
   - "%CMD_IN_ENV% conda install -n test libswmm --use-local"
-  #- "%CMD_IN_ENV% conda create -n format clangdev -c conda-forge"
+  - "%CMD_IN_ENV% conda create -n format clangdev -c conda-forge"
 
 # Not a .NET project, we build in the install step instead
 build: false
