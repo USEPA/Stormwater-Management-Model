@@ -56,6 +56,8 @@
 #include <math.h>                                                              //(5.1.008)
 #if defined(_OPENMP)
   #include <omp.h>                                                             //(5.1.008)
+#else
+  int omp_get_num_threads(void) { return 1;}
 #endif
 #include "headers.h"
 #include "lid.h" 

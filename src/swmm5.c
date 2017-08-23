@@ -196,20 +196,19 @@ int  main(int argc, char *argv[])
 //  f3 = name of binary output file if saved (or blank if not saved).
 //
 {
-	char *inputFile;
-	char *reportFile;
-	char *binaryFile;
-	char *arg1;
+    char *inputFile;
+    char *reportFile;
+    char *binaryFile;
+    char *arg1;
     char blank[] = "";
-	char SEMVERSION[SEMVERSION_LEN];
-	
-	// Fetch SWMM Engine Version
-	getSemVersion(SEMVERSION);
-
+    char SEMVERSION[SEMVERSION_LEN];
     time_t start;
     double runTime;
 
-	start = time(0);
+    // Fetch SWMM Engine Version
+    getSemVersion(SEMVERSION);
+
+    start = time(0);
 
     // --- initialize flags
     IsOpenFlag = FALSE;

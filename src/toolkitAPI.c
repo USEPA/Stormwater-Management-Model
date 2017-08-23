@@ -79,17 +79,18 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr)
 // Return:  API Error
 // Purpose: Get the simulation start, end and report date times
 {
-	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
-	// Check if Simulation is Running
-	if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);	
-	
-	char     theDate[10];
-    char     theTime[9];
+    char theDate[10];
+    char theTime[9];
 
-	strncpy(theDate, dtimestr, 10);
-	strncpy(theTime, dtimestr+11, 9);
-	
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
+
+    // Check if Simulation is Running
+    if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);
+
+    strncpy(theDate, dtimestr, 10);
+    strncpy(theTime, dtimestr+11, 9);
+
 	switch(timetype)
 	{
 		//StartDateTime (globals.h)
@@ -629,29 +630,28 @@ int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr)
 // Return:  API Error
 // Purpose: Get the current simulation time
 {
-	// Check if Simulation is Running
-	if(swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
-	
-	//Provide Empty Character Array 
-	
+    //Provide Empty Character Array 
     char     theDate[12];
     char     theTime[9];
-	char     _DTimeStr[22];
-	
-	DateTime currentTime;
-	// Fetch Current Time
-	currentTime = getDateTime(NewRoutingTime);
-	
-	// Convert To Char
-	datetime_dateToStr(currentTime, theDate);
-	datetime_timeToStr(currentTime, theTime);
-	
-	strcpy(_DTimeStr, theDate);
-	strcat(_DTimeStr, " ");
-	strcat(_DTimeStr, theTime);
-	
-	strcpy(dtimestr, _DTimeStr);
-	return(0);
+    char     _DTimeStr[22];
+    DateTime currentTime;
+
+    // Check if Simulation is Running
+    if(swmm_IsStartedFlag() == FALSE) return(ERR_API_SIM_NRUNNING);
+
+    // Fetch Current Time
+    currentTime = getDateTime(NewRoutingTime);
+
+    // Convert To Char
+    datetime_dateToStr(currentTime, theDate);
+    datetime_timeToStr(currentTime, theTime);
+
+    strcpy(_DTimeStr, theDate);
+    strcat(_DTimeStr, " ");
+    strcat(_DTimeStr, theTime);
+
+    strcpy(dtimestr, _DTimeStr);
+    return(0);
 }
 
 
@@ -1047,33 +1047,35 @@ int DLLEXPORT swmm_setLinkSetting(int index, double targetSetting)
 // Output: 	returns API Error
 // Purpose: Sets Link open fraction (Weir, Orifice, Pump, and Outlet)
 {
-	int errcode = 0;
-	// Check if Simulation is Running
-	if (swmm_IsStartedFlag() == FALSE)
-	{
-		errcode = ERR_API_SIM_NRUNNING;
-	}
-	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OBJECT_INDEX);
-	
-	// Get Link Type
-	// errcode = swmm_getLinkType(index, &l_type);
-	// WEIR, ORIFICES, PUMPS can have any value between [0,1]
-	// CONDUIT can be only 0 or 1 * BEM 11/4/2016 investigate this...	
+    DateTime currentTime;
+    int errcode = 0;
+    char _rule_[11] = "ToolkitAPI";
 
-	Link[index].targetSetting = targetSetting;
-	// Use internal function to apply the new setting
-	link_setSetting(index, 0.0);
+    // Check if Simulation is Running
+    if (swmm_IsStartedFlag() == FALSE)
+    {
+        errcode = ERR_API_SIM_NRUNNING;
+    }
+    // Check if object index is within bounds
+    if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OBJECT_INDEX);
+    
+    // Get Link Type
+    // errcode = swmm_getLinkType(index, &l_type);
+    // WEIR, ORIFICES, PUMPS can have any value between [0,1]
+    // CONDUIT can be only 0 or 1 * BEM 11/4/2016 investigate this...	
 
-	// Add control action to RPT file if desired flagged
-	if (RptFlags.controls)
-	{
-		DateTime currentTime;
-		currentTime = getDateTime(NewRoutingTime);
-		char _rule_[11] = "ToolkitAPI";
-		report_writeControlAction(currentTime, Link[index].ID, targetSetting, _rule_);
-	}
-	return(errcode);
+    Link[index].targetSetting = targetSetting;
+
+    // Use internal function to apply the new setting
+    link_setSetting(index, 0.0);
+
+    // Add control action to RPT file if desired flagged
+    if (RptFlags.controls)
+    {
+        currentTime = getDateTime(NewRoutingTime);
+        report_writeControlAction(currentTime, Link[index].ID, targetSetting, _rule_);
+    }
+    return(errcode);
 }
 
 
