@@ -31,8 +31,8 @@ test:
     # Check file format with clang
     - export PATH="$HOME/miniconda/bin:$PATH" && source activate format && conda info --json: # note the colon
         parallel: true
-#    - export PATH="$HOME/miniconda/bin:$PATH" && source activate format && python tools/clangformatter.py src/: # note the colon
-#        parallel: true
+    - export PATH="$HOME/miniconda/bin:$PATH" && source activate format && python tools/clangformatter.py src/: # note the colon
+        parallel: true
     # Test built package
     - export PATH="$HOME/miniconda/bin:$PATH" && source activate test && conda info --json: # note the colon
         parallel: true
