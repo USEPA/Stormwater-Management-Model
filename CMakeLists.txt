@@ -7,16 +7,17 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+if(UNIX)
+    set(CMAKE_C_FLAGS "-std=c99 -fopenmp")
+    set(CMAKE_CXX_FLAGS "-std=c++11 -fopenmp -Wno-write-strings")
+    # add_definitions(-std=c99)
+endif(UNIX)
+
 if(OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif(OPENMP_FOUND)
-
-if(UNIX)
-    set(CMAKE_C_FLAGS "-std=c99 -fopenmp")
-    add_definitions(-std=c99)
-endif(UNIX)
 
 if(APPLE)
     set(CMAKE_INSTALL_NAME_DIR @executable_path)

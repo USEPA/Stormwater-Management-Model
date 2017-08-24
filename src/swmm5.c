@@ -143,9 +143,13 @@ const double Ucf[10][2] =
       {2.203e-6,  1.0e-6    },         // MASS (lb, kg --> mg)
       {43560.0,   3048.0    }          // GWFLOW (cfs/ac, cms/ha --> ft/sec)
       };
+#ifdef __cplusplus
+extern const double Qcf[6] =           // Flow Conversion Factors:
+#else
 const double Qcf[6] =                  // Flow Conversion Factors:
-      { 1.0,     448.831, 0.64632,     // cfs, gpm, mgd --> cfs
-        0.02832, 28.317,  2.4466 };    // cms, lps, mld --> cfs
+#endif 
+    {1.0,     448.831, 0.64632,        // cfs, gpm, mgd --> cfs
+     0.02832, 28.317,  2.4466 };       // cms, lps, mld --> cfs
 
 //-----------------------------------------------------------------------------
 //  Shared variables

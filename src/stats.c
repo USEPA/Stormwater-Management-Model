@@ -34,6 +34,7 @@
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #if defined(_OPENMP)
   #include <omp.h>                                                             //(5.1.008)
