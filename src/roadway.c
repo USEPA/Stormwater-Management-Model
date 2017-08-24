@@ -24,7 +24,7 @@
 #include <math.h>
 #include "headers.h"
 
-static enum RoadSurface {PAVED = 1, GRAVEL};
+enum RoadSurface {PAVED = 1, GRAVEL};
 
 //-----------------------------------------------------------------------------
 //  Constants

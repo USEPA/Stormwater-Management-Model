@@ -36,6 +36,7 @@
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
+#include <string.h>
 #include <stdlib.h>
 #include <math.h>
 #include "headers.h"

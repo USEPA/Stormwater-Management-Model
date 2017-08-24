@@ -86,8 +86,14 @@ static int        RdiiFileType;        // type (binary/text) of RDII file
 //-----------------------------------------------------------------------------
 // Imported Variables
 //-----------------------------------------------------------------------------
-extern double     Qcf[];               // flow units conversion factors
+#ifdef __cplusplus
+extern const double Qcf[];             // flow units conversion factors
                                        // (see swmm5.c)
+#else
+extern double Qcf[];                   // flow units conversion factors
+                                       // (see swmm5.c)
+#endif 
+
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
 //-----------------------------------------------------------------------------
