@@ -3,7 +3,7 @@
 ORD Stormwater Management Model (aka "SWMM")
 
 ## Build status
-[![Build Status](https://travis-ci.org/OpenWaterAnalytics/Stormwater-Management-Model.svg?branch=master)](https://travis-ci.org/OpenWaterAnalytics/Stormwater-Management-Model)
+[![Build Status](https://travis-ci.org/OpenWaterAnalytics/Stormwater-Management-Model.svg?branch=develop)](https://travis-ci.org/OpenWaterAnalytics/Stormwater-Management-Model)
 [![Build status](https://ci.appveyor.com/api/projects/status/qqadv5br6k0w0vy0?svg=true)](https://ci.appveyor.com/project/OpenWaterAnalytics/stormwater-management-model)
 [![CircleCI](https://circleci.com/gh/OpenWaterAnalytics/Stormwater-Management-Model/tree/develop.svg?style=shield)](https://circleci.com/gh/OpenWaterAnalytics/Stormwater-Management-Model/tree/develop)
 
