@@ -89,7 +89,6 @@ FILES_FAILING_FORMAT_CHECK = [
     'src/table.c',
     'src/text.h',
     'src/toolkitAPI.c',
-    'src/toolkitAPI.h',
     'src/toposort.c',
     'src/transect.c',
     'src/treatmnt.c',

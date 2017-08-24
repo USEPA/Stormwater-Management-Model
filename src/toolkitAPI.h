@@ -34,20 +34,6 @@ extern "C" {
 void DLLEXPORT swmm_getAPIError(int errcode, char *s);
 
 // Input API Exportable Functions
-/**
- @brief runs a complete EPANET simulation
- @param inpFile pointer to name of input file (must exist)
- @param rptFile pointer to name of report file (to be created)
- @param binOutFile pointer to name of binary output file (to be created)
- @param callback a callback function that takes a character string (char *) as
- its only parameter.
- @return error code
-
- The callback function should reside in and be used by the calling
- code to display the progress messages that EPANET generates
- as it carries out its computations. If this feature is not
- needed then the argument should be NULL.
- */
 int DLLEXPORT swmm_getSimulationUnit(int type, int *value);
 int DLLEXPORT swmm_getSimulationAnalysisSetting(int type, int *value);
 int DLLEXPORT swmm_getSimulationParam(int type, double *value);
