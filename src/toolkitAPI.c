@@ -841,7 +841,14 @@ int DLLEXPORT swmm_getOutfallStats(int index, TOutfallStats *outfallStats)
 	if (errorcode == 0)
 	{
 		// Current Average Flow
-		outfallStats->avgFlow *= (UCF(FLOW) / StepCount);
+        if ( outfallStats->totalPeriods > 0 )
+		{
+			outfallStats->avgFlow *= (UCF(FLOW) / outfallStats->totalPeriods);
+		}
+        else
+		{
+			outfallStats->avgFlow *= 0.0;
+		}
 		// Current Maximum Flow
 		outfallStats->maxFlow *= UCF(FLOW);
 		// Convert Mass Units
@@ -922,7 +929,14 @@ int DLLEXPORT swmm_getPumpStats(int index, TPumpStats *pumpStats)
 		// Cumulative Minimum Flow
 		pumpStats->minFlow *= UCF(FLOW);
 		// Cumulative Average Flow
-		pumpStats->avgFlow *= (UCF(FLOW) / StepCount);
+		if (pumpStats->totalPeriods > 0)
+		{
+			pumpStats->avgFlow *= (UCF(FLOW) / pumpStats->totalPeriods);
+		}
+		else
+		{
+			pumpStats->avgFlow *= 0.0;
+		}
 		// Cumulative Maximum Flow
 		pumpStats->maxFlow *= UCF(FLOW);
 		// Cumulative Pumping Volume
