@@ -774,7 +774,7 @@ int DLLEXPORT swmm_getNodeStats(int index, TNodeStats *nodeStats)
 	if (errorcode == 0)
 	{
 		// Current Average Depth
-		nodeStats->avgDepth *= (UCF(LENGTH) / StepCount);
+		nodeStats->avgDepth *= (UCF(LENGTH) / (double)StepCount);
 		// Current Maximum Depth
 		nodeStats->maxDepth *= UCF(LENGTH);
 		// Current Maximum Lateral Inflow
@@ -800,6 +800,24 @@ int DLLEXPORT swmm_getNodeStats(int index, TNodeStats *nodeStats)
 	return (errorcode);
 }
 
+int DLLEXPORT swmm_getNodeTotalInflow(int index, double *value)
+//
+// Input:   Node Index
+// Output: 	Node Total inflow Volume.
+// Return: 	API Error
+// Purpose: Get Node Total Inflow Volume.
+{
+
+	int errorcode = massbal_getNodeTotalInflow(index, value);
+
+	if (errorcode == 0)
+	{
+		*value *= UCF(VOLUME);
+	}
+
+	return(errorcode);
+}
+
 int DLLEXPORT swmm_getStorageStats(int index, TStorageStats *storageStats)
 //
 // Output: 	Storage Node Stats Structure (TStorageStats)
@@ -813,7 +831,7 @@ int DLLEXPORT swmm_getStorageStats(int index, TStorageStats *storageStats)
 		// Initial Volume
 		storageStats->initVol *= UCF(VOLUME);
 		// Current Average Volume
-		storageStats->avgVol *= (UCF(VOLUME) / StepCount);
+		storageStats->avgVol *= (UCF(VOLUME) / (double)StepCount);
 		// Current Maximum Volume
 		storageStats->maxVol *= UCF(VOLUME);
 		// Current Maximum Flow
@@ -843,7 +861,7 @@ int DLLEXPORT swmm_getOutfallStats(int index, TOutfallStats *outfallStats)
 		// Current Average Flow
         if ( outfallStats->totalPeriods > 0 )
 		{
-			outfallStats->avgFlow *= (UCF(FLOW) / outfallStats->totalPeriods);
+			outfallStats->avgFlow *= (UCF(FLOW) / (double)outfallStats->totalPeriods);
 		}
         else
 		{
@@ -931,7 +949,7 @@ int DLLEXPORT swmm_getPumpStats(int index, TPumpStats *pumpStats)
 		// Cumulative Average Flow
 		if (pumpStats->totalPeriods > 0)
 		{
-			pumpStats->avgFlow *= (UCF(FLOW) / pumpStats->totalPeriods);
+			pumpStats->avgFlow *= (UCF(FLOW) / (double)pumpStats->totalPeriods);
 		}
 		else
 		{

@@ -69,6 +69,7 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr);
 int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr);
 
 int DLLEXPORT swmm_getNodeStats(int index, TNodeStats *nodeStats);
+int DLLEXPORT swmm_getNodeTotalInflow(int index, double *value);
 int DLLEXPORT swmm_getStorageStats(int index, TStorageStats *storageStats);
 int DLLEXPORT swmm_getOutfallStats(int index, TOutfallStats *outfallStats);
 void DLLEXPORT swmm_freeOutfallStats(TOutfallStats *outfallStats);

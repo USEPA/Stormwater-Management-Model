@@ -295,6 +295,7 @@ double  massbal_getFlowError(void);
 int     massbal_getRoutingFlowTotal(TRoutingTotals *routingTot);      // For API
 int     massbal_getRunoffTotal(TRunoffTotals *runoffTot);             // For API
 double  massbal_getTotalArea(void);                                  // For API
+int     massbal_getNodeTotalInflow(int index, double *value);             // For API
 
 //-----------------------------------------------------------------------------
 //   Simulation Statistics Methods
