@@ -308,6 +308,7 @@ void    stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
         int steadyState);
 void    stats_updateSubcatchStats(int subcatch, double rainVol, double runonVol,
         double evapVol, double infilVol, double runoffVol, double runoff);
+void	stats_updateSubcatchBuildup(int subcatch);
 void    stats_updateGwaterStats(int j, double infil, double evap,              //(5.1.008)
         double latFlow, double deepFlow, double theta, double waterTable,      //(5.1.008)
         double tStep);                                                         //(5.1.008)

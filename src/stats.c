@@ -56,6 +56,7 @@ static double          SysOutfallFlow;
 //  Exportable variables (shared with statsrpt.c)
 //-----------------------------------------------------------------------------
 TSubcatchStats* SubcatchStats;
+TSubcatchBuildup* SubcatchBuildup;
 TNodeStats*     NodeStats;
 TLinkStats*     LinkStats;
 TStorageStats*  StorageStats;
@@ -77,6 +78,7 @@ extern double*         NodeOutflow;    // defined in massbal.c
 //  stats_close                   (called from swmm_end in swmm5.c)
 //  stats_report                  (called from swmm_end in swmm5.c)
 //  stats_updateSubcatchStats     (called from subcatch_getRunoff)
+// 	stats_updateSubcatchBuildup	  (called from subcatch_getRunoff)
 //  stats_updateGwaterStats       (called from gwater_getGroundwater)          //(5.1.008)
 //  stats_updateFlowStats         (called from routing_execute)
 //  stats_updateCriticalTimeCount (called from getVariableStep in dynwave.c)
@@ -99,7 +101,7 @@ int  stats_open()
 //  Purpose: opens the simulation statistics system.
 //
 {
-    int j, k;
+    int j, k, p;
 
     // --- set all pointers to NULL
     NodeStats = NULL;
@@ -128,6 +130,27 @@ int  stats_open()
             SubcatchStats[j].runoff  = 0.0;
             SubcatchStats[j].maxFlow = 0.0;
         }
+		
+	// --- allocate memory for & initialize subcatchment buildup structure
+	SubcatchBuildup = NULL;
+	if ( Nobjects[SUBCATCH] > 0)
+	{
+		SubcatchBuildup = (TSubcatchBuildup *) calloc(Nobjects[SUBCATCH],
+													sizeof(TSubcatchBuildup));
+		if ( !SubcatchBuildup )
+        {
+            report_writeErrorMsg(ERR_MEMORY, "");
+            return ErrorCode;
+		}
+		for ( j = 0; j < Nobjects[SUBCATCH]; j++ )
+		{	
+			for ( p = 0; p < Nobjects[POLLUT]; p++ )
+			{
+				
+				SubcatchBuildup[j].buildup[p] = 0.0;
+			}	
+		}		
+	}
 
 ////  Added to release 5.1.008.  ////                                          //(5.1.008)
 ////
@@ -296,6 +319,7 @@ void  stats_close()
     int j;
 
     FREE(SubcatchStats);
+	FREE(SubcatchBuildup);
     FREE(NodeStats);
     FREE(LinkStats);
     FREE(StorageStats); 
@@ -353,6 +377,23 @@ void   stats_updateSubcatchStats(int j, double rainVol, double runonVol,
     SubcatchStats[j].infil  += infilVol;
     SubcatchStats[j].runoff += runoffVol;
     SubcatchStats[j].maxFlow = MAX(SubcatchStats[j].maxFlow, runoff);
+}
+
+//=============================================================================
+
+void	stats_updateSubcatchBuildup(int j)
+//
+// Input: j = subcatchment index
+// Output: none
+// Purpose: updates buildup load (of all pollutants) for a specific subcatchment.
+//
+{
+	int p;
+	
+	for ( p = 0; p < Nobjects[POLLUT]; p++ )
+	{
+		SubcatchBuildup[j].buildup[p] = subcatch_getBuildup( j, p );
+	}
 }
 
 //=============================================================================

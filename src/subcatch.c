@@ -739,6 +739,9 @@ double subcatch_getRunoff(int j, double tStep)
         vOutflow = 0.0;
     }
 
+	// --- update subcatchment's surface buildup
+	stats_updateSubcatchBuildup(j);
+	
     // --- update mass balances
     massbal_updateRunoffTotals(RUNOFF_RAINFALL, vRain);
     massbal_updateRunoffTotals(RUNOFF_EVAP, Vevap);
