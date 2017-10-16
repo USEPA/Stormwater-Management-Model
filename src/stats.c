@@ -55,15 +55,15 @@ static double          SysOutfallFlow;
 //-----------------------------------------------------------------------------
 //  Exportable variables (shared with statsrpt.c)
 //-----------------------------------------------------------------------------
-TSubcatchStats* SubcatchStats;
-TSubcatchBuildup* SubcatchBuildup;
-TNodeStats*     NodeStats;
-TLinkStats*     LinkStats;
-TStorageStats*  StorageStats;
-TOutfallStats*  OutfallStats;
-TPumpStats*     PumpStats;
-double          MaxOutfallFlow;
-double          MaxRunoffFlow;
+TSubcatchStats* 	SubcatchStats;
+TSubcatchBuildup* 	SubcatchBuildup;
+TNodeStats*     	NodeStats;
+TLinkStats*     	LinkStats;
+TStorageStats*  	StorageStats;
+TOutfallStats*  	OutfallStats;
+TPumpStats*     	PumpStats;
+double          	MaxOutfallFlow;
+double          	MaxRunoffFlow;
 
 //-----------------------------------------------------------------------------
 //  Imported variables
@@ -1088,3 +1088,40 @@ int stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats)
 	}
 	return errorcode;
 }
+
+int stats_getSubcatchBuildup(int index, TSubcatchBuildup *subcatchBuildup)
+//
+// Input:    index
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Subcatchment Buildup for toolkitAPI
+//
+{
+	int errorcode = 0;
+
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+	{
+		errorcode = ERR_API_INPUTNOTOPEN;
+	}
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[SUBCATCH])
+	{
+		errorcode = ERR_API_OBJECT_INDEX;
+	}
+
+	else
+	{
+		// Copy Structure
+		memcpy(subcatchBuildup, &SubcatchBuildup[index], sizeof(TSubcatchBuildup));
+	}
+	return errorcode;
+}
+

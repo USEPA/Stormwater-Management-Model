@@ -995,6 +995,19 @@ int DLLEXPORT swmm_getSubcatchStats(int index, TSubcatchStats *subcatchStats)
 	return (errorcode);		
 }
 
+int DLLEXPORT swmm_getSubcatchBuildup(int index, TSubcatchBuildup *subcatchBuildup)
+//
+// Output: 	Subcatchment Buildup Structure (TSubcatchBuildup)
+// Return: 	API Error
+// Purpose: Gets Subcatchment Buildup
+{
+	int errorcode = stats_getSubcatchBuildup(index, subcatchBuildup);
+
+	// KMR NOTE: NOT WORRYING ABOUT UNITS RIGHT NOW B/C DEALING WITH COUNTS
+	
+	return (errorcode);
+}
+
 
 int DLLEXPORT swmm_getSystemRoutingStats(TRoutingTotals *routingTot)
 //

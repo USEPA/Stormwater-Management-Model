@@ -322,6 +322,7 @@ int  stats_getOutfallStat(int index, TOutfallStats *outfallStats);              
 int  stats_getLinkStat(int index, TLinkStats *linkStats);                       // For API
 int  stats_getPumpStat(int index, TPumpStats *pumpStats);                       // For API
 int  stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats);           // For API
+int  stats_getSubcatchBuildup(int index, TSubcatchBuildup *subcatchBuildup);	// For API
 
 //-----------------------------------------------------------------------------
 //   Raingage Methods
