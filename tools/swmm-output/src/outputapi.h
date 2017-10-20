@@ -1,5 +1,5 @@
 /*
-* outputAPI.h
+* outputAPI.h - SWMM
 *
 *      Author: Colleen Barr
 *      Modified by: Michael Tryby,
@@ -14,45 +14,25 @@
 #define MAXFILENAME     259   // Max characters in file path
 #define MAXELENAME       31   // Max characters in element name
 
-/*------------------- Error Messages --------------------*/
-#define ERR410 "Error 410: SMO_init() has not been called"
-#define ERR411 "Error 411: SMO_open() has not been called"
-#define ERR414 "Error 414: memory allocation failure"
-
-#define ERR421 "Input Error 421: invalid parameter code"
-#define ERR422 "Input Error 422: reporting period index out of range"
-#define ERR423 "Input Error 423: element index out of range"
-#define ERR424 "Input Error 424: no memory allocated for results"
-
-#define ERR434 "File Error 434: unable to open binary output file"
-#define ERR435 "File Error 435: invalid file - not created by SWMM"
-#define ERR436 "File Error 436: invalid file - contains no results"
-#define ERR437 "File Error 437: invalid file - model run issued warnings"
-
-#define ERR440 "ERROR 440: an unspecified error has occurred"
-
-
-typedef struct SMOutputAPI SMOutputAPI; // opaque pointer
+// This is an opaque pointer to struct. Do not access variables.
+typedef void* SMO_Handle;
 
 typedef enum {
 	subcatchCount,
 	nodeCount,
 	linkCount,
 	pollutantCount
-
 } SMO_elementCount;
 
 typedef enum {
 	flow_rate,
 	concentration
-
 } SMO_unit;
 
 typedef enum {
 	//getSeries,
 	getAttribute,
 	getResult
-
 } SMO_apiFunction;
 
 typedef enum {
@@ -60,14 +40,12 @@ typedef enum {
 	node,
 	link,
 	sys
-
 } SMO_elementType;
 
 typedef enum {
 //	reportStart,
 	reportStep,
 	numPeriods
-
 } SMO_time;
 
 typedef enum {
@@ -80,7 +58,6 @@ typedef enum {
 	gwtable_elev,    		// (ft or m),
 	soil_moisture,			// unsaturated zone moisture content (-),
 	pollutant_conc_subcatch	// first pollutant
-
 } SMO_subcatchAttribute;
 
 typedef enum {
@@ -91,7 +68,6 @@ typedef enum {
 	total_inflow,          	// lateral + upstream (flow units),
 	flooding_losses,       	// (flow units),
 	pollutant_conc_node     // first pollutant,
-
 } SMO_nodeAttribute;
 
 typedef enum {
@@ -101,7 +77,6 @@ typedef enum {
 	flow_volume,			// (ft3 or m3),
 	capacity,       		// (fraction of conduit filled),
 	pollutant_conc_link  	// first pollutant,
-
 } SMO_linkAttribute;
 
 typedef enum {
@@ -137,54 +112,58 @@ typedef enum {
   #endif
 #endif
 
-SMOutputAPI* DLLEXPORT SMO_init(void);
-int DLLEXPORT SMO_open(SMOutputAPI* smoapi, const char* path);
-
-int DLLEXPORT SMO_getProjectSize(SMOutputAPI* smoapi, SMO_elementCount code,
+int DLLEXPORT SMO_init(SMO_Handle* p_handle);
+int DLLEXPORT SMO_close(SMO_Handle* p_handle);
+int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path);
+int DLLEXPORT SMO_getVersion(SMO_Handle p_handle, int* version);
+int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, SMO_elementCount code,
 		int* count);
 
-int DLLEXPORT SMO_getUnits(SMOutputAPI* smoapi, SMO_unit code, int* unitFlag);
-int DLLEXPORT SMO_getStartTime(SMOutputAPI* smoapi, double* time);
-int DLLEXPORT SMO_getTimes(SMOutputAPI* smoapi, SMO_time code, int* time);
+int DLLEXPORT SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag);
+int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int pollutantIndex,
+		int* unitFlag);
 
-int DLLEXPORT SMO_getElementName(SMOutputAPI* smoapi, SMO_elementType type,
+int DLLEXPORT SMO_getStartDate(SMO_Handle p_handle, double* date);
+int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time);
+int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
 		int elementIndex, char* elementName, int length);
 
-float* DLLEXPORT SMO_newOutValueSeries(SMOutputAPI* smoapi, long seriesStart,
-	long seriesLength, long* length, int* errcode);
-float* DLLEXPORT SMO_newOutValueArray(SMOutputAPI* smoapi, SMO_apiFunction func,
-		SMO_elementType type, long* length, int* errcode);
+//float* DLLEXPORT SMO_newOutValueSeries(SMO_Handle* p_handle, long seriesStart,
+//	long seriesLength, long* length, int* errcode);
+//float* DLLEXPORT SMO_newOutValueArray(SMO_Handle* p_handle, SMO_apiFunction func,
+//		SMO_elementType type, long* length, int* errcode);
 
-int DLLEXPORT SMO_getSubcatchSeries(SMOutputAPI* smoapi, int subcatchIndex,
-	SMO_subcatchAttribute attr, long timeIndex, long length, float* outValueSeries);
-int DLLEXPORT SMO_getNodeSeries(SMOutputAPI* smoapi, int nodeIndex, SMO_nodeAttribute attr,
-	long timeIndex, long length, float* outValueSeries);
-int DLLEXPORT SMO_getLinkSeries(SMOutputAPI* smoapi, int linkIndex, SMO_linkAttribute attr,
-	long timeIndex, long length, float* outValueSeries);
-int DLLEXPORT SMO_getSystemSeries(SMOutputAPI* smoapi, SMO_systemAttribute attr,
-	long timeIndex, long length, float *outValueSeries);
+int DLLEXPORT SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
+	SMO_subcatchAttribute attr, int startPeriod, int endPeriod, float** outValueSeries, int* dim);
+int DLLEXPORT SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex, SMO_nodeAttribute attr,
+	int startPeriod, int endPeriod, float** outValueSeries, int* dim);
+int DLLEXPORT SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex, SMO_linkAttribute attr,
+	int startPeriod, int endPeriod, float** outValueSeries, int* dim);
+int DLLEXPORT SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute attr,
+	int startPeriod, int endPeriod, float** outValueSeries, int* dim);
 
-int DLLEXPORT SMO_getSubcatchAttribute(SMOutputAPI* smoapi, long timeIndex,
-	SMO_subcatchAttribute attr, float* outValueArray);
-int DLLEXPORT SMO_getNodeAttribute(SMOutputAPI* smoapi, long timeIndex,
-	SMO_nodeAttribute attr, float* outValueArray);
-int DLLEXPORT SMO_getLinkAttribute(SMOutputAPI* smoapi, long timeIndex,
-	SMO_linkAttribute attr, float* outValueArray);
-int DLLEXPORT SMO_getSystemAttribute(SMOutputAPI* smoapi, long timeIndex,
-	SMO_systemAttribute attr, float* outValueArray);
+int DLLEXPORT SMO_getSubcatchAttribute(SMO_Handle p_handle, int timeIndex,
+	SMO_subcatchAttribute attr, float** outValueArray, int* length);
+int DLLEXPORT SMO_getNodeAttribute(SMO_Handle p_handle, int timeIndex,
+	SMO_nodeAttribute attr, float** outValueArray, int* length);
+int DLLEXPORT SMO_getLinkAttribute(SMO_Handle p_handle, int timeIndex,
+	SMO_linkAttribute attr, float** outValueArray, int* length);
+int DLLEXPORT SMO_getSystemAttribute(SMO_Handle p_handle, int timeIndex,
+	SMO_systemAttribute attr, float** outValue, int* length);
 
-int DLLEXPORT SMO_getSubcatchResult(SMOutputAPI* smoapi, long timeIndex,
-	int subcatchIndex, float* outValueArray, int* arrayLength);
-int DLLEXPORT SMO_getNodeResult(SMOutputAPI* smoapi, long timeIndex,
-	int nodeIndex, float* outValueArray, int* arrayLength);
-int DLLEXPORT SMO_getLinkResult(SMOutputAPI* smoapi, long timeIndex,
-	int linkIndex, float* outValueArray, int* arrayLength);
-int DLLEXPORT SMO_getSystemResult(SMOutputAPI* smoapi, long timeIndex,
-	int dummyIndex, float* outValueArray, int* arrayLength);
+int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, long timeIndex,
+	int subcatchIndex, float** outValueArray, int* arrayLength);
+int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, long timeIndex,
+	int nodeIndex, float** outValueArray, int* arrayLength);
+int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, long timeIndex,
+	int linkIndex, float** outValueArray, int* arrayLength);
+int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, long timeIndex,
+	int dummyIndex, float** outValueArray, int* arrayLength);
 
-void DLLEXPORT SMO_free(float *array);
+void DLLEXPORT SMO_free(void** array);
 
-int DLLEXPORT SMO_close(SMOutputAPI* smoapi);
-void DLLEXPORT SMO_errMessage(int errcode, char* errmsg, int n);
+void DLLEXPORT SMO_clearError(SMO_Handle p_handle_in);
+
+int DLLEXPORT SMO_checkError(SMO_Handle p_handle_in, char** msg_buffer);
 
 #endif /* OUTPUTAPI_H_ */

@@ -1,5 +1,5 @@
 /*
-* outputAPI.c
+* outputAPI.c - SWMM
 *
 *      Author: Colleen Barr
 *      Modified by: Michael E. Tryby,
@@ -11,7 +11,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "outputAPI.h"
+#include "outputapi.h"
+#include "errormanager.h"
+#include "messages.h"
 //#include "datetime.h"
 
 
@@ -35,7 +37,7 @@ typedef struct IDentry idEntry;
 //  Shared variables
 //-----------------------------------------------------------------------------
 
-struct SMOutputAPI {
+typedef struct {
 	char name[MAXFILENAME + 1];           // file path/name
 	FILE* file;                        // FILE structure pointer
 
@@ -61,140 +63,222 @@ struct SMOutputAPI {
 	F_OFF ObjPropPos;				   // file position where object properties start
 	F_OFF ResultsPos;                  // file position where results start
 	F_OFF BytesPerPeriod;              // bytes used for results in each period
-};
+
+	error_handle_t* error_handle;
+} data_t;
+
+typedef data_t* p_data_t;
 
 //-----------------------------------------------------------------------------
 //   Local functions
 //-----------------------------------------------------------------------------
-int    validateFile(SMOutputAPI* smoapi);
-void   initElementNames(SMOutputAPI* smoapi);
+void errorLookup(int errcode, char* errmsg, int length);
+int    validateFile(p_data_t p_data);
+void   initElementNames(p_data_t p_data);
 
-double getTimeValue(SMOutputAPI* smoapi, long timeIndex);
-float  getSubcatchValue(SMOutputAPI* smoapi, long timeIndex, int subcatchIndex, SMO_subcatchAttribute attr);
-float  getNodeValue(SMOutputAPI* smoapi, long timeIndex, int nodeIndex, SMO_nodeAttribute attr);
-float  getLinkValue(SMOutputAPI* smoapi, long timeIndex, int linkIndex, SMO_linkAttribute attr);
-float  getSystemValue(SMOutputAPI* smoapi, long timeIndex, SMO_systemAttribute attr);
+double getTimeValue(p_data_t p_data, long timeIndex);
+float  getSubcatchValue(p_data_t p_data, long timeIndex, int subcatchIndex, SMO_subcatchAttribute attr);
+float  getNodeValue(p_data_t p_data, long timeIndex, int nodeIndex, SMO_nodeAttribute attr);
+float  getLinkValue(p_data_t p_data, long timeIndex, int linkIndex, SMO_linkAttribute attr);
+float  getSystemValue(p_data_t p_data, long timeIndex, SMO_systemAttribute attr);
+
+float* newArray(int n);
 
 
-SMOutputAPI* DLLEXPORT SMO_init(void)
+int DLLEXPORT SMO_init(SMO_Handle* p_handle)
+//  Purpose: Initialized pointer for the opaque SMO_Handle.
 //
-//  Purpose: Returns an initialized pointer for the opaque SMOutputAPI
-//    structure.
+//  Returns: Error code 0 on success, -1 on failure
 //
-{
-	SMOutputAPI *smoapi = malloc(sizeof(struct SMOutputAPI));
-	smoapi->elementNames = NULL;
-
-	return smoapi;
-}
-
-int DLLEXPORT SMO_open(SMOutputAPI* smoapi, const char* path)
-//
-//  Purpose: Open the output binary file and read the header.
-//
-{
-	int version, err, errorcode = 0;
-	F_OFF offset;
-
-    if (smoapi == NULL) errorcode = 410;
-    else
-    {
-    	strncpy(smoapi->name, path, MAXFILENAME);
-
-    	// --- open the output file
-    	if ((smoapi->file = fopen(path, "rb")) == NULL) errorcode = 434;
-    	// --- validate the output file
-    	else if ((err = validateFile(smoapi)) != 0) errorcode = err;
-
-    	else {
-    		// --- otherwise read additional parameters from start of file
-    		fread(&version, RECORDSIZE, 1, smoapi->file);
-    		fread(&(smoapi->FlowUnits), RECORDSIZE, 1, smoapi->file);
-    		fread(&(smoapi->Nsubcatch), RECORDSIZE, 1, smoapi->file);
-    		fread(&(smoapi->Nnodes), RECORDSIZE, 1, smoapi->file);
-    		fread(&(smoapi->Nlinks), RECORDSIZE, 1, smoapi->file);
-    		fread(&(smoapi->Npolluts), RECORDSIZE, 1, smoapi->file);
-
-    		// Skip over saved subcatch/node/link input values
-    		offset = (smoapi->Nsubcatch + 2) * RECORDSIZE  // Subcatchment area
-    			+ (3 * smoapi->Nnodes + 4) * RECORDSIZE  // Node type, invert & max depth
-				+ (5 * smoapi->Nlinks + 6) * RECORDSIZE; // Link type, z1, z2, max depth & length
-    		offset += smoapi->ObjPropPos;
-
-    		// Read number & codes of computed variables
-    		fseeko64(smoapi->file, offset, SEEK_SET);
-    		fread(&(smoapi->SubcatchVars), RECORDSIZE, 1, smoapi->file); // # Subcatch variables
-
-    		fseeko64(smoapi->file, smoapi->SubcatchVars*RECORDSIZE, SEEK_CUR);
-    		fread(&(smoapi->NodeVars), RECORDSIZE, 1, smoapi->file);     // # Node variables
-
-    		fseeko64(smoapi->file, smoapi->NodeVars*RECORDSIZE, SEEK_CUR);
-    		fread(&(smoapi->LinkVars), RECORDSIZE, 1, smoapi->file);     // # Link variables
-
-    		fseeko64(smoapi->file, smoapi->LinkVars*RECORDSIZE, SEEK_CUR);
-    		fread(&(smoapi->SysVars), RECORDSIZE, 1, smoapi->file);     // # System variables
-
-    		// --- read data just before start of output results
-    		offset = smoapi->ResultsPos - 3 * RECORDSIZE;
-    		fseeko64(smoapi->file, offset, SEEK_SET);
-    		fread(&(smoapi->StartDate), DATESIZE, 1, smoapi->file);
-    		fread(&(smoapi->ReportStep), RECORDSIZE, 1, smoapi->file);
-
-    		// --- compute number of bytes of results values used per time period
-    		smoapi->BytesPerPeriod = DATESIZE +
-    				(smoapi->Nsubcatch*smoapi->SubcatchVars +
-    						smoapi->Nnodes*smoapi->NodeVars +
-							smoapi->Nlinks*smoapi->LinkVars +
-							smoapi->SysVars)*RECORDSIZE;
-    	}
-    }
-
-	if (errorcode)
-		SMO_close(smoapi);
-
-	return errorcode;
-
-}
-
-int DLLEXPORT SMO_getProjectSize(SMOutputAPI* smoapi, SMO_elementCount code, int* count)
-//
-//   Purpose: Returns project size.
+//  Note: The existence of this function has been carefully considered.
+//   Don't change it.
 //
 {
 	int errorcode = 0;
+	data_t* priv_data;
 
-	*count = -1;
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
+	// Allocate memory for private data
+	priv_data = (data_t*)calloc(1, sizeof(data_t));
+
+	if (priv_data != NULL){
+		priv_data->error_handle = new_errormanager(&errorLookup);
+		*p_handle = priv_data;
+	}
+	else
+		errorcode = -1;
+
+    // TODO: Need to handle errors during initialization better.
+	return errorcode;
+}
+
+int DLLEXPORT SMO_close(SMO_Handle* p_handle)
+//
+//   Purpose: Clean up after and close Output API
+//
+{
+	p_data_t p_data;
+	int i, n, errorcode = 0;
+
+	p_data = *p_handle;
+
+	if (p_data == NULL || p_data->file == NULL)
+		errorcode = -1;
+
 	else
 	{
-		switch (code)
+		if (p_data->elementNames != NULL)
 		{
-		case subcatchCount:
-			*count = smoapi->Nsubcatch;
-			break;
+			n = p_data->Nsubcatch + p_data->Nnodes + p_data->Nlinks + p_data->Npolluts;
 
-		case nodeCount:
-			*count = smoapi->Nnodes;
-			break;
-
-		case linkCount:
-			*count = smoapi->Nlinks;
-			break;
-
-		case pollutantCount:
-			*count = smoapi->Npolluts;
-			break;
-
-		default:
-			errorcode = 421;
+			for(i = 0; i < n; i++)
+				free(p_data->elementNames[i].IDname);
 		}
+
+		dst_errormanager(p_data->error_handle);
+
+		fclose(p_data->file);
+		free(p_data);
+
+		*p_handle = NULL;
 	}
 
 	return errorcode;
 }
 
-int DLLEXPORT SMO_getUnits(SMOutputAPI* smoapi, SMO_unit code, int* unitFlag)
+int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path)
+//
+//  Purpose: Open the output binary file and read the header.
+//
+{
+	int err, errorcode = 0;
+	F_OFF offset;
+
+	p_data_t p_data;
+
+	p_data = p_handle;
+
+	if (p_data == NULL) return -1;
+    else
+    {
+    	strncpy(p_data->name, path, MAXFILENAME);
+
+    	// --- open the output file
+    	if ((p_data->file = fopen(path, "rb")) == NULL) errorcode = 434;
+    	// --- validate the output file
+    	else if ((err = validateFile(p_data)) != 0) errorcode = err;
+
+    	else {
+    		// --- otherwise read additional parameters from start of file
+    		fseek(p_data->file, 2*RECORDSIZE, SEEK_SET);
+    		fread(&(p_data->Nsubcatch), RECORDSIZE, 1, p_data->file);
+    		fread(&(p_data->Nnodes), RECORDSIZE, 1, p_data->file);
+    		fread(&(p_data->Nlinks), RECORDSIZE, 1, p_data->file);
+    		fread(&(p_data->Npolluts), RECORDSIZE, 1, p_data->file);
+
+    		// Compute offset for saved subcatch/node/link input values
+    		offset = (p_data->Nsubcatch + 2) * RECORDSIZE  // Subcatchment area
+    			+ (3 * p_data->Nnodes + 4) * RECORDSIZE  // Node type, invert & max depth
+				+ (5 * p_data->Nlinks + 6) * RECORDSIZE; // Link type, z1, z2, max depth & length
+    		offset += p_data->ObjPropPos;
+
+    		// Read number & codes of computed variables
+    		fseeko64(p_data->file, offset, SEEK_SET);
+    		fread(&(p_data->SubcatchVars), RECORDSIZE, 1, p_data->file); // # Subcatch variables
+
+    		fseeko64(p_data->file, p_data->SubcatchVars*RECORDSIZE, SEEK_CUR);
+    		fread(&(p_data->NodeVars), RECORDSIZE, 1, p_data->file);     // # Node variables
+
+    		fseeko64(p_data->file, p_data->NodeVars*RECORDSIZE, SEEK_CUR);
+    		fread(&(p_data->LinkVars), RECORDSIZE, 1, p_data->file);     // # Link variables
+
+    		fseeko64(p_data->file, p_data->LinkVars*RECORDSIZE, SEEK_CUR);
+    		fread(&(p_data->SysVars), RECORDSIZE, 1, p_data->file);     // # System variables
+
+    		// --- read data just before start of output results
+    		offset = p_data->ResultsPos - 3 * RECORDSIZE;
+    		fseeko64(p_data->file, offset, SEEK_SET);
+    		fread(&(p_data->StartDate), DATESIZE, 1, p_data->file);
+    		fread(&(p_data->ReportStep), RECORDSIZE, 1, p_data->file);
+
+    		// --- compute number of bytes of results values used per time period
+    		p_data->BytesPerPeriod = DATESIZE +
+    				(p_data->Nsubcatch*p_data->SubcatchVars +
+    						p_data->Nnodes*p_data->NodeVars +
+							p_data->Nlinks*p_data->LinkVars +
+							p_data->SysVars)*RECORDSIZE;
+    	}
+    }
+
+	if (errorcode)
+		SMO_close(&p_handle);
+
+	return errorcode;
+}
+
+int DLLEXPORT SMO_getVersion(SMO_Handle p_handle, int* version)
+//
+//  Input:   p_handle = pointer to SMO_Handle struct
+//  Output:  version SWMM version
+//  Returns: error code
+//
+//  Purpose: Returns SWMM version that wrote binary file
+//
+{
+	int errorcode = 0;
+	p_data_t p_data;
+
+	p_data = p_handle;
+
+	if (p_data == NULL) return -1;
+	else
+	{
+		fseek(p_data->file, 1*RECORDSIZE, SEEK_SET);
+		if (fread(version, RECORDSIZE, 1, p_data->file) != 1)
+			errorcode = 436;
+	}
+
+	return set_error(p_data->error_handle, errorcode);
+
+}
+
+int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, SMO_elementCount code, int* count)
+//
+//   Purpose: Returns project size.
+//
+{
+	int errorcode = 0;
+	p_data_t p_data;
+
+	*count = -1;
+
+	p_data = p_handle;
+
+    if (p_data == NULL) errorcode = -1;
+	else
+	{
+		switch (code)
+		{
+		case subcatchCount:
+			*count = p_data->Nsubcatch;
+			break;
+		case nodeCount:
+			*count = p_data->Nnodes;
+			break;
+		case linkCount:
+			*count = p_data->Nlinks;
+			break;
+		case pollutantCount:
+			*count = p_data->Npolluts;
+			break;
+		default:
+			errorcode = 421;
+		}
+	}
+
+	return set_error(p_data->error_handle, errorcode);
+}
+
+int DLLEXPORT SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag)
 //
 //   Purpose: Returns flow rate units.
 //
@@ -208,87 +292,97 @@ int DLLEXPORT SMO_getUnits(SMOutputAPI* smoapi, SMO_unit code, int* unitFlag)
 //
 {
 	int errorcode = 0;
+	p_data_t p_data;
 
 	*unitFlag = -1;
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
+
+	p_data = p_handle;
+
+	if (p_data == NULL) return -1;
 	else
 	{
-		switch (code)
-		{
-		case flow_rate:			*unitFlag = smoapi->FlowUnits;
-			break;
-//		case concentration:		*unitFlag = ConcUnits;
-//			break;
-		default:                errorcode = 421;
-		}
+		fseek(p_data->file, 2*RECORDSIZE, SEEK_SET);
+		fread(unitFlag, RECORDSIZE, 1, p_data->file);
 	}
 
-	return errorcode;
+	return set_error(p_data->error_handle, errorcode);
 }
 
-
-int DLLEXPORT SMO_getPollutantUnits(SMOutputAPI* smoapi, int pollutantIndex, int* unitFlag)
+int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int pollutantIndex, int* unitFlag)
 //
-//   Purpose: Return integer flag representing the units that the given pollutant is measured in.
-//	          Concentration units are located after the pollutant ID names and before the object properties start,
-//			  and are stored for each pollutant.  They're stored as 4-byte integers with the following codes:
-//		          0: mg/L
-//				  1: ug/L
-//				  2: count/L
+//   Purpose:
+//     Return integer flag representing the units that the given pollutant is
+//     measured in. Concentration units are located after the pollutant ID
+//     names and before the object properties start, and are stored for each
+//     pollutant.  They're stored as 4-byte integers with the following codes:
+//       0: mg/L
+//       1: ug/L
+//       2: count/L
 //
-//   pollutantIndex: valid values are 0 to Npolluts-1
+//   Args:
+//     pollutantIndex: valid values are 0 to Npolluts-1
 {
 	int errorcode = 0;
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
-	else if (pollutantIndex < 0 || pollutantIndex >= smoapi->Npolluts) errorcode = 423;
+	F_OFF offset;
+	p_data_t p_data;
+
+	*unitFlag = -1;
+
+	p_data = p_handle;
+
+	if (p_data == NULL) errorcode = -1;
+    else if (p_data->file == NULL) errorcode = 411;
+	else if (pollutantIndex < 0 || pollutantIndex >= p_data->Npolluts) errorcode = 423;
     else
     {
-        int offset = smoapi->ObjPropPos - (smoapi->Npolluts - pollutantIndex) * RECORDSIZE;
-        fseek(smoapi->file, offset, SEEK_SET);
-        fread(unitFlag, RECORDSIZE, 1, smoapi->file);
+        offset = p_data->ObjPropPos - (p_data->Npolluts - pollutantIndex) * RECORDSIZE;
+        fseek(p_data->file, offset, SEEK_SET);
+        fread(unitFlag, RECORDSIZE, 1, p_data->file);
     }
 
-	return errorcode;
+	return set_error(p_data->error_handle, errorcode);
 }
 
-
-int DLLEXPORT SMO_getStartTime(SMOutputAPI* smoapi, double* time)
+int DLLEXPORT SMO_getStartDate(SMO_Handle p_handle, double* date)
 //
 //	Purpose: Returns start date.
 //
 {
 	int errorcode = 0;
+	p_data_t p_data;
 
-	*time = -1;
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
+	*date = -1.0;
+
+	p_data = p_handle;
+
+    if (p_data == NULL) errorcode = -1;
 	else
-		*time = smoapi->StartDate;
+		*date = p_data->StartDate;
 
-	return errorcode;
+	return set_error(p_data->error_handle, errorcode);
 }
 
 
-int DLLEXPORT SMO_getTimes(SMOutputAPI* smoapi, SMO_time code, int* time)
+int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time)
 //
 //   Purpose: Returns step size and number of periods.
 //
 {
 	int errorcode = 0;
+	p_data_t p_data;
 
-	*time = -1;
+	*time = -1.0;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
+	p_data = p_handle;
+
+    if (p_data == NULL) errorcode = -1;
 	else
 	{
 		switch (code)
 		{
-		case reportStep:  *time = smoapi->ReportStep;
+		case reportStep:  *time = p_data->ReportStep;
 			break;
-		case numPeriods:  *time = smoapi->Nperiods;
+		case numPeriods:  *time = p_data->Nperiods;
 			break;
 		default:           errorcode = 421;
 		}
@@ -297,7 +391,7 @@ int DLLEXPORT SMO_getTimes(SMOutputAPI* smoapi, SMO_time code, int* time)
 	return errorcode;
 }
 
-int DLLEXPORT SMO_getElementName(SMOutputAPI* smoapi, SMO_elementType type,
+int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
 		int index, char* name, int length)
 //
 //  Purpose: Given an element index returns the element name.
@@ -308,42 +402,45 @@ int DLLEXPORT SMO_getElementName(SMOutputAPI* smoapi, SMO_elementType type,
 //
 {
 	int idx, errorcode = 0;
+	p_data_t p_data;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
+	p_data = p_handle;
+
+    if (p_data == NULL) errorcode = 410;
+    else if (p_data->file == NULL) errorcode = 411;
 	else
 	{
 		// Initialize the name array if necessary
-		if (smoapi->elementNames == NULL) initElementNames(smoapi);
+		if (p_data->elementNames == NULL) initElementNames(p_handle);
 
 		switch (type)
 		{
 		case subcatch:
-			if (index < 0 || index >= smoapi->Nsubcatch)
+			if (index < 0 || index >= p_data->Nsubcatch)
 				errorcode = 423;
 			else
 				idx = index;
 			break;
 
 		case node:
-			if (index < 0 || index >= smoapi->Nnodes)
+			if (index < 0 || index >= p_data->Nnodes)
 				errorcode = 423;
 			else
-				idx = smoapi->Nsubcatch + index;
+				idx = p_data->Nsubcatch + index;
 			break;
 
 		case link:
-			if (index < 0 || index >= smoapi->Nlinks)
+			if (index < 0 || index >= p_data->Nlinks)
 				errorcode = 423;
 			else
-				idx = smoapi->Nsubcatch + smoapi->Nnodes + index;
+				idx = p_data->Nsubcatch + p_data->Nnodes + index;
 			break;
 
 		case sys:
-			if (index < 0 || index >= smoapi->Npolluts)
+			if (index < 0 || index >= p_data->Npolluts)
 				errorcode = 423;
 			else
-				idx = smoapi->Nsubcatch + smoapi->Nnodes + smoapi->Nlinks + index;
+				idx = p_data->Nsubcatch + p_data->Nnodes + p_data->Nlinks + index;
 			break;
 
 		default:
@@ -351,477 +448,533 @@ int DLLEXPORT SMO_getElementName(SMOutputAPI* smoapi, SMO_elementType type,
 		}
 
 		if (!errorcode)
-			strncpy(name, smoapi->elementNames[idx].IDname, length);
+			strncpy(name, p_data->elementNames[idx].IDname, length);
 	}
 
 	return errorcode;
 }
 
 
-float* DLLEXPORT SMO_newOutValueSeries(SMOutputAPI* smoapi, long startPeriod,
-	long endPeriod, long* length, int* errcode)
+//float* DLLEXPORT SMO_newOutValueSeries(SMOutputAPI* smoapi, long startPeriod,
+//	long endPeriod, long* length, int* errcode)
+////
+////  Purpose: Allocates memory for outValue Series.
+////
+////  Warning: Caller must free memory allocated by this function using SMO_free().
+////
+//{
+//	long size;
+//	float* array;
 //
-//  Purpose: Allocates memory for outValue Series.
+//    if (smoapi == NULL) *errcode = 410;
+//    else if (smoapi->file == NULL) *errcode = 411;
+//	else if (startPeriod < 0 || endPeriod >= smoapi->Nperiods ||
+//			endPeriod <= startPeriod) *errcode = 422;
+//	else
+//	{
 //
-//  Warning: Caller must free memory allocated by this function using SMO_free().
+//		size = endPeriod - startPeriod;
+//		if (size > smoapi->Nperiods)
+//			size = smoapi->Nperiods;
 //
-{
-	long size;
-	float* array;
-
-    if (smoapi == NULL) *errcode = 410;
-    else if (smoapi->file == NULL) *errcode = 411;
-	else if (startPeriod < 0 || endPeriod >= smoapi->Nperiods ||
-			endPeriod <= startPeriod) *errcode = 422;
-	else
-	{
-
-		size = endPeriod - startPeriod;
-		if (size > smoapi->Nperiods)
-			size = smoapi->Nperiods;
-
-		array = (float*)calloc(size, sizeof(float));
-		*errcode = (MEMCHECK(array));
-
-		*length = size;
-		return array;
-	}
-
-	return NULL;
-}
-
-
-float* DLLEXPORT SMO_newOutValueArray(SMOutputAPI* smoapi, SMO_apiFunction func,
-	SMO_elementType type, long* length, int* errcode)
+//		array = (float*)calloc(size, sizeof(float));
+//		*errcode = (MEMCHECK(array));
 //
-// Purpose: Allocates memory for outValue Array.
+//		*length = size;
+//		return array;
+//	}
 //
-//  Warning: Caller must free memory allocated by this function using SMO_free().
+//	return NULL;
+//}
 //
-{
-	long size;
-	float* array;
+//
+//float* DLLEXPORT SMO_newOutValueArray(SMOutputAPI* smoapi, SMO_apiFunction func,
+//	SMO_elementType type, long* length, int* errcode)
+////
+//// Purpose: Allocates memory for outValue Array.
+////
+////  Warning: Caller must free memory allocated by this function using SMO_free().
+////
+//{
+//	long size;
+//	float* array;
+//
+//    if (smoapi == NULL) *errcode = 410;
+//    else if (smoapi->file == NULL) *errcode = 411;
+//	else
+//	{
+//		switch (func)
+//		{
+//		case getAttribute:
+//			if (type == subcatch)
+//				size = smoapi->Nsubcatch;
+//			else if (type == node)
+//				size = smoapi->Nnodes;
+//			else if (type == link)
+//				size = smoapi->Nlinks;
+//			else // system
+//				size = 1;
+//		break;
+//
+//		case getResult:
+//			if (type == subcatch)
+//				size = smoapi->SubcatchVars;
+//			else if (type == node)
+//				size = smoapi->NodeVars;
+//			else if (type == link)
+//				size = smoapi->LinkVars;
+//			else // system
+//				size = smoapi->SysVars;
+//		break;
+//
+//		default: *errcode = 421;
+//			return NULL;
+//		}
+//
+//		// Allocate memory for outValues
+//		array = (float*)calloc(size, sizeof(float));
+//		*errcode = (MEMCHECK(array));
+//
+//		*length = size;
+//		return array;
+//	}
+//
+//	return NULL;
+//}
 
-    if (smoapi == NULL) *errcode = 410;
-    else if (smoapi->file == NULL) *errcode = 411;
-	else
-	{
-		switch (func)
-		{
-		case getAttribute:
-			if (type == subcatch)
-				size = smoapi->Nsubcatch;
-			else if (type == node)
-				size = smoapi->Nnodes;
-			else if (type == link)
-				size = smoapi->Nlinks;
-			else // system
-				size = 1;
-		break;
 
-		case getResult:
-			if (type == subcatch)
-				size = smoapi->SubcatchVars;
-			else if (type == node)
-				size = smoapi->NodeVars;
-			else if (type == link)
-				size = smoapi->LinkVars;
-			else // system
-				size = smoapi->SysVars;
-		break;
-
-		default: *errcode = 421;
-			return NULL;
-		}
-
-		// Allocate memory for outValues
-		array = (float*)calloc(size, sizeof(float));
-		*errcode = (MEMCHECK(array));
-
-		*length = size;
-		return array;
-	}
-
-	return NULL;
-}
-
-
-int DLLEXPORT SMO_getSubcatchSeries(SMOutputAPI* smoapi, int subcatchIndex,
-	SMO_subcatchAttribute attr, long startPeriod, long length, float* outValueSeries)
+int DLLEXPORT SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
+	SMO_subcatchAttribute attr, int startPeriod, int endPeriod,
+	float** outValueSeries, int* dim)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
 //  start and length using timeIndex and length respectively.
 //
 {
-	int errorcode = 0;
+	int k, length, errorcode = 0;
+	float* temp;
+	p_data_t p_data;
 
-	long k;
+	p_data = p_handle;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
-	else if (subcatchIndex < 0 || subcatchIndex > smoapi->Nsubcatch) errorcode = 420;
-    else if (startPeriod < 0 || startPeriod >= smoapi->Nperiods ||
-        		length > smoapi->Nperiods) errorcode = 422;
-	else if (outValueSeries == NULL) errorcode = 424;
+    if (p_data == NULL) errorcode = -1;
+	else if (subcatchIndex < 0 || subcatchIndex > p_data->Nsubcatch) errorcode = 420;
+    else if (startPeriod < 0 || startPeriod >= p_data->Nperiods ||
+    		endPeriod <= startPeriod) errorcode = 422;
+	// Check memory for outValues
+	else if MEMCHECK(temp = newArray(length = endPeriod - startPeriod)) errorcode = 411;
 	else
 	{
 		// loop over and build time series
 		for (k = 0; k < length; k++)
-			outValueSeries[k] = getSubcatchValue(smoapi, startPeriod + k,
+			temp[k] = getSubcatchValue(p_handle, startPeriod + k,
 			subcatchIndex, attr);
+
+		*outValueSeries = temp;
+		*dim = length;
 	}
 
-	return errorcode;
+	return set_error(p_data->error_handle, errorcode);
 }
 
 
-int DLLEXPORT SMO_getNodeSeries(SMOutputAPI* smoapi, int nodeIndex, SMO_nodeAttribute attr,
-	long startPeriod, long length, float* outValueSeries)
+int DLLEXPORT SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex, SMO_nodeAttribute attr,
+		int startPeriod, int endPeriod, float** outValueSeries, int* dim)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
 //  start and length using timeIndex and length respectively.
 //
 {
-	int errorcode = 0;
+	int k, length, errorcode = 0;
+	float* temp;
+	p_data_t p_data;
 
-	long k;
+	p_data = p_handle;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
-	else if (nodeIndex < 0 || nodeIndex > smoapi->Nnodes) errorcode = 420;
-    else if (startPeriod < 0 || startPeriod >= smoapi->Nperiods ||
-        		length > smoapi->Nperiods) errorcode = 422;
-	else if (outValueSeries == NULL) errorcode = 424;
+    if (p_data == NULL) errorcode = -1;
+	else if (nodeIndex < 0 || nodeIndex > p_data->Nnodes) errorcode = 420;
+    else if (startPeriod < 0 || startPeriod >= p_data->Nperiods ||
+    		endPeriod <= startPeriod) errorcode = 422;
+	// Check memory for outValues
+	else if MEMCHECK(temp = newArray(length = endPeriod - startPeriod)) errorcode = 411;
 	else
 	{
 		// loop over and build time series
 		for (k = 0; k < length; k++)
-			outValueSeries[k] = getNodeValue(smoapi, startPeriod + k,
+			temp[k] = getNodeValue(p_handle, startPeriod + k,
 			nodeIndex, attr);
-	}
 
-	return errorcode;
+	    *outValueSeries = temp;
+	    *dim = length;
+    }
+
+    return set_error(p_data->error_handle, errorcode);
 }
 
 
-int DLLEXPORT SMO_getLinkSeries(SMOutputAPI* smoapi, int linkIndex, SMO_linkAttribute attr,
-	long startPeriod, long length, float* outValueSeries)
+int DLLEXPORT SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex, SMO_linkAttribute attr,
+		int startPeriod, int endPeriod, float** outValueSeries, int* dim)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
 //  start and length using timeIndex and length respectively.
 //
 {
-	int errorcode = 0;
+	int k, length, errorcode = 0;
+	float* temp;
+	p_data_t p_data;
 
-	long k;
+	p_data = p_handle;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
-	else if (linkIndex < 0 || linkIndex > smoapi->Nlinks) errorcode = 420;
-    else if (startPeriod < 0 || startPeriod >= smoapi->Nperiods ||
-        		length > smoapi->Nperiods) errorcode = 422;
-	else if (outValueSeries == NULL) errorcode = 424;
+    if (p_data == NULL) errorcode = -1;
+	else if (linkIndex < 0 || linkIndex > p_data->Nlinks) errorcode = 420;
+    else if (startPeriod < 0 || startPeriod >= p_data->Nperiods ||
+       		endPeriod <= startPeriod) errorcode = 422;
+	// Check memory for outValues
+	else if MEMCHECK(temp = newArray(length = endPeriod - startPeriod)) errorcode = 411;
 	else
 	{
 		// loop over and build time series
 		for (k = 0; k < length; k++)
-			outValueSeries[k] = getLinkValue(smoapi, startPeriod + k, linkIndex, attr);
-	}
+			temp[k] = getLinkValue(p_data, startPeriod + k, linkIndex, attr);
 
-	return errorcode;
+		*outValueSeries = temp;
+	    *dim = length;
+    }
+
+    return set_error(p_data->error_handle, errorcode);
 }
 
 
 
-int DLLEXPORT SMO_getSystemSeries(SMOutputAPI* smoapi, SMO_systemAttribute attr,
-	long startPeriod, long length, float *outValueSeries)
+int DLLEXPORT SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute attr,
+		int startPeriod, int endPeriod, float** outValueSeries, int* dim)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
 //  start and length using timeIndex and length respectively.
 //
 {
-	int errorcode = 0;
+	int k, length, errorcode = 0;
+	float* temp;
+	p_data_t p_data;
 
-	long k;
+	p_data = p_handle;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
-    else if (startPeriod < 0 || startPeriod >= smoapi->Nperiods ||
-        		length > smoapi->Nperiods) errorcode = 422;
-	else if (outValueSeries == NULL) errorcode = 424;
+    if (p_data == NULL) errorcode = -1;
+    else if (startPeriod < 0 || startPeriod >= p_data->Nperiods ||
+    		endPeriod <= startPeriod) errorcode = 422;
+	// Check memory for outValues
+	else if MEMCHECK(temp = newArray(length = endPeriod - startPeriod)) errorcode = 411;
 	else
 	{
 		// loop over and build time series
 		for (k = 0; k < length; k++)
-			outValueSeries[k] = getSystemValue(smoapi, startPeriod + k, attr);
-	}
+			temp[k] = getSystemValue(p_handle, startPeriod + k, attr);
 
-	return errorcode;
+		*outValueSeries = temp;
+	    *dim = length;
+    }
+
+    return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getSubcatchAttribute(SMOutputAPI* smoapi, long periodIndex,
-	SMO_subcatchAttribute attr, float* outValueArray)
+int DLLEXPORT SMO_getSubcatchAttribute(SMO_Handle p_handle, int periodIndex,
+	SMO_subcatchAttribute attr, float** outValueArray, int* length)
 //
 //   Purpose: For all subcatchments at given time, get a particular attribute.
 //
 {
-	int errorcode = 0;
+	int k, errorcode = 0;
+	float* temp;
+	p_data_t p_data;
 
-	long k;
+	p_data = p_handle;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
-    else if (periodIndex < 0 || periodIndex >= smoapi->Nperiods) errorcode = 422;
-	else if (outValueArray == NULL) errorcode = 424;
+    if (p_data == NULL) errorcode = -1;
+    else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
+	// Check memory for outValues
+	else if MEMCHECK(temp = newArray(p_data->Nsubcatch)) errorcode = 411;
 	else
 	{
 		// loop over and pull result
-		for (k = 0; k < smoapi->Nsubcatch; k++)
-			outValueArray[k] = getSubcatchValue(smoapi, periodIndex, k, attr);
+		for (k = 0; k < p_data->Nsubcatch; k++)
+			temp[k] = getSubcatchValue(p_data, periodIndex, k, attr);
+
+		*outValueArray = temp;
+		*length = p_data->Nsubcatch;
 	}
 
-	return errorcode;
+	return set_error(p_data->error_handle, errorcode);
 }
 
 
 
-int DLLEXPORT SMO_getNodeAttribute(SMOutputAPI* smoapi, long periodIndex,
-	SMO_nodeAttribute attr, float* outValueArray)
+int DLLEXPORT SMO_getNodeAttribute(SMO_Handle p_handle, int periodIndex,
+	SMO_nodeAttribute attr, float** outValueArray, int* length)
 //
 //  Purpose: For all nodes at given time, get a particular attribute.
 //
 {
-	int errorcode = 0;
+	int k, errorcode = 0;
+	float* temp;
+	p_data_t p_data;
 
-	long k;
+	p_data = p_handle;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
-    else if (periodIndex < 0 || periodIndex >= smoapi->Nperiods) errorcode = 422;
-	else if (outValueArray == NULL) errorcode = 424;
+    if (p_data == NULL) errorcode = -1;
+    else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
+	// Check memory for outValues
+	else if MEMCHECK(temp = newArray(p_data->Nnodes)) errorcode = 411;
 	else
 	{
 		// loop over and pull result
-		for (k = 0; k < smoapi->Nnodes; k++)
-			outValueArray[k] = getNodeValue(smoapi, periodIndex, k, attr);
+		for (k = 0; k < p_data->Nnodes; k++)
+			temp[k] = getNodeValue(p_handle, periodIndex, k, attr);
+
+		*outValueArray = temp;
+		*length = p_data->Nnodes;
 	}
 
-	return errorcode;
+	return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getLinkAttribute(SMOutputAPI* smoapi, long periodIndex,
-	SMO_linkAttribute attr, float* outValueArray)
+int DLLEXPORT SMO_getLinkAttribute(SMO_Handle p_handle, int periodIndex,
+	SMO_linkAttribute attr, float** outValueArray, int* length)
 //
 //  Purpose: For all links at given time, get a particular attribute.
 //
 {
-	int errorcode = 0;
+	int k, errorcode = 0;
+	float* temp;
+	p_data_t p_data;
 
-	long k;
+	p_data = p_handle;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
-    else if (periodIndex < 0 || periodIndex >= smoapi->Nperiods) errorcode = 422;
-	else if (outValueArray == NULL) errorcode = 424;
+    if (p_data == NULL) errorcode = -1;
+    else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
+	// Check memory for outValues
+	else if MEMCHECK(temp = newArray(p_data->Nlinks)) errorcode = 411;
 	else
 	{
 		// loop over and pull result
-		for (k = 0; k < smoapi->Nlinks; k++)
-			outValueArray[k] = getLinkValue(smoapi, periodIndex, k, attr);
+		for (k = 0; k < p_data->Nlinks; k++)
+			temp[k] = getLinkValue(p_handle, periodIndex, k, attr);
+
+		*outValueArray = temp;
+		*length = p_data->Nlinks;
 	}
 
-	return errorcode;
+	return set_error(p_data->error_handle, errorcode);
 }
 
 
-int DLLEXPORT SMO_getSystemAttribute(SMOutputAPI* smoapi, long periodIndex,
-	SMO_systemAttribute attr, float* outValueArray)
+int DLLEXPORT SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
+	SMO_systemAttribute attr, float** outValue, int* length)
 //
 //  Purpose: For the system at given time, get a particular attribute.
 //
 {
 	int errorcode = 0;
+	float temp;
+	p_data_t p_data;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
-    else if (periodIndex < 0 || periodIndex >= smoapi->Nperiods) errorcode = 422;
-	else if (outValueArray == NULL) errorcode = 424;
+	p_data = p_handle;
+
+    if (p_data == NULL) errorcode = -1;
+    else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
 	else
 	{
 		// don't need to loop since there's only one system
-		outValueArray[0] = getSystemValue(smoapi, periodIndex, attr);
+		temp = getSystemValue(p_handle, periodIndex, attr);
+
+		*outValue = &temp;
+		*length = 1;
 	}
 
-	return errorcode;
+	return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getSubcatchResult(SMOutputAPI* smoapi, long periodIndex, int subcatchIndex,
-	float* outValueArray, int* arrayLength)
+int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, long periodIndex,
+		int subcatchIndex, float** outValueArray, int* arrayLength)
 //
 // Purpose: For a subcatchment at given time, get all attributes.
 //
 {
 	int errorcode = 0;
-
+	float* temp;
 	F_OFF offset;
+	p_data_t p_data;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
-    else if (periodIndex < 0 || periodIndex >= smoapi->Nperiods) errorcode = 422;
-    else if (subcatchIndex < 0 || subcatchIndex > smoapi->Nsubcatch) errorcode = 423;
-    else if (outValueArray == NULL) errorcode = 424;
+	p_data = p_handle;
+
+    if (p_data == NULL) errorcode = -1;
+    else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
+    else if (subcatchIndex < 0 || subcatchIndex > p_data->Nsubcatch) errorcode = 423;
+	else if MEMCHECK(temp = newArray(p_data->SubcatchVars)) errorcode = 411;
 	else
 	{
 		// --- compute offset into output file
-		offset = smoapi->ResultsPos + (periodIndex)*smoapi->BytesPerPeriod + 2 * RECORDSIZE;
+		offset = p_data->ResultsPos + (periodIndex)*p_data->BytesPerPeriod + 2 * RECORDSIZE;
 		// add offset for subcatchment
-		offset += (subcatchIndex*smoapi->SubcatchVars)*RECORDSIZE;
+		offset += (subcatchIndex*p_data->SubcatchVars)*RECORDSIZE;
 
-		fseeko64(smoapi->file, offset, SEEK_SET);
-		fread(outValueArray, RECORDSIZE, smoapi->SubcatchVars, smoapi->file);
-		*arrayLength = smoapi->SubcatchVars;
+		fseeko64(p_data->file, offset, SEEK_SET);
+		fread(temp, RECORDSIZE, p_data->SubcatchVars, p_data->file);
+
+		*outValueArray = temp;
+		*arrayLength = p_data->SubcatchVars;
 	}
 
-	return errorcode;
+	return set_error(p_data->error_handle, errorcode);
 }
 
 
-int DLLEXPORT SMO_getNodeResult(SMOutputAPI* smoapi, long periodIndex, int nodeIndex,
-	float* outValueArray, int* arrayLength)
+int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, long periodIndex,
+		int nodeIndex, float** outValueArray, int* arrayLength)
 //
 //	Purpose: For a node at given time, get all attributes.
 //
 {
 	int errorcode = 0;
-
+	float* temp;
 	F_OFF offset;
+	p_data_t p_data;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
-    else if (periodIndex < 0 || periodIndex >= smoapi->Nperiods) errorcode = 422;
-    else if (nodeIndex < 0 || nodeIndex > smoapi->Nnodes) errorcode = 423;
-    else if (outValueArray == NULL) errorcode = 424;
+	p_data = p_handle;
+
+    if (p_data == NULL) errorcode = -1;
+    else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
+    else if (nodeIndex < 0 || nodeIndex > p_data->Nnodes) errorcode = 423;
+	else if MEMCHECK(temp = newArray(p_data->NodeVars)) errorcode = 411;
 	else
 	{
 		// calculate byte offset to start time for series
-		offset = smoapi->ResultsPos + (periodIndex)*smoapi->BytesPerPeriod + 2 * RECORDSIZE;
+		offset = p_data->ResultsPos + (periodIndex)*p_data->BytesPerPeriod + 2 * RECORDSIZE;
 		// add offset for subcatchment and node
-		offset += (smoapi->Nsubcatch*smoapi->SubcatchVars + nodeIndex*smoapi->NodeVars)*RECORDSIZE;
+		offset += (p_data->Nsubcatch*p_data->SubcatchVars + nodeIndex*p_data->NodeVars)*RECORDSIZE;
 
-		fseeko64(smoapi->file, offset, SEEK_SET);
-		fread(outValueArray, RECORDSIZE, smoapi->NodeVars, smoapi->file);
-		*arrayLength = smoapi->NodeVars;
+		fseeko64(p_data->file, offset, SEEK_SET);
+		fread(outValueArray, RECORDSIZE, p_data->NodeVars, p_data->file);
+
+		*outValueArray = temp;
+		*arrayLength = p_data->NodeVars;
 	}
 
-	return errorcode;
+	return set_error(p_data->error_handle, errorcode);
 }
 
-
-int DLLEXPORT SMO_getLinkResult(SMOutputAPI* smoapi, long periodIndex, int linkIndex,
-	float* outValueArray, int* arrayLength)
+int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, long periodIndex,
+		int linkIndex, float** outValueArray, int* arrayLength)
 //
 //	Purpose: For a link at given time, get all attributes.
 //
 {
 	int errorcode = 0;
-
+	float* temp;
 	F_OFF offset;
+	p_data_t p_data;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
-    else if (periodIndex < 0 || periodIndex >= smoapi->Nperiods) errorcode = 422;
-    else if (linkIndex < 0 || linkIndex > smoapi->Nlinks) errorcode = 423;
-    else if (outValueArray == NULL) errorcode = 424;
+	p_data = p_handle;
+
+    if (p_data == NULL) errorcode = -1;
+    else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
+    else if (linkIndex < 0 || linkIndex > p_data->Nlinks) errorcode = 423;
+	else if MEMCHECK(temp = newArray(p_data->LinkVars)) errorcode = 411;
 	else
 	{
 		// calculate byte offset to start time for series
-		offset = smoapi->ResultsPos + (periodIndex)*smoapi->BytesPerPeriod + 2 * RECORDSIZE;
+		offset = p_data->ResultsPos + (periodIndex)*p_data->BytesPerPeriod + 2 * RECORDSIZE;
 		// add offset for subcatchment and node and link
-		offset += (smoapi->Nsubcatch*smoapi->SubcatchVars
-			+ smoapi->Nnodes*smoapi->NodeVars + linkIndex*smoapi->LinkVars)*RECORDSIZE;
+		offset += (p_data->Nsubcatch*p_data->SubcatchVars
+			+ p_data->Nnodes*p_data->NodeVars + linkIndex*p_data->LinkVars)*RECORDSIZE;
 
-		fseeko64(smoapi->file, offset, SEEK_SET);
-		fread(outValueArray, RECORDSIZE, smoapi->LinkVars, smoapi->file);
-		*arrayLength = smoapi->LinkVars;
+		fseeko64(p_data->file, offset, SEEK_SET);
+		fread(outValueArray, RECORDSIZE, p_data->LinkVars, p_data->file);
+
+		*outValueArray = temp;
+		*arrayLength = p_data->LinkVars;
 	}
 
-	return errorcode;
+	return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getSystemResult(SMOutputAPI* smoapi, long periodIndex, int dummyIndex,
-		float* outValueArray, int* arrayLength)
+int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, long periodIndex,
+		int dummyIndex, float** outValueArray, int* arrayLength)
 //
 //	Purpose: For the system at given time, get all attributes.
 //
 {
 	int errorcode = 0;
-
+	float* temp;
 	F_OFF offset;
+	p_data_t p_data;
 
-    if (smoapi == NULL) errorcode = 410;
-    else if (smoapi->file == NULL) errorcode = 411;
-    else if (periodIndex < 0 || periodIndex >= smoapi->Nperiods) errorcode = 422;
-    else if (outValueArray == NULL) errorcode = 424;
+	p_data = p_handle;
+
+    if (p_data == NULL) errorcode = -1;
+    else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
+	else if MEMCHECK(temp = newArray(p_data->SysVars)) errorcode = 411;
 	{
 		// calculate byte offset to start time for series
-		offset = smoapi->ResultsPos + (periodIndex)*smoapi->BytesPerPeriod + 2 * RECORDSIZE;
+		offset = p_data->ResultsPos + (periodIndex)*p_data->BytesPerPeriod + 2 * RECORDSIZE;
 		// add offset for subcatchment and node and link (system starts after the last link)
-		offset += (smoapi->Nsubcatch*smoapi->SubcatchVars + smoapi->Nnodes*smoapi->NodeVars
-			+ smoapi->Nlinks*smoapi->LinkVars)*RECORDSIZE;
+		offset += (p_data->Nsubcatch*p_data->SubcatchVars + p_data->Nnodes*p_data->NodeVars
+			+ p_data->Nlinks*p_data->LinkVars)*RECORDSIZE;
 
-		fseeko64(smoapi->file, offset, SEEK_SET);
-		fread(outValueArray, RECORDSIZE, smoapi->SysVars, smoapi->file);
-		*arrayLength = smoapi->SysVars;
+		fseeko64(p_data->file, offset, SEEK_SET);
+		fread(outValueArray, RECORDSIZE, p_data->SysVars, p_data->file);
+
+		*outValueArray = temp;
+		*arrayLength = p_data->SysVars;
 	}
 
 	return errorcode;
 }
 
-void DLLEXPORT SMO_free(float *array)
+void DLLEXPORT SMO_free(void** array)
 //
-//  Purpose: frees memory allocated using SMO_newOutValueSeries() or
-//  SMO_newOutValueArray().
+//  Purpose: Frees memory allocated by API calls
 //
 {
-	if (array != NULL)
-		free(array);
+	if (array != NULL) {
+		free(*array);
+		*array = NULL;
+	}
 }
 
-
-int DLLEXPORT SMO_close(SMOutputAPI* smoapi)
-//
-//   Purpose: Clean up after and close Output API
-//
+void DLLEXPORT SMO_clearError(SMO_Handle p_handle)
 {
-	int i, n, errorcode = 0;
+	p_data_t p_data;
 
-	if (smoapi == NULL) errorcode = 410;
-	else if (smoapi->file == NULL) errorcode = 411;
+	p_data = p_handle;
+	clear_error(p_data->error_handle);
+}
+
+int DLLEXPORT SMO_checkError(SMO_Handle p_handle, char** msg_buffer)
+{
+	int errorcode = 0;
+	char *temp = NULL;
+	p_data_t p_data;
+
+	p_data = p_handle;
+
+	if (p_data == NULL) return -1;
 	else
 	{
-		if (smoapi->elementNames != NULL)
-		{
-			n = smoapi->Nsubcatch + smoapi->Nnodes + smoapi->Nlinks + smoapi->Npolluts;
+		errorcode = p_data->error_handle->error_status;
+		if (errorcode)
+			temp = check_error(p_data->error_handle);
 
-			for(i = 0; i < n; i++)
-				free(smoapi->elementNames[i].IDname);
-		}
-
-		fclose(smoapi->file);
-		free(smoapi);
-		smoapi = NULL;
+		*msg_buffer = temp;
 	}
 
 	return errorcode;
 }
 
-void DLLEXPORT SMO_errMessage(int errcode, char* errmsg, int n)
+void errorLookup(int errcode, char* dest_msg, int dest_len)
 //
 //  Purpose: takes error code returns error message
 //
-// ERR410 "Error 410: SMO_init has not been called"
-// ERR411 "Error 411: SMO_open has not been called"
-// ERR414 "Error 414: memory allocation failure"
+// ERR411 "Error 411: memory allocation failure"
 //
 // ERR421 "Input Error 421: invalid parameter code"
 // ERR422 "Input Error 422: reporting period index out of range"
@@ -835,181 +988,177 @@ void DLLEXPORT SMO_errMessage(int errcode, char* errmsg, int n)
 //
 // ERR440 "ERROR 440: an unspecified error has occurred"
 {
+	const char* msg;
+
 	switch (errcode)
 	{
-	case 410:
-		strncpy(errmsg, ERR410, n);
+	case 411: msg = ERR411;
 		break;
-	case 411:
-		strncpy(errmsg, ERR411, n);
+	case 421: msg = ERR421;
 		break;
-	case 414:
-		strncpy(errmsg, ERR414, n);
+	case 422: msg = ERR422;
 		break;
-	case 421:
-		strncpy(errmsg, ERR421, n);
+	case 423: msg = ERR423;
 		break;
-	case 422:
-		strncpy(errmsg, ERR422, n);
+	case 424: msg = ERR424;
 		break;
-	case 423:
-		strncpy(errmsg, ERR423, n);
+	case 434: msg = ERR434;
 		break;
-	case 424:
-		strncpy(errmsg, ERR424, n);
+	case 435: msg = ERR435;
 		break;
-	case 434:
-		strncpy(errmsg, ERR434, n);
+	case 436: msg = ERR436;
 		break;
-	case 435:
-		strncpy(errmsg, ERR435, n);
+	case 437: msg = ERR437;
 		break;
-	case 436:
-		strncpy(errmsg, ERR436, n);
-		break;
-	case 437:
-		strncpy(errmsg, ERR437, n);
-		break;
-	default:
-		strncpy(errmsg, ERR440, n);
+	default: msg = ERR440;
 	}
+
+	strncpy(dest_msg, msg, MAXMSG);
 }
 
 
 // Local functions:
-int validateFile(SMOutputAPI* smoapi)
+int validateFile(p_data_t p_data)
 {
 	INT4 magic1, magic2, errcode;
 	int errorcode = 0;
 
 	// --- fast forward to end and read epilogue
-	fseeko64(smoapi->file, -6 * RECORDSIZE, SEEK_END);
-	fread(&(smoapi->IDPos), RECORDSIZE, 1, smoapi->file);
-	fread(&(smoapi->ObjPropPos), RECORDSIZE, 1, smoapi->file);
-	fread(&(smoapi->ResultsPos), RECORDSIZE, 1, smoapi->file);
-	fread(&(smoapi->Nperiods), RECORDSIZE, 1, smoapi->file);
-	fread(&errcode, RECORDSIZE, 1, smoapi->file);
-	fread(&magic2, RECORDSIZE, 1, smoapi->file);
+	fseeko64(p_data->file, -6 * RECORDSIZE, SEEK_END);
+	fread(&(p_data->IDPos), RECORDSIZE, 1, p_data->file);
+	fread(&(p_data->ObjPropPos), RECORDSIZE, 1, p_data->file);
+	fread(&(p_data->ResultsPos), RECORDSIZE, 1, p_data->file);
+	fread(&(p_data->Nperiods), RECORDSIZE, 1, p_data->file);
+	fread(&errcode, RECORDSIZE, 1, p_data->file);
+	fread(&magic2, RECORDSIZE, 1, p_data->file);
 
 	// --- rewind and read magic number from beginning of the file
-	fseeko(smoapi->file, 0L, SEEK_SET);
-	fread(&magic1, RECORDSIZE, 1, smoapi->file);
+	fseeko(p_data->file, 0L, SEEK_SET);
+	fread(&magic1, RECORDSIZE, 1, p_data->file);
 
 	// Is this a valid SWMM binary output file?
 	if (magic1 != magic2) errorcode = 435;
 	// Does the binary file contain results?
-	else if (smoapi->Nperiods <= 0) errorcode = 436;
+	else if (p_data->Nperiods <= 0) errorcode = 436;
 	// Were there problems with the model run?
 	else if (errcode != 0) errorcode = 437;
 
 	return errorcode;
 }
 
-void initElementNames(SMOutputAPI* smoapi)
+void initElementNames(p_data_t p_data)
 {
 	int j, numNames;
 
-	numNames = smoapi->Nsubcatch + smoapi->Nnodes + smoapi->Nlinks + smoapi->Npolluts;
+	numNames = p_data->Nsubcatch + p_data->Nnodes + p_data->Nlinks + p_data->Npolluts;
 
 	// allocate memory for array of idEntries
-	smoapi->elementNames = (idEntry*)calloc(numNames, sizeof(idEntry));
+	p_data->elementNames = (idEntry*)calloc(numNames, sizeof(idEntry));
 
 	// Position the file to the start of the ID entries
-	fseeko64(smoapi->file, smoapi->IDPos, SEEK_SET);
+	fseeko64(p_data->file, p_data->IDPos, SEEK_SET);
 
 	for(j=0;j<numNames;j++)
 	{
-		fread(&(smoapi->elementNames[j].length), RECORDSIZE, 1, smoapi->file);
-		smoapi->elementNames[j].IDname = calloc(smoapi->elementNames[j].length + 1, sizeof(char));
-		fread(smoapi->elementNames[j].IDname, sizeof(char), smoapi->elementNames[j].length, smoapi->file);
+		fread(&(p_data->elementNames[j].length), RECORDSIZE, 1, p_data->file);
+		p_data->elementNames[j].IDname = calloc(p_data->elementNames[j].length + 1, sizeof(char));
+		fread(p_data->elementNames[j].IDname, sizeof(char), p_data->elementNames[j].length, p_data->file);
 	}
 }
 
-double getTimeValue(SMOutputAPI* smoapi, long timeIndex)
+double getTimeValue(p_data_t p_data, long timeIndex)
 {
 	F_OFF offset;
 	double value;
 
 	// --- compute offset into output file
-	offset = smoapi->ResultsPos + timeIndex*smoapi->BytesPerPeriod;
+	offset = p_data->ResultsPos + timeIndex*p_data->BytesPerPeriod;
 
 	// --- re-position the file and read the result
-	fseeko64(smoapi->file, offset, SEEK_SET);
-	fread(&value, RECORDSIZE * 2, 1, smoapi->file);
+	fseeko64(p_data->file, offset, SEEK_SET);
+	fread(&value, RECORDSIZE * 2, 1, p_data->file);
 
 	return value;
 }
 
-float getSubcatchValue(SMOutputAPI* smoapi, long timeIndex, int subcatchIndex,
+float getSubcatchValue(p_data_t p_data, long timeIndex, int subcatchIndex,
 		SMO_subcatchAttribute attr)
 {
 	F_OFF offset;
 	float value;
 
 	// --- compute offset into output file
-	offset = smoapi->ResultsPos + timeIndex*smoapi->BytesPerPeriod + 2*RECORDSIZE;
+	offset = p_data->ResultsPos + timeIndex*p_data->BytesPerPeriod + 2*RECORDSIZE;
 	// offset for subcatch
-	offset += RECORDSIZE*(subcatchIndex*smoapi->SubcatchVars + attr);
+	offset += RECORDSIZE*(subcatchIndex*p_data->SubcatchVars + attr);
 
 	// --- re-position the file and read the result
-	fseeko64(smoapi->file, offset, SEEK_SET);
-	fread(&value, RECORDSIZE, 1, smoapi->file);
+	fseeko64(p_data->file, offset, SEEK_SET);
+	fread(&value, RECORDSIZE, 1, p_data->file);
 
 	return value;
 }
 
-float getNodeValue(SMOutputAPI* smoapi, long timeIndex, int nodeIndex,
+float getNodeValue(p_data_t p_data, long timeIndex, int nodeIndex,
 		SMO_nodeAttribute attr)
 {
 	F_OFF offset;
 	float value;
 
 	// --- compute offset into output file
-	offset = smoapi->ResultsPos + timeIndex*smoapi->BytesPerPeriod + 2*RECORDSIZE;
+	offset = p_data->ResultsPos + timeIndex*p_data->BytesPerPeriod + 2*RECORDSIZE;
 	// offset for node
-	offset += RECORDSIZE*(smoapi->Nsubcatch*smoapi->SubcatchVars + nodeIndex*smoapi->NodeVars + attr);
+	offset += RECORDSIZE*(p_data->Nsubcatch*p_data->SubcatchVars + nodeIndex*p_data->NodeVars + attr);
 
 	// --- re-position the file and read the result
-	fseeko64(smoapi->file, offset, SEEK_SET);
-	fread(&value, RECORDSIZE, 1, smoapi->file);
+	fseeko64(p_data->file, offset, SEEK_SET);
+	fread(&value, RECORDSIZE, 1, p_data->file);
 
 	return value;
 }
 
-float getLinkValue(SMOutputAPI* smoapi, long timeIndex, int linkIndex,
+float getLinkValue(p_data_t p_data, long timeIndex, int linkIndex,
 		SMO_linkAttribute attr)
 {
 	F_OFF offset;
 	float value;
 
 	// --- compute offset into output file
-	offset = smoapi->ResultsPos + timeIndex*smoapi->BytesPerPeriod + 2*RECORDSIZE;
+	offset = p_data->ResultsPos + timeIndex*p_data->BytesPerPeriod + 2*RECORDSIZE;
 	// offset for link
-	offset += RECORDSIZE*(smoapi->Nsubcatch*smoapi->SubcatchVars + smoapi->Nnodes*smoapi->NodeVars +
-		linkIndex*smoapi->LinkVars + attr);
+	offset += RECORDSIZE*(p_data->Nsubcatch*p_data->SubcatchVars + p_data->Nnodes*p_data->NodeVars +
+		linkIndex*p_data->LinkVars + attr);
 
 	// --- re-position the file and read the result
-	fseeko64(smoapi->file, offset, SEEK_SET);
-	fread(&value, RECORDSIZE, 1, smoapi->file);
+	fseeko64(p_data->file, offset, SEEK_SET);
+	fread(&value, RECORDSIZE, 1, p_data->file);
 
 	return value;
 }
 
-float getSystemValue(SMOutputAPI* smoapi, long timeIndex,
+float getSystemValue(p_data_t p_data, long timeIndex,
 		SMO_systemAttribute attr)
 {
 	F_OFF offset;
 	float value;
 
 	// --- compute offset into output file
-	offset = smoapi->ResultsPos + timeIndex*smoapi->BytesPerPeriod + 2*RECORDSIZE;
+	offset = p_data->ResultsPos + timeIndex*p_data->BytesPerPeriod + 2*RECORDSIZE;
 	//  offset for system
-	offset += RECORDSIZE*(smoapi->Nsubcatch*smoapi->SubcatchVars + smoapi->Nnodes*smoapi->NodeVars +
-		smoapi->Nlinks*smoapi->LinkVars + attr);
+	offset += RECORDSIZE*(p_data->Nsubcatch*p_data->SubcatchVars + p_data->Nnodes*p_data->NodeVars +
+		p_data->Nlinks*p_data->LinkVars + attr);
 
 	// --- re-position the file and read the result
-	fseeko64(smoapi->file, offset, SEEK_SET);
-	fread(&value, RECORDSIZE, 1, smoapi->file);
+	fseeko64(p_data->file, offset, SEEK_SET);
+	fread(&value, RECORDSIZE, 1, p_data->file);
 
 	return value;
+}
+
+float* newArray(int n)
+//
+//  Warning: Caller must free memory allocated by this function.
+//
+{
+	return (float*) malloc((n)*sizeof(float));
 }
