@@ -999,15 +999,38 @@ int DLLEXPORT swmm_getSubcatchBuildup(int index, TSubcatchBuildup *subcatchBuild
 //
 // Output: 	Subcatchment Buildup Structure (TSubcatchBuildup)
 // Return: 	API Error
-// Purpose: Gets Subcatchment Buildup
+// Purpose: Gets Subcatchment Buildup and Converts Units
+// Note:    Caller is responsible for calling swmm_freeSubcatchBuildup
+//          to free the pollutants array.
 {
+    int p;
 	int errorcode = stats_getSubcatchBuildup(index, subcatchBuildup);
-
-	// KMR NOTE: NOT WORRYING ABOUT UNITS RIGHT NOW B/C DEALING WITH COUNTS
+    
+    if (errorcode == 0)
+    {
+        if Nobjects[POLLUT] > 0
+        {
+            for (p = 0; p < Nobjects[POLLUT], p++)
+                subcatchBuildup->buildup[p] *= Pollut[p].mcf;
+                if (Pollut[p].units == COUNT)
+                {
+                    subcatchBuildup->buildup[p] = LOG10(subcatchBuildup->buildup[p]);
+                }
+        }
+    }
 	
 	return (errorcode);
 }
 
+void DLLEXPORT swmm_freeSubcatchBuildup(TSubcatchBuildup *subcatchBuildup)
+//
+// Return: 	API Error
+// Purpose: Frees Outfall Node Stats and Converts Units 
+// Note:    API user is responsible for calling swmm_freeSubcatchBuildup
+//          since this function performs a memory allocation.
+{
+	FREE(subcatchBuildup->buildup);
+}
 
 int DLLEXPORT swmm_getSystemRoutingStats(TRoutingTotals *routingTot)
 //

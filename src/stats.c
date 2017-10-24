@@ -142,14 +142,22 @@ int  stats_open()
             report_writeErrorMsg(ERR_MEMORY, "");
             return ErrorCode;
 		}
-		for ( j = 0; j < Nobjects[SUBCATCH]; j++ )
-		{	
-			for ( p = 0; p < Nobjects[POLLUT]; p++ )
-			{
-				
-				SubcatchBuildup[j].buildup[p] = 0.0;
-			}	
-		}		
+        else for ( j = 0; j < Nobjects[SUBCATCH]; j++ )
+        {
+            if ( Nobjects[POLLUT] > 0 )
+            {
+                SubcatchBuildup[j].buildup =
+                    (double *) calloc(Nobjects[POLLUT], sizeof(double));
+                if ( !SubcatchBuildup[j].buildup )
+                {
+                    report_writeErrorMsg(ERR_MEMORY, "");
+                    return ErrorCode;
+                }
+                for ( p = 0; p < Nobjects[POLLUT]; p++ )
+                    SubcatchBuildup[j].buildup[p] = 0.0;
+            }
+            else SubcatchBuildup[j].buildup = NULL;
+        }	
 	}
 
 ////  Added to release 5.1.008.  ////                                          //(5.1.008)
@@ -319,6 +327,10 @@ void  stats_close()
     int j;
 
     FREE(SubcatchStats);
+    if ( SubcatchBuildup )
+        for ( j=0; j<Nobjects[SUBCATCH]; j++ )
+            FREE(SubcatchBuildup[j].buildup);
+        FREE(SubcatchBuildup);
 	FREE(SubcatchBuildup);
     FREE(NodeStats);
     FREE(LinkStats);
@@ -1098,7 +1110,8 @@ int stats_getSubcatchBuildup(int index, TSubcatchBuildup *subcatchBuildup)
 //
 {
 	int errorcode = 0;
-
+    int p;
+    
 	// Check if Open
 	if (swmm_IsOpenFlag() == FALSE)
 	{
@@ -1121,6 +1134,23 @@ int stats_getSubcatchBuildup(int index, TSubcatchBuildup *subcatchBuildup)
 	{
 		// Copy Structure
 		memcpy(subcatchBuildup, &SubcatchBuildup[index], sizeof(TSubcatchBuildup));
+        
+        // Perform Deep Copy of Pollutant Buildup Results
+        if (Nobjects[POLLUT] > 0)
+        {
+            subcatchBuildup->buildup = 
+                (double *)calloc(Nobjects[POLLUT], sizeof(double));
+            if (!subcatchBuildup->buildup)
+			{
+				errorcode = ERR_MEMORY;
+			}
+			if (errorcode == 0)
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                    subcatchBuildup->buildup[p] = SubcatchBuildup[index].buildup[p];
+            }
+        }
+        else subcatchBuildup->buildup = NULL;
 	}
 	return errorcode;
 }
