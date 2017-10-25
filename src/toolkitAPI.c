@@ -1008,9 +1008,9 @@ int DLLEXPORT swmm_getSubcatchBuildup(int index, TSubcatchBuildup *subcatchBuild
     
     if (errorcode == 0)
     {
-        if Nobjects[POLLUT] > 0
+        if (Nobjects[POLLUT] > 0)
         {
-            for (p = 0; p < Nobjects[POLLUT], p++)
+            for (p = 0; p < Nobjects[POLLUT]; p++)
                 subcatchBuildup->buildup[p] *= Pollut[p].mcf;
                 if (Pollut[p].units == COUNT)
                 {
@@ -1025,7 +1025,7 @@ int DLLEXPORT swmm_getSubcatchBuildup(int index, TSubcatchBuildup *subcatchBuild
 void DLLEXPORT swmm_freeSubcatchBuildup(TSubcatchBuildup *subcatchBuildup)
 //
 // Return: 	API Error
-// Purpose: Frees Outfall Node Stats and Converts Units 
+// Purpose: Frees Subcatchment Buildup 
 // Note:    API user is responsible for calling swmm_freeSubcatchBuildup
 //          since this function performs a memory allocation.
 {
