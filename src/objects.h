@@ -970,6 +970,15 @@ typedef struct
     double       maxFlow;         
 }  TSubcatchStats;
 
+//------------------------
+// SUBCATCHMENT BUILDUP
+//------------------------
+typedef struct
+{
+	double*       buildup;         // array of surface buildup for each pollutant
+}  TSubcatchBuildup;
+
+
 //----------------
 // NODE STATISTICS
 //----------------

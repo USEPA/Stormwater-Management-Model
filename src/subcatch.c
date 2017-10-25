@@ -739,6 +739,9 @@ double subcatch_getRunoff(int j, double tStep)
         vOutflow = 0.0;
     }
 
+	// --- update subcatchment's surface buildup
+	stats_updateSubcatchBuildup(j);
+	
     // --- update mass balances
     massbal_updateRunoffTotals(RUNOFF_RAINFALL, vRain);
     massbal_updateRunoffTotals(RUNOFF_EVAP, Vevap);
@@ -787,6 +790,27 @@ void getNetPrecip(int j, double* netPrecip, double tStep)
     {
         for (i=IMPERV0; i<=PERV; i++) netPrecip[i] = rainfall + snowfall;
     }
+}
+
+//=============================================================================
+
+double subcatch_getBuildup(int j, int p)	// KMR
+//
+// Input: j = subcatchment index
+//		  p = pollutant index
+// Output: returns total pollutant buildup within a subcatchment (MASS UNITS)
+// Purpose: computes mass of buildup remaining on subcatchment surface
+//
+{
+	int i;
+	double load = 0.0;
+	
+	for (i = 0; i < Nobjects[LANDUSE]; i++)
+	{
+		load += Subcatch[j].landFactor[i].buildup[p];
+	}
+	
+	return load;
 }
 
 //=============================================================================

@@ -295,6 +295,7 @@ double  massbal_getFlowError(void);
 int     massbal_getRoutingFlowTotal(TRoutingTotals *routingTot);      // For API
 int     massbal_getRunoffTotal(TRunoffTotals *runoffTot);             // For API
 double  massbal_getTotalArea(void);                                  // For API
+int     massbal_getNodeTotalInflow(int index, double *value);             // For API
 
 //-----------------------------------------------------------------------------
 //   Simulation Statistics Methods
@@ -308,6 +309,7 @@ void    stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
         int steadyState);
 void    stats_updateSubcatchStats(int subcatch, double rainVol, double runonVol,
         double evapVol, double infilVol, double runoffVol, double runoff);
+void	stats_updateSubcatchBuildup(int subcatch);
 void    stats_updateGwaterStats(int j, double infil, double evap,              //(5.1.008)
         double latFlow, double deepFlow, double theta, double waterTable,      //(5.1.008)
         double tStep);                                                         //(5.1.008)
@@ -320,6 +322,7 @@ int  stats_getOutfallStat(int index, TOutfallStats *outfallStats);              
 int  stats_getLinkStat(int index, TLinkStats *linkStats);                       // For API
 int  stats_getPumpStat(int index, TPumpStats *pumpStats);                       // For API
 int  stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats);           // For API
+int  stats_getSubcatchBuildup(int index, TSubcatchBuildup *subcatchBuildup);	// For API
 
 //-----------------------------------------------------------------------------
 //   Raingage Methods
@@ -347,6 +350,7 @@ void    subcatch_setOldState(int subcatch);
 double  subcatch_getFracPerv(int subcatch);
 double  subcatch_getStorage(int subcatch);
 double  subcatch_getDepth(int subcatch);
+double	subcatch_getBuildup(int subcatch, int pollut);
 
 void    subcatch_getRunon(int subcatch);
 void    subcatch_addRunonFlow(int subcatch, double flow);                      //(5.1.008)
