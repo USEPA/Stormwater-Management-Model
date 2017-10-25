@@ -933,6 +933,7 @@ int stats_getOutfallStat(int index, TOutfallStats *outfallStats)
 //
 {
 	int errorcode = 0;
+    int p;
 
 	// Check if Open
 	if (swmm_IsOpenFlag() == FALSE)
@@ -976,8 +977,8 @@ int stats_getOutfallStat(int index, TOutfallStats *outfallStats)
 			}
 			if (errorcode == 0)
 			{
-				for (k = 0; k < Nobjects[POLLUT]; k++)
-					outfallStats->totalLoad[k] = OutfallStats[k].totalLoad[k];
+				for (p = 0; p < Nobjects[POLLUT]; p++)
+					outfallStats->totalLoad[p] = OutfallStats[k].totalLoad[p];
 			}
 		}
 		else outfallStats->totalLoad = NULL;
