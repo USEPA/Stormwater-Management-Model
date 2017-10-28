@@ -408,7 +408,7 @@ int DLLEXPORT swmm_setNodeParam(int index, int Param, double value)
 		default: return(ERR_API_OUTBOUNDS);
 	}
 	// Re-validated a node ******************** BEM 1/20/2017 Probably need to re-validate connecting links
-	node_validate(index);// incorprate callback here
+	//node_validate(index);// incorprate callback here
 	
 	return(0);
 }
@@ -494,7 +494,7 @@ int DLLEXPORT swmm_setLinkParam(int index, int Param, double value)
 		default: return(ERR_API_OUTBOUNDS);
 	}
 	// re-validated link
-	link_validate(index);// incorprate callback here
+	//link_validate(index);// incorprate callback here
 	
 	return(0);
 }
@@ -1079,33 +1079,37 @@ int DLLEXPORT swmm_setLinkSetting(int index, double targetSetting)
 // Output: 	returns API Error
 // Purpose: Sets Link open fraction (Weir, Orifice, Pump, and Outlet)
 {
-    DateTime currentTime;
-    int errcode = 0;
-    char _rule_[11] = "ToolkitAPI";
+	DateTime currentTime;
+	int errcode = 0;
+	char _rule_[11] = "ToolkitAPI";
 
-    // Check if Simulation is Running
-    if (swmm_IsStartedFlag() == FALSE)
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
     {
-        errcode = ERR_API_SIM_NRUNNING;
+        errcode = ERR_API_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
-    if (index < 0 || index >= Nobjects[LINK]) return(ERR_API_OBJECT_INDEX);
-    
-    // Get Link Type
-    // errcode = swmm_getLinkType(index, &l_type);
-    // WEIR, ORIFICES, PUMPS can have any value between [0,1]
-    // CONDUIT can be only 0 or 1 * BEM 11/4/2016 investigate this...	
-
-    Link[index].targetSetting = targetSetting;
-
-    // Use internal function to apply the new setting
-    link_setSetting(index, 0.0);
-
-    // Add control action to RPT file if desired flagged
-    if (RptFlags.controls)
+    else if (index < 0 || index >= Nobjects[LINK])
     {
-        currentTime = getDateTime(NewRoutingTime);
-        report_writeControlAction(currentTime, Link[index].ID, targetSetting, _rule_);
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else
+    {
+		// --- check that new setting lies within feasible limits
+	    if (targetSetting < 0.0) targetSetting = 0.0;
+        if (Link[index].type != PUMP && targetSetting > 1.0) targetSetting = 1.0;
+
+        Link[index].targetSetting = targetSetting;
+
+        // Use internal function to apply the new setting
+        link_setSetting(index, 0.0);
+
+        // Add control action to RPT file if desired flagged
+        if (RptFlags.controls)
+        {
+            currentTime = getDateTime(NewRoutingTime);
+            report_writeControlAction(currentTime, Link[index].ID, targetSetting, _rule_);
+        }
     }
     return(errcode);
 }
@@ -1120,8 +1124,13 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 {
 	int errcode = 0;
 
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+	{
+		errcode = ERR_API_INPUTNOTOPEN;
+	}
 	// Check if object index is within bounds
-	if (index < 0 || index >= Nobjects[NODE])
+	else if (index < 0 || index >= Nobjects[NODE])
 	{
 		errcode = ERR_API_OBJECT_INDEX;
 	}
@@ -1167,3 +1176,37 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 	return(errcode);
 }
 
+int DLLEXPORT swmm_setOutfallStage(int index, double stage)
+//
+// Input:   index = Index of desired outfall
+//          level = New outfall stage (head)
+// Output:  returns API Error
+// Purpose: Sets new outfall stage and holds until set again
+{
+    int errcode = 0;
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+	{
+		errcode = ERR_API_INPUTNOTOPEN;
+	}
+    // Check if object index is within bounds
+    else if ( index < 0 || index >= Nobjects[NODE] )
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else if ( Node[index].type != OUTFALL )
+    {
+        errcode = ERR_API_WRONG_TYPE;
+    }
+    else
+    {
+        int k = Node[index].subIndex;
+        if ( Outfall[k].type != API_OUTFALL )
+        {
+            // Change Boundary Conditions Setting Type
+            Outfall[k].type = API_OUTFALL;
+        }
+        Outfall[k].outfallStage = stage / UCF(LENGTH);
+    }
+    return(errcode);
+}

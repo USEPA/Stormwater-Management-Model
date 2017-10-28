@@ -141,7 +141,7 @@ void  node_setParams(int j, int type, int k, double x[])
 
       case OUTFALL:
         Outfall[k].type        = (int)x[1];
-        Outfall[k].fixedStage  = x[2] / UCF(LENGTH);
+        Outfall[k].outfallStage= x[2] / UCF(LENGTH);
         Outfall[k].tideCurve   = (int)x[3];
         Outfall[k].stageSeries = (int)x[4];
         Outfall[k].hasFlapGate = (char)x[5];
@@ -1201,7 +1201,7 @@ int outfall_readParams(int j, int k, char* tok[], int ntoks)
 //  Purpose: reads an outfall's properties from a tokenized line of input.
 //
 //  Format of input line is:
-//    nodeID  elev  FIXED  fixedStage (flapGate) (routeTo)
+//    nodeID  elev  FIXED  outfallStage (flapGate) (routeTo)
 //    nodeID  elev  TIDAL  curveID (flapGate) (routeTo)
 //    nodeID  elev  TIMESERIES  tseriesID (flapGate) (routTo)
 //    nodeID  elev  FREE (flapGate) (routeTo)
@@ -1303,7 +1303,7 @@ void outfall_setOutletDepth(int j, double yNorm, double yCrit, double z)
         return;
 
       case FIXED_OUTFALL:
-        stage = Outfall[i].fixedStage;
+        stage = Outfall[i].outfallStage;
         break;
 
       case TIDAL_OUTFALL:
@@ -1320,6 +1320,11 @@ void outfall_setOutletDepth(int j, double yNorm, double yCrit, double z)
         stage = table_tseriesLookup(&Tseries[k], currentDate, TRUE) /
                 UCF(LENGTH);
         break;
+
+      case API_OUTFALL:
+        stage = Outfall[i].outfallStage;
+        break;
+
       default: stage = Node[j].invertElev;
     }
 

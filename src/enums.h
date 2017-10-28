@@ -381,7 +381,8 @@ enum  CompatibilityType {
       NORMAL_OUTFALL,                  // normal flow depth outfall condition
       FIXED_OUTFALL,                   // fixed depth outfall condition
       TIDAL_OUTFALL,                   // variable tidal stage outfall condition
-      TIMESERIES_OUTFALL};             // variable time series outfall depth
+      TIMESERIES_OUTFALL,              // variable time series outfall depth
+      API_OUTFALL};                    // API set outfall depth
 
  enum StorageType {
       TABULAR,                         // area v. depth from table

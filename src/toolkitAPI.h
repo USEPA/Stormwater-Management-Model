@@ -87,6 +87,7 @@ int DLLEXPORT swmm_getSystemRunoffStats(TRunoffTotals *runoffTot);
 //-------------------------------
 int DLLEXPORT swmm_setLinkSetting(int index, double setting);
 int DLLEXPORT swmm_setNodeInflow(int index, double flowrate);
+int DLLEXPORT swmm_setOutfallStage(int index, double stage);
 
 #ifdef __cplusplus
 }    // matches the linkage specification from above */
