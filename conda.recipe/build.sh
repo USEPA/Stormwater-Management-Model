@@ -4,6 +4,10 @@
 mkdir build
 cd build
 
+# GCC Compatibiliy Issues
+conda uninstall libgcc
+conda install libgcc
+
 # Configure using the CMakeFiles
 cmake -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_BUILD_TYPE:STRING=Release ..
 
