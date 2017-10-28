@@ -5,7 +5,6 @@ mkdir build
 cd build
 
 # GCC Compatibiliy Issues
-conda uninstall libgcc
 conda install libgcc
 
 # Configure using the CMakeFiles
