@@ -1320,11 +1320,6 @@ void outfall_setOutletDepth(int j, double yNorm, double yCrit, double z)
         stage = table_tseriesLookup(&Tseries[k], currentDate, TRUE) /
                 UCF(LENGTH);
         break;
-
-      case API_OUTFALL:
-        stage = Outfall[i].outfallStage;
-        break;
-
       default: stage = Node[j].invertElev;
     }
 

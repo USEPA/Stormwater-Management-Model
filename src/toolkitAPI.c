@@ -1074,14 +1074,14 @@ int DLLEXPORT swmm_getSystemRunoffStats(TRunoffTotals *runoffTot)
 
 int DLLEXPORT swmm_setLinkSetting(int index, double targetSetting)
 //
-// Input: 	index = Index of desired ID
-//			value = New Target Setting		
-// Output: 	returns API Error
+// Input:   index = Index of desired ID
+//          value = New Target Setting
+// Output:  returns API Error
 // Purpose: Sets Link open fraction (Weir, Orifice, Pump, and Outlet)
 {
-	DateTime currentTime;
-	int errcode = 0;
-	char _rule_[11] = "ToolkitAPI";
+    DateTime currentTime;
+    int errcode = 0;
+    char _rule_[11] = "ToolkitAPI";
 
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
@@ -1095,8 +1095,8 @@ int DLLEXPORT swmm_setLinkSetting(int index, double targetSetting)
     }
     else
     {
-		// --- check that new setting lies within feasible limits
-	    if (targetSetting < 0.0) targetSetting = 0.0;
+        // --- check that new setting lies within feasible limits
+        if (targetSetting < 0.0) targetSetting = 0.0;
         if (Link[index].type != PUMP && targetSetting > 1.0) targetSetting = 1.0;
 
         Link[index].targetSetting = targetSetting;
@@ -1117,63 +1117,63 @@ int DLLEXPORT swmm_setLinkSetting(int index, double targetSetting)
 
 int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 //
-// Input: 	index = Index of desired ID
-//			value = New Inflow Rate 		
-// Output: 	returns API Error
+// Input:   index = Index of desired ID
+//          value = New Inflow Rate
+// Output:  returns API Error
 // Purpose: Sets new node inflow rate and holds until set again
 {
-	int errcode = 0;
+    int errcode = 0;
 
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE)
-	{
-		errcode = ERR_API_INPUTNOTOPEN;
-	}
-	// Check if object index is within bounds
-	else if (index < 0 || index >= Nobjects[NODE])
-	{
-		errcode = ERR_API_OBJECT_INDEX;
-	}
-	else
-	{
-		// Check to see if node has an assigned inflow object
-		TExtInflow* inflow;
-		
-		// --- check if an external inflow object for this constituent already exists
-		inflow = Node[index].extInflow;
-		while (inflow)
-		{
-			if (inflow->param == -1) break;
-			inflow = inflow->next;
-		}
-		
-		if (!inflow)
-		{
-			int param = -1;        // FLOW (-1) or Pollutant Index
-			int type = FLOW_INFLOW;// Type of inflow (FLOW)
-			int tSeries = -1;      // No Time Series
-			int basePat = -1;      // No Base Pattern
-			double cf = 1.0;       // Unit Convert (Converted during validation)
-			double sf = 1.0;       // Scaling Factor
-			double baseline = 0.0; // Baseline Inflow Rate
-			
-			// Initializes Inflow Object
-			errcode = inflow_setExtInflow(index, param, type, tSeries,
-				basePat, cf, baseline, sf);
-
-			// Get The Inflow Object
-			if ( errcode == 0 )
-			{
-				inflow = Node[index].extInflow;
-			}
-		}
-		// Assign new flow rate
-		if ( errcode == 0 )
-		{
-			inflow -> extIfaceInflow = flowrate;
-		}
-	}
-	return(errcode);
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[NODE])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else
+    {
+        // Check to see if node has an assigned inflow object
+        TExtInflow* inflow;
+        
+        // --- check if an external inflow object for this constituent already exists
+        inflow = Node[index].extInflow;
+        while (inflow)
+        {
+            if (inflow->param == -1) break;
+            inflow = inflow->next;
+        }
+        
+        if (!inflow)
+        {
+            int param = -1;        // FLOW (-1) or Pollutant Index
+            int type = FLOW_INFLOW;// Type of inflow (FLOW)
+            int tSeries = -1;      // No Time Series
+            int basePat = -1;      // No Base Pattern
+            double cf = 1.0;       // Unit Convert (Converted during validation)
+            double sf = 1.0;       // Scaling Factor
+            double baseline = 0.0; // Baseline Inflow Rate
+            
+            // Initializes Inflow Object
+            errcode = inflow_setExtInflow(index, param, type, tSeries,
+                basePat, cf, baseline, sf);
+        
+            // Get The Inflow Object
+            if ( errcode == 0 )
+            {
+                inflow = Node[index].extInflow;
+            }
+        }
+        // Assign new flow rate
+        if ( errcode == 0 )
+        {
+            inflow -> extIfaceInflow = flowrate;
+        }
+    }
+    return(errcode);
 }
 
 int DLLEXPORT swmm_setOutfallStage(int index, double stage)
@@ -1184,11 +1184,11 @@ int DLLEXPORT swmm_setOutfallStage(int index, double stage)
 // Purpose: Sets new outfall stage and holds until set again
 {
     int errcode = 0;
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE)
-	{
-		errcode = ERR_API_INPUTNOTOPEN;
-	}
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
     // Check if object index is within bounds
     else if ( index < 0 || index >= Nobjects[NODE] )
     {
@@ -1201,10 +1201,10 @@ int DLLEXPORT swmm_setOutfallStage(int index, double stage)
     else
     {
         int k = Node[index].subIndex;
-        if ( Outfall[k].type != API_OUTFALL )
+        if ( Outfall[k].type != FIXED_OUTFALL )
         {
             // Change Boundary Conditions Setting Type
-            Outfall[k].type = API_OUTFALL;
+            Outfall[k].type = FIXED_OUTFALL;
         }
         Outfall[k].outfallStage = stage / UCF(LENGTH);
     }
