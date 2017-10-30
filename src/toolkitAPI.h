@@ -78,8 +78,7 @@ int DLLEXPORT swmm_getLinkStats(int index, TLinkStats *linkStats);
 int DLLEXPORT swmm_getPumpStats(int index, TPumpStats *pumpStats);
 
 int DLLEXPORT swmm_getSubcatchStats(int index, TSubcatchStats *subcatchStats);
-int DLLEXPORT swmm_getSubcatchBuildup(int index,
-                                      TSubcatchBuildup *subcatchBuildup);
+int DLLEXPORT swmm_getSubcatchBuildup(int index, TSubcatchBuildup *subcatchBuildup);
 void DLLEXPORT swmm_freeSubcatchBuildup(TSubcatchBuildup *subcatchBuildup);
 
 int DLLEXPORT swmm_getSystemRoutingStats(TRoutingTotals *routingTot);
