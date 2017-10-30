@@ -1228,13 +1228,13 @@ int outfall_readParams(int j, int k, char* tok[], int ntoks)
     x[6] = -1.;                                            // route to subcatch//(5.1.008)
 
     n = 4;
-    if ( i >= FIXED_OUTFALL )
+    if ( i >= STAGED_OUTFALL )
     {
         if ( ntoks < 4 ) return error_setInpError(ERR_ITEMS, "");
         n = 5;
         switch ( i )
         {
-        case FIXED_OUTFALL:                                // fixed stage
+        case STAGED_OUTFALL:                                // fixed stage
           if ( ! getDouble(tok[3], &x[2]) )
               return error_setInpError(ERR_NUMBER, tok[3]);
           break;
@@ -1302,7 +1302,7 @@ void outfall_setOutletDepth(int j, double yNorm, double yCrit, double z)
         else Node[j].newDepth = yNorm;
         return;
 
-      case FIXED_OUTFALL:
+      case STAGED_OUTFALL:
         stage = Outfall[i].outfallStage;
         break;
 

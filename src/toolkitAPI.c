@@ -1179,9 +1179,9 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
 int DLLEXPORT swmm_setOutfallStage(int index, double stage)
 //
 // Input:   index = Index of desired outfall
-//          level = New outfall stage (head)
+//          stage = New outfall stage (head)
 // Output:  returns API Error
-// Purpose: Sets new outfall stage and holds until set again
+// Purpose: Sets new outfall stage and holds until set again.
 {
     int errcode = 0;
     // Check if Open
@@ -1201,10 +1201,10 @@ int DLLEXPORT swmm_setOutfallStage(int index, double stage)
     else
     {
         int k = Node[index].subIndex;
-        if ( Outfall[k].type != FIXED_OUTFALL )
+        if ( Outfall[k].type != STAGED_OUTFALL )
         {
             // Change Boundary Conditions Setting Type
-            Outfall[k].type = FIXED_OUTFALL;
+            Outfall[k].type = STAGED_OUTFALL;
         }
         Outfall[k].outfallStage = stage / UCF(LENGTH);
     }
