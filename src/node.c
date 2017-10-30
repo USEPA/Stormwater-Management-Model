@@ -141,7 +141,7 @@ void  node_setParams(int j, int type, int k, double x[])
 
       case OUTFALL:
         Outfall[k].type        = (int)x[1];
-        Outfall[k].fixedStage  = x[2] / UCF(LENGTH);
+        Outfall[k].outfallStage= x[2] / UCF(LENGTH);
         Outfall[k].tideCurve   = (int)x[3];
         Outfall[k].stageSeries = (int)x[4];
         Outfall[k].hasFlapGate = (char)x[5];
@@ -1201,7 +1201,7 @@ int outfall_readParams(int j, int k, char* tok[], int ntoks)
 //  Purpose: reads an outfall's properties from a tokenized line of input.
 //
 //  Format of input line is:
-//    nodeID  elev  FIXED  fixedStage (flapGate) (routeTo)
+//    nodeID  elev  FIXED  outfallStage (flapGate) (routeTo)
 //    nodeID  elev  TIDAL  curveID (flapGate) (routeTo)
 //    nodeID  elev  TIMESERIES  tseriesID (flapGate) (routTo)
 //    nodeID  elev  FREE (flapGate) (routeTo)
@@ -1228,13 +1228,13 @@ int outfall_readParams(int j, int k, char* tok[], int ntoks)
     x[6] = -1.;                                            // route to subcatch//(5.1.008)
 
     n = 4;
-    if ( i >= FIXED_OUTFALL )
+    if ( i >= STAGED_OUTFALL )
     {
         if ( ntoks < 4 ) return error_setInpError(ERR_ITEMS, "");
         n = 5;
         switch ( i )
         {
-        case FIXED_OUTFALL:                                // fixed stage
+        case STAGED_OUTFALL:                                // fixed stage
           if ( ! getDouble(tok[3], &x[2]) )
               return error_setInpError(ERR_NUMBER, tok[3]);
           break;
@@ -1302,8 +1302,8 @@ void outfall_setOutletDepth(int j, double yNorm, double yCrit, double z)
         else Node[j].newDepth = yNorm;
         return;
 
-      case FIXED_OUTFALL:
-        stage = Outfall[i].fixedStage;
+      case STAGED_OUTFALL:
+        stage = Outfall[i].outfallStage;
         break;
 
       case TIDAL_OUTFALL:
