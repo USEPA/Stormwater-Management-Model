@@ -739,9 +739,6 @@ double subcatch_getRunoff(int j, double tStep)
         vOutflow = 0.0;
     }
 
-    // --- update subcatchment's surface buildup
-    stats_updateSubcatchBuildup(j);
-
     // --- update mass balances
     massbal_updateRunoffTotals(RUNOFF_RAINFALL, vRain);
     massbal_updateRunoffTotals(RUNOFF_EVAP, Vevap);
@@ -798,7 +795,7 @@ double subcatch_getBuildup(int j, int p)
 //
 // Input:   j = subcatchment index
 //          p = pollutant index
-// Output:  returns total pollutant buildup within a subcatchment
+// Output:  returns total buildup of each pollutant on surface of a subcatchment
 // Purpose: computes mass of buildup remaining on subcatchment surface
 //
 {

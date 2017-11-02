@@ -967,17 +967,9 @@ typedef struct
     double       evap;
     double       infil;
     double       runoff;
-    double       maxFlow;         
+    double       maxFlow;
+    double*      surfaceBuildup;
 }  TSubcatchStats;
-
-
-//------------------------
-// SUBCATCHMENT BUILDUP
-//------------------------
-typedef struct
-{
-    double*       buildup;         // array of surface buildup for each pollutant
-}  TSubcatchBuildup;
 
 
 //----------------
