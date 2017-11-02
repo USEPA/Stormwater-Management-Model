@@ -25,6 +25,8 @@
 #define RECORDSIZE  4    // Memory alignment 4 byte word size for both int and real
 #define DATESIZE    8    // Dates are stored as 8 byte word size
 
+#define NELEMENTTYPES  4 // Number of element types
+
 #define MEMCHECK(x)  (((x) == NULL) ? 414 : 0 )
 
 struct IDentry {
@@ -67,20 +69,20 @@ typedef struct {
 	error_handle_t* error_handle;
 } data_t;
 
-typedef data_t* p_data_t;
+//typedef data_t* p_data_t;
 
 //-----------------------------------------------------------------------------
 //   Local functions
 //-----------------------------------------------------------------------------
 void errorLookup(int errcode, char* errmsg, int length);
-int    validateFile(p_data_t p_data);
-void   initElementNames(p_data_t p_data);
+int    validateFile(data_t* p_data);
+void   initElementNames(data_t* p_data);
 
-double getTimeValue(p_data_t p_data, long timeIndex);
-float  getSubcatchValue(p_data_t p_data, long timeIndex, int subcatchIndex, SMO_subcatchAttribute attr);
-float  getNodeValue(p_data_t p_data, long timeIndex, int nodeIndex, SMO_nodeAttribute attr);
-float  getLinkValue(p_data_t p_data, long timeIndex, int linkIndex, SMO_linkAttribute attr);
-float  getSystemValue(p_data_t p_data, long timeIndex, SMO_systemAttribute attr);
+double getTimeValue(data_t* p_data, long timeIndex);
+float  getSubcatchValue(data_t* p_data, long timeIndex, int subcatchIndex, SMO_subcatchAttribute attr);
+float  getNodeValue(data_t* p_data, long timeIndex, int nodeIndex, SMO_nodeAttribute attr);
+float  getLinkValue(data_t* p_data, long timeIndex, int linkIndex, SMO_linkAttribute attr);
+float  getSystemValue(data_t* p_data, long timeIndex, SMO_systemAttribute attr);
 
 float* newArray(int n);
 
@@ -116,10 +118,10 @@ int DLLEXPORT SMO_close(SMO_Handle* p_handle)
 //   Purpose: Clean up after and close Output API
 //
 {
-	p_data_t p_data;
+	data_t* p_data;
 	int i, n, errorcode = 0;
 
-	p_data = *p_handle;
+	p_data = (data_t*)*p_handle;
 
 	if (p_data == NULL || p_data->file == NULL)
 		errorcode = -1;
@@ -153,9 +155,9 @@ int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path)
 	int err, errorcode = 0;
 	F_OFF offset;
 
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
 	if (p_data == NULL) return -1;
     else
@@ -169,7 +171,7 @@ int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path)
 
     	else {
     		// --- otherwise read additional parameters from start of file
-    		fseek(p_data->file, 2*RECORDSIZE, SEEK_SET);
+    		fseek(p_data->file, 3*RECORDSIZE, SEEK_SET);
     		fread(&(p_data->Nsubcatch), RECORDSIZE, 1, p_data->file);
     		fread(&(p_data->Nnodes), RECORDSIZE, 1, p_data->file);
     		fread(&(p_data->Nlinks), RECORDSIZE, 1, p_data->file);
@@ -225,9 +227,9 @@ int DLLEXPORT SMO_getVersion(SMO_Handle p_handle, int* version)
 //
 {
 	int errorcode = 0;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
 	if (p_data == NULL) return -1;
 	else
@@ -238,41 +240,29 @@ int DLLEXPORT SMO_getVersion(SMO_Handle p_handle, int* version)
 	}
 
 	return set_error(p_data->error_handle, errorcode);
-
 }
 
-int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, SMO_elementCount code, int* count)
+int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, int** elementCount, int* length)
 //
 //   Purpose: Returns project size.
 //
 {
 	int errorcode = 0;
-	p_data_t p_data;
+	int* temp = new int[NELEMENTTYPES];
+	data_t* p_data;
 
-	*count = -1;
-
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
 	else
 	{
-		switch (code)
-		{
-		case subcatchCount:
-			*count = p_data->Nsubcatch;
-			break;
-		case nodeCount:
-			*count = p_data->Nnodes;
-			break;
-		case linkCount:
-			*count = p_data->Nlinks;
-			break;
-		case pollutantCount:
-			*count = p_data->Npolluts;
-			break;
-		default:
-			errorcode = 421;
-		}
+		temp[0] = p_data->Nsubcatch;
+		temp[1] = p_data->Nnodes;
+		temp[2] = p_data->Nlinks;
+		temp[3] = p_data->Npolluts;
+
+		*elementCount = temp;
+		*length = NELEMENTTYPES;
 	}
 
 	return set_error(p_data->error_handle, errorcode);
@@ -280,7 +270,7 @@ int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, SMO_elementCount code, int
 
 int DLLEXPORT SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag)
 //
-//   Purpose: Returns flow rate units.
+//   Purpose: Returns unit flag for flow.
 //
 //   Returns:
 //            0: CFS  (cubic feet per second)
@@ -292,11 +282,11 @@ int DLLEXPORT SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag)
 //
 {
 	int errorcode = 0;
-	p_data_t p_data;
+	data_t* p_data;
 
 	*unitFlag = -1;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
 	if (p_data == NULL) return -1;
 	else
@@ -308,7 +298,7 @@ int DLLEXPORT SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag)
 	return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int pollutantIndex, int* unitFlag)
+int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* length)
 //
 //   Purpose:
 //     Return integer flag representing the units that the given pollutant is
@@ -323,21 +313,24 @@ int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int pollutantIndex, int
 //     pollutantIndex: valid values are 0 to Npolluts-1
 {
 	int errorcode = 0;
+	int* temp;
 	F_OFF offset;
-	p_data_t p_data;
+	data_t* p_data;
 
-	*unitFlag = -1;
+	p_data = (data_t*)p_handle;
 
-	p_data = p_handle;
+	temp = new int[p_data->Npolluts];
 
 	if (p_data == NULL) errorcode = -1;
-    else if (p_data->file == NULL) errorcode = 411;
-	else if (pollutantIndex < 0 || pollutantIndex >= p_data->Npolluts) errorcode = 423;
-    else
+	else if (MEMCHECK(temp)) errorcode = 414;
+	else
     {
-        offset = p_data->ObjPropPos - (p_data->Npolluts - pollutantIndex) * RECORDSIZE;
+        offset = p_data->ObjPropPos - (p_data->Npolluts * RECORDSIZE);
         fseek(p_data->file, offset, SEEK_SET);
-        fread(unitFlag, RECORDSIZE, 1, p_data->file);
+        fread(temp, RECORDSIZE, p_data->Npolluts, p_data->file);
+
+        *unitFlag = temp;
+        *length = p_data->Npolluts;
     }
 
 	return set_error(p_data->error_handle, errorcode);
@@ -349,11 +342,11 @@ int DLLEXPORT SMO_getStartDate(SMO_Handle p_handle, double* date)
 //
 {
 	int errorcode = 0;
-	p_data_t p_data;
+	data_t* p_data;
 
 	*date = -1.0;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
 	else
@@ -369,11 +362,11 @@ int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time)
 //
 {
 	int errorcode = 0;
-	p_data_t p_data;
+	data_t* p_data;
 
 	*time = -1.0;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
 	else
@@ -392,7 +385,7 @@ int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time)
 }
 
 int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
-		int index, char* name, int length)
+		int index, char** name, int* length)
 //
 //  Purpose: Given an element index returns the element name.
 //
@@ -402,16 +395,16 @@ int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
 //
 {
 	int idx, errorcode = 0;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = 410;
     else if (p_data->file == NULL) errorcode = 411;
 	else
 	{
 		// Initialize the name array if necessary
-		if (p_data->elementNames == NULL) initElementNames(p_handle);
+		if (p_data->elementNames == NULL) initElementNames(p_data);
 
 		switch (type)
 		{
@@ -447,8 +440,12 @@ int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
 			errorcode = 421;
 		}
 
-		if (!errorcode)
-			strncpy(name, p_data->elementNames[idx].IDname, length);
+		if (!errorcode) {
+			*length = p_data->elementNames[idx].length;
+			*name = new char[*length + 1];
+
+			strncpy(*name, p_data->elementNames[idx].IDname, (size_t)(*length));
+		}
 	}
 
 	return errorcode;
@@ -553,9 +550,9 @@ int DLLEXPORT SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
 {
 	int k, length, errorcode = 0;
 	float* temp;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
 	else if (subcatchIndex < 0 || subcatchIndex > p_data->Nsubcatch) errorcode = 420;
@@ -567,7 +564,7 @@ int DLLEXPORT SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
 	{
 		// loop over and build time series
 		for (k = 0; k < length; k++)
-			temp[k] = getSubcatchValue(p_handle, startPeriod + k,
+			temp[k] = getSubcatchValue(p_data, startPeriod + k,
 			subcatchIndex, attr);
 
 		*outValueSeries = temp;
@@ -587,9 +584,9 @@ int DLLEXPORT SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex, SMO_nodeAttr
 {
 	int k, length, errorcode = 0;
 	float* temp;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
 	else if (nodeIndex < 0 || nodeIndex > p_data->Nnodes) errorcode = 420;
@@ -601,7 +598,7 @@ int DLLEXPORT SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex, SMO_nodeAttr
 	{
 		// loop over and build time series
 		for (k = 0; k < length; k++)
-			temp[k] = getNodeValue(p_handle, startPeriod + k,
+			temp[k] = getNodeValue(p_data, startPeriod + k,
 			nodeIndex, attr);
 
 	    *outValueSeries = temp;
@@ -621,9 +618,9 @@ int DLLEXPORT SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex, SMO_linkAttr
 {
 	int k, length, errorcode = 0;
 	float* temp;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
 	else if (linkIndex < 0 || linkIndex > p_data->Nlinks) errorcode = 420;
@@ -655,9 +652,9 @@ int DLLEXPORT SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute attr,
 {
 	int k, length, errorcode = 0;
 	float* temp;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
     else if (startPeriod < 0 || startPeriod >= p_data->Nperiods ||
@@ -668,7 +665,7 @@ int DLLEXPORT SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute attr,
 	{
 		// loop over and build time series
 		for (k = 0; k < length; k++)
-			temp[k] = getSystemValue(p_handle, startPeriod + k, attr);
+			temp[k] = getSystemValue(p_data, startPeriod + k, attr);
 
 		*outValueSeries = temp;
 	    *dim = length;
@@ -685,9 +682,9 @@ int DLLEXPORT SMO_getSubcatchAttribute(SMO_Handle p_handle, int periodIndex,
 {
 	int k, errorcode = 0;
 	float* temp;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
@@ -716,9 +713,9 @@ int DLLEXPORT SMO_getNodeAttribute(SMO_Handle p_handle, int periodIndex,
 {
 	int k, errorcode = 0;
 	float* temp;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
@@ -728,7 +725,7 @@ int DLLEXPORT SMO_getNodeAttribute(SMO_Handle p_handle, int periodIndex,
 	{
 		// loop over and pull result
 		for (k = 0; k < p_data->Nnodes; k++)
-			temp[k] = getNodeValue(p_handle, periodIndex, k, attr);
+			temp[k] = getNodeValue(p_data, periodIndex, k, attr);
 
 		*outValueArray = temp;
 		*length = p_data->Nnodes;
@@ -745,9 +742,9 @@ int DLLEXPORT SMO_getLinkAttribute(SMO_Handle p_handle, int periodIndex,
 {
 	int k, errorcode = 0;
 	float* temp;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
@@ -757,7 +754,7 @@ int DLLEXPORT SMO_getLinkAttribute(SMO_Handle p_handle, int periodIndex,
 	{
 		// loop over and pull result
 		for (k = 0; k < p_data->Nlinks; k++)
-			temp[k] = getLinkValue(p_handle, periodIndex, k, attr);
+			temp[k] = getLinkValue(p_data, periodIndex, k, attr);
 
 		*outValueArray = temp;
 		*length = p_data->Nlinks;
@@ -775,16 +772,16 @@ int DLLEXPORT SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
 {
 	int errorcode = 0;
 	float temp;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
 	else
 	{
 		// don't need to loop since there's only one system
-		temp = getSystemValue(p_handle, periodIndex, attr);
+		temp = getSystemValue(p_data, periodIndex, attr);
 
 		*outValue = &temp;
 		*length = 1;
@@ -802,9 +799,9 @@ int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, long periodIndex,
 	int errorcode = 0;
 	float* temp;
 	F_OFF offset;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
@@ -837,9 +834,9 @@ int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, long periodIndex,
 	int errorcode = 0;
 	float* temp;
 	F_OFF offset;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
@@ -853,7 +850,7 @@ int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, long periodIndex,
 		offset += (p_data->Nsubcatch*p_data->SubcatchVars + nodeIndex*p_data->NodeVars)*RECORDSIZE;
 
 		fseeko64(p_data->file, offset, SEEK_SET);
-		fread(outValueArray, RECORDSIZE, p_data->NodeVars, p_data->file);
+		fread(temp, RECORDSIZE, p_data->NodeVars, p_data->file);
 
 		*outValueArray = temp;
 		*arrayLength = p_data->NodeVars;
@@ -871,9 +868,9 @@ int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, long periodIndex,
 	int errorcode = 0;
 	float* temp;
 	F_OFF offset;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
@@ -888,7 +885,7 @@ int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, long periodIndex,
 			+ p_data->Nnodes*p_data->NodeVars + linkIndex*p_data->LinkVars)*RECORDSIZE;
 
 		fseeko64(p_data->file, offset, SEEK_SET);
-		fread(outValueArray, RECORDSIZE, p_data->LinkVars, p_data->file);
+		fread(temp, RECORDSIZE, p_data->LinkVars, p_data->file);
 
 		*outValueArray = temp;
 		*arrayLength = p_data->LinkVars;
@@ -906,9 +903,9 @@ int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, long periodIndex,
 	int errorcode = 0;
 	float* temp;
 	F_OFF offset;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
@@ -921,7 +918,7 @@ int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, long periodIndex,
 			+ p_data->Nlinks*p_data->LinkVars)*RECORDSIZE;
 
 		fseeko64(p_data->file, offset, SEEK_SET);
-		fread(outValueArray, RECORDSIZE, p_data->SysVars, p_data->file);
+		fread(temp, RECORDSIZE, p_data->SysVars, p_data->file);
 
 		*outValueArray = temp;
 		*arrayLength = p_data->SysVars;
@@ -943,9 +940,9 @@ void DLLEXPORT SMO_free(void** array)
 
 void DLLEXPORT SMO_clearError(SMO_Handle p_handle)
 {
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 	clear_error(p_data->error_handle);
 }
 
@@ -953,9 +950,9 @@ int DLLEXPORT SMO_checkError(SMO_Handle p_handle, char** msg_buffer)
 {
 	int errorcode = 0;
 	char *temp = NULL;
-	p_data_t p_data;
+	data_t* p_data;
 
-	p_data = p_handle;
+	p_data = (data_t*)p_handle;
 
 	if (p_data == NULL) return -1;
 	else
@@ -1018,7 +1015,7 @@ void errorLookup(int errcode, char* dest_msg, int dest_len)
 
 
 // Local functions:
-int validateFile(p_data_t p_data)
+int validateFile(data_t* p_data)
 {
 	INT4 magic1, magic2, errcode;
 	int errorcode = 0;
@@ -1046,7 +1043,7 @@ int validateFile(p_data_t p_data)
 	return errorcode;
 }
 
-void initElementNames(p_data_t p_data)
+void initElementNames(data_t* p_data)
 {
 	int j, numNames;
 
@@ -1061,12 +1058,16 @@ void initElementNames(p_data_t p_data)
 	for(j=0;j<numNames;j++)
 	{
 		fread(&(p_data->elementNames[j].length), RECORDSIZE, 1, p_data->file);
-		p_data->elementNames[j].IDname = calloc(p_data->elementNames[j].length + 1, sizeof(char));
-		fread(p_data->elementNames[j].IDname, sizeof(char), p_data->elementNames[j].length, p_data->file);
+
+		p_data->elementNames[j].IDname =
+				(char*)calloc(p_data->elementNames[j].length + 1, sizeof(char));
+
+		fread(p_data->elementNames[j].IDname, sizeof(char),
+				p_data->elementNames[j].length, p_data->file);
 	}
 }
 
-double getTimeValue(p_data_t p_data, long timeIndex)
+double getTimeValue(data_t* p_data, long timeIndex)
 {
 	F_OFF offset;
 	double value;
@@ -1081,7 +1082,7 @@ double getTimeValue(p_data_t p_data, long timeIndex)
 	return value;
 }
 
-float getSubcatchValue(p_data_t p_data, long timeIndex, int subcatchIndex,
+float getSubcatchValue(data_t* p_data, long timeIndex, int subcatchIndex,
 		SMO_subcatchAttribute attr)
 {
 	F_OFF offset;
@@ -1099,7 +1100,7 @@ float getSubcatchValue(p_data_t p_data, long timeIndex, int subcatchIndex,
 	return value;
 }
 
-float getNodeValue(p_data_t p_data, long timeIndex, int nodeIndex,
+float getNodeValue(data_t* p_data, long timeIndex, int nodeIndex,
 		SMO_nodeAttribute attr)
 {
 	F_OFF offset;
@@ -1117,7 +1118,7 @@ float getNodeValue(p_data_t p_data, long timeIndex, int nodeIndex,
 	return value;
 }
 
-float getLinkValue(p_data_t p_data, long timeIndex, int linkIndex,
+float getLinkValue(data_t* p_data, long timeIndex, int linkIndex,
 		SMO_linkAttribute attr)
 {
 	F_OFF offset;
@@ -1136,7 +1137,7 @@ float getLinkValue(p_data_t p_data, long timeIndex, int linkIndex,
 	return value;
 }
 
-float getSystemValue(p_data_t p_data, long timeIndex,
+float getSystemValue(data_t* p_data, long timeIndex,
 		SMO_systemAttribute attr)
 {
 	F_OFF offset;

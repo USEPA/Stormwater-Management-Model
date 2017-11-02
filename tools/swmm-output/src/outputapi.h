@@ -18,13 +18,6 @@
 typedef void* SMO_Handle;
 
 typedef enum {
-	subcatchCount,
-	nodeCount,
-	linkCount,
-	pollutantCount
-} SMO_elementCount;
-
-typedef enum {
 	flow_rate,
 	concentration
 } SMO_unit;
@@ -100,33 +93,35 @@ typedef enum {
 
 #ifdef WINDOWS
   #ifdef __cplusplus
-  #define DLLEXPORT extern "C" __declspec(dllexport) __stdcall
+  #define DLLEXPORT __declspec(dllexport) __cdecl
   #else
   #define DLLEXPORT __declspec(dllexport) __stdcall
   #endif
 #else
   #ifdef __cplusplus
-  #define DLLEXPORT extern "C"
+  #define DLLEXPORT
   #else
   #define DLLEXPORT
   #endif
+#endif
+
+#ifdef __cplusplus
+  extern "C" {
 #endif
 
 int DLLEXPORT SMO_init(SMO_Handle* p_handle);
 int DLLEXPORT SMO_close(SMO_Handle* p_handle);
 int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path);
 int DLLEXPORT SMO_getVersion(SMO_Handle p_handle, int* version);
-int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, SMO_elementCount code,
-		int* count);
+int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, int** element_count, int* length);
 
 int DLLEXPORT SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag);
-int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int pollutantIndex,
-		int* unitFlag);
+int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* length);
 
 int DLLEXPORT SMO_getStartDate(SMO_Handle p_handle, double* date);
 int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time);
 int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
-		int elementIndex, char* elementName, int length);
+		int elementIndex, char** elementName, int* length);
 
 //float* DLLEXPORT SMO_newOutValueSeries(SMO_Handle* p_handle, long seriesStart,
 //	long seriesLength, long* length, int* errcode);
@@ -165,5 +160,9 @@ void DLLEXPORT SMO_free(void** array);
 void DLLEXPORT SMO_clearError(SMO_Handle p_handle_in);
 
 int DLLEXPORT SMO_checkError(SMO_Handle p_handle_in, char** msg_buffer);
+
+#ifdef __cplusplus
+  }
+#endif
 
 #endif /* OUTPUTAPI_H_ */
