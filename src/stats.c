@@ -56,7 +56,6 @@ static double          SysOutfallFlow;
 //  Exportable variables (shared with statsrpt.c)
 //-----------------------------------------------------------------------------
 TSubcatchStats*     SubcatchStats;
-TSubcatchBuildup*   SubcatchBuildup;
 TNodeStats*         NodeStats;
 TLinkStats*         LinkStats;
 TStorageStats*      StorageStats;
@@ -78,7 +77,6 @@ extern double*         NodeOutflow;    // defined in massbal.c
 //  stats_close                   (called from swmm_end in swmm5.c)
 //  stats_report                  (called from swmm_end in swmm5.c)
 //  stats_updateSubcatchStats     (called from subcatch_getRunoff)
-//  stats_updateSubcatchBuildup   (called from subcatch_getRunoff)
 //  stats_updateGwaterStats       (called from gwater_getGroundwater)          //(5.1.008)
 //  stats_updateFlowStats         (called from routing_execute)
 //  stats_updateCriticalTimeCount (called from getVariableStep in dynwave.c)
@@ -129,36 +127,21 @@ int  stats_open()
             SubcatchStats[j].infil   = 0.0;
             SubcatchStats[j].runoff  = 0.0;
             SubcatchStats[j].maxFlow = 0.0;
-        }
 
-    // --- allocate memory for & initialize subcatchment buildup structure
-    SubcatchBuildup = NULL;
-    if ( Nobjects[SUBCATCH] > 0)
-    {
-        SubcatchBuildup = (TSubcatchBuildup *) calloc(Nobjects[SUBCATCH],
-                                                    sizeof(TSubcatchBuildup));
-        if ( !SubcatchBuildup )
-        {
-            report_writeErrorMsg(ERR_MEMORY, "");
-            return ErrorCode;
-        }
-        else for ( j = 0; j < Nobjects[SUBCATCH]; j++ )
-        {
             if ( Nobjects[POLLUT] > 0 )
             {
-                SubcatchBuildup[j].buildup =
+                SubcatchStats[j].surfaceBuildup =
                     (double *) calloc(Nobjects[POLLUT], sizeof(double));
-                if ( !SubcatchBuildup[j].buildup )
+                if ( !SubcatchStats[j].surfaceBuildup )
                 {
                     report_writeErrorMsg(ERR_MEMORY, "");
                     return ErrorCode;
                 }
                 for ( p = 0; p < Nobjects[POLLUT]; p++ )
-                    SubcatchBuildup[j].buildup[p] = 0.0;
+                    SubcatchStats[j].surfaceBuildup[p] = 0.0;
             }
-            else SubcatchBuildup[j].buildup = NULL;
-        }    
-    }
+            else SubcatchStats[j].surfaceBuildup = NULL;
+        }
 
 ////  Added to release 5.1.008.  ////                                          //(5.1.008)
 ////
@@ -326,12 +309,12 @@ void  stats_close()
 {
     int j;
 
-    FREE(SubcatchStats);
-    if ( SubcatchBuildup )
+    if ( SubcatchStats)
+    {
         for ( j=0; j<Nobjects[SUBCATCH]; j++ )
-            FREE(SubcatchBuildup[j].buildup);
-        FREE(SubcatchBuildup);
-    FREE(SubcatchBuildup);
+            FREE(SubcatchStats[j].surfaceBuildup);
+        FREE(SubcatchStats);
+    }
     FREE(NodeStats);
     FREE(LinkStats);
     FREE(StorageStats); 
@@ -380,32 +363,24 @@ void   stats_updateSubcatchStats(int j, double rainVol, double runonVol,
 //           runoffVol = runoff volume (ft3)
 //           runoff    = runoff rate (cfs)
 //  Output:  none
-//  Purpose: updates totals of runoff components for a specific subcatchment.
+//  Purpose: updates totals of runoff components and the surface buildup
+//           of pollutants for a specific subcatchment.
 //
 {
+    int p;
+    
     SubcatchStats[j].precip += rainVol;
     SubcatchStats[j].runon  += runonVol;
     SubcatchStats[j].evap   += evapVol;
     SubcatchStats[j].infil  += infilVol;
     SubcatchStats[j].runoff += runoffVol;
     SubcatchStats[j].maxFlow = MAX(SubcatchStats[j].maxFlow, runoff);
-}
-
-//=============================================================================
-
-void    stats_updateSubcatchBuildup(int j)
-//
-// Input: j = subcatchment index
-// Output: none
-// Purpose: updates buildup load (of all pollutants) for a specific subcatchment.
-//
-{
-    int p;
     
     for ( p = 0; p < Nobjects[POLLUT]; p++ )
     {
-        SubcatchBuildup[j].buildup[p] = subcatch_getBuildup( j, p );
+        SubcatchStats[j].surfaceBuildup[p] = subcatch_getBuildup( j, p );
     }
+        
 }
 
 //=============================================================================
@@ -1075,6 +1050,7 @@ int stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats)
 //
 {
 	int errorcode = 0;
+    int p;
 
 	// Check if Open
 	if (swmm_IsOpenFlag() == FALSE)
@@ -1098,61 +1074,24 @@ int stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats)
 	{
 		// Copy Structure
 		memcpy(subcatchStats, &SubcatchStats[index], sizeof(TSubcatchStats));
-	}
-	return errorcode;
-}
-
-int stats_getSubcatchBuildup(int index, TSubcatchBuildup *subcatchBuildup)
-//
-// Input:    index
-//           element = element to return
-// Return:   value
-// Purpose:  Gets a Subcatchment Buildup for toolkitAPI
-//
-{
-    int errorcode = 0;
-    int p;
-
-    // Check if Open
-    if (swmm_IsOpenFlag() == FALSE)
-    {
-        errorcode = ERR_API_INPUTNOTOPEN;
-    }
-
-    // Check if Simulation is Running
-    else if (swmm_IsStartedFlag() == FALSE)
-    {
-        errorcode = ERR_API_SIM_NRUNNING;
-    }
-
-    // Check if object index is within bounds
-    else if (index < 0 || index >= Nobjects[SUBCATCH])
-    {
-        errorcode = ERR_API_OBJECT_INDEX;
-    }
-
-    else
-    {
-        // Copy Structure
-        memcpy(subcatchBuildup, &SubcatchBuildup[index], sizeof(TSubcatchBuildup));
-
+        
         // Perform Deep Copy of Pollutant Buildup Results
         if (Nobjects[POLLUT] > 0)
         {
-            subcatchBuildup->buildup =
+            subcatchStats->surfaceBuildup =
                 (double *)calloc(Nobjects[POLLUT], sizeof(double));
-            if (!subcatchBuildup->buildup)
+            if (!subcatchStats->surfaceBuildup)
             {
                 errorcode = ERR_MEMORY;
             }
             if (errorcode == 0)
             {
                 for (p = 0; p < Nobjects[POLLUT]; p++)
-                    subcatchBuildup->buildup[p] = SubcatchBuildup[index].buildup[p];
+                    subcatchStats->surfaceBuildup[p] = SubcatchStats[index].surfaceBuildup[p];
             }
         }
-        else subcatchBuildup->buildup = NULL;
-    }
-    return errorcode;
+        else subcatchStats->surfaceBuildup = NULL;
+	}
+	return errorcode;
 }
 

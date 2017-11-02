@@ -965,13 +965,15 @@ int DLLEXPORT swmm_getPumpStats(int index, TPumpStats *pumpStats)
 }
 
 
-
 int DLLEXPORT swmm_getSubcatchStats(int index, TSubcatchStats *subcatchStats)
 //
 // Output: 	Subcatchment Stats Structure (TSubcatchStats)
 // Return: 	API Error
 // Purpose: Gets Subcatchment Stats and Converts Units 
+// Note: Caller is responsible for calling swmm_freeSubcatchStats
+//       to free the pollutants array.
 {
+    int p;
 	int errorcode = stats_getSubcatchStat(index, subcatchStats);
 	
 	if (errorcode == 0)
@@ -990,46 +992,31 @@ int DLLEXPORT swmm_getSubcatchStats(int index, TSubcatchStats *subcatchStats)
 		subcatchStats->precip *= (UCF(RAINDEPTH) / a);
 		// Cumulative Evaporation Volume
 		subcatchStats->evap *= (UCF(RAINDEPTH) / a);
+        
+        if (Nobjects[POLLUT] > 0)
+        {
+            for (p = 0; p < Nobjects[POLLUT]; p++)
+                subcatchStats->surfaceBuildup[p] *= Pollut[p].mcf;
+                if (Pollut[p].units == COUNT)
+                {
+                    subcatchStats->surfaceBuildup[p] =
+                        LOG10(subcatchStats->surfaceBuildup[p]);
+                }
+        }
 	}
 	
 	return (errorcode);		
 }
 
-int DLLEXPORT swmm_getSubcatchBuildup(int index, TSubcatchBuildup *subcatchBuildup)
-//
-// Output:  Subcatchment Buildup Structure (TSubcatchBuildup)
-// Return:  API Error
-// Purpose: Gets Subcatchment Buildup and Converts Units
-// Note:    Caller is responsible for calling swmm_freeSubcatchBuildup
-//          to free the pollutants array.
-{
-    int p;
-    int errorcode = stats_getSubcatchBuildup(index, subcatchBuildup);
 
-    if (errorcode == 0)
-    {
-        if (Nobjects[POLLUT] > 0)
-        {
-            for (p = 0; p < Nobjects[POLLUT]; p++)
-                subcatchBuildup->buildup[p] *= Pollut[p].mcf;
-                if (Pollut[p].units == COUNT)
-                {
-                    subcatchBuildup->buildup[p] = LOG10(subcatchBuildup->buildup[p]);
-                }
-        }
-    }
-
-    return (errorcode);
-}
-
-void DLLEXPORT swmm_freeSubcatchBuildup(TSubcatchBuildup *subcatchBuildup)
+void DLLEXPORT swmm_freeSubcatchStats(TSubcatchStats *subcatchStats)
 //
 // Return:  API Error
-// Purpose: Frees Subcatchment Buildup 
-// Note:    API user is responsible for calling swmm_freeSubcatchBuildup
+// Purpose: Frees Subcatchment Stats 
+// Note:    API user is responsible for calling swmm_freeSubcatchStats
 //          since this function performs a memory allocation.
 {
-    FREE(subcatchBuildup->buildup);
+    FREE(subcatchStats->surfaceBuildup);
 }
 
 int DLLEXPORT swmm_getSystemRoutingStats(TRoutingTotals *routingTot)
