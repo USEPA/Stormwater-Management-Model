@@ -139,7 +139,7 @@ TEST_F(OutputapiTest, getElementNameTest) {
     char* c_array = NULL;
     int index = 1;
 
-    error = SMO_getElementName(p_handle, node, index, &c_array, &array_dim);
+    error = SMO_getElementName(p_handle, node, index, &c_array);
     ASSERT_EQ(0, error);
 
     EXPECT_STREQ("10", c_array);

@@ -23,12 +23,6 @@ typedef enum {
 } SMO_unit;
 
 typedef enum {
-	//getSeries,
-	getAttribute,
-	getResult
-} SMO_apiFunction;
-
-typedef enum {
 	subcatch,
 	node,
 	link,
@@ -36,7 +30,6 @@ typedef enum {
 } SMO_elementType;
 
 typedef enum {
-//	reportStart,
 	reportStep,
 	numPeriods
 } SMO_time;
@@ -113,20 +106,14 @@ int DLLEXPORT SMO_init(SMO_Handle* p_handle);
 int DLLEXPORT SMO_close(SMO_Handle* p_handle);
 int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path);
 int DLLEXPORT SMO_getVersion(SMO_Handle p_handle, int* version);
-int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, int** element_count, int* length);
+int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, int** elementCount, int* length);
 
 int DLLEXPORT SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag);
 int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* length);
-
 int DLLEXPORT SMO_getStartDate(SMO_Handle p_handle, double* date);
 int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time);
 int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
-		int elementIndex, char** elementName, int* length);
-
-//float* DLLEXPORT SMO_newOutValueSeries(SMO_Handle* p_handle, long seriesStart,
-//	long seriesLength, long* length, int* errcode);
-//float* DLLEXPORT SMO_newOutValueArray(SMO_Handle* p_handle, SMO_apiFunction func,
-//		SMO_elementType type, long* length, int* errcode);
+		int elementIndex, char** elementName);
 
 int DLLEXPORT SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
 	SMO_subcatchAttribute attr, int startPeriod, int endPeriod, float** outValueSeries, int* dim);
@@ -144,7 +131,7 @@ int DLLEXPORT SMO_getNodeAttribute(SMO_Handle p_handle, int timeIndex,
 int DLLEXPORT SMO_getLinkAttribute(SMO_Handle p_handle, int timeIndex,
 	SMO_linkAttribute attr, float** outValueArray, int* length);
 int DLLEXPORT SMO_getSystemAttribute(SMO_Handle p_handle, int timeIndex,
-	SMO_systemAttribute attr, float** outValue, int* length);
+	SMO_systemAttribute attr, float** outValueArray, int* length);
 
 int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, long timeIndex,
 	int subcatchIndex, float** outValueArray, int* arrayLength);
@@ -156,9 +143,7 @@ int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, long timeIndex,
 	int dummyIndex, float** outValueArray, int* arrayLength);
 
 void DLLEXPORT SMO_free(void** array);
-
 void DLLEXPORT SMO_clearError(SMO_Handle p_handle_in);
-
 int DLLEXPORT SMO_checkError(SMO_Handle p_handle_in, char** msg_buffer);
 
 #ifdef __cplusplus

@@ -18,7 +18,16 @@
 
 
 // NOTE: These depend on machine data model and may change when porting
-#define F_OFF off_t      // Must be a 8 byte / 64 bit integer for large file support
+// F_OFF Must be a 8 byte / 64 bit integer for large file support
+#ifdef _WIN32 // Windows (32-bit and 64-bit)
+    #define F_OFF __int64
+    #define FSEEK64 _fseeki64
+    #define FTELL64 _ftelli64
+#else         // Other platforms
+    #define F_OFF off_t
+    #define FSEEK64 fseeko
+    #define FTELL64 ftello
+#endif
 #define INT4  int        // Must be a 4 byte / 32 bit integer type
 #define REAL4 float      // Must be a 4 byte / 32 bit real type
 
@@ -84,8 +93,13 @@ float  getNodeValue(data_t* p_data, long timeIndex, int nodeIndex, SMO_nodeAttri
 float  getLinkValue(data_t* p_data, long timeIndex, int linkIndex, SMO_linkAttribute attr);
 float  getSystemValue(data_t* p_data, long timeIndex, SMO_systemAttribute attr);
 
-float* newArray(int n);
+float* newFloatArray(int n);
+int* newIntArray(int n);
+char* newCharArray(int n);
 
+int _fopen(FILE **f, const char *name, const char *mode);
+int _fseek(FILE* stream, F_OFF offset, int whence);
+F_OFF _ftell(FILE* stream);
 
 int DLLEXPORT SMO_init(SMO_Handle* p_handle)
 //  Purpose: Initialized pointer for the opaque SMO_Handle.
@@ -164,8 +178,9 @@ int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path)
     {
     	strncpy(p_data->name, path, MAXFILENAME);
 
-    	// --- open the output file
-    	if ((p_data->file = fopen(path, "rb")) == NULL) errorcode = 434;
+        // Attempt to open binary output file for reading only
+    	if ((_fopen(&(p_data->file), path, "rb")) != 0) errorcode = 434;
+
     	// --- validate the output file
     	else if ((err = validateFile(p_data)) != 0) errorcode = err;
 
@@ -184,21 +199,21 @@ int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path)
     		offset += p_data->ObjPropPos;
 
     		// Read number & codes of computed variables
-    		fseeko64(p_data->file, offset, SEEK_SET);
+    		_fseek(p_data->file, offset, SEEK_SET);
     		fread(&(p_data->SubcatchVars), RECORDSIZE, 1, p_data->file); // # Subcatch variables
 
-    		fseeko64(p_data->file, p_data->SubcatchVars*RECORDSIZE, SEEK_CUR);
+    		_fseek(p_data->file, p_data->SubcatchVars*RECORDSIZE, SEEK_CUR);
     		fread(&(p_data->NodeVars), RECORDSIZE, 1, p_data->file);     // # Node variables
 
-    		fseeko64(p_data->file, p_data->NodeVars*RECORDSIZE, SEEK_CUR);
+    		_fseek(p_data->file, p_data->NodeVars*RECORDSIZE, SEEK_CUR);
     		fread(&(p_data->LinkVars), RECORDSIZE, 1, p_data->file);     // # Link variables
 
-    		fseeko64(p_data->file, p_data->LinkVars*RECORDSIZE, SEEK_CUR);
+    		_fseek(p_data->file, p_data->LinkVars*RECORDSIZE, SEEK_CUR);
     		fread(&(p_data->SysVars), RECORDSIZE, 1, p_data->file);     // # System variables
 
     		// --- read data just before start of output results
     		offset = p_data->ResultsPos - 3 * RECORDSIZE;
-    		fseeko64(p_data->file, offset, SEEK_SET);
+    		_fseek(p_data->file, offset, SEEK_SET);
     		fread(&(p_data->StartDate), DATESIZE, 1, p_data->file);
     		fread(&(p_data->ReportStep), RECORDSIZE, 1, p_data->file);
 
@@ -248,7 +263,7 @@ int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, int** elementCount, int* l
 //
 {
 	int errorcode = 0;
-	int* temp = new int[NELEMENTTYPES];
+	int* temp = newIntArray(NELEMENTTYPES);
 	data_t* p_data;
 
 	p_data = (data_t*)p_handle;
@@ -319,14 +334,14 @@ int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* le
 
 	p_data = (data_t*)p_handle;
 
-	temp = new int[p_data->Npolluts];
+	temp = newIntArray(p_data->Npolluts);
 
 	if (p_data == NULL) errorcode = -1;
 	else if (MEMCHECK(temp)) errorcode = 414;
 	else
     {
         offset = p_data->ObjPropPos - (p_data->Npolluts * RECORDSIZE);
-        fseek(p_data->file, offset, SEEK_SET);
+        _fseek(p_data->file, offset, SEEK_SET);
         fread(temp, RECORDSIZE, p_data->Npolluts, p_data->file);
 
         *unitFlag = temp;
@@ -364,7 +379,7 @@ int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time)
 	int errorcode = 0;
 	data_t* p_data;
 
-	*time = -1.0;
+	*time = -1;
 
 	p_data = (data_t*)p_handle;
 
@@ -385,16 +400,12 @@ int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time)
 }
 
 int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
-		int index, char** name, int* length)
+		int index, char** name)
 //
 //  Purpose: Given an element index returns the element name.
 //
-//  Note: The caller is responsible for allocating memory for the char array
-//    name. The caller passes the length of the array allocated. The name may
-//    be truncated if an array of adequate length is not passed.
-//
 {
-	int idx, errorcode = 0;
+	int idx, len, errorcode = 0;
 	data_t* p_data;
 
 	p_data = (data_t*)p_handle;
@@ -441,10 +452,10 @@ int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
 		}
 
 		if (!errorcode) {
-			*length = p_data->elementNames[idx].length;
-			*name = new char[*length + 1];
+			len = p_data->elementNames[idx].length;
+			*name = newCharArray(len + 1);
 
-			strncpy(*name, p_data->elementNames[idx].IDname, (size_t)(*length));
+			strncpy(*name, p_data->elementNames[idx].IDname, (size_t)(len));
 		}
 	}
 
@@ -559,7 +570,7 @@ int DLLEXPORT SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
     else if (startPeriod < 0 || startPeriod >= p_data->Nperiods ||
     		endPeriod <= startPeriod) errorcode = 422;
 	// Check memory for outValues
-	else if MEMCHECK(temp = newArray(length = endPeriod - startPeriod)) errorcode = 411;
+	else if MEMCHECK(temp = newFloatArray(length = endPeriod - startPeriod)) errorcode = 411;
 	else
 	{
 		// loop over and build time series
@@ -593,7 +604,7 @@ int DLLEXPORT SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex, SMO_nodeAttr
     else if (startPeriod < 0 || startPeriod >= p_data->Nperiods ||
     		endPeriod <= startPeriod) errorcode = 422;
 	// Check memory for outValues
-	else if MEMCHECK(temp = newArray(length = endPeriod - startPeriod)) errorcode = 411;
+	else if MEMCHECK(temp = newFloatArray(length = endPeriod - startPeriod)) errorcode = 411;
 	else
 	{
 		// loop over and build time series
@@ -627,7 +638,7 @@ int DLLEXPORT SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex, SMO_linkAttr
     else if (startPeriod < 0 || startPeriod >= p_data->Nperiods ||
        		endPeriod <= startPeriod) errorcode = 422;
 	// Check memory for outValues
-	else if MEMCHECK(temp = newArray(length = endPeriod - startPeriod)) errorcode = 411;
+	else if MEMCHECK(temp = newFloatArray(length = endPeriod - startPeriod)) errorcode = 411;
 	else
 	{
 		// loop over and build time series
@@ -660,7 +671,7 @@ int DLLEXPORT SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute attr,
     else if (startPeriod < 0 || startPeriod >= p_data->Nperiods ||
     		endPeriod <= startPeriod) errorcode = 422;
 	// Check memory for outValues
-	else if MEMCHECK(temp = newArray(length = endPeriod - startPeriod)) errorcode = 411;
+	else if MEMCHECK(temp = newFloatArray(length = endPeriod - startPeriod)) errorcode = 411;
 	else
 	{
 		// loop over and build time series
@@ -689,7 +700,7 @@ int DLLEXPORT SMO_getSubcatchAttribute(SMO_Handle p_handle, int periodIndex,
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
 	// Check memory for outValues
-	else if MEMCHECK(temp = newArray(p_data->Nsubcatch)) errorcode = 411;
+	else if MEMCHECK(temp = newFloatArray(p_data->Nsubcatch)) errorcode = 411;
 	else
 	{
 		// loop over and pull result
@@ -720,7 +731,7 @@ int DLLEXPORT SMO_getNodeAttribute(SMO_Handle p_handle, int periodIndex,
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
 	// Check memory for outValues
-	else if MEMCHECK(temp = newArray(p_data->Nnodes)) errorcode = 411;
+	else if MEMCHECK(temp = newFloatArray(p_data->Nnodes)) errorcode = 411;
 	else
 	{
 		// loop over and pull result
@@ -749,7 +760,7 @@ int DLLEXPORT SMO_getLinkAttribute(SMO_Handle p_handle, int periodIndex,
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
 	// Check memory for outValues
-	else if MEMCHECK(temp = newArray(p_data->Nlinks)) errorcode = 411;
+	else if MEMCHECK(temp = newFloatArray(p_data->Nlinks)) errorcode = 411;
 	else
 	{
 		// loop over and pull result
@@ -765,7 +776,7 @@ int DLLEXPORT SMO_getLinkAttribute(SMO_Handle p_handle, int periodIndex,
 
 
 int DLLEXPORT SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
-	SMO_systemAttribute attr, float** outValue, int* length)
+	SMO_systemAttribute attr, float** outValueArray, int* length)
 //
 //  Purpose: For the system at given time, get a particular attribute.
 //
@@ -783,7 +794,7 @@ int DLLEXPORT SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
 		// don't need to loop since there's only one system
 		temp = getSystemValue(p_data, periodIndex, attr);
 
-		*outValue = &temp;
+		*outValueArray = &temp;
 		*length = 1;
 	}
 
@@ -806,7 +817,7 @@ int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, long periodIndex,
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
     else if (subcatchIndex < 0 || subcatchIndex > p_data->Nsubcatch) errorcode = 423;
-	else if MEMCHECK(temp = newArray(p_data->SubcatchVars)) errorcode = 411;
+	else if MEMCHECK(temp = newFloatArray(p_data->SubcatchVars)) errorcode = 411;
 	else
 	{
 		// --- compute offset into output file
@@ -814,7 +825,7 @@ int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, long periodIndex,
 		// add offset for subcatchment
 		offset += (subcatchIndex*p_data->SubcatchVars)*RECORDSIZE;
 
-		fseeko64(p_data->file, offset, SEEK_SET);
+		_fseek(p_data->file, offset, SEEK_SET);
 		fread(temp, RECORDSIZE, p_data->SubcatchVars, p_data->file);
 
 		*outValueArray = temp;
@@ -841,7 +852,7 @@ int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, long periodIndex,
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
     else if (nodeIndex < 0 || nodeIndex > p_data->Nnodes) errorcode = 423;
-	else if MEMCHECK(temp = newArray(p_data->NodeVars)) errorcode = 411;
+	else if MEMCHECK(temp = newFloatArray(p_data->NodeVars)) errorcode = 411;
 	else
 	{
 		// calculate byte offset to start time for series
@@ -849,7 +860,7 @@ int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, long periodIndex,
 		// add offset for subcatchment and node
 		offset += (p_data->Nsubcatch*p_data->SubcatchVars + nodeIndex*p_data->NodeVars)*RECORDSIZE;
 
-		fseeko64(p_data->file, offset, SEEK_SET);
+		_fseek(p_data->file, offset, SEEK_SET);
 		fread(temp, RECORDSIZE, p_data->NodeVars, p_data->file);
 
 		*outValueArray = temp;
@@ -875,7 +886,7 @@ int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, long periodIndex,
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
     else if (linkIndex < 0 || linkIndex > p_data->Nlinks) errorcode = 423;
-	else if MEMCHECK(temp = newArray(p_data->LinkVars)) errorcode = 411;
+	else if MEMCHECK(temp = newFloatArray(p_data->LinkVars)) errorcode = 411;
 	else
 	{
 		// calculate byte offset to start time for series
@@ -884,7 +895,7 @@ int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, long periodIndex,
 		offset += (p_data->Nsubcatch*p_data->SubcatchVars
 			+ p_data->Nnodes*p_data->NodeVars + linkIndex*p_data->LinkVars)*RECORDSIZE;
 
-		fseeko64(p_data->file, offset, SEEK_SET);
+		_fseek(p_data->file, offset, SEEK_SET);
 		fread(temp, RECORDSIZE, p_data->LinkVars, p_data->file);
 
 		*outValueArray = temp;
@@ -909,7 +920,7 @@ int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, long periodIndex,
 
     if (p_data == NULL) errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods) errorcode = 422;
-	else if MEMCHECK(temp = newArray(p_data->SysVars)) errorcode = 411;
+	else if MEMCHECK(temp = newFloatArray(p_data->SysVars)) errorcode = 411;
 	{
 		// calculate byte offset to start time for series
 		offset = p_data->ResultsPos + (periodIndex)*p_data->BytesPerPeriod + 2 * RECORDSIZE;
@@ -917,7 +928,7 @@ int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, long periodIndex,
 		offset += (p_data->Nsubcatch*p_data->SubcatchVars + p_data->Nnodes*p_data->NodeVars
 			+ p_data->Nlinks*p_data->LinkVars)*RECORDSIZE;
 
-		fseeko64(p_data->file, offset, SEEK_SET);
+		_fseek(p_data->file, offset, SEEK_SET);
 		fread(temp, RECORDSIZE, p_data->SysVars, p_data->file);
 
 		*outValueArray = temp;
@@ -1021,7 +1032,7 @@ int validateFile(data_t* p_data)
 	int errorcode = 0;
 
 	// --- fast forward to end and read epilogue
-	fseeko64(p_data->file, -6 * RECORDSIZE, SEEK_END);
+	_fseek(p_data->file, -6 * RECORDSIZE, SEEK_END);
 	fread(&(p_data->IDPos), RECORDSIZE, 1, p_data->file);
 	fread(&(p_data->ObjPropPos), RECORDSIZE, 1, p_data->file);
 	fread(&(p_data->ResultsPos), RECORDSIZE, 1, p_data->file);
@@ -1030,7 +1041,7 @@ int validateFile(data_t* p_data)
 	fread(&magic2, RECORDSIZE, 1, p_data->file);
 
 	// --- rewind and read magic number from beginning of the file
-	fseeko(p_data->file, 0L, SEEK_SET);
+	_fseek(p_data->file, 0L, SEEK_SET);
 	fread(&magic1, RECORDSIZE, 1, p_data->file);
 
 	// Is this a valid SWMM binary output file?
@@ -1053,7 +1064,7 @@ void initElementNames(data_t* p_data)
 	p_data->elementNames = (idEntry*)calloc(numNames, sizeof(idEntry));
 
 	// Position the file to the start of the ID entries
-	fseeko64(p_data->file, p_data->IDPos, SEEK_SET);
+	_fseek(p_data->file, p_data->IDPos, SEEK_SET);
 
 	for(j=0;j<numNames;j++)
 	{
@@ -1076,7 +1087,7 @@ double getTimeValue(data_t* p_data, long timeIndex)
 	offset = p_data->ResultsPos + timeIndex*p_data->BytesPerPeriod;
 
 	// --- re-position the file and read the result
-	fseeko64(p_data->file, offset, SEEK_SET);
+	_fseek(p_data->file, offset, SEEK_SET);
 	fread(&value, RECORDSIZE * 2, 1, p_data->file);
 
 	return value;
@@ -1094,7 +1105,7 @@ float getSubcatchValue(data_t* p_data, long timeIndex, int subcatchIndex,
 	offset += RECORDSIZE*(subcatchIndex*p_data->SubcatchVars + attr);
 
 	// --- re-position the file and read the result
-	fseeko64(p_data->file, offset, SEEK_SET);
+	_fseek(p_data->file, offset, SEEK_SET);
 	fread(&value, RECORDSIZE, 1, p_data->file);
 
 	return value;
@@ -1112,7 +1123,7 @@ float getNodeValue(data_t* p_data, long timeIndex, int nodeIndex,
 	offset += RECORDSIZE*(p_data->Nsubcatch*p_data->SubcatchVars + nodeIndex*p_data->NodeVars + attr);
 
 	// --- re-position the file and read the result
-	fseeko64(p_data->file, offset, SEEK_SET);
+	_fseek(p_data->file, offset, SEEK_SET);
 	fread(&value, RECORDSIZE, 1, p_data->file);
 
 	return value;
@@ -1131,7 +1142,7 @@ float getLinkValue(data_t* p_data, long timeIndex, int linkIndex,
 		linkIndex*p_data->LinkVars + attr);
 
 	// --- re-position the file and read the result
-	fseeko64(p_data->file, offset, SEEK_SET);
+	_fseek(p_data->file, offset, SEEK_SET);
 	fread(&value, RECORDSIZE, 1, p_data->file);
 
 	return value;
@@ -1150,16 +1161,59 @@ float getSystemValue(data_t* p_data, long timeIndex,
 		p_data->Nlinks*p_data->LinkVars + attr);
 
 	// --- re-position the file and read the result
-	fseeko64(p_data->file, offset, SEEK_SET);
+	_fseek(p_data->file, offset, SEEK_SET);
 	fread(&value, RECORDSIZE, 1, p_data->file);
 
 	return value;
 }
 
-float* newArray(int n)
+float* newFloatArray(int n)
 //
 //  Warning: Caller must free memory allocated by this function.
 //
 {
 	return (float*) malloc((n)*sizeof(float));
 }
+
+int* newIntArray(int n)
+{
+    return (int*) malloc((n)*sizeof(int));
+}
+
+char* newCharArray(int n)
+{
+    return (char*) malloc((n)*sizeof(char));
+}
+
+int _fopen(FILE **f, const char *name, const char *mode) {
+//
+//  Purpose: Substitute for fopen_s on platforms where it doesn't exist
+//  Note: fopen_s is part of C++11 standard
+//
+    int ret = 0;
+#ifdef _WIN32
+    ret = (int)fopen_s(f, name, mode);
+#else
+    *f = fopen(name, mode);
+    if (!*f)
+        ret = -1;
+#endif
+    return ret;
+}
+
+int _fseek(FILE* stream, F_OFF offset, int whence)
+//
+//  Purpose: Selects platform fseek() for large file support
+//
+{
+    return FSEEK64(stream, offset, whence);
+}
+
+F_OFF _ftell(FILE* stream)
+//
+//  Purpose: Selects platform ftell() for large file support
+//
+{
+    return FTELL64(stream);
+}
+
