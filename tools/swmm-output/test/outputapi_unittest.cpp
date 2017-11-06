@@ -149,24 +149,24 @@ TEST_F(OutputapiTest, getElementNameTest) {
 }
 
 //TEST_F(OutputapiTest, getSubcatchSeriesTest) {
-//	float ref_array[11] = {0.0,
-//			               1.2438242,
-//			               2.5639679,
-//			               4.524055,
-//			               2.5115132,
-//			               0.69808137,
-//			               0.040894926,
-//			               0.011605669,
-//			               0.00509294,
-//						   0.0027438672,
-//						   10};
+//    float ref_array[11] = {0.0,
+//            1.2438242,
+//            2.5639679,
+//            4.524055,
+//            2.5115132,
+//            0.69808137,
+//            0.040894926,
+//            0.011605669,
+//            0.00509294,
+//            0.0027438672,
+//            10};
 //
-//	error = SMO_getSubcatchSeries(p_handle, 1, runoff_rate, 0, 10, &array, &array_dim);
-//	ASSERT_EQ(0, error);
+//    error = SMO_getSubcatchSeries(p_handle, 1, runoff_rate, 0, 10, &array, &array_dim);
+//    ASSERT_EQ(0, error);
 //
-//	EXPECT_EQ(11, array_dim);
-//	for (int i = 0; i < array_dim; i++)
-//		EXPECT_FLOAT_EQ(ref_array[i], array[i]);
+//    EXPECT_EQ(11, array_dim);
+//    for (int i = 0; i < array_dim; i++)
+//        EXPECT_FLOAT_EQ(ref_array[i], array[i]);
 //}
 
 TEST_F(OutputapiTest, getSubcatchResultTest) {
@@ -247,7 +247,6 @@ TEST_F(OutputapiTest, getSystemResultTest) {
     for (int i = 0; i < array_dim; i++)
         EXPECT_FLOAT_EQ(ref_array[i], array[i]);
 }
-
 }
 
 

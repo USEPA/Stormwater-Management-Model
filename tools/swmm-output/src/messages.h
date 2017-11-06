@@ -11,6 +11,8 @@
 #define MAXMSG 56
 
 /*------------------- Error Messages --------------------*/
+#define WARN10 "Warning: model run issued warnings"
+
 #define ERR411 "Error 411: memory allocation failure"
 
 #define ERR421 "Input Error 421: invalid parameter code"
@@ -21,7 +23,6 @@
 #define ERR434 "File Error 434: unable to open binary output file"
 #define ERR435 "File Error 435: invalid file - not created by SWMM"
 #define ERR436 "File Error 436: invalid file - contains no results"
-#define ERR437 "File Error 437: invalid file - model run issued warnings"
 
 #define ERR440 "ERROR 440: an unspecified error has occurred"
 

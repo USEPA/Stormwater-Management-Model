@@ -21,12 +21,8 @@
 // F_OFF Must be a 8 byte / 64 bit integer for large file support
 #ifdef _WIN32 // Windows (32-bit and 64-bit)
     #define F_OFF __int64
-    #define FSEEK64 _fseeki64
-    #define FTELL64 _ftelli64
 #else         // Other platforms
     #define F_OFF off_t
-    #define FSEEK64 fseeko
-    #define FTELL64 ftello
 #endif
 #define INT4  int        // Must be a 4 byte / 32 bit integer type
 #define REAL4 float      // Must be a 4 byte / 32 bit real type
@@ -93,13 +89,13 @@ float  getNodeValue(data_t* p_data, long timeIndex, int nodeIndex, SMO_nodeAttri
 float  getLinkValue(data_t* p_data, long timeIndex, int linkIndex, SMO_linkAttribute attr);
 float  getSystemValue(data_t* p_data, long timeIndex, SMO_systemAttribute attr);
 
-float* newFloatArray(int n);
-int* newIntArray(int n);
-char* newCharArray(int n);
-
 int _fopen(FILE **f, const char *name, const char *mode);
 int _fseek(FILE* stream, F_OFF offset, int whence);
 F_OFF _ftell(FILE* stream);
+
+float* newFloatArray(int n);
+int* newIntArray(int n);
+char* newCharArray(int n);
 
 int DLLEXPORT SMO_init(SMO_Handle* p_handle)
 //  Purpose: Initialized pointer for the opaque SMO_Handle.
@@ -184,7 +180,8 @@ int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path)
     	// --- validate the output file
     	else if ((err = validateFile(p_data)) != 0) errorcode = err;
 
-    	else {
+        // If a warning is encountered read file header
+        if (errorcode < 400 ) {
     		// --- otherwise read additional parameters from start of file
     		fseek(p_data->file, 3*RECORDSIZE, SEEK_SET);
     		fread(&(p_data->Nsubcatch), RECORDSIZE, 1, p_data->file);
@@ -225,9 +222,11 @@ int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path)
 							p_data->SysVars)*RECORDSIZE;
     	}
     }
-
-	if (errorcode)
-		SMO_close(&p_handle);
+    // If error close the binary file
+    if (errorcode > 400) {
+        set_error(p_data->error_handle, errorcode);
+        SMO_close(&p_handle);
+    }
 
 	return errorcode;
 }
@@ -337,7 +336,7 @@ int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* le
 	temp = newIntArray(p_data->Npolluts);
 
 	if (p_data == NULL) errorcode = -1;
-	else if (MEMCHECK(temp)) errorcode = 414;
+	else if (MEMCHECK(temp = newIntArray(p_data->Npolluts))) errorcode = 414;
 	else
     {
         offset = p_data->ObjPropPos - (p_data->Npolluts * RECORDSIZE);
@@ -461,94 +460,6 @@ int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
 
 	return errorcode;
 }
-
-
-//float* DLLEXPORT SMO_newOutValueSeries(SMOutputAPI* smoapi, long startPeriod,
-//	long endPeriod, long* length, int* errcode)
-////
-////  Purpose: Allocates memory for outValue Series.
-////
-////  Warning: Caller must free memory allocated by this function using SMO_free().
-////
-//{
-//	long size;
-//	float* array;
-//
-//    if (smoapi == NULL) *errcode = 410;
-//    else if (smoapi->file == NULL) *errcode = 411;
-//	else if (startPeriod < 0 || endPeriod >= smoapi->Nperiods ||
-//			endPeriod <= startPeriod) *errcode = 422;
-//	else
-//	{
-//
-//		size = endPeriod - startPeriod;
-//		if (size > smoapi->Nperiods)
-//			size = smoapi->Nperiods;
-//
-//		array = (float*)calloc(size, sizeof(float));
-//		*errcode = (MEMCHECK(array));
-//
-//		*length = size;
-//		return array;
-//	}
-//
-//	return NULL;
-//}
-//
-//
-//float* DLLEXPORT SMO_newOutValueArray(SMOutputAPI* smoapi, SMO_apiFunction func,
-//	SMO_elementType type, long* length, int* errcode)
-////
-//// Purpose: Allocates memory for outValue Array.
-////
-////  Warning: Caller must free memory allocated by this function using SMO_free().
-////
-//{
-//	long size;
-//	float* array;
-//
-//    if (smoapi == NULL) *errcode = 410;
-//    else if (smoapi->file == NULL) *errcode = 411;
-//	else
-//	{
-//		switch (func)
-//		{
-//		case getAttribute:
-//			if (type == subcatch)
-//				size = smoapi->Nsubcatch;
-//			else if (type == node)
-//				size = smoapi->Nnodes;
-//			else if (type == link)
-//				size = smoapi->Nlinks;
-//			else // system
-//				size = 1;
-//		break;
-//
-//		case getResult:
-//			if (type == subcatch)
-//				size = smoapi->SubcatchVars;
-//			else if (type == node)
-//				size = smoapi->NodeVars;
-//			else if (type == link)
-//				size = smoapi->LinkVars;
-//			else // system
-//				size = smoapi->SysVars;
-//		break;
-//
-//		default: *errcode = 421;
-//			return NULL;
-//		}
-//
-//		// Allocate memory for outValues
-//		array = (float*)calloc(size, sizeof(float));
-//		*errcode = (MEMCHECK(array));
-//
-//		*length = size;
-//		return array;
-//	}
-//
-//	return NULL;
-//}
 
 
 int DLLEXPORT SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
@@ -982,24 +893,13 @@ void errorLookup(int errcode, char* dest_msg, int dest_len)
 //
 //  Purpose: takes error code returns error message
 //
-// ERR411 "Error 411: memory allocation failure"
-//
-// ERR421 "Input Error 421: invalid parameter code"
-// ERR422 "Input Error 422: reporting period index out of range"
-// ERR423 "Input Error 423: element index out of range"
-// ERR424 "Input Error 424: no memory allocated for results"
-//
-// ERR434 "File Error  434: unable to open binary output file"
-// ERR435 "File Error  435: invalid file - not created by SWMM"
-// ERR436 "File Error  436: invalid file - contains no results"
-// ERR437 "File Error  437: invalid file - model run issued warnings"
-//
-// ERR440 "ERROR 440: an unspecified error has occurred"
 {
 	const char* msg;
 
 	switch (errcode)
 	{
+    case 10:  msg = WARN10;
+        break;
 	case 411: msg = ERR411;
 		break;
 	case 421: msg = ERR421;
@@ -1015,8 +915,6 @@ void errorLookup(int errcode, char* dest_msg, int dest_len)
 	case 435: msg = ERR435;
 		break;
 	case 436: msg = ERR436;
-		break;
-	case 437: msg = ERR437;
 		break;
 	default: msg = ERR440;
 	}
@@ -1049,7 +947,7 @@ int validateFile(data_t* p_data)
 	// Does the binary file contain results?
 	else if (p_data->Nperiods <= 0) errorcode = 436;
 	// Were there problems with the model run?
-	else if (errcode != 0) errorcode = 437;
+	else if (errcode != 0) errorcode = 10;
 
 	return errorcode;
 }
@@ -1167,24 +1065,6 @@ float getSystemValue(data_t* p_data, long timeIndex,
 	return value;
 }
 
-float* newFloatArray(int n)
-//
-//  Warning: Caller must free memory allocated by this function.
-//
-{
-	return (float*) malloc((n)*sizeof(float));
-}
-
-int* newIntArray(int n)
-{
-    return (int*) malloc((n)*sizeof(int));
-}
-
-char* newCharArray(int n)
-{
-    return (char*) malloc((n)*sizeof(char));
-}
-
 int _fopen(FILE **f, const char *name, const char *mode) {
 //
 //  Purpose: Substitute for fopen_s on platforms where it doesn't exist
@@ -1206,6 +1086,12 @@ int _fseek(FILE* stream, F_OFF offset, int whence)
 //  Purpose: Selects platform fseek() for large file support
 //
 {
+#ifdef _WIN32
+    #define FSEEK64 _fseeki64
+#else
+    #define FSEEK64 fseeko
+#endif
+
     return FSEEK64(stream, offset, whence);
 }
 
@@ -1214,6 +1100,34 @@ F_OFF _ftell(FILE* stream)
 //  Purpose: Selects platform ftell() for large file support
 //
 {
+#ifdef _WIN32
+    #define FTELL64 _ftelli64
+#else
+    #define FTELL64 ftello
+#endif
     return FTELL64(stream);
 }
 
+float* newFloatArray(int n)
+//
+//  Warning: Caller must free memory allocated by this function.
+//
+{
+    return (float*) malloc((n)*sizeof(float));
+}
+
+int* newIntArray(int n)
+//
+//  Warning: Caller must free memory allocated by this function.
+//
+{
+    return (int*) malloc((n)*sizeof(int));
+}
+
+char* newCharArray(int n)
+//
+//  Warning: Caller must free memory allocated by this function.
+//
+{
+    return (char*) malloc((n)*sizeof(char));
+}
