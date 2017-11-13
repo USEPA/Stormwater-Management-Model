@@ -348,6 +348,7 @@ void    subcatch_setOldState(int subcatch);
 double  subcatch_getFracPerv(int subcatch);
 double  subcatch_getStorage(int subcatch);
 double  subcatch_getDepth(int subcatch);
+double  subcatch_getBuildup(int subcatch, int pollut);
 
 void    subcatch_getRunon(int subcatch);
 void    subcatch_addRunonFlow(int subcatch, double flow);                      //(5.1.008)

@@ -373,7 +373,7 @@ void  landuse_getInitBuildup(TLandFactor* landFactor,  double* initBuildup,
 	int i, p;
 	double startDrySeconds;       // antecedent dry period (sec)
 	double f;                     // faction of total land area
-    double fArea;                 // area of land use (ft2)
+    double fArea;                 // area of land use (ac or ha)
     double fCurb;                 // curb length of land use
 	double buildup;               // pollutant mass buildup
 
@@ -461,7 +461,7 @@ double landuse_getBuildupDays(int i, int p, double buildup)
 //
 //  Input:   i = land use index
 //           p = pollutant index
-//           buildup = amount of pollutant buildup
+//           buildup = amount of pollutant buildup (mass per area or curblength)
 //  Output:  returns number of days it takes for buildup to reach a given level
 //  Purpose: finds the number of days corresponding to a pollutant buildup.
 //

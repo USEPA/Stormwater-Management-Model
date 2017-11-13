@@ -967,8 +967,10 @@ typedef struct
     double       evap;
     double       infil;
     double       runoff;
-    double       maxFlow;         
+    double       maxFlow;
+    double*      surfaceBuildup;
 }  TSubcatchStats;
+
 
 //----------------
 // NODE STATISTICS

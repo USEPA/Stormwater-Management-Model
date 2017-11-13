@@ -791,6 +791,27 @@ void getNetPrecip(int j, double* netPrecip, double tStep)
 
 //=============================================================================
 
+double subcatch_getBuildup(int j, int p)
+//
+// Input:   j = subcatchment index
+//          p = pollutant index
+// Output:  returns total buildup of each pollutant on subcatchment surface (lbs or kg)
+// Purpose: computes current mass of buildup remaining on subcatchment surface
+//
+{
+    int i;
+    double load = 0.0;
+
+    for (i = 0; i < Nobjects[LANDUSE]; i++)
+    {
+        load += Subcatch[j].landFactor[i].buildup[p];
+    }
+
+    return load;
+}
+
+//=============================================================================
+
 ////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
 
 double subcatch_getDepth(int j)
