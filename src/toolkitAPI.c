@@ -125,28 +125,28 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr)
 
 int DLLEXPORT  swmm_getSimulationUnit(int type, int *value)
 //
-// Input: 	type = simulation unit type
-// Output: 	enum representation of units
+// Input:   type = simulation unit type
+// Output:  enum representation of units
 // Returns: API Error
 // Purpose: get simulation unit types
 {
-	// Check if Open
-	if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
-	
-	// Output unit
-	switch(type)
-	{
-		// System Unit (enum.h UnitsType)
-		case 0:  *value = UnitSystem; break;
-		// Flow Unit (enum.h FlowUnitsType)
-		case 1:  *value = FlowUnits; break;
-		// Concentration Unit
-		//case 2:  *value = UnitSystem; break;
-		// Type not available
-		default: return(ERR_API_OUTBOUNDS); 
-	}
-	
-	return (0);
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
+
+    // Output unit
+    switch(type)
+    {
+        // System Unit (enum.h UnitsType)
+        case 0:  *value = UnitSystem; break;
+        // Flow Unit (enum.h FlowUnitsType)
+        case 1:  *value = FlowUnits; break;
+        // Concentration Unit
+        //case 2:  *value = UnitSystem; break;
+        // Type not available
+        default: return(ERR_API_OUTBOUNDS);
+    }
+
+    return (0);
 }
 
 int DLLEXPORT  swmm_getSimulationAnalysisSetting(int type, int *value)
@@ -996,7 +996,7 @@ int DLLEXPORT swmm_getSubcatchStats(int index, TSubcatchStats *subcatchStats)
         if (Nobjects[POLLUT] > 0)
         {
             for (p = 0; p < Nobjects[POLLUT]; p++)
-                subcatchStats->surfaceBuildup[p] *= Pollut[p].mcf;
+                subcatchStats->surfaceBuildup[p] /= (a * UCF(LANDAREA));
                 if (Pollut[p].units == COUNT)
                 {
                     subcatchStats->surfaceBuildup[p] =

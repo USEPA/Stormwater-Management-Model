@@ -795,8 +795,8 @@ double subcatch_getBuildup(int j, int p)
 //
 // Input:   j = subcatchment index
 //          p = pollutant index
-// Output:  returns total buildup of each pollutant on surface of a subcatchment
-// Purpose: computes mass of buildup remaining on subcatchment surface
+// Output:  returns total buildup of each pollutant on subcatchment surface (lbs or kg)
+// Purpose: computes current mass of buildup remaining on subcatchment surface
 //
 {
     int i;
