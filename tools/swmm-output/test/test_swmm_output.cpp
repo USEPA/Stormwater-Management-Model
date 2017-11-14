@@ -1,10 +1,9 @@
 /*
  *   outputapi_unittest.cpp
  *
- *   Author: Colleen Barr
- *   Modified by: Michael E. Tryby
- *
- *   Date: 11/2/2017
+ *   Created: 11/2/2017
+ *   Author: Michael E. Tryby
+ *           US EPA - ORD/NRMRL
  *
  *   Unit testing for SWMM outputapi using Google Test.
  */
@@ -12,15 +11,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
-#include "../src/outputapi.h"
-
 #include "gtest/gtest.h"
+#include "../src/swmm_output.h"
 
 
 // NOTE: Project Home needs to be updated to run unit test
 #define PROJECT_HOME "C:/Users/mtryby/Workspace/GitRepo/michaeltryby/Stormwater-Management-Model"
 // NOTE: Reference data for the unit tests is currently tied to SWMM 5.1.7
-#define DATA_PATH "/tools/swmm-output/test/Example1.out"
+#define DATA_PATH "/tools/swmm-output/test/data/Example1.out"
 
 namespace {
 
@@ -42,7 +40,7 @@ TEST(SMO_open, OpenTest) {
     SMO_close(&p_handle);
 }
 
-class OutputapiTest : public testing::Test {
+class SWMM_OutputFixture : public testing::Test {
 protected:
     // SetUp for OutputapiTest fixture
     virtual void SetUp() {
@@ -66,7 +64,7 @@ protected:
     int array_dim = 0;
 };
 
-TEST_F(OutputapiTest, getVersionTest) {
+TEST_F(SWMM_OutputFixture, getVersionTest) {
     int version;
 
     error = SMO_getVersion(p_handle, &version);
@@ -75,7 +73,7 @@ TEST_F(OutputapiTest, getVersionTest) {
     EXPECT_EQ(51000, version);
 }
 
-TEST_F(OutputapiTest, getProjectSizeTest) {
+TEST_F(SWMM_OutputFixture, getProjectSizeTest) {
     int* i_array = NULL;
     // subcatchs, nodes, links, pollutants
     int ref_array[4] = {8,14,13,2};
@@ -90,7 +88,7 @@ TEST_F(OutputapiTest, getProjectSizeTest) {
     SMO_free((void**)&i_array);
 }
 
-TEST_F(OutputapiTest, getFlowUnitsTest) {
+TEST_F(SWMM_OutputFixture, getFlowUnitsTest) {
     int units = -1;
 
     error = SMO_getFlowUnits(p_handle, &units);
@@ -98,7 +96,7 @@ TEST_F(OutputapiTest, getFlowUnitsTest) {
     EXPECT_EQ(0, units);
 }
 
-TEST_F(OutputapiTest, getPollutantUnitsTest) {
+TEST_F(SWMM_OutputFixture, getPollutantUnitsTest) {
     int* i_array = NULL;
     int ref_array[2] = {0, 1};
 
@@ -112,7 +110,7 @@ TEST_F(OutputapiTest, getPollutantUnitsTest) {
     SMO_free((void**)&i_array);
 }
 
-TEST_F(OutputapiTest, getStartDateTest) {
+TEST_F(SWMM_OutputFixture, getStartDateTest) {
     double date = -1;
 
     error = SMO_getStartDate(p_handle, &date);
@@ -121,7 +119,7 @@ TEST_F(OutputapiTest, getStartDateTest) {
     EXPECT_EQ(35796., date);
 }
 
-TEST_F(OutputapiTest, getTimesTest) {
+TEST_F(SWMM_OutputFixture, getTimesTest) {
     int time = -1;
 
     error = SMO_getTimes(p_handle, reportStep, &time);
@@ -135,14 +133,15 @@ TEST_F(OutputapiTest, getTimesTest) {
     EXPECT_EQ(36, time);
 }
 
-TEST_F(OutputapiTest, getElementNameTest) {
+TEST_F(SWMM_OutputFixture, getElementNameTest) {
     char* c_array = NULL;
     int index = 1;
 
-    error = SMO_getElementName(p_handle, node, index, &c_array);
+    error = SMO_getElementName(p_handle, node, index, &c_array, &array_dim);
     ASSERT_EQ(0, error);
 
     EXPECT_STREQ("10", c_array);
+    EXPECT_EQ(2, array_dim);
 
     SMO_free((void**)&c_array);
 
@@ -169,7 +168,7 @@ TEST_F(OutputapiTest, getElementNameTest) {
 //        EXPECT_FLOAT_EQ(ref_array[i], array[i]);
 //}
 
-TEST_F(OutputapiTest, getSubcatchResultTest) {
+TEST_F(SWMM_OutputFixture, getSubcatchResultTest) {
     float ref_array[10] = {0.5,
             0.0,
             0.0,
@@ -189,7 +188,7 @@ TEST_F(OutputapiTest, getSubcatchResultTest) {
         EXPECT_FLOAT_EQ(ref_array[i], array[i]);
 }
 
-TEST_F(OutputapiTest, getNodeResultTest) {
+TEST_F(SWMM_OutputFixture, getNodeResultTest) {
     float ref_array[8] = {0.296234,
             995.296204,
             0.0,
@@ -207,7 +206,7 @@ TEST_F(OutputapiTest, getNodeResultTest) {
         EXPECT_FLOAT_EQ(ref_array[i], array[i]);
 }
 
-TEST_F(OutputapiTest, getLinkResultTest) {
+TEST_F(SWMM_OutputFixture, getLinkResultTest) {
     float ref_array[7] = {4.631762,
             1.0,
             5.8973422,
@@ -224,7 +223,7 @@ TEST_F(OutputapiTest, getLinkResultTest) {
         EXPECT_FLOAT_EQ(ref_array[i], array[i]);
 }
 
-TEST_F(OutputapiTest, getSystemResultTest) {
+TEST_F(SWMM_OutputFixture, getSystemResultTest) {
     float ref_array[14] = {70.0,
             0.1,
             0.0,
@@ -250,61 +249,10 @@ TEST_F(OutputapiTest, getSystemResultTest) {
 }
 
 
-GTEST_API_ int main(int argc, char **argv) {
-    OutputapiTest::SetUpTestCase();
+int main(int argc, char **argv) {
+    SWMM_OutputFixture::SetUpTestCase();
     printf("Running main() from gtest_main.cc\n");
     testing::InitGoogleTest(&argc, argv);
 
     return RUN_ALL_TESTS();
 }
-
-
-
-//int testGetSubcatchResult(char* path)
-//{
-//	int i, length, error = 0;
-//	float* array = NULL;
-//
-//	SMO_Handle p_handle = NULL;
-//	SMO_init(&p_handle);
-//
-//	error = SMO_open(p_handle, path);
-//	error = SMO_getSubcatchResult(p_handle, 1, 0, &array, &length);
-//
-//	if (!error)
-//	{
-//		for (i = 0; i < length; i++)
-//			printf("%f\n", array[i]);
-//	}
-//	printf("\n");
-//
-//	SMO_free((void**)array);
-//	error = SMO_close(&p_handle);
-//
-//	return error;
-//}
-//
-//int main(int argc, char* argv[])
-//{
-//	std::string path = std::string(PROJECT_HOME) + std::string(DATA_PATH);
-//    SMO_Handle p_handle = NULL;
-//
-//	float* array = NULL;
-//	int array_dim;
-//
-//	int error = SMO_init(&p_handle);
-//	error = SMO_open(p_handle, path.c_str());
-//
-//	error = SMO_getNodeResult(p_handle, 2, 2, &array, &array_dim);
-//
-//	if (!error)
-//	{
-//		for (int i = 0; i < array_dim; i++)
-//			printf("%f\n", array[i]);
-//	}
-//
-//	SMO_free((void**)&array);
-//	error = SMO_close(&p_handle);
-//
-//	return error;
-//}

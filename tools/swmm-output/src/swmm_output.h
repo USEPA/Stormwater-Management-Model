@@ -1,12 +1,13 @@
 /*
-* outputAPI.h - SWMM
-*
-*      Author: Colleen Barr
-*      Modified by: Michael Tryby,
-*                   Bryant McDonnell
-*
-*
-*/
+ * sm_outputapi.c - SWMM Output API
+ *
+ *      Author: Colleen Barr
+ *           US EPA - ORD/NHEERL
+ *
+ *      Modified by: Michael E. Tryby,
+ *                   Bryant McDonnell
+ *
+ */
 
 #ifndef OUTPUTAPI_H_
 #define OUTPUTAPI_H_
@@ -91,11 +92,7 @@ typedef enum {
   #define DLLEXPORT __declspec(dllexport) __stdcall
   #endif
 #else
-  #ifdef __cplusplus
   #define DLLEXPORT
-  #else
-  #define DLLEXPORT
-  #endif
 #endif
 
 #ifdef __cplusplus
@@ -113,7 +110,7 @@ int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* le
 int DLLEXPORT SMO_getStartDate(SMO_Handle p_handle, double* date);
 int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time);
 int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
-		int elementIndex, char** elementName);
+		int elementIndex, char** elementName, int* size);
 
 int DLLEXPORT SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
 	SMO_subcatchAttribute attr, int startPeriod, int endPeriod, float** outValueSeries, int* dim);
@@ -133,13 +130,13 @@ int DLLEXPORT SMO_getLinkAttribute(SMO_Handle p_handle, int timeIndex,
 int DLLEXPORT SMO_getSystemAttribute(SMO_Handle p_handle, int timeIndex,
 	SMO_systemAttribute attr, float** outValueArray, int* length);
 
-int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, long timeIndex,
+int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, int timeIndex,
 	int subcatchIndex, float** outValueArray, int* arrayLength);
-int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, long timeIndex,
+int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, int timeIndex,
 	int nodeIndex, float** outValueArray, int* arrayLength);
-int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, long timeIndex,
+int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, int timeIndex,
 	int linkIndex, float** outValueArray, int* arrayLength);
-int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, long timeIndex,
+int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, int timeIndex,
 	int dummyIndex, float** outValueArray, int* arrayLength);
 
 void DLLEXPORT SMO_free(void** array);

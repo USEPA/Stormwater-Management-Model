@@ -1,17 +1,19 @@
 /*
- * outputAPI.c - SWMM
+ * sm_outputapi.c - SWMM Output API
  *
  *      Author: Colleen Barr
+ *           US EPA - ORD/NHEERL
+ *
  *      Modified by: Michael E. Tryby,
  *                   Bryant McDonnell
  *
- *
  */
+
+#include "swmm_output.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "outputapi.h"
 #include "errormanager.h"
 #include "messages.h"
 //#include "datetime.h"
@@ -74,7 +76,6 @@ typedef struct {
     error_handle_t* error_handle;
 } data_t;
 
-//typedef data_t* p_data_t;
 
 //-----------------------------------------------------------------------------
 //   Local functions
@@ -83,11 +84,11 @@ void errorLookup(int errcode, char* errmsg, int length);
 int    validateFile(data_t* p_data);
 void   initElementNames(data_t* p_data);
 
-double getTimeValue(data_t* p_data, long timeIndex);
-float  getSubcatchValue(data_t* p_data, long timeIndex, int subcatchIndex, SMO_subcatchAttribute attr);
-float  getNodeValue(data_t* p_data, long timeIndex, int nodeIndex, SMO_nodeAttribute attr);
-float  getLinkValue(data_t* p_data, long timeIndex, int linkIndex, SMO_linkAttribute attr);
-float  getSystemValue(data_t* p_data, long timeIndex, SMO_systemAttribute attr);
+double getTimeValue(data_t* p_data, int timeIndex);
+float  getSubcatchValue(data_t* p_data, int timeIndex, int subcatchIndex, SMO_subcatchAttribute attr);
+float  getNodeValue(data_t* p_data, int timeIndex, int nodeIndex, SMO_nodeAttribute attr);
+float  getLinkValue(data_t* p_data, int timeIndex, int linkIndex, SMO_linkAttribute attr);
+float  getSystemValue(data_t* p_data, int timeIndex, SMO_systemAttribute attr);
 
 int _fopen(FILE **f, const char *name, const char *mode);
 int _fseek(FILE* stream, F_OFF offset, int whence);
@@ -399,12 +400,13 @@ int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time)
 }
 
 int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
-        int index, char** name)
+        int index, char** name, int* length)
 //
 //  Purpose: Given an element index returns the element name.
 //
 {
-    int idx, len, errorcode = 0;
+    int idx = -1,
+        errorcode = 0;
     data_t* p_data;
 
     p_data = (data_t*)p_handle;
@@ -451,10 +453,10 @@ int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
         }
 
         if (!errorcode) {
-            len = p_data->elementNames[idx].length;
-            *name = newCharArray(len + 1);
-
-            strncpy(*name, p_data->elementNames[idx].IDname, (size_t)(len));
+            *length = p_data->elementNames[idx].length;
+            *name = newCharArray(*length + 1);
+            // Writes IDname and an additional null character to name
+            strncpy(*name, p_data->elementNames[idx].IDname, (*length + 1)*sizeof(char));
         }
     }
 
@@ -712,7 +714,7 @@ int DLLEXPORT SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, long periodIndex,
+int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, int periodIndex,
         int subcatchIndex, float** outValueArray, int* arrayLength)
 //
 // Purpose: For a subcatchment at given time, get all attributes.
@@ -747,7 +749,7 @@ int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, long periodIndex,
 }
 
 
-int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, long periodIndex,
+int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, int periodIndex,
         int nodeIndex, float** outValueArray, int* arrayLength)
 //
 //	Purpose: For a node at given time, get all attributes.
@@ -781,7 +783,7 @@ int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, long periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, long periodIndex,
+int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, int periodIndex,
         int linkIndex, float** outValueArray, int* arrayLength)
 //
 //	Purpose: For a link at given time, get all attributes.
@@ -816,7 +818,7 @@ int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, long periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, long periodIndex,
+int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, int periodIndex,
         int dummyIndex, float** outValueArray, int* arrayLength)
 //
 //	Purpose: For the system at given time, get all attributes.
@@ -976,7 +978,7 @@ void initElementNames(data_t* p_data)
     }
 }
 
-double getTimeValue(data_t* p_data, long timeIndex)
+double getTimeValue(data_t* p_data, int timeIndex)
 {
     F_OFF offset;
     double value;
@@ -991,7 +993,7 @@ double getTimeValue(data_t* p_data, long timeIndex)
     return value;
 }
 
-float getSubcatchValue(data_t* p_data, long timeIndex, int subcatchIndex,
+float getSubcatchValue(data_t* p_data, int timeIndex, int subcatchIndex,
         SMO_subcatchAttribute attr)
 {
     F_OFF offset;
@@ -1009,7 +1011,7 @@ float getSubcatchValue(data_t* p_data, long timeIndex, int subcatchIndex,
     return value;
 }
 
-float getNodeValue(data_t* p_data, long timeIndex, int nodeIndex,
+float getNodeValue(data_t* p_data, int timeIndex, int nodeIndex,
         SMO_nodeAttribute attr)
 {
     F_OFF offset;
@@ -1027,7 +1029,7 @@ float getNodeValue(data_t* p_data, long timeIndex, int nodeIndex,
     return value;
 }
 
-float getLinkValue(data_t* p_data, long timeIndex, int linkIndex,
+float getLinkValue(data_t* p_data, int timeIndex, int linkIndex,
         SMO_linkAttribute attr)
 {
     F_OFF offset;
@@ -1046,7 +1048,7 @@ float getLinkValue(data_t* p_data, long timeIndex, int linkIndex,
     return value;
 }
 
-float getSystemValue(data_t* p_data, long timeIndex,
+float getSystemValue(data_t* p_data, int timeIndex,
         SMO_systemAttribute attr)
 {
     F_OFF offset;

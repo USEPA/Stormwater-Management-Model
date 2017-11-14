@@ -1,14 +1,21 @@
-%module outputapi
+/*
+ *  sm_outputapi.i - SWIG interface description file for SWMM Output API
+ * 
+ *  Created:    11/3/2017
+ *  Author:     Michael E. Tryby
+ *              US EPA - ORD/NRMRL
+ *
+*/ 
+%module swmm_output
 %{
 #include "errormanager.h"
 #include "messages.h"
-#include "outputapi.h"
+#include "swmm_output.h"
 
 #define SWIG_FILE_WITH_INIT
 %}
 
 %include "typemaps.i"
-%include "cstring.i"
 %include "numpy.i"
 
 %init %{
@@ -93,17 +100,13 @@ typedef enum {
   #define DLLEXPORT __declspec(dllexport) __stdcall
   #endif
 #else
-  #ifdef __cplusplus
   #define DLLEXPORT
-  #else
-  #define DLLEXPORT
-  #endif
 #endif
 
 
 /* TYPEMAPS FOR VOID POINTER */
 /* Used for functions that output a new opaque pointer */
-%typemap(in, numinputs=0) void** p_handle_out (void* retval)
+%typemap(in, numinputs=0) SMO_Handle* p_handle_out (void* retval)
 {
  /* OUTPUT in */
     retval = NULL;
@@ -111,7 +114,7 @@ typedef enum {
 }
 /* used for functions that take in an opaque pointer (or NULL)
 and return a (possibly) different pointer */
-%typemap(argout) void** p_handle_out
+%typemap(argout) SMO_Handle* p_handle_out
 {
  /* OUTPUT argout */
     %append_output(SWIG_NewPointerObj(SWIG_as_voidptr(retval$argnum), $1_descriptor, 0));
@@ -125,10 +128,6 @@ and return a (possibly) different pointer */
 }
 
 
-/* TYPEMAP FOR MEMORY MANAGED NUMPY ARRAYS */
-%apply (float** ARGOUTVIEWM_ARRAY1, int* DIM1) {(float** outValueArray,  int* arrayLength)};
-
-
 /* TYPEMAPS FOR DOUBLE ARGUMENT AS RETURN VALUE */
 %typemap(in, numinputs=0) double* double_out (double temp) {
     $1 = &temp;
@@ -136,8 +135,6 @@ and return a (possibly) different pointer */
 %typemap(argout) double* double_out {
     %append_output(PyFloat_FromDouble(*$1));
 }
-/* DEFINE SWMM API TYPES THIS APPLIES TO */
-%apply double* double_out {double* date};
 
 
 /* TYPEMAPS FOR INT ARGUMENT AS RETURN VALUE */
@@ -147,35 +144,38 @@ and return a (possibly) different pointer */
 %typemap(argout) int* int_out {
     %append_output(PyInt_FromLong(*$1));
 }
-/* DEFINE SWMM API TYPES THIS APPLIES TO */
-%apply int* int_out {int* version, int* time, int* unitFlag};
- 
 
-/* TYPEMAP FOR MEMORY MANAGEMENT OF STRINGS */
-%cstring_output_allocate(char** string_out, free(*$1))
 
-/* DEFINE SWMM API TYPES THIS APPLIES TO */
-%apply char** string_out {char** elementName};
-
+/* TYPEMAP FOR MEMORY MANAGEMENT AND ENCODING OF STRINGS */
+%typemap(in, numinputs=0)char** string_out (char* temp), int* slen (int temp){
+   $1 = &temp;
+}
+%typemap(argout)(char** string_out, int* slen) {
+    if (*$1) {
+        PyObject* o;
+        o = PyUnicode_FromStringAndSize(*$1, *$2);
+        
+        $result = SWIG_Python_AppendOutput($result, o);
+        free(*$1);
+    }
+}
 
 /* TYPEMAPS FOR MEMORY MANAGEMNET OF FLOAT ARRAYS */
-%typemap(in, numinputs=0)float** float_out (double* temp), int* int_dim (int temp){
+%typemap(in, numinputs=0)float** float_out (float* temp), int* int_dim (int temp){
    $1 = &temp;
 }
 %typemap(argout) (float** float_out, int* int_dim) {
     if (*$1) {
       PyObject *o = PyList_New(*$2);
       int i;
-      double* temp = (double*)*$1;
+      float* temp = *$1;
       for(i=0; i<*$2; i++) {
-        PyList_SetItem(o, i, PyFloat_FromDouble(temp[i]));
+        PyList_SetItem(o, i, PyFloat_FromDouble((double)temp[i]));
       }
       $result = SWIG_Python_AppendOutput($result, o);
       free(*$1);
     }
 }
-%apply (float** float_out, int* int_dim) {(float** outValueSeries, int* dim),
-(float** outValueArray, int* length)};
 
 
 /* TYPEMAPS FOR MEMORY MANAGEMNET OF INT ARRAYS */
@@ -194,15 +194,14 @@ and return a (possibly) different pointer */
       free(*$1);
     }
 }
-/* DEFINE SWMM API TYPES THIS APPLIES TO */
-%apply (int** int_out, int* int_dim){(int** elementCount, int* length),(int** unitFlag, int* length)};
 
 
 /* TYPEMAP FOR ENUMERATED TYPES */
-%typemap(in) EnumeratedType (int val, int ecode = 0, PyObject * obj = 0) {
+%typemap(in) EnumeratedType (int val, int ecode = 0) {
     if (PyObject_HasAttrString($input,"value")) {
-        obj = PyObject_GetAttrString($input, "value");
-        ecode = SWIG_AsVal_int(obj, &val); 
+        PyObject* o;
+        o = PyObject_GetAttrString($input, "value");
+        ecode = SWIG_AsVal_int(o, &val); 
     }   
     else {
         SWIG_exception_fail(SWIG_ArgError(ecode), "in method '" "$symname" "', argument " "$argnum"" of type '" "$ltype""'"); 
@@ -233,63 +232,59 @@ SMO_nodeAttribute, SMO_linkAttribute, SMO_systemAttribute};
 
 /* INSERT EXCEPTION HANDLING FOR THESE FUNCTIONS */  
 
-int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path);\
+int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path);
 
-int DLLEXPORT SMO_getVersion(SMO_Handle p_handle, int* version);
-int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, int** elementCount, int* length);
-int DLLEXPORT SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag);
-int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* length);
-int DLLEXPORT SMO_getStartDate(SMO_Handle p_handle, double* date);
-int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time);
-int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
-        int elementIndex, char** elementName);
+int DLLEXPORT SMO_getVersion(SMO_Handle p_handle, int* int_out);
+int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, int** int_out, int* int_dim);
+int DLLEXPORT SMO_getFlowUnits(SMO_Handle p_handle, int* int_out);
+int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int** int_out, int* int_dim);
+int DLLEXPORT SMO_getStartDate(SMO_Handle p_handle, double* double_out);
+int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* int_out);
+int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type, 
+    int elementIndex, char** string_out, int* slen);
 
 int DLLEXPORT SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
-    SMO_subcatchAttribute attr, int startPeriod, int endPeriod, float** outValueSeries, int* dim);
+    SMO_subcatchAttribute attr, int startPeriod, int endPeriod, float** float_out, int* int_dim);
 int DLLEXPORT SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex, SMO_nodeAttribute attr,
-    int startPeriod, int endPeriod, float** outValueSeries, int* dim);
+    int startPeriod, int endPeriod, float** float_out, int* int_dim);
 int DLLEXPORT SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex, SMO_linkAttribute attr,
-    int startPeriod, int endPeriod, float** outValueSeries, int* dim);
+    int startPeriod, int endPeriod, float** float_out, int* int_dim);
 int DLLEXPORT SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute attr,
-    int startPeriod, int endPeriod, float** outValueSeries, int* dim);
+    int startPeriod, int endPeriod, float** float_out, int* int_dim);
 
 int DLLEXPORT SMO_getSubcatchAttribute(SMO_Handle p_handle, int timeIndex,
-    SMO_subcatchAttribute attr, float** outValueArray, int* length);
+    SMO_subcatchAttribute attr, float** float_out, int* int_dim);
 int DLLEXPORT SMO_getNodeAttribute(SMO_Handle p_handle, int timeIndex,
-    SMO_nodeAttribute attr, float** outValueArray, int* length);
+    SMO_nodeAttribute attr, float** float_out, int* int_dim);
 int DLLEXPORT SMO_getLinkAttribute(SMO_Handle p_handle, int timeIndex,
-    SMO_linkAttribute attr, float** outValueArray, int* length);
+    SMO_linkAttribute attr, float** float_out, int* int_dim);
 int DLLEXPORT SMO_getSystemAttribute(SMO_Handle p_handle, int timeIndex,
-    SMO_systemAttribute attr, float** outValueArray, int* length);
+    SMO_systemAttribute attr, float** float_out, int* int_dim);
 
-int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, long timeIndex,
-    int subcatchIndex, float** outValueArray, int* arrayLength);
-int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, long timeIndex,
-    int nodeIndex, float** outValueArray, int* arrayLength);
-int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, long timeIndex,
-    int linkIndex, float** outValueArray, int* arrayLength);
-int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, long timeIndex,
-    int dummyIndex, float** outValueArray, int* arrayLength);
+int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, int timeIndex,
+    int subcatchIndex, float** ARGOUTVIEWM_ARRAY1, int* DIM1);
+int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, int timeIndex,
+    int nodeIndex, float** ARGOUTVIEWM_ARRAY1, int* DIM1);
+int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, int timeIndex,
+    int linkIndex, float** ARGOUTVIEWM_ARRAY1, int* DIM1);
+int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, int timeIndex,
+    int dummyIndex, float** ARGOUTVIEWM_ARRAY1, int* DIM1);
 
 %exception;        
 
 /* NO EXCEPTION HANDLING FOR THESE FUNCTIONS */        
-int DLLEXPORT SMO_init(SMO_Handle* p_handle);
-int DLLEXPORT SMO_close(SMO_Handle* p_handle);
+int DLLEXPORT SMO_init(SMO_Handle* p_handle_out);
+int DLLEXPORT SMO_close(SMO_Handle* p_handle_out);
 void DLLEXPORT SMO_free(void** array);
 
-void DLLEXPORT SMO_clearError(SMO_Handle p_handle_in);
-int DLLEXPORT SMO_checkError(SMO_Handle p_handle_in, char** msg_buffer);
+void DLLEXPORT SMO_clearError(SMO_Handle p_handle);
+int DLLEXPORT SMO_checkError(SMO_Handle p_handle, char** msg_buffer);
 
 
 /* CODE ADDED DIRECTLY TO SWIGGED INTERFACE MODULE */
 %pythoncode%{
 import enum
 
-class ElementType(enum.Enum):
-    NODE = ENR_node
-    LINK = ENR_link
-    
 class Unit(enum.Enum):
     FLOW_UNIT = flow_rate
     CONC_UNIT = concentration

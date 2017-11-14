@@ -2,7 +2,9 @@
  * messages.h - SWMM
  *
  *  Created on: Oct 20, 2017
- *      Author: mtryby
+ *
+ *  Author:     Michael E. Tryby
+ *              US EPA - ORD/NRMRL
  */
 
 #ifndef SRC_MESSAGES_H_

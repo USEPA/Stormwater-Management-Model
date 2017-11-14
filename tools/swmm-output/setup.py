@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 #
-# setup.py 
+#  setup.py 
+# 
+#  Author:     Michael E. Tryby
+#              US EPA - ORD/NRMRL
 #
-# Setup up script for outputapi python extension
+# Setup up script for SWMM Output API python extension
 #
 # Requires:
 #   Platform C language compiler   
@@ -34,20 +37,20 @@ class CustomBuildExtCommand(build_ext):
         build_ext.run(self)    
 
 setup(
-    name = "outputapi", 
+    name = "swmm-output", 
     cmdclass = {'build_ext': CustomBuildExtCommand}, 
     version = "1.0",
     ext_modules = [
-        Extension("_outputapi", 
-            sources = ['src/outputapi.i', 'src/outputapi.cpp', 'src/errormanager.cpp'],
+        Extension("_swmm_output", 
+            sources = ['src/swmm_output.i', 'src/swmm_output.c', 'src/errormanager.c'],
             swig_opts=['-modern'],
-            language='C++'
+            language='C'
         )
     ],
     package_dir = {'':'src'},  
-    py_modules = ['outputapi'],
+    py_modules = ['swmm_output'],
       
     install_requires = [
-        'numpy>=1.6.0'
+        'numpy>=1.7.0'
     ]
 )
