@@ -1,5 +1,5 @@
 /*
- * sm_outputapi.c - SWMM Output API
+ * swmm_output.c - SWMM Output API
  *
  *      Author: Colleen Barr
  *           US EPA - ORD/NHEERL

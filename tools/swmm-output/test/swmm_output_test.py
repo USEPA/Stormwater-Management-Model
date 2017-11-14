@@ -1,5 +1,5 @@
 #
-#   test_outputapi.py
+#   swmm_output_test.py
 #
 #   Created: 11/8/2017
 #   Author: Michael E. Tryby

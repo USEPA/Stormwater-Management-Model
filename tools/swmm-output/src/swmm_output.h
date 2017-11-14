@@ -1,5 +1,5 @@
 /*
- * sm_outputapi.c - SWMM Output API
+ * swmm_output.c - SWMM Output API
  *
  *      Author: Colleen Barr
  *           US EPA - ORD/NHEERL
@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef OUTPUTAPI_H_
-#define OUTPUTAPI_H_
+#ifndef SWMM_OUTPUT_H_
+#define SWMM_OUTPUT_H_
 
 #define MAXFILENAME     259   // Max characters in file path
 #define MAXELENAME       31   // Max characters in element name
@@ -147,4 +147,4 @@ int DLLEXPORT SMO_checkError(SMO_Handle p_handle_in, char** msg_buffer);
   }
 #endif
 
-#endif /* OUTPUTAPI_H_ */
+#endif /* SWMM_OUTPUT_H_ */

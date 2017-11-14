@@ -1,5 +1,5 @@
 /*
- *   outputapi_unittest.cpp
+ *   test_swmm_output.cpp
  *
  *   Created: 11/2/2017
  *   Author: Michael E. Tryby

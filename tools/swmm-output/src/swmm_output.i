@@ -1,5 +1,5 @@
 /*
- *  sm_outputapi.i - SWIG interface description file for SWMM Output API
+ *  swmm_output.i - SWIG interface description file for SWMM Output API
  * 
  *  Created:    11/3/2017
  *  Author:     Michael E. Tryby
