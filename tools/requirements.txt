@@ -10,5 +10,5 @@
 # command: pip install -r requirements.txt
 #
 
--e ./swmm-output
--e ./nrtest-swmm
+-e ./tools/swmm-output
+-e ./tools/nrtest-swmm
