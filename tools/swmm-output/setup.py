@@ -49,6 +49,7 @@ setup(
     py_modules = ['swmm_output'],
       
     install_requires = [
-        'numpy>=1.7.0'
+        'numpy>=1.7.0',
+        'enum34'
     ]
 )
