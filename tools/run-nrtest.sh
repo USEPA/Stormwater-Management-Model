@@ -25,7 +25,7 @@ tests="tests/examples"
 test_output_path="benchmark/swmm-$2"
 
 nrtest_compare_cmd="nrtest compare"
-ref_output_path="benchmark/swmm-5111_x86"
+ref_output_path="benchmark/swmm-5112"
 rtol_value=1.0
 atol_value=1.0
 
