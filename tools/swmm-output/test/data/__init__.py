@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+
+#   __init__.py
+#
+#   Created: 11/8/2017
+#   Author: Michael E. Tryby
+#           US EPA - ORD/NRMRL
+#
 
 import os
 

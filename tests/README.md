@@ -15,17 +15,12 @@ numpy
 
 Project packages: 
 nrtest_swmm
-swmm_reader
+swmm-output
 
 
 pip can be used to install local packages. 
 
-pip install <path\>swmm_reader.whl
-pip install <path\>nrtest_swmm.whl
-
-
-Note: swmm_reader is not zip safe. The egg needs to be unzipped so a dll that it needs can be 
-found at run time. 
+	$ pip install -r tools/requirements.txt
 
 
 Running Tests 
