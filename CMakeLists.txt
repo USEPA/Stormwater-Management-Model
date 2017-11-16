@@ -26,6 +26,7 @@ if(APPLE)
 endif(APPLE)
 
 # includes and source files
+include_directories(./include)
 include_directories(src)
 file(GLOB SWMM_SOURCES src/*.c)
 
