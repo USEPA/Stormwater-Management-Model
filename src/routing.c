@@ -813,7 +813,7 @@ void removeOutflows(double tStep)
                 massbal_addOutflowQual(p, w, isFlooded);
             }
         }
-        else massbal__addInflowFlow(EXTERNAL_INFLOW, -q);
+        else massbal_addInflowFlow(EXTERNAL_INFLOW, -q);
 
         // --- update mass balance with mass leaving system through negative
         //     lateral inflows (lateral flow was previously accounted for)
