@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
+
 #
 #  setup.py 
 # 
 #  Author:     Michael E. Tryby
 #              US EPA - ORD/NRMRL
 #
-# Setup up script for SWMM Output API python extension
 #
-# Requires:
-#   Platform C language compiler   
-#   Python packages: numpy
-#
+
+'''Setup up script for SWMM Output API python extension'''
 
 try:
     from setuptools import setup, Extension
@@ -51,6 +49,7 @@ setup(
     py_modules = ['swmm_output'],
       
     install_requires = [
-        'numpy>=1.7.0'
+        'numpy>=1.7.0',
+        'enum34'
     ]
 )

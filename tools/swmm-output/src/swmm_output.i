@@ -5,7 +5,8 @@
  *  Author:     Michael E. Tryby
  *              US EPA - ORD/NRMRL
  *
-*/ 
+*/
+
 %module swmm_output
 %{
 #include "errormanager.h"
@@ -26,70 +27,69 @@
 typedef void* SMO_Handle;
 
 typedef enum {
-    flow_rate,
-    concentration
+    SMO_flow_rate,
+    SMO_concentration
 } SMO_unit;
 
 typedef enum {
-    subcatch,
-    node,
-    link,
-    sys
+    SMO_subcatch,
+    SMO_node,
+    SMO_link,
+    SMO_sys
 } SMO_elementType;
 
 typedef enum {
-//  reportStart,
-    reportStep,
-    numPeriods
+    SMO_reportStep,
+    SMO_numPeriods
 } SMO_time;
 
 typedef enum {
-    rainfall_subcatch,      // (in/hr or mm/hr),
-    snow_depth_subcatch,    // (in or mm),
-    evap_loss,              // (in/hr or mm/hr),
-    infil_loss,             // (in/hr or mm/hr),
-    runoff_rate,            // (flow units),
-    gwoutflow_rate,         // (flow units),
-    gwtable_elev,           // (ft or m),
-    soil_moisture,          // unsaturated zone moisture content (-),
-    pollutant_conc_subcatch // first pollutant
+    SMO_rainfall_subcatch,      // (in/hr or mm/hr),
+    SMO_snow_depth_subcatch,    // (in or mm),
+    SMO_evap_loss,              // (in/hr or mm/hr),
+    SMO_infil_loss,             // (in/hr or mm/hr),
+    SMO_runoff_rate,            // (flow units),
+    SMO_gwoutflow_rate,         // (flow units),
+    SMO_gwtable_elev,           // (ft or m),
+    SMO_soil_moisture,          // unsaturated zone moisture content (-),
+    SMO_pollutant_conc_subcatch // first pollutant
 } SMO_subcatchAttribute;
 
 typedef enum {
-    invert_depth,           // (ft or m),
-    hydraulic_head,         // (ft or m),
-    stored_ponded_volume,   // (ft3 or m3),
-    lateral_inflow,         // (flow units),
-    total_inflow,           // lateral + upstream (flow units),
-    flooding_losses,        // (flow units),
-    pollutant_conc_node     // first pollutant,
+    SMO_invert_depth,           // (ft or m),
+    SMO_hydraulic_head,         // (ft or m),
+    SMO_stored_ponded_volume,   // (ft3 or m3),
+    SMO_lateral_inflow,         // (flow units),
+    SMO_total_inflow,           // lateral + upstream (flow units),
+    SMO_flooding_losses,        // (flow units),
+    SMO_pollutant_conc_node     // first pollutant,
 } SMO_nodeAttribute;
 
 typedef enum {
-    flow_rate_link,         // (flow units),
-    flow_depth,             // (ft or m),
-    flow_velocity,          // (ft/s or m/s),
-    flow_volume,            // (ft3 or m3),
-    capacity,               // (fraction of conduit filled),
-    pollutant_conc_link     // first pollutant,
+    SMO_flow_rate_link,         // (flow units),
+    SMO_flow_depth,             // (ft or m),
+    SMO_flow_velocity,          // (ft/s or m/s),
+    SMO_flow_volume,            // (ft3 or m3),
+    SMO_capacity,               // (fraction of conduit filled),
+    SMO_pollutant_conc_link     // first pollutant,
 } SMO_linkAttribute;
 
 typedef enum {
-    air_temp,               // (deg. F or deg. C),
-    rainfall_system,        // (in/hr or mm/hr),
-    snow_depth_system,      // (in or mm),
-    evap_infil_loss,        // (in/hr or mm/hr),
-    runoff_flow,            // (flow units),
-    dry_weather_inflow,     // (flow units),
-    groundwater_inflow,     // (flow units),
-    RDII_inflow,            // (flow units),
-    direct_inflow,          // user defined (flow units),
-    total_lateral_inflow,   // (sum of variables 4 to 8) //(flow units),
-    flood_losses,           // (flow units),
-    outfall_flows,          // (flow units),
-    volume_stored,          // (ft3 or m3),
-    evap_rate               // (in/day or mm/day),
-    //p_evap_rate           // (in/day or mm/day)
+    SMO_air_temp,               // (deg. F or deg. C),
+    SMO_rainfall_system,        // (in/hr or mm/hr),
+    SMO_snow_depth_system,      // (in or mm),
+    SMO_evap_infil_loss,        // (in/hr or mm/hr),
+    SMO_runoff_flow,            // (flow units),
+    SMO_dry_weather_inflow,     // (flow units),
+    SMO_groundwater_inflow,     // (flow units),
+    SMO_RDII_inflow,            // (flow units),
+    SMO_direct_inflow,          // user defined (flow units),
+    SMO_total_lateral_inflow,   // (sum of variables 4 to 8) //(flow units),
+    SMO_flood_losses,           // (flow units),
+    SMO_outfall_flows,          // (flow units),
+    SMO_volume_stored,          // (ft3 or m3),
+    SMO_evap_rate               // (in/day or mm/day),
+    //p_evap_rate               // (in/day or mm/day)
 } SMO_systemAttribute;
 
 
@@ -286,61 +286,61 @@ int DLLEXPORT SMO_checkError(SMO_Handle p_handle, char** msg_buffer);
 import enum
 
 class Unit(enum.Enum):
-    FLOW_UNIT = flow_rate
-    CONC_UNIT = concentration
+    FLOW_UNIT = SMO_flow_rate
+    CONC_UNIT = SMO_concentration
 
 class ElementType(enum.Enum):
-    SUBCATCH = subcatch
-    NODE = node
-    LINK = link
-    SYSTEM = sys
+    SUBCATCH = SMO_subcatch
+    NODE = SMO_node
+    LINK = SMO_link
+    SYSTEM = SMO_sys
 
 class Time(enum.Enum):
-    REPORT_STEP = reportStep
-    NUM_PERIODS = numPeriods
+    REPORT_STEP = SMO_reportStep
+    NUM_PERIODS = SMO_numPeriods
 
 class SubcatchAttribute(enum.Enum):
-    RAINFALL = rainfall_subcatch
-    SNOW_DEPTH = snow_depth_subcatch
-    EVAP_LOSS = evap_loss
-    INFIL_LOSS = infil_loss
-    RUNOFF_RATE = runoff_rate
-    GWOUTFLOW_RATE = gwoutflow_rate
-    GETABLE_ELEV = gwtable_elev
-    SOIL_MOISTURE = soil_moisture
-    POLLUT_CONC = pollutant_conc_subcatch
+    RAINFALL = SMO_rainfall_subcatch
+    SNOW_DEPTH = SMO_snow_depth_subcatch
+    EVAP_LOSS = SMO_evap_loss
+    INFIL_LOSS = SMO_infil_loss
+    RUNOFF_RATE = SMO_runoff_rate
+    GWOUTFLOW_RATE = SMO_gwoutflow_rate
+    GETABLE_ELEV = SMO_gwtable_elev
+    SOIL_MOISTURE = SMO_soil_moisture
+    POLLUT_CONC = SMO_pollutant_conc_subcatch
 
 class NodeAttribute(enum.Enum):
-    INVERT_DEPTH = invert_depth
-    HYDRAULIC_HEAD = hydraulic_head
-    PONDED_VOLUME = stored_ponded_volume
-    LATERAL_INFLOW = lateral_inflow
-    TOTAL_INFLOW = total_inflow
-    FLOODING_LOSSES = flooding_losses
-    POLLUT_CONC = pollutant_conc_node
+    INVERT_DEPTH = SMO_invert_depth
+    HYDRAULIC_HEAD = SMO_hydraulic_head
+    PONDED_VOLUME = SMO_stored_ponded_volume
+    LATERAL_INFLOW = SMO_lateral_inflow
+    TOTAL_INFLOW = SMO_total_inflow
+    FLOODING_LOSSES = SMO_flooding_losses
+    POLLUT_CONC = SMO_pollutant_conc_node
     
 class LinkAttribute(enum.Enum):
-    FLOW_RATE = flow_rate_link
-    FLOW_DEPTH = flow_depth
-    FLOW_VELOCITY = flow_velocity
-    FLOW_VOLUME = flow_volume
-    CAPACITY = capacity
-    POLLUT_CONC = pollutant_conc_link
+    FLOW_RATE = SMO_flow_rate_link
+    FLOW_DEPTH = SMO_flow_depth
+    FLOW_VELOCITY = SMO_flow_velocity
+    FLOW_VOLUME = SMO_flow_volume
+    CAPACITY = SMO_capacity
+    POLLUT_CONC = SMO_pollutant_conc_link
 
 class SystemAttribute(enum.Enum):
-    AIR_TEMP = air_temp
-    RAINFALL = rainfall_system
-    SNOW_DEPTH = snow_depth_system
-    EVAP_INFIL_LOSS = evap_infil_loss
-    RUNOFF_FLOW = runoff_flow
-    DRY_WEATHER_INFLOW = dry_weather_inflow
-    GW_INFLOW = groundwater_inflow
-    RDII_INFLOW = RDII_inflow
-    DIRECT_INFLOW = direct_inflow
-    TOTAL_LATERAL_INFLOW = total_lateral_inflow
-    FLOOD_LOSSES = flood_losses
-    OUTFALL_FLOWS = outfall_flows
-    VOLUME_STORED = volume_stored
-    EVAP_RATE = evap_rate
+    AIR_TEMP = SMO_air_temp
+    RAINFALL = SMO_rainfall_system
+    SNOW_DEPTH = SMO_snow_depth_system
+    EVAP_INFIL_LOSS = SMO_evap_infil_loss
+    RUNOFF_FLOW = SMO_runoff_flow
+    DRY_WEATHER_INFLOW = SMO_dry_weather_inflow
+    GW_INFLOW = SMO_groundwater_inflow
+    RDII_INFLOW = SMO_RDII_inflow
+    DIRECT_INFLOW = SMO_direct_inflow
+    TOTAL_LATERAL_INFLOW = SMO_total_lateral_inflow
+    FLOOD_LOSSES = SMO_flood_losses
+    OUTFALL_FLOWS = SMO_outfall_flows
+    VOLUME_STORED = SMO_volume_stored
+    EVAP_RATE = SMO_evap_rate
 
 %}

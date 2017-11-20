@@ -388,9 +388,9 @@ int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time)
     {
         switch (code)
         {
-        case reportStep:  *time = p_data->ReportStep;
+        case SMO_reportStep:  *time = p_data->ReportStep;
         break;
-        case numPeriods:  *time = p_data->Nperiods;
+        case SMO_numPeriods:  *time = p_data->Nperiods;
         break;
         default:           errorcode = 421;
         }
@@ -420,28 +420,28 @@ int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
 
         switch (type)
         {
-        case subcatch:
+        case SMO_subcatch:
             if (index < 0 || index >= p_data->Nsubcatch)
                 errorcode = 423;
             else
                 idx = index;
             break;
 
-        case node:
+        case SMO_node:
             if (index < 0 || index >= p_data->Nnodes)
                 errorcode = 423;
             else
                 idx = p_data->Nsubcatch + index;
             break;
 
-        case link:
+        case SMO_link:
             if (index < 0 || index >= p_data->Nlinks)
                 errorcode = 423;
             else
                 idx = p_data->Nsubcatch + p_data->Nnodes + index;
             break;
 
-        case sys:
+        case SMO_sys:
             if (index < 0 || index >= p_data->Npolluts)
                 errorcode = 423;
             else

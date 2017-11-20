@@ -1,4 +1,5 @@
-#
+# -*- coding: utf-8 -*-
+
 #   swmm_output_test.py
 #
 #   Created: 11/8/2017
