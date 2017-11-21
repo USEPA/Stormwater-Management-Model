@@ -3,9 +3,19 @@ cmake_minimum_required (VERSION 3.0)
 
 project(SWMM)
 
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
+#set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+#set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+if(MSVC)
+    set(CMAKE_C_FLAGS "/fp:fast /fp:except- /Gd /Oy- /Ob2 /Ot")
+    set(CMAKE_C_FLAGS_DEBUG "/MTd /W4")
+    set(CMAKE_C_FLAGS_RELEASE "/O2 /MT /W3")
+
+    set(CMAKE_CXX_FLAGS "/fp:fast /fp:except- /Gd /Oy- /Ob2 /Ot")
+    set(CMAKE_CXX_FLAGS_DEBUG "/MTd /W4")
+    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /MT /W3")
+endif(MSVC)
 
 if(UNIX)
     set(CMAKE_C_FLAGS "-std=c99 -fopenmp")
@@ -26,12 +36,12 @@ if(APPLE)
 endif(APPLE)
 
 # includes and source files
-include_directories(include)
-include_directories(src)
+file(GLOB_RECURSE SWMM_HEADERS include/*.h src/*.h)
 file(GLOB SWMM_SOURCES src/*.c)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # library
-add_library(swmm5 SHARED ${SWMM_SOURCES})
+add_library(swmm5 SHARED ${SWMM_SOURCES} ${SWMM_HEADERS})
 target_link_libraries(swmm5)
 
 # executable
@@ -47,4 +57,3 @@ endif(WIN32)
 # install
 install(TARGETS run-swmm DESTINATION bin)
 install(TARGETS swmm5 DESTINATION lib)
-install(FILES src/swmm5.h DESTINATION include)

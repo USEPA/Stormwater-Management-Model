@@ -1,76 +1,71 @@
-# https://ci.appveyor.com/project/OpenWaterAnalytics/stormwater-management-model
+# https://ci.appveyor.com/project/OpenWaterAnalytics/stormwater-management-model/
 
-matrix:
-  fast_finish: true
+version: 2.0.{build}
+
+configuration:
+  - Release
+
+platform:
+  - x64
 
 environment:
-  global:
-    # Environment variables used by astropy helpers
-    PYTHON: "C:\\conda"
-    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\ci-helpers\\appveyor\\windows_sdk.cmd"
-
   matrix:
-    - PYTHON_VERSION: "2.7"
-      PYTHON_ARCH: "32"
-      ARCH: "x86"
-      platform: "x86"
-    - PYTHON_VERSION: "3.4"
-      PYTHON_ARCH: "32"
-      ARCH: "x86"
-      platform: "x86"
-    - PYTHON_VERSION: "3.6"
-      PYTHON_ARCH: "32"
-      ARCH: "x86"
-      platform: "x86"
-    - PYTHON_VERSION: "2.7"
-      PYTHON_ARCH: "64"
-      ARCH: "amd64"
-      platform: "x64"
-    - PYTHON_VERSION: "3.4"
-      PYTHON_ARCH: "64"
-      ARCH: "amd64"
-      platform: "x64"
-    - PYTHON_VERSION: "3.6"
-      PYTHON_ARCH: "64"
-      ARCH: "amd64"
-      platform: "x64"
+#    # Python 2.7
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+#      VS_VERSION: "9 2008"
+#      arch: Win32
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+#      VS_VERSION: "9 2008"
+#      arch: Win64
+    # Python 3.4
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "10 2010"
+      arch: Win32
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#      VS_VERSION: "10 2010"
+#      arch: Win64
+#    # Not used as a python compiler
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#      VS_VERSION: "12 2013"
+#      arch: Win32
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#      VS_VERSION: "12 2013"
+#      arch: Win64
+#    # Python 3.5 and 3.6
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#      VS_VERSION: "14 2015"
+#      arch: Win32
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#      VS_VERSION: "14 2015"
+#      arch: Win64
+#    # Not used as a python compiler
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+#      VS_VERSION: "15 2017"
+#      arch: Win32
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+#      VS_VERSION: "15 2017"
+#      arch: Win64
+  
+matrix:
+  fast_finish: false
 
-cache:
-  - "C:\\condacache\\pkgs"
+# skip unsupported combinations
+init:
+  - set _arch=
+  - if "%arch%"=="Win64" ( set _arch= Win64)
+  - echo %_arch%
+  - echo %APPVEYOR_BUILD_WORKER_IMAGE%
+  - set generator="Visual Studio %VS_VERSION%%_arch%" 
+  - echo %generator%
 
-install:
-  # Astropy ci-helpers. See https://github.com/astropy/ci-helpers
-  - "git clone git://github.com/astropy/ci-helpers.git"
-  - if "%PYTHON_VERSION%" == "3.4" set "BASE_PYTHON_VERSION=36"
-  - if "%PYTHON_VERSION%" == "3.5" set "BASE_PYTHON_VERSION=36"
-  - if "%PYTHON_VERSION%" == "3.6" set "BASE_PYTHON_VERSION=36"
-  - if "%PYTHON_ARCH%" == "64" set "ARCH_LABEL=-x64"
-  # These are already installed on appveyor.  Update them.
-  - set "CONDA_ROOT=C:\Miniconda%BASE_PYTHON_VERSION%%ARCH_LABEL%"
-  # we can't "activate root" with sufficiently-old conda which appveyor has (?)
-  # - "%CONDA_ROOT%\\Scripts\\activate root"
-  - set "PATH=%CONDA_ROOT%;%CONDA_ROOT%\Scripts;%CONDA_ROOT%\Library\bin;%PATH%"
-  - set PATH
-  - "%CMD_IN_ENV% conda config --set always_yes yes"
-  - "%CMD_IN_ENV% conda install conda -q -y --no-pin"
-  - "%CMD_IN_ENV% conda config --add pkgs_dirs C:\\condacache\\pkgs"
-  - "%CMD_IN_ENV% conda install conda-build anaconda-client -q -y --no-pin"
-  # Install dependencies
-  - "%CMD_IN_ENV% conda-build conda.recipe --python %PYTHON_VERSION% --old-build-string"
-  - "%CMD_IN_ENV% conda create -n test libswmm --use-local"
-  - "%CMD_IN_ENV% conda create -n format clangdev -c conda-forge"
+before_build:
+- cmd: >-
+    cmake -G %generator% -DCMAKE_INSTALL_PREFIX:PATH=output -DCMAKE_BUILD_TYPE:STRING=Release
 
-# Not a .NET project, we build in the install step instead
-build: false
 
-test_script:
-  # Check file format with clang
-  - "%CMD_IN_ENV% activate format"
-  - "%CMD_IN_ENV% python tools\\clangformatter.py src\\"
-  # Test built package
-  #- "%CMD_IN_ENV% activate test"
-  #- "%CMD_IN_ENV% run-swmm --version"
+build_script:
+  - MSBUILD.exe INSTALL.vcxproj /p:Configuration=Release
 
-on_success:
-  - "%CMD_IN_ENV% activate root"
-  - "%CMD_IN_ENV% python tools\\build_and_upload.py"
+after_test:
+  - cd output/bin
+  - run-swmm.exe --version
