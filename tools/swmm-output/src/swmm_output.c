@@ -848,7 +848,7 @@ int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, int periodIndex,
         *arrayLength = p_data->SysVars;
     }
 
-    return errorcode;
+    return set_error(p_data->error_handle, errorcode);
 }
 
 void DLLEXPORT SMO_free(void** array)

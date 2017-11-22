@@ -17,11 +17,6 @@
 %}
 
 %include "typemaps.i"
-%include "numpy.i"
-
-%init %{
-    import_array();
-%}
 
 /* DEFINE AND TYPEDEF MUST BE INCLUDED */
 typedef void* SMO_Handle;
@@ -125,6 +120,7 @@ and return a (possibly) different pointer */
 /* TYPEMAP FOR IGNORING INT ERROR CODE RETURN VALUE */
 %typemap(out) int {
     $result = Py_None;
+    Py_INCREF($result);
 }
 
 
@@ -262,13 +258,13 @@ int DLLEXPORT SMO_getSystemAttribute(SMO_Handle p_handle, int timeIndex,
     SMO_systemAttribute attr, float** float_out, int* int_dim);
 
 int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, int timeIndex,
-    int subcatchIndex, float** ARGOUTVIEWM_ARRAY1, int* DIM1);
+    int subcatchIndex, float** float_out, int* int_dim);
 int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, int timeIndex,
-    int nodeIndex, float** ARGOUTVIEWM_ARRAY1, int* DIM1);
+    int nodeIndex, float** float_out, int* int_dim);
 int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, int timeIndex,
-    int linkIndex, float** ARGOUTVIEWM_ARRAY1, int* DIM1);
+    int linkIndex, float** float_out, int* int_dim);
 int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, int timeIndex,
-    int dummyIndex, float** ARGOUTVIEWM_ARRAY1, int* DIM1);
+    int dummyIndex, float** float_out, int* int_dim);
 
 %exception;        
 
