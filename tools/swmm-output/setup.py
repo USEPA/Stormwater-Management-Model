@@ -17,26 +17,26 @@ except ImportError:
     from distutils.core import setup, Extension
     from distutils.command.build_ext import build_ext
 
-class CustomBuildExtCommand(build_ext):
-    """build_ext command for use when numpy headers are needed."""
-    def run(self):
-        # Import numpy here, only when headers are needed
-        import numpy
-
-        # Add numpy headers to include_dirs
-        try:
-            numpy_include = numpy.get_include()
-        except AttributeError:
-            numpy_include = numpy.get_numpy_include()
-
-        self.include_dirs.append(numpy_include)
-        
-        # Call original build_ext command
-        build_ext.run(self)    
+# class CustomBuildExtCommand(build_ext):
+#     """build_ext command for use when numpy headers are needed."""
+#     def run(self):
+#         # Import numpy here, only when headers are needed
+#         import numpy
+# 
+#         # Add numpy headers to include_dirs
+#         try:
+#             numpy_include = numpy.get_include()
+#         except AttributeError:
+#             numpy_include = numpy.get_numpy_include()
+# 
+#         self.include_dirs.append(numpy_include)
+#         
+#         # Call original build_ext command
+#         build_ext.run(self)    
 
 setup(
     name = "swmm-output", 
-    cmdclass = {'build_ext': CustomBuildExtCommand}, 
+#    cmdclass = {'build_ext': CustomBuildExtCommand}, 
     version = "1.0",
     ext_modules = [
         Extension("_swmm_output", 
