@@ -36,7 +36,7 @@ def result_compare(path_test, path_ref, comp_args):
     
     for test, ref in it.izip(test_reader, ref_reader):
         total += 1
-#        if total%100000 == 0:
+        if total%100000 == 0:
         print(total)
         
         if len(test) != len(ref):
@@ -85,6 +85,7 @@ def report_compare(path_test, path_ref, (comp_args)):
                                              hdf.parse(fref, 4, 4)[1]): 
             if test_line != ref_line: 
                 return False
+              
     return True 
 
 
@@ -150,6 +151,7 @@ def nrtest_execute(app_path, test_path, output_path):
 
 
 if __name__ == "__main__":
+
     import sys
     
     root = logging.getLogger()

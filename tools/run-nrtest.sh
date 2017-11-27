@@ -26,8 +26,10 @@ test_output_path="benchmark/swmm-$2"
 
 nrtest_compare_cmd="nrtest compare"
 ref_output_path="benchmark/swmm-5112"
+
 rtol_value=0.01
 atol_value=0.0
+
 
 
 # change current directory to test_suite
@@ -39,16 +41,14 @@ rm -rf ${test_output_path}
 echo INFO: Creating test benchmark
 nrtest_command="${nrtest_execute_cmd} ${test_app_path} ${tests} -o ${test_output_path}"
 echo INFO: "$nrtest_command"
-
 if ! [ $( $nrtest_command ) ]; then
 	echo  
-
 	echo INFO: Comparing test and ref benchmarks
 	nrtest_command="${nrtest_compare_cmd} ${test_output_path} ${ref_output_path} --rtol ${rtol_value} --atol ${atol_value}"
 	echo INFO: "$nrtest_command"
 	return_value=$( $nrtest_command ) 
 else
-	echo INFO: Test benchmark creation failed
+	echo ERROR: Test benchmark creation failed
 	exit 1
 fi
 
