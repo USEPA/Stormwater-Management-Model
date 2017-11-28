@@ -37,9 +37,9 @@ def result_compare(path_test, path_ref, comp_args):
     for test, ref in it.izip(test_reader, ref_reader):
         total += 1
         if total%100000 == 0:
-            print(total)
+        print(total)
         
-        if test.size != ref.size:
+        if len(test) != len(ref):
             raise ValueError('Inconsistent lengths')
         
         # Skip results if they are zero or equal
@@ -81,10 +81,11 @@ def report_compare(path_test, path_ref, (comp_args)):
     Compares results in two report files ignoring contents of header and footer. 
     '''
     with open(path_test ,'r') as ftest, open(path_ref, 'r') as fref:
-        for (test_line, ref_line) in it.izip(hdf.parse(ftest, 4, 4)[1], hdf.parse(fref, 4, 4)[1]): 
+        for (test_line, ref_line) in it.izip(hdf.parse(ftest, 4, 4)[1], 
+                                             hdf.parse(fref, 4, 4)[1]): 
             if test_line != ref_line: 
                 return False
-
+              
     return True 
 
 
@@ -150,6 +151,18 @@ def nrtest_execute(app_path, test_path, output_path):
 
 
 if __name__ == "__main__":
+
+    import sys
+    
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+    
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    root.addHandler(ch)   
+    
 #    app_path = "C:\\Users\\mtryby\\Workspace\\GitRepo\\michaeltryby\\Stormwater-Management-Model\\tests\\swmm-nrtestsuite\\apps\\swmm-517_x86.json"
 #    test_path = "C:\\Users\\mtryby\\Workspace\\GitRepo\\michaeltryby\\Stormwater-Management-Model\\tests\\swmm-nrtestsuite\\tests\\examples\\example1.json"
 #    output_path = "C:\\Users\\mtryby\\Workspace\\GitRepo\\michaeltryby\\Stormwater-Management-Model\\tests\\swmm-nrtestsuite\\benchmarks\\test"
@@ -164,8 +177,7 @@ if __name__ == "__main__":
 #    path_ref  = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5110\\Example_4\\Example4.out"    
 #    result_compare(path_test, path_ref, (0.001, 0.0))
 
-    path_test = "C:\\Users\\mtryby\\Workspace\\GitRepo\\michaeltryby\\Stormwater-Management-Model\\tests\\swmm-nrtestsuite\\benchmarks\\v517\\Example_1\\Example1.out"
-    path_ref  = "C:\\Users\\mtryby\\Workspace\\GitRepo\\michaeltryby\\Stormwater-Management-Model\\tests\\swmm-nrtestsuite\\benchmarks\\v517\\Example_1\\Example1.out"
-    print(result_compare(path_test, path_ref, (1.0, 0.0)))
-
-    
+    path_test = "C:\\Users\\mtryby\\Workspace\\GitRepo\\michaeltryby\\Stormwater-Management-Model\\tests\\swmm-nrtestsuite\\benchmark\\swmm-5112"
+    path_ref  = "C:\\Users\\mtryby\\Workspace\\GitRepo\\michaeltryby\\Stormwater-Management-Model\\tests\\swmm-nrtestsuite\\benchmark\\swmm-520dev1"
+    nrtest_compare(path_test, path_ref, 0.0, 1.0)
+#    print(result_compare(path_test, path_ref, (0.0, 0.1)))

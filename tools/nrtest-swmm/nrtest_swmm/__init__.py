@@ -67,7 +67,7 @@ def swmm_allclose_compare(path_test, path_ref, rtol, atol):
     for (test, ref) in it.izip(ordr.output_generator(path_test), 
                                ordr.output_generator(path_ref)):
         
-        if test.size != ref.size:
+        if len(test) != len(ref):
             raise ValueError('Inconsistent lengths')
         
         # Skip over results if they are equal

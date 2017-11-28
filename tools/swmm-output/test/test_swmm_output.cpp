@@ -122,12 +122,12 @@ TEST_F(SWMM_OutputFixture, getStartDateTest) {
 TEST_F(SWMM_OutputFixture, getTimesTest) {
     int time = -1;
 
-    error = SMO_getTimes(p_handle, reportStep, &time);
+    error = SMO_getTimes(p_handle, SMO_reportStep, &time);
     ASSERT_EQ(0, error);
 
     EXPECT_EQ(3600, time);
 
-    error = SMO_getTimes(p_handle, numPeriods, &time);
+    error = SMO_getTimes(p_handle, SMO_numPeriods, &time);
     ASSERT_EQ(0, error);
 
     EXPECT_EQ(36, time);
@@ -137,7 +137,7 @@ TEST_F(SWMM_OutputFixture, getElementNameTest) {
     char* c_array = NULL;
     int index = 1;
 
-    error = SMO_getElementName(p_handle, node, index, &c_array, &array_dim);
+    error = SMO_getElementName(p_handle, SMO_node, index, &c_array, &array_dim);
     ASSERT_EQ(0, error);
 
     EXPECT_STREQ("10", c_array);
