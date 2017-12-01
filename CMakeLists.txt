@@ -21,6 +21,7 @@ endif(OPENMP_FOUND)
 
 if(APPLE)
     set(CMAKE_INSTALL_NAME_DIR @executable_path)
+    set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
     set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 endif(APPLE)
 
