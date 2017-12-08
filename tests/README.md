@@ -16,33 +16,33 @@ Running SWMM's regression test suite `swmm-nrtestsuite` requires installation of
 The following are step by step instructions to compare the current SWMM OWA build against the SWMM 5.1.12 MSVC 32 bit benchmark. 
 
 1. Clone the swmm github repository. 
-'''
+```
 $ git clone --depth=50 --branch=feature-nrtest https://github.com/OpenWaterAnalytics/Stormwater-Management-Model.git
-'''
+```
 
 2. Make repository root the current working directory
-'''
+```
 $ cd Stormwater-Management-Model
-'''
+```
 
 3. Install the required python packages. 
-'''
+```
 $ pip install --src buildprod/packages -r tools/requirements.txt 
-'''
+```
 
 4. Build swmm using cmake. 
-'''
+```
 $ cd buildprod
 $ cmake -DCMAKE_BUILD_TYPE=Release ..
 $ cmake --build . --config Release
-'''
+```
 
 5. Configure and run the regression tests: where <build id> - is the build identifier (i.e. swmm version number).
-'''
+```
 $ cd ..
 $ tools/gen-config.sh `pwd`/buildprod/bin > ./tests/apps/swmm-<build id>.json
 $ tools/run-nrtest.sh `pwd`/tests/swmm-nrtestsuite <build id>
-'''
+```
 
 ## Step by Step Guide for Windows 
 
@@ -52,10 +52,10 @@ Coming soon ...
 ## Working with nrtest 
 
 Using `nrtest` it is possible to compare any two versions of SWMM aslong as they share the same binary file format. `nrtest` comes with a python scripts for running its `execute` and `compare` commands. 
-'''
+```
 $ python nrtest execute apps/<app.json> tests/<test.json> -o benchmark/
 $ python nrtest compare test_benchmark/ ref_benchmark/ --rtol --atol
-''' 
+``` 
 
 **To what values should rtol and atol be set?** 
 
