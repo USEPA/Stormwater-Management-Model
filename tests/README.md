@@ -1,47 +1,48 @@
 
-# swmm-nrtestsuite
+# SWMM Regression Testing
 
 ## Prerequisits
 
-Running swmm-nrtestsuite requires installation of the following software. 
+Running SWMM's regression test suite `swmm-nrtestsuite` requires installation of the following software. 
 * git 
-* Platform C compiler - MSVC, gcc, xcode
+* C compiler - MSVC, gcc, xcode
 * cmake
-* python 2.7 with setup tools installed 
+* python 2.7 including setup tools 
 * swig
 
 
 ## Step by Step Guide for Linux and MacOS
 
+The following are step by step instructions to compare the current SWMM OWA build against the SWMM 5.1.12 MSVC 32 bit benchmark. 
 
 1. Clone the swmm github repository. 
-
-    $ git clone --depth=50 --branch=feature-nrtest https://github.com/OpenWaterAnalytics/Stormwater-Management-Model.git
-
+'''
+$ git clone --depth=50 --branch=feature-nrtest https://github.com/OpenWaterAnalytics/Stormwater-Management-Model.git
+'''
 
 2. Make repository root the current working directory
-
-    $ cd Stormwater-Management-Model
-
+'''
+$ cd Stormwater-Management-Model
+'''
 
 3. Install the required python packages. 
-
-    $ pip install --src buildprod/packages -r tools/requirements.txt 
-
+'''
+$ pip install --src buildprod/packages -r tools/requirements.txt 
+'''
 
 4. Build swmm using cmake. 
+'''
+$ cd buildprod
+$ cmake -DCMAKE_BUILD_TYPE=Release ..
+$ cmake --build . --config Release
+'''
 
-    $ cd buildprod
-    $ cmake -DCMAKE_BUILD_TYPE=Release ..
-    $ cmake --build . --config Release
-
-
-5. Configure and run the regression tests: where <build id> - is the build identifier (i.e. swmm version number)
-
-    $ cd ..
-    $ tools/gen-config.sh `pwd`/buildprod/bin > ./tests/apps/swmm-<build id>.json
-    $ tools/run-nrtest.sh `pwd`/tests/swmm-nrtestsuite <build id>
-
+5. Configure and run the regression tests: where <build id> - is the build identifier (i.e. swmm version number).
+'''
+$ cd ..
+$ tools/gen-config.sh `pwd`/buildprod/bin > ./tests/apps/swmm-<build id>.json
+$ tools/run-nrtest.sh `pwd`/tests/swmm-nrtestsuite <build id>
+'''
 
 ## Step by Step Guide for Windows 
 
@@ -50,13 +51,13 @@ Coming soon ...
 
 ## Working with nrtest 
 
-nrtest comes with a python scripts for running its execute and compare commands. 
- 
-    python nrtest execute apps/<app.json> tests/<test.json> -o benchmark/
-    python nrtest compare test_benchmark/ ref_benchmark/ --rtol --atol
- 
+Using `nrtest` it is possible to compare any two versions of SWMM aslong as they share the same binary file format. `nrtest` comes with a python scripts for running its `execute` and `compare` commands. 
+'''
+$ python nrtest execute apps/<app.json> tests/<test.json> -o benchmark/
+$ python nrtest compare test_benchmark/ ref_benchmark/ --rtol --atol
+''' 
 
-To what values should rtol and atol be set? 
+**To what values should rtol and atol be set?** 
 
 What appears to be a simple question on the surface turns out to be more difficult upon deeper 
 examination. The numpy testing assert allclose comparison criteria leaves a lot to be desired from 
@@ -107,7 +108,6 @@ easily be adapted for testing other types of text based files.
 
 ## Common Problems
 
-
 When adding new apps and tests the json format can be a bit finicky and json parsing errors 
 aren't being reported in a user friendly manner. 
 
@@ -116,7 +116,7 @@ for testing.
 
 SWMM requires the absolute path of data files referenced in a SWMM input file (e.g. rain gauge data). 
 
-The packages swmm_reader and nrtest_swmm were developed and run on Windows with 64 bit version 
+The packages swmm_output and nrtest_swmm were developed and run on Windows with 64 bit version 
 of Python 2.7. They have not been tested on Mac OS or Linux systems and have not been run using 
 Python 3. 
 
