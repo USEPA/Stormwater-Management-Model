@@ -1,81 +1,137 @@
-# Setting up the development environment
+# I. Setting up the development environment (This is a work in progress)
 
-We use the [conda](https://conda.io/docs/user-guide/getting-started.html) as
-infrastructure to develop, build and test SWMM. We also use [CMake](https://cmake.org/)
-to have a simple way to generate cross platform binaries.
+The official windows compiler used for originally building SWMM was Visual Studio 2010 32 bits and as such is the recommended compiler on windows for current development. We are in the process of validating that other compilers on windows for different architecture and different operating systems results in the same results (Regression tests).
 
-Conda is a cross platform package manager written in Python that is part of the
-scientific distribution [Anaconda](https://www.continuum.io/what-is-anaconda),
-and also provides isolated system environments where one can install several
-different packages.
+If you are also testing the PySWMM wrapper for development, we advised to use Python 3.4 (32 bits) which uses the same compiler and hence provides full binary compatibility for SWMM
 
-## Step 1: Install conda via Anaconda or Miniconda
+## A.) Windows 
 
-- Download and install [miniconda](https://conda.io/miniconda.html) or
-[anaconda](https://www.continuum.io/downloads)
+### Install Dependencies
 
-**Note**: We recommend installing for the current user and avoid `All users`
-installations.
+- Visual Studio C++ 10. Link to download
+- Install CMake >= `<VERSION>` Link to download
+- Python 3.4. Link to download
+- Install the nrtest dependencies. Links to download
 
-## Step 2: Install conda-build and anaconda-client
-
-Open up a **terminal** (on OSX or Linux) or the **Anaconda Prompt**
-(on Windows), and install **conda-build** and **anaconda-client** on the
-**root** environment.
-
-The **root** environment is the default conda environment that gets installed
-with anaconda or miniconda. Conda-build is what allows us to create a conda
-package with a recipe. The recipe for SWMM can be found in the
-[conda.recipe](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/tree/develop/conda.recipe)
-folder.
+### Building
+To build SWMM then run:
 
 ```
-$ conda install conda-build anaconda-client
+$ cmake -G "Visual Studio <VERSION>" -DCMAKE_INSTALL_PREFIX:PATH=output -DCMAKE_BUILD_TYPE:STRING=Release
 ```
 
-## Step 3: create the development enviornment
-
-So now, lets create a conda environment called **swmm** and install the
-development dependencies. We also install **clangdev** from the **conda-forge**
-to use the [clang-format](https://clang.llvm.org/docs/ClangFormat.html) tool
-to keep the C code tidy and uniform.
-
-### On OSX and Linux:
+### Running
 
 ```
-$ conda create --name swmm cmake gcc libgcc python=3.6
-$ conda install --name clangdev --channel conda-forge
+$ run-swmm --help
 ```
 
-### On Windows:
+## B.) Linux
 
+### Install Dependencies
+- Build dependencies... gcc >=  libgcc >=
+- cmake
+- Install the nrtest dependencies..... Links to download
+
+#### On Debian (.deb) based systems you can use
 ```
-$ conda create --name swmm cmake python=3.6
-$ conda install --name clangdev --channel conda-forge
-```
-
-## Step 4: Activating the conda environment
-
-By default when opening a new Terminal (or Anaconda Prompt) we will get the
-**root** environment so everytime we start working we need to make sure that
-we do:
-
-### On OSX and Linux:
-
-```
-$ source activate swmm
+$ sudo apt install ...
 ```
 
-### On Windows:
+#### On Centos (.rpm) based systems you can use
 
 ```
-$ activate swmm
+$ sudo yum install ...
 ```
 
-Now we are ready to do some work!
+### Building
+
+```
+$ cmake -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_BUILD_TYPE:STRING=Release ..
+$ make -j $CPU_COUNT
+$ make install
+```
+
+### Running
+
+```
+$ run-swmm --help
+```
+
+## C.) OSX 
+
+### InstallDependencies
+- Clang version >= ??? or
+- gcc version >= ???
+- cmake
+- Install python and the nrtest dependencies..... Links to download or commands
+
+#### If using Homebrew
+```
+$ brew install ...
+```
+
+### Building
+
+```
+$ cmake -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_BUILD_TYPE:STRING=Release ..
+$ make -j $CPU_COUNT
+$ make install
+```
+
+### Running
+
+```
+$ run-swmm --help
+```
 
 
-# Contributing to the project
+# II. If you are developing for PySwmm
+
+If you are developing for PySwmm you need to install these versions to work with [how python is compiled](https://wiki.python.org/moin/WindowsCompilers) on different platforms:
+
+## A.) Windows
+
+### Python 2.7
+- Visual Studio C++ 9 for Python 2.7. Link to download
+- Python 2.7. Link to download
+
+### Python 3.4
+- Visual Studio C++ 10 for Python 3.4. Link to download
+- Python 3.4. Link to download.
+
+### Python 3.5 and 3.6
+- Visual Studio C++ 14 for Python 3.5 and 3.6. Link to download
+- Python 3.5. Link to download
+- Python 3.6. Link to download
+
+## B.) Linux
+
+....
+
+## C.) OSX
+
+....
+
+
+# III. Regression Testing
+
+To execute regression tests run:
+
+```
+$ python <script...>
+```
+
+# IV. Unit tests
+
+To execute unit tests run:
+
+```
+$ python <script...>
+```
+
+
+# V. Contributing to the project
 
 ## Git and Github
 
@@ -117,31 +173,3 @@ $ git push origin fix/some-branch-fix
 Once the work is done go to https://github.com/OpenWaterAnalytics/Stormwater-Management-Model
 and make a pull request from your created branch.
 
-
-## Coding guidelines
-
-Coding guidelines are simple, because we use an automatic tool to format the
-code after making changes make sure to run the tool on the file that changed
-by doing:
-
-```
-(swmm) $ python tools/clangformatter.py src/<file-that-was-edited> -i
-```
-
-
-# Building the project for local testing
-
-If you want to build the package for local testing, open the terminal
-(or Anaconda prompt) and type:
-
-```
-(swmm) $ conda-build conda.recipe
-```
-
-After the process has finished you can install and run the locally created
-package with:
-
-```
-(swmm) $ conda install --name swmm libswmm --use-local
-(swmm) $ run-swmm
-```
