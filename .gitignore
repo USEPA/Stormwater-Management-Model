@@ -2,6 +2,10 @@
 # Eclipse Stuff
 .metadata/
 .settings/
+.cproject
+.project
+.pydevproject
+
 
 # Mac Stuff
 .DS_Store
@@ -15,9 +19,11 @@
 /target
 *.zip
 
+
 # Build files
 /build/
 *.o
 
 
 *.orig
+/Debug/
