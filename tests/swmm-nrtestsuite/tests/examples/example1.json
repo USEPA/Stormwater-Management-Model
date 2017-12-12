@@ -11,7 +11,7 @@
         "Example1.inp"
     ],
     "output_files": {
-        "Example1.rpt": "swmm report", 
-        "Example1.out": "swmm allclose"
+        "Example1.out": "swmm allclose",
+        "Example1.rpt": "swmm report"
     }
 }
