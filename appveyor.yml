@@ -2,70 +2,75 @@
 
 version: 2.0.{build}
 
-configuration:
-  - Release
-
 platform:
   - x64
 
 environment:
   matrix:
-#    # Python 2.7
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-#      VS_VERSION: "9 2008"
-#      arch: Win32
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-#      VS_VERSION: "9 2008"
-#      arch: Win64
+    # Python 2.7
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    #   VS_VERSION: "9 2008"
+    #   ARCH: Win32
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    #   VS_VERSION: "9 2008"
+    #   ARCH: Win64
     # Python 3.4
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       VS_VERSION: "10 2010"
+      ARCH: Win32
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "10 2010"
+      ARCH: Win64
+    # Not used as a python compiler
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "12 2013"
       arch: Win32
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-#      VS_VERSION: "10 2010"
-#      arch: Win64
-#    # Not used as a python compiler
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-#      VS_VERSION: "12 2013"
-#      arch: Win32
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-#      VS_VERSION: "12 2013"
-#      arch: Win64
-#    # Python 3.5 and 3.6
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-#      VS_VERSION: "14 2015"
-#      arch: Win32
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-#      VS_VERSION: "14 2015"
-#      arch: Win64
-#    # Not used as a python compiler
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-#      VS_VERSION: "15 2017"
-#      arch: Win32
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-#      VS_VERSION: "15 2017"
-#      arch: Win64
-  
-matrix:
-  fast_finish: false
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "12 2013"
+      ARCH: Win64
+    # Python 3.5 and 3.6
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "14 2015"
+      ARCH: Win32
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "14 2015"
+      ARCH: Win64
+    # Not used as a python compiler. Swig is not working with these compilers
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    #   VS_VERSION: "15 2017"
+    #   ARCH: Win32
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    #   VS_VERSION: "15 2017"
+    #   ARCH: Win64
 
-# skip unsupported combinations
 init:
-  - set _arch=
-  - if "%arch%"=="Win64" ( set _arch= Win64)
-  - echo %_arch%
+  - set SWMM_HOME=C:\projects\stormwater-management-model\
+  - set BUILD_HOME=build
+  - if "%ARCH%"=="Win64" ( set VS_ARCH= Win64)
+  - set GENERATOR="Visual Studio %VS_VERSION%%VS_ARCH%"
+  # See set values
   - echo %APPVEYOR_BUILD_WORKER_IMAGE%
-  - set generator="Visual Studio %VS_VERSION%%_arch%" 
-  - echo %generator%
+  - echo %ARCH%
+  - echo %GENERATOR%
+
+install:
+  # Install SWIG using chocolatey
+  - choco install swig
+  - swig -version
+  # `C:\Python27` (x86) is default on path for `python` command
+  - python --version
+  # Install nrtest and dependencies for regression tests
+  - python -m pip install --src build\packages -r tools\requirements.txt
 
 before_build:
 - cmd: >-
-    cmake -G %generator% -DCMAKE_INSTALL_PREFIX:PATH=output -DCMAKE_BUILD_TYPE:STRING=Release
-
+    cmake -G %GENERATOR% -DCMAKE_INSTALL_PREFIX:PATH=%BUILD_HOME% -DCMAKE_BUILD_TYPE:STRING=Release
 
 build_script:
   - MSBUILD.exe INSTALL.vcxproj /p:Configuration=Release
 
-after_test:
-  - cd output/bin
-  - run-swmm.exe --version
+test_script:
+  # Run compiled swmm and check it outputs version correctly
+  - "%SWMM_HOME%\\%BUILD_HOME%\\bin\\run-swmm.exe --version"
+  # Run regression tests
+  - python tools\run_regression_tests.py %SWMM_HOME%\%BUILD_HOME%\bin %APPVEYOR_REPO_COMMIT%
