@@ -3,18 +3,18 @@ cmake_minimum_required (VERSION 3.0)
 
 project(SWMM)
 
-#set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-#set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(MSVC)
-    set(CMAKE_C_FLAGS "/fp:fast /fp:except- /Gd /Oy- /Ob2 /Ot")
+    set(CMAKE_C_FLAGS "/fp:fast /fp:except- /Gd /Oy- /Ob2 /Ot /GL")
     set(CMAKE_C_FLAGS_DEBUG "/MTd /W4")
-    set(CMAKE_C_FLAGS_RELEASE "/O2 /MT /W3")
+    set(CMAKE_C_FLAGS_RELEASE "/O2 /MT /W4")
 
-    set(CMAKE_CXX_FLAGS "/fp:fast /fp:except- /Gd /Oy- /Ob2 /Ot")
+    set(CMAKE_CXX_FLAGS "/fp:fast /fp:except- /Gd /Oy- /Ob2 /Ot /GL")
     set(CMAKE_CXX_FLAGS_DEBUG "/MTd /W4")
-    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /MT /W3")
+    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /MT /W4")
 endif(MSVC)
 
 if(UNIX)
@@ -23,7 +23,7 @@ if(UNIX)
     # add_definitions(-std=c99)
 endif(UNIX)
 
-FIND_PACKAGE(OpenMP)
+FIND_PACKAGE(OpenMP 2.0)
 if(OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
