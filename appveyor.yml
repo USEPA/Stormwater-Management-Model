@@ -5,13 +5,16 @@ version: 2.0.{build}
 platform:
   - x64
 
+matrix:
+  allow_failures:
+    - VS_VERSION: "9 2008"
+
 environment:
   matrix:
-    allow_failures:
-      # Python 2.7
-      - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-        VS_VERSION: "9 2008"
-        ARCH: Win32
+    # Python 2.7
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      VS_VERSION: "9 2008"
+      ARCH: Win32
     # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
     #   VS_VERSION: "9 2008"
     #   ARCH: Win64
@@ -19,9 +22,9 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
       VS_VERSION: "10 2010"
       ARCH: Win32
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-      VS_VERSION: "10 2010"
-      ARCH: Win64
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    #   VS_VERSION: "10 2010"
+    #   ARCH: Win64
     # Not used as a python compiler
     # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     #   VS_VERSION: "12 2013"
