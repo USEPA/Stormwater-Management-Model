@@ -7,7 +7,9 @@ platform:
 
 matrix:
   allow_failures:
-    - VS_VERSION: "9 2008"
+    #Group: (EXPERIMENTAL / SUPPORTED)
+    #EXPERIMENTAL is allowed to fail under the build matrix
+    - GROUP: "EXPERIMENTAL" 
 
 environment:
   matrix:
@@ -15,37 +17,47 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
       VS_VERSION: "9 2008"
       ARCH: Win32
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-    #   VS_VERSION: "9 2008"
-    #   ARCH: Win64
+      GROUP: "EXPERIMENTAL"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      VS_VERSION: "9 2008"
+      ARCH: Win64
+      GROUP: "EXPERIMENTAL"
     # Python 3.4
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
       VS_VERSION: "10 2010"
       ARCH: Win32
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-    #   VS_VERSION: "10 2010"
-    #   ARCH: Win64
+      GROUP: "SUPPORTED"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      VS_VERSION: "10 2010"
+      ARCH: Win64
+      GROUP: "EXPERIMENTAL"
     # Not used as a python compiler
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    #   VS_VERSION: "12 2013"
-    #   arch: Win32
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    #   VS_VERSION: "12 2013"
-    #   ARCH: Win64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "12 2013"
+      arch: Win32
+      GROUP: "EXPERIMENTAL"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "12 2013"
+      ARCH: Win64
+      GROUP: "EXPERIMENTAL"
     # Python 3.5 and 3.6
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    #   VS_VERSION: "14 2015"
-    #   ARCH: Win32
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    #   VS_VERSION: "14 2015"
-    #   ARCH: Win64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "14 2015"
+      ARCH: Win32
+      GROUP: "EXPERIMENTAL"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "14 2015"
+      ARCH: Win64
+      GROUP: "EXPERIMENTAL"
     # Not used as a python compiler. Swig is not working with these compilers
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    #   VS_VERSION: "15 2017"
-    #   ARCH: Win32
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    #   VS_VERSION: "15 2017"
-    #   ARCH: Win64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      VS_VERSION: "15 2017"
+      ARCH: Win32
+      GROUP: "EXPERIMENTAL"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      VS_VERSION: "15 2017"
+      ARCH: Win64
+      GROUP: "EXPERIMENTAL"
 
 init:
   - set SWMM_HOME=C:\projects\stormwater-management-model\
