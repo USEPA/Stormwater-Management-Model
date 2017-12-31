@@ -8,11 +8,10 @@ platform:
 environment:
   matrix:
     allow_failures:
-      - supported: False
-    # Python 2.7
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-    #   VS_VERSION: "9 2008"
-    #   ARCH: Win32
+      # Python 2.7
+      - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+        VS_VERSION: "9 2008"
+        ARCH: Win32
     # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
     #   VS_VERSION: "9 2008"
     #   ARCH: Win64
@@ -20,11 +19,9 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
       VS_VERSION: "10 2010"
       ARCH: Win32
-      supported: True
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
       VS_VERSION: "10 2010"
       ARCH: Win64
-      supported: False
     # Not used as a python compiler
     # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     #   VS_VERSION: "12 2013"
