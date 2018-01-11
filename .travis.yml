@@ -1,41 +1,25 @@
-# https://travis-ci.com/OpenWaterAnalytics/Stormwater-Management-Model/
-matrix:
-  include:
-    - os: osx
-      language: generic
-      env: TRAVIS_PYTHON_VERSION=3.6
+language: python
 
+env: 
+  global: 
+    - SWMM_HOME=`pwd`
+    - BUILD_HOME=build
+    - TEST_HOME=tests/swmm-nrtestsuite
 
-cache:
-  directories:
-    - $HOME/condacache/pkgs
-    - $HOME/.cache/pip
-
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y swig 
 
 install:
-  # Use Astropy ci helpers for initial setup
-  - git clone git://github.com/astropy/ci-helpers.git
-  - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
-  # Install dependencies for building with conda (latests versions)
-  - conda update -n root conda -q --no-pin
-  - conda install -n root conda-build anaconda-client -q --no-pin
-  - conda config --add pkgs_dirs ~/condacache/pkgs
-  - conda create -n format clangdev -c conda-forge
-  - conda-build conda.recipe
-  - conda install -n test libswmm --use-local
+  - pip install --src build/packages -r tools/requirements.txt
+
+before_script:
+  - mkdir -p $BUILD_HOME
+  - cd $BUILD_HOME
+  - cmake ..
 
 script:
-  # Check file format with clang
-  - source activate format
-  - conda info --json
-  - python tools/clangformatter.py src/
-  # Test built package
-  - source activate test
-  - conda info --json
-  - run-swmm --help
-
-deploy:
-  - provider: script
-    script: "conda-build conda.recipe --user owa --token ${SWWM_CI_UPLOAD_TOKEN} --old-build-string"
-    on:
-       branch: develop
+  - make
+  - cd $SWMM_HOME
+  - tools/gen-config.sh $SWMM_HOME/$BUILD_HOME/bin > $TEST_HOME/apps/swmm-$TRAVIS_COMMIT.json
+  - tools/run-nrtest.sh $TEST_HOME $TRAVIS_COMMIT

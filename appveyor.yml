@@ -1,76 +1,92 @@
-# https://ci.appveyor.com/project/OpenWaterAnalytics/stormwater-management-model
+# https://ci.appveyor.com/project/OpenWaterAnalytics/stormwater-management-model/
+
+version: 2.0.{build}
+
+platform:
+  - x64
 
 matrix:
-  fast_finish: true
+  allow_failures:
+    #Group: (EXPERIMENTAL / SUPPORTED)
+    #EXPERIMENTAL is allowed to fail under the build matrix
+    - GROUP: "EXPERIMENTAL"
 
 environment:
-  global:
-    # Environment variables used by astropy helpers
-    PYTHON: "C:\\conda"
-    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\ci-helpers\\appveyor\\windows_sdk.cmd"
-
   matrix:
-    - PYTHON_VERSION: "2.7"
-      PYTHON_ARCH: "32"
-      ARCH: "x86"
-      platform: "x86"
-    - PYTHON_VERSION: "3.4"
-      PYTHON_ARCH: "32"
-      ARCH: "x86"
-      platform: "x86"
-    - PYTHON_VERSION: "3.6"
-      PYTHON_ARCH: "32"
-      ARCH: "x86"
-      platform: "x86"
-    - PYTHON_VERSION: "2.7"
-      PYTHON_ARCH: "64"
-      ARCH: "amd64"
-      platform: "x64"
-    - PYTHON_VERSION: "3.4"
-      PYTHON_ARCH: "64"
-      ARCH: "amd64"
-      platform: "x64"
-    - PYTHON_VERSION: "3.6"
-      PYTHON_ARCH: "64"
-      ARCH: "amd64"
-      platform: "x64"
+    # Python 3.4
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      VS_VERSION: "10 2010"
+      ARCH: Win32
+      GROUP: "SUPPORTED"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      VS_VERSION: "10 2010"
+      ARCH: Win64
+      GROUP: "EXPERIMENTAL"
+    # Python 3.5 and 3.6
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "14 2015"
+      ARCH: Win32
+      GROUP: "EXPERIMENTAL"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "14 2015"
+      ARCH: Win64
+      GROUP: "EXPERIMENTAL"
+    # Python 2.7
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      VS_VERSION: "9 2008"
+      ARCH: Win32
+      GROUP: "EXPERIMENTAL"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      VS_VERSION: "9 2008"
+      ARCH: Win64
+      GROUP: "EXPERIMENTAL"
+    # Not used as a python compiler
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "12 2013"
+      arch: Win32
+      GROUP: "EXPERIMENTAL"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VS_VERSION: "12 2013"
+      ARCH: Win64
+      GROUP: "EXPERIMENTAL"
+    # Not used as a python compiler. Swig is not working with these compilers
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      VS_VERSION: "15 2017"
+      ARCH: Win32
+      GROUP: "EXPERIMENTAL"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      VS_VERSION: "15 2017"
+      ARCH: Win64
+      GROUP: "EXPERIMENTAL"
 
-cache:
-  - "C:\\condacache\\pkgs"
+init:
+  - set SWMM_HOME=C:\projects\stormwater-management-model\
+  - set BUILD_HOME=build
+  - if "%ARCH%"=="Win64" ( set VS_ARCH= Win64)
+  - set GENERATOR="Visual Studio %VS_VERSION%%VS_ARCH%"
+  # See set values
+  - echo %APPVEYOR_BUILD_WORKER_IMAGE%
+  - echo %ARCH%
+  - echo %GENERATOR%
 
 install:
-  # Astropy ci-helpers. See https://github.com/astropy/ci-helpers
-  - "git clone git://github.com/astropy/ci-helpers.git"
-  - if "%PYTHON_VERSION%" == "3.4" set "BASE_PYTHON_VERSION=36"
-  - if "%PYTHON_VERSION%" == "3.5" set "BASE_PYTHON_VERSION=36"
-  - if "%PYTHON_VERSION%" == "3.6" set "BASE_PYTHON_VERSION=36"
-  - if "%PYTHON_ARCH%" == "64" set "ARCH_LABEL=-x64"
-  # These are already installed on appveyor.  Update them.
-  - set "CONDA_ROOT=C:\Miniconda%BASE_PYTHON_VERSION%%ARCH_LABEL%"
-  # we can't "activate root" with sufficiently-old conda which appveyor has (?)
-  # - "%CONDA_ROOT%\\Scripts\\activate root"
-  - set "PATH=%CONDA_ROOT%;%CONDA_ROOT%\Scripts;%CONDA_ROOT%\Library\bin;%PATH%"
-  - set PATH
-  - "%CMD_IN_ENV% conda config --set always_yes yes"
-  - "%CMD_IN_ENV% conda install conda -q -y --no-pin"
-  - "%CMD_IN_ENV% conda config --add pkgs_dirs C:\\condacache\\pkgs"
-  - "%CMD_IN_ENV% conda install conda-build anaconda-client -q -y --no-pin"
-  # Install dependencies
-  - "%CMD_IN_ENV% conda-build conda.recipe --python %PYTHON_VERSION% --old-build-string"
-  - "%CMD_IN_ENV% conda create -n test libswmm --use-local"
-  - "%CMD_IN_ENV% conda create -n format clangdev -c conda-forge"
+  # Install SWIG using chocolatey
+  - choco install swig
+  - swig -version
+  # `C:\Python27` (x86) is default on path for `python` command
+  - python --version
+  # Install nrtest and dependencies for regression tests
+  - python -m pip install --src build\packages -r tools\requirements.txt
 
-# Not a .NET project, we build in the install step instead
-build: false
+before_build:
+- cmd: >-
+    cmake -G %GENERATOR% -DCMAKE_INSTALL_PREFIX:PATH=%BUILD_HOME% -DCMAKE_BUILD_TYPE:STRING=Release
+
+build_script:
+  - MSBUILD.exe INSTALL.vcxproj /p:Configuration=Release
 
 test_script:
-  # Check file format with clang
-  - "%CMD_IN_ENV% activate format"
-  - "%CMD_IN_ENV% python tools\\clangformatter.py src\\"
-  # Test built package
-  #- "%CMD_IN_ENV% activate test"
-  #- "%CMD_IN_ENV% run-swmm --version"
-
-on_success:
-  - "%CMD_IN_ENV% activate root"
-  - "%CMD_IN_ENV% python tools\\build_and_upload.py"
+  # Run compiled swmm and check it outputs version correctly
+  - "%SWMM_HOME%\\%BUILD_HOME%\\bin\\run-swmm.exe --version"
+  # Run regression tests
+  - python tools\run_regression_tests.py %SWMM_HOME%\%BUILD_HOME%\bin %APPVEYOR_REPO_COMMIT%

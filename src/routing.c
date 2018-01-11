@@ -804,7 +804,7 @@ void removeOutflows(double tStep)
         // --- update mass balance with flow and mass leaving the system
         //     through outfalls and flooded interior nodes
         q = node_getSystemOutflow(i, &isFlooded);
-        if ( q != 0.0 )
+        if ( q > 0.0 )
         {
             massbal_addOutflowFlow(q, isFlooded);
             for ( p = 0; p < Nobjects[POLLUT]; p++ )
@@ -813,6 +813,7 @@ void removeOutflows(double tStep)
                 massbal_addOutflowQual(p, w, isFlooded);
             }
         }
+        else massbal_addInflowFlow(EXTERNAL_INFLOW, -q);
 
         // --- update mass balance with mass leaving system through negative
         //     lateral inflows (lateral flow was previously accounted for)

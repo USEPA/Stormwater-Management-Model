@@ -11,8 +11,8 @@
         "Example4.inp"
     ],
     "output_files": {
-        "Example4.rpt": "swmm report", 
         "Example4.out": "swmm allclose",
+        "Example4.rpt": "swmm report",
         "lid_ITS1.txt": "null",
         "lid_RBS1.txt": "null",
         "lid_BCS4.txt": "null",

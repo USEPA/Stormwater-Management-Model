@@ -68,6 +68,10 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr);
 //-------------------------------
 int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr);
 
+int DLLEXPORT swmm_getNodeResult(int index, int type, double *result);
+int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
+int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
+
 int DLLEXPORT swmm_getNodeStats(int index, TNodeStats *nodeStats);
 int DLLEXPORT swmm_getNodeTotalInflow(int index, double *value);
 int DLLEXPORT swmm_getStorageStats(int index, TStorageStats *storageStats);
@@ -78,6 +82,7 @@ int DLLEXPORT swmm_getLinkStats(int index, TLinkStats *linkStats);
 int DLLEXPORT swmm_getPumpStats(int index, TPumpStats *pumpStats);
 
 int DLLEXPORT swmm_getSubcatchStats(int index, TSubcatchStats *subcatchStats);
+void DLLEXPORT swmm_freeSubcatchStats(TSubcatchStats *subcatchStats);
 
 int DLLEXPORT swmm_getSystemRoutingStats(TRoutingTotals *routingTot);
 int DLLEXPORT swmm_getSystemRunoffStats(TRunoffTotals *runoffTot);
@@ -87,6 +92,7 @@ int DLLEXPORT swmm_getSystemRunoffStats(TRunoffTotals *runoffTot);
 //-------------------------------
 int DLLEXPORT swmm_setLinkSetting(int index, double setting);
 int DLLEXPORT swmm_setNodeInflow(int index, double flowrate);
+int DLLEXPORT swmm_setOutfallStage(int index, double stage);
 
 #ifdef __cplusplus
 }    // matches the linkage specification from above */

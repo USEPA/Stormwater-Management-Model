@@ -55,14 +55,14 @@ static double          SysOutfallFlow;
 //-----------------------------------------------------------------------------
 //  Exportable variables (shared with statsrpt.c)
 //-----------------------------------------------------------------------------
-TSubcatchStats* SubcatchStats;
-TNodeStats*     NodeStats;
-TLinkStats*     LinkStats;
-TStorageStats*  StorageStats;
-TOutfallStats*  OutfallStats;
-TPumpStats*     PumpStats;
-double          MaxOutfallFlow;
-double          MaxRunoffFlow;
+TSubcatchStats*     SubcatchStats;
+TNodeStats*         NodeStats;
+TLinkStats*         LinkStats;
+TStorageStats*      StorageStats;
+TOutfallStats*      OutfallStats;
+TPumpStats*         PumpStats;
+double              MaxOutfallFlow;
+double              MaxRunoffFlow;
 
 //-----------------------------------------------------------------------------
 //  Imported variables
@@ -99,7 +99,7 @@ int  stats_open()
 //  Purpose: opens the simulation statistics system.
 //
 {
-    int j, k;
+    int j, k, p;
 
     // --- set all pointers to NULL
     NodeStats = NULL;
@@ -127,6 +127,20 @@ int  stats_open()
             SubcatchStats[j].infil   = 0.0;
             SubcatchStats[j].runoff  = 0.0;
             SubcatchStats[j].maxFlow = 0.0;
+
+            if ( Nobjects[POLLUT] > 0 )
+            {
+                SubcatchStats[j].surfaceBuildup =
+                    (double *) calloc(Nobjects[POLLUT], sizeof(double));
+                if ( !SubcatchStats[j].surfaceBuildup )
+                {
+                    report_writeErrorMsg(ERR_MEMORY, "");
+                    return ErrorCode;
+                }
+                for ( p = 0; p < Nobjects[POLLUT]; p++ )
+                    SubcatchStats[j].surfaceBuildup[p] = 0.0;
+            }
+            else SubcatchStats[j].surfaceBuildup = NULL;
         }
 
 ////  Added to release 5.1.008.  ////                                          //(5.1.008)
@@ -295,7 +309,12 @@ void  stats_close()
 {
     int j;
 
-    FREE(SubcatchStats);
+    if ( SubcatchStats)
+    {
+        for ( j=0; j<Nobjects[SUBCATCH]; j++ )
+            FREE(SubcatchStats[j].surfaceBuildup);
+        FREE(SubcatchStats);
+    }
     FREE(NodeStats);
     FREE(LinkStats);
     FREE(StorageStats); 
@@ -344,15 +363,24 @@ void   stats_updateSubcatchStats(int j, double rainVol, double runonVol,
 //           runoffVol = runoff volume (ft3)
 //           runoff    = runoff rate (cfs)
 //  Output:  none
-//  Purpose: updates totals of runoff components for a specific subcatchment.
+//  Purpose: updates totals of runoff components and the surface buildup
+//           of pollutants for a specific subcatchment.
 //
 {
+    int p;
+    
     SubcatchStats[j].precip += rainVol;
     SubcatchStats[j].runon  += runonVol;
     SubcatchStats[j].evap   += evapVol;
     SubcatchStats[j].infil  += infilVol;
     SubcatchStats[j].runoff += runoffVol;
     SubcatchStats[j].maxFlow = MAX(SubcatchStats[j].maxFlow, runoff);
+    
+    for ( p = 0; p < Nobjects[POLLUT]; p++ )
+    {
+        SubcatchStats[j].surfaceBuildup[p] = subcatch_getBuildup( j, p );
+    }
+        
 }
 
 //=============================================================================
@@ -558,7 +586,7 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
         for (p=0; p<Nobjects[POLLUT]; p++)
         {
             OutfallStats[k].totalLoad[p] += Node[j].inflow * 
-				Node[j].newQual[p] * tStep;
+                Node[j].newQual[p] * tStep;
         }
         SysOutfallFlow += Node[j].inflow;
     }
@@ -880,6 +908,7 @@ int stats_getOutfallStat(int index, TOutfallStats *outfallStats)
 //
 {
 	int errorcode = 0;
+    int p;
 
 	// Check if Open
 	if (swmm_IsOpenFlag() == FALSE)
@@ -913,23 +942,23 @@ int stats_getOutfallStat(int index, TOutfallStats *outfallStats)
 		memcpy(outfallStats, &OutfallStats[k], sizeof(TOutfallStats));
 		
 		// Perform Deep Copy of Pollutants Results
-		if (Nobjects[POLLUT] > 0)
-		{
-			outfallStats->totalLoad =
-				(double *)calloc(Nobjects[POLLUT], sizeof(double));
-			if (!outfallStats->totalLoad)
-			{
-				errorcode = ERR_MEMORY;
-			}
-			if (errorcode == 0)
-			{
-				for (k = 0; k < Nobjects[POLLUT]; k++)
-					outfallStats->totalLoad[k] = OutfallStats[k].totalLoad[k];
-			}
-		}
-		else outfallStats->totalLoad = NULL;
-	}
-	return errorcode;
+        if (Nobjects[POLLUT] > 0)
+        {
+            outfallStats->totalLoad =
+                (double *)calloc(Nobjects[POLLUT], sizeof(double));
+            if (!outfallStats->totalLoad)
+            {
+                errorcode = ERR_MEMORY;
+            }
+            if (errorcode == 0)
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                    outfallStats->totalLoad[p] = OutfallStats[k].totalLoad[p];
+            }
+        }
+        else outfallStats->totalLoad = NULL;
+    }
+    return errorcode;
 }
 
 int stats_getLinkStat(int index, TLinkStats *linkStats)
@@ -1021,6 +1050,7 @@ int stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats)
 //
 {
 	int errorcode = 0;
+    int p;
 
 	// Check if Open
 	if (swmm_IsOpenFlag() == FALSE)
@@ -1044,6 +1074,24 @@ int stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats)
 	{
 		// Copy Structure
 		memcpy(subcatchStats, &SubcatchStats[index], sizeof(TSubcatchStats));
+        
+        // Perform Deep Copy of Pollutant Buildup Results
+        if (Nobjects[POLLUT] > 0)
+        {
+            subcatchStats->surfaceBuildup =
+                (double *)calloc(Nobjects[POLLUT], sizeof(double));
+            if (!subcatchStats->surfaceBuildup)
+            {
+                errorcode = ERR_MEMORY;
+            }
+            if (errorcode == 0)
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                    subcatchStats->surfaceBuildup[p] = SubcatchStats[index].surfaceBuildup[p];
+            }
+        }
+        else subcatchStats->surfaceBuildup = NULL;
 	}
 	return errorcode;
 }
+
