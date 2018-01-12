@@ -35,10 +35,11 @@ cd ${test_suite_path}
 # clean test benchmark results
 rm -rf ${test_output_path}
 
+echo
 echo INFO: Creating test benchmark
 nrtest_command="${nrtest_execute_cmd} ${test_app_path} ${tests} -o ${test_output_path}"
 echo INFO: "$nrtest_command"
-$nrtest_command || exit 1
+$nrtest_command
 
 echo
 echo INFO: Comparing test and ref benchmarks
