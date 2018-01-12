@@ -60,7 +60,7 @@ environment:
       GROUP: "EXPERIMENTAL"
 
 init:
-  - set SWMM_HOME=C:\projects\stormwater-management-model\
+  - set SWMM_HOME=%APPVEYOR_BUILD_FOLDER%
   - set BUILD_HOME=buildprod
   - set TEST_HOME=tests\swmm-nrtestsuite
   - set NRTEST_SCRIPT=%SWMM_HOME%\%BUILD_HOME%\packages\nrtest\scripts
@@ -88,7 +88,7 @@ build_script:
 
 before_test: 
   - cd %SWMM_HOME%
-  - tools\gen-config.cmd %SWMM_HOME%\%BUILD_HOME%\bin\Release > %TEST_HOME%\apps\swmm-%APPVEYOR_REPO_COMMIT%.json
+  - tools\gen-config.cmd %SWMM_HOME%\bin\Release > %TEST_HOME%\apps\swmm-%APPVEYOR_REPO_COMMIT%.json
 
 test_script:
   # Run regression tests
