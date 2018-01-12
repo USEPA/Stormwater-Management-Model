@@ -27,3 +27,8 @@
 
 *.orig
 /Debug/
+
+# Testing
+performance.json
+stderr.log
+stdout.log
