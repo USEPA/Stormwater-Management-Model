@@ -92,6 +92,6 @@ before_test:
 
 test_script:
   # Run compiled swmm and check it outputs version correctly
-  - "%SWMM_HOME%\%BUILD_HOME%\bin\Release\run-swmm.exe --version"
+  - %SWMM_HOME%\%BUILD_HOME%\bin\Release\run-swmm.exe --version
   # Run regression tests
   - tools\run-nrtest.cmd %NRTEST_SCRIPT% %TEST_HOME% %APPVEYOR_REPO_COMMIT%
