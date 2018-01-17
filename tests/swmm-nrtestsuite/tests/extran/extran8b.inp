@@ -24,11 +24,11 @@
  VARIABLE_STEP         0.00
  LENGTHENING_STEP      0
  MIN_SURFAREA          0
- NORMAL_FLOW_LIMITED   NO
+ NORMAL_FLOW_LIMITED   BOTH
  SKIP_STEADY_STATE     NO
 
 [FILES]
- USE HOTSTART "extran8.hsf"
+ USE HOTSTART "extran8b.hsf"
 
 [JUNCTIONS]
 ;;                 Invert     Max.       Init.      Surcharge  Ponded    

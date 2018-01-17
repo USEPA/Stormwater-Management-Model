@@ -8,7 +8,8 @@
         "extran8b.out"
     ],
     "input_files": [
-        "extran8b.inp"
+        "extran8b.inp",
+        "extran8b.hsf"
     ],
     "output_files": {
         "extran8b.rpt": "swmm report", 
