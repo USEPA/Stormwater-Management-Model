@@ -266,6 +266,7 @@ void  gage_initState(int j)
     Gage[j].isUsed = FALSE;
     Gage[j].rainfall = 0.0;
     Gage[j].reportRainfall = 0.0;
+    Gage[j].external_rain = 0; // Default uses rainfall from inp file (rainAPI)
     if ( IgnoreRainfall ) return;
 
     // --- for gage with file data:

@@ -1090,6 +1090,59 @@ int DLLEXPORT swmm_getSystemRunoffStats(TRunoffTotals *runoffTot)
     return(errorcode);
 }
 
+int DLLEXPORT swmm_getGageParam(int index, int Param, double *value)
+//
+// Input:   index = Index of desired ID
+//          param = Parameter desired (Perhaps define enum)
+// Output:  value = value to be output
+// Return:  API Error
+// Purpose: Gets Gage Parameter
+{
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
+        // Check if object index is within bounds
+    if (index < 0 || index >= Nobjects[GAGE]) return(ERR_API_OBJECT_INDEX);
+
+    switch(Param)
+    {
+        // raintype
+        case 0: *value = Gage[index].rainType; break;
+        // rainfall value
+        case 1: *value = Gage[index].rainfall / UCF(RAINFALL); break;
+        // control data source 
+	case 2: *value = Gage[index].external_rain; break;
+        default: return(ERR_API_OUTBOUNDS);
+    }
+    return(0);
+}
+
+int DLLEXPORT swmm_setGageParam(int index, int Param, double value)
+//
+// Input:   index = Index of desired ID
+//          param = Parameter desired (Perhaps define enum )
+//          value = value to be output
+// Return:  API Error
+// Purpose: Sets Gage Parameter
+{
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE) return(ERR_API_INPUTNOTOPEN);
+    // Check if Simulation is Running
+    //if(swmm_IsStartedFlag() == TRUE) return(ERR_API_SIM_NRUNNING);
+    // Start check disabled to change the source before simulation.
+    // Check if object index is within bounds
+    if (index < 0 || index >= Nobjects[GAGE]) return(ERR_API_OBJECT_INDEX);
+    switch(Param)
+    {
+        // rainfall from the data
+        case 0: Gage[index].rainfall = value * UCF(RAINFALL); break;
+        // control step wise rain
+        case 1: Gage[index].external_rain = value; break;
+        // Type not available
+        default: return(ERR_API_OUTBOUNDS);
+    }
+    return(0);
+}
+
 
 //-------------------------------
 // Setters API
