@@ -20,7 +20,7 @@ test_suite_path=$1
 
 nrtest_execute_cmd="nrtest execute"
 test_app_path="apps/swmm-$2.json"
-tests="tests/examples tests/extran tests/routing" 
+tests="tests/examples tests/extran tests/routing tests/user" 
 test_output_path="benchmark/swmm-$2"
 
 nrtest_compare_cmd="nrtest compare"
