@@ -1,21 +1,13 @@
 /** @file toolkitAPI.h
  @see http://github.com/openwateranalytics/stormwater-management-model
  
- */
+ toolkitAPI.h
+ @brief Exportable Functions for Toolkit API.
+ @date 08/30/2016 (First Contribution)
+ @authors B. McDonnell (EmNet LLC), OpenWaterAnalytics members: see <a href="https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/AUTHORS">AUTHORS</a>.
+ 
 
-//-----------------------------------------------------------------------------
-//   toolkitAPI.h
-//
-//   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    08/30/2016
-//   Author:  B. McDonnell (EmNet LLC)
-//            OpenWaterAnalytics members: see AUTHORS file
-//
-//   Exportable Functions for Toolkit API.
-//
-//-----------------------------------------------------------------------------
-
+*/
 
 
 #ifdef WINDOWS
@@ -74,20 +66,18 @@ typedef enum {
     SM_OUTLET      = 4   /**< Outlet */
 } SM_LinkType;
 
-/// Simulation datetime codes
+/// Simulation Option codes
 typedef enum {
     SM_STARTDATE    = 0, /**< Simulation Start Date */
     SM_ENDDATE      = 1, /**< Simulation End Date */
     SM_REPORTDATE   = 2  /**< Simulation Report Start Date */
 } SM_TimePropety;
 
-/// Simulation unit codes
 typedef enum {
     SM_SYSTEMUNIT   = 0, /**< System Units */
     SM_FLOWUNIT     = 1, /**< Flow Units */
-} SM_Units;
+} SM_Units; 
 
-/// Simulation option codes
 typedef enum {
     SM_ALLOWPOND    = 0, /**< Allow Ponding */
     SM_SKIPSTEADY   = 1, /**< Skip Steady State*/
@@ -99,7 +89,6 @@ typedef enum {
     SM_IGNORERQUAL  = 7  /**< Ignore Quality */
 } SM_SimOption;
 
-/// Simulation parameter codes
 typedef enum {
     SM_ROUTESTEP     = 0,  /**< Routing Step (sec) */
     SM_MINROUTESTEP  = 1,  /**< Minimum Routing Step (sec) */
@@ -311,49 +300,196 @@ typedef struct
 /**
  @brief Get the text of an error code.
  @param errcode The error code
- @param[out] errmsg The error string represented by the code
+ @param[out] s The error string represented by the code
 */
 void DLLEXPORT swmm_getAPIError(int errcode, char *s);
 
-
+/**
+ @brief Gets Simulation Unit
+ @param type Option code (see @ref SM_Units)
+ @param[out] value Option value
+ @return Error code
+ */
 int DLLEXPORT swmm_getSimulationUnit(int type, int *value);
+
+/**
+ @brief Gets Simulation Analysis Setting
+ @param type Option code (see @ref SM_SimOption)
+ @param[out] value Option value
+ @return Error code
+ */
 int DLLEXPORT swmm_getSimulationAnalysisSetting(int type, int *value);
+
+/**
+ @brief Gets Simulation Analysis Setting
+ @param type Option code (see @ref SM_SimSetting)
+ @param[out] value Option value
+ @return Error code
+ */
 int DLLEXPORT swmm_getSimulationParam(int type, double *value);
 
-
+/**
+ @brief Gets Object Count
+ @param type Option code (see @ref SM_ObjectType)
+ @param[out] count Option value
+ @return Error code
+ */
 int DLLEXPORT swmm_countObjects(int type, int *count);
+
+/**
+ @brief Gets Object ID
+ @param type Option code (see @ref SM_ObjectType)
+ @param index of the Object
+ @param[out] id The string ID of object.
+ @return Error code
+ */
 int DLLEXPORT swmm_getObjectId(int type, int index, char *id);
 
+/**
+ @brief Get the type of node with specified index.
+ @param index The index of a node
+ @param[out] Ntype The type code for the node (@ref SM_NodeType). id must be pre-allocated by the caller. 
+ @return Error code
+*/
 int DLLEXPORT swmm_getNodeType(int index, int *Ntype);
+
+/**
+ @brief Get the type of link with specified index.
+ @param index The index of a link
+ @param[out] Ltype The type code for the link (@ref SM_LinkType).
+ @return Error code
+*/
 int DLLEXPORT swmm_getLinkType(int index, int *Ltype);
 
+/**
+ @brief Get the link Connection Node Indeces. If the conduit has a 
+ negative slope, the dynamic wave solver will automatically
+ reverse the nodes. To check the direction, call @ref swmm_getLinkDirection().
+ @param index The index of a link
+ @param[out] Node1 The upstream node index.
+ @param[out] Node2 The downstream node index.
+ @return Error code
+*/
 int DLLEXPORT swmm_getLinkConnections(int index, int *Node1, int *Node2);
+
+/**
+ @brief Get the link flow direction (see @ref swmm_getLinkType() for notes.
+ @param index The index of a link
+ @param[out] value The link flow direction.
+ @return Error code
+*/
+int DLLEXPORT swmm_getLinkDirection(int index, signed char *value);
+
+/**
+ @brief Get the Subcatchment connection. Subcatchments can load to a
+ node, another subcatchment, or itself.
+ @param index The index of a Subcatchment
+ @param[out] type The type of object loading (See @ref SM_ObjectType)
+ @param[out] Index The object index
+ @return Error code
+*/
 int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index);
 
-// Nodes
+/**
+ @brief Get a property value for specified node.
+ @param index The index of a node
+ @param Param The property type code (See @ref SM_NodeProperty)
+ @param[out] value The value of the node's property
+ @return Error code
+*/
 int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value);
+
+/**
+ @brief Set a property value for specified node.
+ @param index The index of a node
+ @param Param The property type code (See @ref SM_NodeProperty)
+ @param value The new value of the node's property
+ @return Error code
+*/
 int DLLEXPORT swmm_setNodeParam(int index, int Param, double value);
-// Links
+
+/**
+ @brief Get a property value for specified link.
+ @param index The index of a link
+ @param Param The property type code (See @ref SM_LinkProperty)
+ @param[out] value The value of the link's property
+ @return Error code
+*/
 int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value);
+
+/**
+ @brief Set a property value for specified link.
+ @param index The index of a link
+ @param Param The property type code (See @ref SM_LinkProperty)
+ @param value The new value of the link's property
+ @return Error code
+*/
 int DLLEXPORT swmm_setLinkParam(int index, int Param, double value);
-int DLLEXPORT swmm_getLinkDirection(int index, signed char *value);
-// Subcatchments
+
+/**
+ @brief Get a property value for specified subcatchment.
+ @param index The index of a subcatchment
+ @param Param The property type code (See @ref SM_SubcProperty)
+ @param[out] value The value of the subcatchment's property
+ @return Error code
+*/
 int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value);
+
+/**
+ @brief Set a property value for specified subcatchment.
+ @param index The index of a subcatchment
+ @param Param The property type code (See @ref SM_SubcProperty)
+ @param value The new value of the subcatchment's property
+ @return Error code
+*/
 int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value);
-//
+
+
 int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month,
                                          int *day, int *hour, int *minute,
                                          int *seconds);
+
+
 int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr);
 
 //-------------------------------
 // Active Simulation Results API
 //-------------------------------
+/**
+ @brief Get the simulation current datetime as a string.
+ @param[out] dtimestr The current datetime. dtimestr must be pre-allocated by
+ the caller.  This will copy 19 characters. 
+ @return Error code
+*/
 int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr);
 
+/**
+ @brief Get a result value for specified node.
+ @param index The index of a node
+ @param result The property type code (See @ref SM_NodeResult)
+ @param[out] value The value of the node's property
+ @return Error code
+*/
 int DLLEXPORT swmm_getNodeResult(int index, int type, double *result);
+
+/**
+ @brief Get a result value for specified link.
+ @param index The index of a link
+ @param result The property type code (See @ref SM_LinkResult)
+ @param[out] value The value of the link's property
+ @return Error code
+*/
 int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
+
+/**
+ @brief Get a result value for specified subcatchment.
+ @param index The index of a subcatchment
+ @param result The property type code (See @ref SM_SubcResult)
+ @param[out] value The value of the subcatchment's property
+ @return Error code
+*/
 int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
+
 
 int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats);
 int DLLEXPORT swmm_getNodeTotalInflow(int index, double *value);

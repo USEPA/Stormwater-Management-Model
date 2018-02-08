@@ -19,7 +19,7 @@
 #include "headers.h"
 
 #include "swmm5.h"                     // declaration of exportable functions
-//#include "toolkitAPI.h"
+#include "toolkitAPI.h"
 #include "hash.h"
 #include "funcs.h"
 
