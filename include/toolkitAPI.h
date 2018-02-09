@@ -8,7 +8,8 @@
  
 
 */
-
+#ifndef TOOLKITAPI_H
+#define TOOLKITAPI_H
 
 #ifdef WINDOWS
 #ifdef __MINGW32__
@@ -348,7 +349,8 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id);
 /**
  @brief Get the type of node with specified index.
  @param index The index of a node
- @param[out] Ntype The type code for the node (@ref SM_NodeType). id must be pre-allocated by the caller. 
+ @param[out] Ntype The type code for the node (@ref SM_NodeType). 
+ id must be pre-allocated by the caller. 
  @return Error code
 */
 int DLLEXPORT swmm_getNodeType(int index, int *Ntype);
@@ -444,12 +446,28 @@ int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value);
 */
 int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value);
 
-
+/**
+ @brief Get the current simulation datetime information.
+ @param Param timetype The property type code (See @ref SM_TimePropety)
+ @param[out] year The year
+ @param[out] month The month
+ @param[out] day The day
+ @param[out] hour The hour
+ @param[out] minute The minute
+ @param[out] seconds The seconds
+ @return Error code
+*/
 int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month,
                                          int *day, int *hour, int *minute,
                                          int *seconds);
 
-
+/**
+ @brief Set simulation datetime information.
+ @param Param timetype The property type code (See @ref SM_TimePropety)
+ @param[out] dtimestr The current datetime. dtimestr must be pre-allocated by
+ the caller.  This will copy 19 characters. 
+ @return Error code
+*/
 int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr);
 
 //-------------------------------
@@ -490,29 +508,138 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
 */
 int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
 
-
+/**
+ @brief Get a node statistics.
+ @param index The index of a node
+ @param[out] nodeStats The Node Stats struct (see @ref SM_NodeStats). 
+ pre-allocated by the caller.
+ @return Error code
+*/
 int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats);
+
+/**
+ @brief Get the cumulative inflow for a node.
+ @param index The index of a node
+ @param[out] value The total inflow.
+ @return Error code
+*/
 int DLLEXPORT swmm_getNodeTotalInflow(int index, double *value);
+
+/**
+ @brief Get a storage statistics.
+ @param index The index of a storage node
+ @param[out] storageStats The storage Stats struct (see @ref SM_StorageStats). 
+ pre-allocated by the caller.
+ @return Error code
+*/
 int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats *storageStats);
+
+/**
+ @brief Get outfall statistics.
+ @param index The index of a outfall node
+ @param[out] outfallStats The outfall Stats struct (see @ref SM_OutfallStats). 
+ pre-allocated by the caller. Caller is also responsible for freeing the 
+ SM_OutfallStats structure using swmm_freeOutfallStats(). This frees any
+ pollutants array.
+ @return Error code
+*/
 int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats *outfallStats);
+
+/**
+ @brief Free outfall statistics structure.
+ @param[out] outfallStats The outfall Stats struct. This frees any allocated
+ pollutants array.
+ @return Error code
+*/
 void DLLEXPORT swmm_freeOutfallStats(SM_OutfallStats *outfallStats);
 
+/**
+ @brief Get link statistics.
+ @param index The index of a link
+ @param[out] linkStats The link Stats struct (see @ref SM_LinkStats). 
+ pre-allocated by the caller.
+ @return Error code
+*/
 int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats);
+
+/**
+ @brief Get pump statistics.
+ @param index The index of a pump
+ @param[out] pumpStats The link Stats struct (see @ref SM_PumpStats). 
+ pre-allocated by the caller.
+ @return Error code
+*/
 int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
 
+/**
+ @brief Get subcatchment statistics.
+ @param index The index of a subcatchment
+ @param[out] subcatchStats The link Stats struct (see @ref SM_SubcatchStats). 
+ pre-allocated by the caller. Caller is also responsible for freeing the 
+ SM_SubcatchStats structure using swmm_freeSubcatchStats(). This frees any
+ pollutants array.
+ @return Error code
+*/
 int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats);
+
+/**
+ @brief Free subcatchment statistics structure.
+ @param[out] subcatchStats The outfall Stats struct. This frees any allocated
+ pollutants array.
+ @return Error code
+*/
 void DLLEXPORT swmm_freeSubcatchStats(SM_SubcatchStats *subcatchStats);
 
+/**
+ @brief Get system routing statistics.
+ @param[out] routingTot The system Routing Stats struct (see @ref SM_RoutingTotals). 
+ pre-allocated by the caller.
+ @return Error code
+*/
 int DLLEXPORT swmm_getSystemRoutingStats(SM_RoutingTotals *routingTot);
+
+/**
+ @brief Get system runoff statistics.
+ @param[out] runoffTot The system Runoff Stats struct (see @ref SM_RunoffTotals). 
+ pre-allocated by the caller.
+ @return Error code
+*/
 int DLLEXPORT swmm_getSystemRunoffStats(SM_RunoffTotals *runoffTot);
 
 //-------------------------------
 // Setters API
 //-------------------------------
+
+/**
+ @brief Set a link setting (pump, orifice, or weir). Setting for an orifice
+ and a weir should be [0, 1]. A setting for a pump can range from [0, inf).
+ However, if a pump is set to 1, it will pump at its maximum curve setting. 
+ @param index The link index. 
+ @param setting The new setting for the link. 
+ @return Error code
+*/
 int DLLEXPORT swmm_setLinkSetting(int index, double setting);
+
+/**
+ @brief Set an inflow rate to a node. The inflow rate is held constant 
+ until the caller changes it. 
+ @param index The node index. 
+ @param flowrate The new node inflow rate. 
+ @return Error code
+*/
 int DLLEXPORT swmm_setNodeInflow(int index, double flowrate);
+
+/**
+ @brief Set outfall stage.
+ @param index The outfall node index. 
+ @param stage The outfall node stage (head). 
+ @return Error code
+*/
 int DLLEXPORT swmm_setOutfallStage(int index, double stage);
 
 #ifdef __cplusplus
 }    // matches the linkage specification from above */
+#endif
+
+
 #endif

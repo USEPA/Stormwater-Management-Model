@@ -17,11 +17,22 @@
 #include <string.h>
 
 #include "headers.h"
-
 #include "swmm5.h"                     // declaration of exportable functions
-#include "toolkitAPI.h"
 #include "hash.h"
-#include "funcs.h"
+
+
+// Function Declarations for API
+int     massbal_getRoutingFlowTotal(SM_RoutingTotals *routingTot);
+int     massbal_getRunoffTotal(SM_RunoffTotals *runoffTot);
+double  massbal_getTotalArea(void);
+int     massbal_getNodeTotalInflow(int index, double *value);
+
+int  stats_getNodeStat(int index, SM_NodeStats *nodeStats);
+int  stats_getStorageStat(int index, SM_StorageStats *storageStats);
+int  stats_getOutfallStat(int index, SM_OutfallStats *outfallStats);
+int  stats_getLinkStat(int index, SM_LinkStats *linkStats);
+int  stats_getPumpStat(int index, SM_PumpStats *pumpStats);
+int  stats_getSubcatchStat(int index, SM_SubcatchStats *subcatchStats);
 
 //-----------------------------------------------------------------------------
 //  Extended API Functions
@@ -142,7 +153,7 @@ int DLLEXPORT  swmm_getSimulationUnit(int type, int *value)
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        errcode = ERR_API_INPUTNOTOPEN
+        errcode = ERR_API_INPUTNOTOPEN;
     }
     else
     {
@@ -217,7 +228,7 @@ int DLLEXPORT  swmm_getSimulationParam(int type, double *value)
         errcode = ERR_API_INPUTNOTOPEN;
     }
     // Output  setting
-    else:
+    else
     {
         switch(type)
         {
@@ -312,8 +323,8 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
                 strcpy(id,Curve[index].ID); break;
             case SM_TSERIES:
                 strcpy(id,Tseries[index].ID); break;
-            case SM_CONTROL:
-                strcpy(id,Rules[index].ID); break;
+            //case SM_CONTROL:
+                //strcpy(id,Rules[index].ID); break;
             case SM_TRANSECT:
                 strcpy(id,Transect[index].ID); break;
             case SM_AQUIFER:
@@ -322,10 +333,10 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
                 strcpy(id,UnitHyd[index].ID); break;
             case SM_SNOWMELT:
                 strcpy(id,Snowmelt[index].ID); break;
-            case SM_SHAPE:
-                strcpy(id,Shape[index].ID); break;
-            case SM_LID:
-                strcpy(id,LidProcs[index].ID); break;
+            //case SM_SHAPE:
+                //strcpy(id,Shape[index].ID); break;
+            //case SM_LID:
+                //strcpy(id,LidProcs[index].ID); break;
             default: errcode = ERR_API_OUTBOUNDS; break;
         }
    }
@@ -725,17 +736,17 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *ObjIndex 
     {
         if (Subcatch[index].outNode == -1 && Subcatch[index].outSubcatch == -1)
         {
-            *Index = index; // Case of self Loading subcatchment
+            *ObjIndex = index; // Case of self Loading subcatchment
             *type = SUBCATCH;
         }
         if (Subcatch[index].outNode >= 0)
         {
-            *Index = Subcatch[index].outNode;
+            *ObjIndex = Subcatch[index].outNode;
             *type = NODE;
         }
         if (Subcatch[index].outSubcatch >= 0)
         {
-            *Index = Subcatch[index].outSubcatch;
+            *ObjIndex = Subcatch[index].outSubcatch;
             *type = SUBCATCH;
         }
     }
