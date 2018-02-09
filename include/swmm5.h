@@ -1,3 +1,13 @@
+/** @file swmm5.h
+ @see http://github.com/openwateranalytics/stormwater-management-model
+ 
+ swmm5.h
+ @brief Prototypes for SWMM5 functions exported to swmm5.dll.
+ @date 03/24/14  (Build 5.1.001)
+ @date 08/01/16  (Build 5.1.011)
+ @version 5.1
+ @authors L. Rossman, OpenWaterAnalytics members: see <a href="https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/AUTHORS">AUTHORS</a>.
+*/
 //-----------------------------------------------------------------------------
 //   swmm5.h
 //
