@@ -102,7 +102,8 @@
 //-------------------------------------
  enum GageDataType {
       RAIN_TSERIES,                    // rainfall from user-supplied time series
-      RAIN_FILE};                      // rainfall from external file
+      RAIN_FILE,                       // rainfall from external file
+      RAIN_API}; 		       // rainfall from API(Modify rainfall mid simulation)
 
 //-------------------------------------
 // Cross section shape types

@@ -194,13 +194,7 @@ void runoff_execute()
     IsRaining = FALSE;
     for (j = 0; j < Nobjects[GAGE]; j++)
     {
-	// Check if rain is input though external data source (rainAPI)
-	if (Gage[j].external_rain == 0)
-	{
-        	gage_setState(j, currentDate);
-	}
-	// TODO Ensure check that nothing else happnes !
-	
+        gage_setState(j, currentDate);
         if ( Gage[j].rainfall > 0.0 ) IsRaining = TRUE;
     }
 

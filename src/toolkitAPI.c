@@ -1110,7 +1110,7 @@ int DLLEXPORT swmm_getGageParam(int index, int Param, double *value)
         // rainfall value
         case 1: *value = Gage[index].rainfall / UCF(RAINFALL); break;
         // control data source 
-	case 2: *value = Gage[index].external_rain; break;
+	case 2: *value = Gage[index].dataSource; break;
         default: return(ERR_API_OUTBOUNDS);
     }
     return(0);
@@ -1134,9 +1134,9 @@ int DLLEXPORT swmm_setGageParam(int index, int Param, double value)
     switch(Param)
     {
         // rainfall from the data
-        case 0: Gage[index].rainfall = value * UCF(RAINFALL); break;
+        case 0: Gage[index].dataSource = value; break;
         // control step wise rain
-        case 1: Gage[index].external_rain = value; break;
+        case 1: Gage[index].externalRain = value * UCF(RAINFALL); break;
         // Type not available
         default: return(ERR_API_OUTBOUNDS);
     }
