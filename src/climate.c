@@ -1069,7 +1069,7 @@ void readTD3200FileLine(int* y, int* m)
     char recdType[4] = "";
     char year[5] = "";
     char month[3] = "";
-    size_t  len;
+    int  len;
 
     // --- check for minimum number of characters
     len = strlen(FileLine);
@@ -1106,7 +1106,7 @@ void readDLY0204FileLine(int* y, int* m)
 {
     char year[5] = "";
     char month[3] = "";
-    size_t  len;
+    int  len;
 
     // --- check for minimum number of characters
     len = strlen(FileLine);
@@ -1245,9 +1245,9 @@ void setTD3200FileValues(int i)
     char value[6] = "";
     char flag2[2] = "";
     double x;
-    size_t  nValues;
+    int  nValues;
     int  j, k, d;
-    size_t  lineLength;
+    int  lineLength;
 
     // --- parse number of days with data from cols. 27-29 of file line
     sstrncpy(valCount, &FileLine[27], 3);
