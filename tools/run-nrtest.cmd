@@ -20,13 +20,13 @@ set TEST_SUITE_PATH=%~2
 
 set NRTEST_EXECUTE_CMD=python %NRTEST_SCRIPT_PATH%\nrtest execute
 set TEST_APP_PATH=apps\swmm-%3.json
-set TESTS=tests\examples tests\extran tests\routing
+set TESTS=tests\examples tests\extran tests\routing tests\user
 set TEST_OUTPUT_PATH=benchmark\swmm-%3
 
 set NRTEST_COMPARE_CMD=python %NRTEST_SCRIPT_PATH%\nrtest compare
 set REF_OUTPUT_PATH=benchmark\swmm-5112
-set RTOL_VALUE=0.1
-set ATOL_VALUE=0.0
+set RTOL_VALUE=0.01
+set ATOL_VALUE=0.00
 
 :: change current directory to test suite
 cd %TEST_SUITE_PATH%

@@ -254,6 +254,61 @@
             },
             "passed": true,
             "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "user 1",
+            "output_files": {
+                "user1.out": "swmm allclose",
+                "user1.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "user 2",
+            "output_files": {
+                "user2.out": "swmm allclose",
+                "user2.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "user 3",
+            "output_files": {
+                "user3.out": "swmm allclose",
+                "user3.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "user 4",
+            "output_files": {
+                "user4.out": "swmm allclose",
+                "user4.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "user 5",
+            "output_files": {
+                "user5.out": "swmm allclose",
+                "user5.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
         }
     ]
 }
