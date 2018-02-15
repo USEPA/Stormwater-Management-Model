@@ -416,7 +416,7 @@ void  runoff_readFromFile(void)
 {
     int    i, j;
     int    nResults;                   // number of results per subcatch.
-    size_t    kount;                      // count of items read from file
+    int    kount;                      // count of items read from file
     float  tStep;                      // runoff time step (sec)
     TGroundwater* gw;                  // ptr. to Groundwater object
 
