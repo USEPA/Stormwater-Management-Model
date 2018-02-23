@@ -19,7 +19,7 @@ if(MSVC)
 endif(MSVC)
 
 if(UNIX)
-    set(CMAKE_C_FLAGS "-std=c99 -fopenmp")
+    set(CMAKE_C_FLAGS "-fopenmp")
     set(CMAKE_CXX_FLAGS "-std=c++11 -fopenmp -Wno-write-strings")
     # add_definitions(-std=c99)
 endif(UNIX)
