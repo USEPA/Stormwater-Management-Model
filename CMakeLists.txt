@@ -5,7 +5,7 @@ project(SWMM)
 add_subdirectory(tests)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(MSVC)
@@ -37,6 +37,11 @@ if(APPLE)
     set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 endif(APPLE)
 
+# configure file groups
+set(SWMM_OUT_SOURCES tools/swmm-output/src/swmm_output.c 
+  tools/swmm-output/src/errormanager.c)
+set(SWMM_OUT_HEADER tools/swmm-output/src/swmm_output.h)
+
 # includes and source files
 file(GLOB_RECURSE SWMM_HEADERS include/*.h src/*.h)
 file(GLOB SWMM_SOURCES src/*.c)
@@ -56,6 +61,10 @@ else(WIN32)
     target_link_libraries(run-swmm m pthread)
 endif(WIN32)
 
+# the binary output file API        
+add_library(swmm-output SHARED ${SWMM_OUT_SOURCES} ${SWMM_OUT_HEADERS})
+#set_target_properties(swmm-output PROPERTIES EXCLUDE_FROM_ALL TRUE)
+
 # install
-install(TARGETS run-swmm DESTINATION bin)
-install(TARGETS swmm5 DESTINATION lib)
+#install(TARGETS run-swmm DESTINATION bin)
+#install(TARGETS swmm5 DESTINATION lib)

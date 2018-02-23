@@ -1073,7 +1073,7 @@ int _fopen(FILE **f, const char *name, const char *mode) {
     //  Note: fopen_s is part of C++11 standard
     //
     int ret = 0;
-#ifdef _WIN32
+#ifdef _MSC_VER
     ret = (int)fopen_s(f, name, mode);
 #else
     *f = fopen(name, mode);
@@ -1088,7 +1088,7 @@ int _fseek(FILE* stream, F_OFF offset, int whence)
 //  Purpose: Selects platform fseek() for large file support
 //
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 #define FSEEK64 _fseeki64
 #else
 #define FSEEK64 fseeko
@@ -1102,7 +1102,7 @@ F_OFF _ftell(FILE* stream)
 //  Purpose: Selects platform ftell() for large file support
 //
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 #define FTELL64 _ftelli64
 #else
 #define FTELL64 ftello
