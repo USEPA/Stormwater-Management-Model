@@ -8,6 +8,7 @@ env:
 
 before_install:
   - sudo apt-get -qq update
+  - sudo apt-get install -y libboost-test-dev
   - sudo apt-get install -y swig 
 
 install:
@@ -19,7 +20,11 @@ before_script:
   - cmake ..
 
 script:
-  - make
+  - cmake --build .
+  # run unit tests
+  - cd tests
+  - ctest
+  # run regression tests
   - cd $SWMM_HOME
   - tools/gen-config.sh $SWMM_HOME/$BUILD_HOME/bin > $TEST_HOME/apps/swmm-$TRAVIS_COMMIT.json
   - tools/run-nrtest.sh $TEST_HOME $TRAVIS_COMMIT
