@@ -18,8 +18,8 @@ environment:
       VS_VERSION: "10 2010"
       ARCH: Win32
       GROUP: "SUPPORTED"
-      BOOST_ROOT: C:\Libraries\boost
-      BOOST_LIB: C:\Libraries\boost\lib32-msvc-12.0
+      BOOST_ROOT: "C:\\Libraries\\boost"
+      BOOST_LIB: "C:\\Libraries\\boost\\lib32-msvc-12.0"
     #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
     #  VS_VERSION: "10 2010"
     #  ARCH: Win64
@@ -87,8 +87,8 @@ install:
 
 before_build:
   - cmake -G %GENERATOR% 
-    -DBOOST_ROOT=%BOOST_ROOT%
-    -DBOOST_LIBRARYDIR=%BOOST_LIB%
+    -DBOOST_ROOT="%BOOST_ROOT%"
+    -DBOOST_LIBRARYDIR="%BOOST_LIB%"
     -DCMAKE_INSTALL_PREFIX:PATH=%BUILD_HOME% 
     -DCMAKE_BUILD_TYPE:STRING=Release
 
