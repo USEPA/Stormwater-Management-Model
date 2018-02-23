@@ -18,8 +18,8 @@ environment:
       VS_VERSION: "10 2010"
       ARCH: Win32
       GROUP: "SUPPORTED"
-      BOOST_ROOT: C:/Libraries/boost
-      BOOST_LIB: C:/Libraries/boost/lib32-msvc-12.0
+      BOOST_ROOT: C:\Libraries\boost
+      BOOST_LIB: C:\Libraries\boost\lib32-msvc-12.0
     #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
     #  VS_VERSION: "10 2010"
     #  ARCH: Win64
