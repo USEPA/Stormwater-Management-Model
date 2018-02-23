@@ -18,10 +18,14 @@ environment:
       VS_VERSION: "10 2010"
       ARCH: Win32
       GROUP: "SUPPORTED"
+      BOOST_ROOT: C:/Libraries/boost_1_58_0
+      BOOST_LIBDIR: C:/Libraries/boost_1_58_0/lib32-msvc-10.0
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
       VS_VERSION: "10 2010"
       ARCH: Win64
       GROUP: "EXPERIMENTAL"
+      BOOST_ROOT: C:/Libraries/boost_1_58_0
+      BOOST_LIBDIR: C:/Libraries/boost_1_58_0/lib64-msvc-10.0
     # Python 3.5 and 3.6
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       VS_VERSION: "14 2015"
