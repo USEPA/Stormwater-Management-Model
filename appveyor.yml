@@ -93,7 +93,7 @@ before_build:
     -DCMAKE_BUILD_TYPE:STRING=Release
 
 build_script:
-  - cmake --build . --target run-swmm --config Release
+  - cmake --build . --config Release
 
 before_test: 
   - cd %SWMM_HOME%
