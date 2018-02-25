@@ -179,6 +179,38 @@ typedef struct
     TWaterBalance  waterBalance;     // water balance quantites
 }  TLidUnit;
 
+// LID List - list of LID units contained in an LID group
+struct LidList
+{
+	TLidUnit*        lidUnit;     // ptr. to a LID unit
+	struct LidList*  nextLidUnit;
+};
+typedef struct LidList TLidList;
+
+// LID Group - collection of LID units applied to a specific subcatchment
+////  Re-defined for release 5.1.008. ////                                     //(5.1.008)
+struct LidGroup
+{
+	double         pervArea;      // amount of pervious area in group (ft2)
+	double         flowToPerv;    // total flow sent to pervious area (cfs)
+	double         oldDrainFlow;  // total drain flow in previous period (cfs)
+	double         newDrainFlow;  // total drain flow in current period (cfs)
+	TLidList*      lidList;       // list of LID units in the group
+};
+typedef struct LidGroup* TLidGroup;
+
+//-----------------------------------------------------------------------------
+//  Shared Variables
+//-----------------------------------------------------------------------------
+static TLidProc*  LidProcs;            // array of LID processes
+static int        LidCount;            // number of LID processes
+static TLidGroup* LidGroups;           // array of LID process groups
+static int        GroupCount;          // number of LID groups (subcatchments)
+
+static double     EvapRate;            // evaporation rate (ft/s)
+static double     NativeInfil;         // native soil infil. rate (ft/s)
+static double     MaxNativeInfil;      // native soil infil. rate limit (ft/s)
+
 //-----------------------------------------------------------------------------
 //   LID Methods
 //-----------------------------------------------------------------------------

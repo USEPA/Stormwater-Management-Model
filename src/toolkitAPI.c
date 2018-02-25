@@ -708,6 +708,7 @@ int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value)
     return(errcode);
 }
 
+
 int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
 //
 // Input:   index = Index of desired ID
@@ -802,6 +803,85 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *ObjIndex 
     return(errcode);
 }
 
+int DLLEXPORT swmm_getLidUParam(int subIndex, int lidIndex, int Param, double *value)
+//
+// Input:   subIndex = Index of desired subcatchment 
+//			lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
+//          param = Parameter desired (Based on enum SM_LidUProperty)
+// Output:  value = value to be output
+// Return:  API Error
+// Purpose: Gets Lid Parameter
+{
+	int errcode = 0;
+	int currLidIndex = 0;
+	TLidUnit* lidUnit;
+	TLidList* lidList;
+	TLidGroup lidGroup;
+
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+	{
+		errcode = ERR_API_INPUTNOTOPEN;
+	}
+	// Check if subcatchment index is within bounds
+	else if (subIndex < 0 || subIndex >= Nobjects[SUBCATCH])
+	{
+		errcode = ERR_API_OBJECT_INDEX;
+	}
+	else
+	{
+		lidGroup = LidGroups[subIndex];
+		lidList = lidGroup->lidList;
+
+		// Empty lidgroup 
+		//if (lidGroup == NULL) 
+		//{
+		//errcode = 
+		//return(errcode);
+		//}
+
+		// Traverse through lid list to find lid unit
+		while ((lidList) || (currLidIndex <= lidIndex))
+		{
+			lidUnit = lidList->lidUnit;
+			currLidIndex += 1;
+			lidList = lidList->nextLidUnit;
+		}
+
+		// Verify that the lid unit found matches the one specified by the user
+		//if !(currLidIndex == lidIndex)
+		//{
+		//errcode = 
+		//return(errcode);
+		//}
+
+		switch (Param)
+		{
+		case SM_INDEX:
+			*value = lidUnit->lidIndex; break;
+		case SM_NUMBER:
+			*value = lidUnit->number; break;
+		case SM_UNITAREA:
+			*value = lidUnit->area; break;
+		case SM_FWIDTH:
+			*value = lidUnit->fullWidth * UCF(LENGTH); break;
+		case SM_BWIDTH:
+			*value = lidUnit->botWidth * UCF(LENGTH); break;
+		case SM_INITSAT:
+			*value = lidUnit->initSat; break;
+		case SM_FROMIMPERV:
+			*value = lidUnit->fromImperv; break;
+		case SM_TOPERV:
+			*value = lidUnit->toPerv; break;
+		case SM_DRAINSUB:
+			*value = lidUnit->drainSubcatch; break;
+		case SM_DRAINNODE:
+			*value = lidUnit->drainNode; break;
+		default: errcode = ERR_API_OUTBOUNDS; break;
+		}
+	}
+	return(errcode);
+}
 
 //-------------------------------
 // Active Simulation Results API
