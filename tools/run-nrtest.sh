@@ -20,7 +20,7 @@ test_suite_path=$1
 
 nrtest_execute_cmd="nrtest execute"
 test_app_path="apps/swmm-$2.json"
-tests="tests/examples"
+tests="tests/examples tests/extran tests/routing tests/user" 
 test_output_path="benchmark/swmm-$2"
 
 nrtest_compare_cmd="nrtest compare"
@@ -35,21 +35,17 @@ cd ${test_suite_path}
 # clean test benchmark results
 rm -rf ${test_output_path}
 
+echo
 echo INFO: Creating test benchmark
 nrtest_command="${nrtest_execute_cmd} ${test_app_path} ${tests} -o ${test_output_path}"
 echo INFO: "$nrtest_command"
-if ! [ $( $nrtest_command ) ]; then
-    echo
-    echo INFO: Comparing test and ref benchmarks
-    nrtest_command="${nrtest_compare_cmd} ${test_output_path} ${ref_output_path} --rtol ${rtol_value} --atol ${atol_value}"
-    echo INFO: "$nrtest_command"
-    return_value=$( $nrtest_command )
-else
-    echo ERROR: Test benchmark creation failed
-    exit 1
-fi
+$nrtest_command
 
-return $return_value
+echo
+echo INFO: Comparing test and ref benchmarks
+nrtest_command="${nrtest_compare_cmd} ${test_output_path} ${ref_output_path} --rtol ${rtol_value} --atol ${atol_value}"
+echo INFO: "$nrtest_command"
+$nrtest_command
 
 }
 

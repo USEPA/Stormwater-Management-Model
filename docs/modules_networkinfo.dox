@@ -1,0 +1,22 @@
+/**
+
+@defgroup NetworkInfo Network Info
+
+
+@addtogroup NetworkInfo
+@{
+@fn int swmm_countObjects (int type, int *count)
+@fn int swmm_getObjectId (int type, int index, char *id)
+@fn int swmm_getNodeType (int index, int *Ntype)
+@fn int swmm_getLinkType (int index, int *Ltype)
+@fn int swmm_getLinkConnections (int index, int *Node1, int *Node2)
+@fn int swmm_getLinkDirection (int index, signed char *value)
+@fn int swmm_getSubcatchOutConnection (int index, int *type, int *Index)
+@fn int swmm_getNodeParam (int index, int Param, double *value)
+@fn int swmm_getLinkParam (int index, int Param, double *value)
+@fn int swmm_getSubcatchParam (int index, int Param, double *value)
+@fn int swmm_setNodeParam (int index, int Param, double value)
+@fn int swmm_setLinkParam (int index, int Param, double value)
+@fn int swmm_setSubcatchParam (int index, int Param, double value)
+@}
+*/

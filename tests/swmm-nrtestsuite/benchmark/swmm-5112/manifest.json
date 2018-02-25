@@ -78,6 +78,237 @@
             },
             "passed": true,
             "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "extran 1",
+            "output_files": {
+                "extran1.out": "swmm allclose",
+                "extran1.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "extran 10",
+            "output_files": {
+                "extran10.out": "swmm allclose",
+                "extran10.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "extran 2",
+            "output_files": {
+                "extran2.out": "swmm allclose",
+                "extran2.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "extran 3",
+            "output_files": {
+                "extran3.out": "swmm allclose",
+                "extran3.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "extran 4",
+            "output_files": {
+                "extran4.out": "swmm allclose",
+                "extran4.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "extran 5",
+            "output_files": {
+                "extran5.out": "swmm allclose",
+                "extran5.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "extran 6",
+            "output_files": {
+                "extran6.out": "swmm allclose",
+                "extran6.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "extran 7",
+            "output_files": {
+                "extran7.out": "swmm allclose",
+                "extran7.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "extran 8a",
+            "output_files": {
+                "extran8a.out": "swmm allclose",
+                "extran8a.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "extran 8b",
+            "output_files": {
+                "extran8b.out": "swmm allclose",
+                "extran8b.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "extran 9",
+            "output_files": {
+                "extran9.out": "swmm allclose",
+                "extran9.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "Flat slope example.",
+            "error_msg": null,
+            "name": "test 1",
+            "output_files": {
+                "test1.out": "swmm allclose",
+                "test1.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "Flow through a constriction",
+            "error_msg": null,
+            "name": "test 2",
+            "output_files": {
+                "test2.out": "swmm allclose",
+                "test2.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "Drop with surcharge example",
+            "error_msg": null,
+            "name": "test 3",
+            "output_files": {
+                "test3.out": "swmm allclose",
+                "test3.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "Inverted siphon example",
+            "error_msg": null,
+            "name": "test 4",
+            "output_files": {
+                "test4.out": "swmm allclose",
+                "test4.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "Upstream offsets example",
+            "error_msg": null,
+            "name": "test 5",
+            "output_files": {
+                "test5.out": "swmm allclose",
+                "test5.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "user 1",
+            "output_files": {
+                "user1.out": "swmm allclose",
+                "user1.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "user 2",
+            "output_files": {
+                "user2.out": "swmm allclose",
+                "user2.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "user 3",
+            "output_files": {
+                "user3.out": "swmm allclose",
+                "user3.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "user 4",
+            "output_files": {
+                "user4.out": "swmm allclose",
+                "user4.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
+        },
+        {
+            "description": "",
+            "error_msg": null,
+            "name": "user 5",
+            "output_files": {
+                "user5.out": "swmm allclose",
+                "user5.rpt": "swmm report"
+            },
+            "passed": true,
+            "version": "1.0"
         }
     ]
 }

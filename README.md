@@ -6,6 +6,7 @@ ORD Stormwater Management Model (aka "SWMM")
 
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model)
 [![Join the chat at https://gitter.im/OpenWaterAnalytics/lobby](https://badges.gitter.im/OpenWaterAnalytics/Stormwater-Management-Model.svg)](https://gitter.im/OpenWaterAnalytics/lobby)
+[![docs](https://img.shields.io/badge/docs-passing-green.svg)](http://wateranalytics.org/Stormwater-Management-Model/)
 
 ## Build status
 [![Build status](https://ci.appveyor.com/api/projects/status/heoi23kwjh15od04/branch/develop?svg=true)](https://ci.appveyor.com/project/OpenWaterAnalytics/stormwater-management-model/branch/develop)
@@ -29,7 +30,7 @@ See [CONTRIBUTING.md](https://github.com/OpenWaterAnalytics/Stormwater-Managemen
 
 # Regression Testing
 
-To run the test suite for please refer to the [tests/README.md](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/feature-nrtest/tests/README.md)
+To run the test suite for please refer to the [tests/README.md](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/tests/README.md)
 
 # Code of conduct
 
