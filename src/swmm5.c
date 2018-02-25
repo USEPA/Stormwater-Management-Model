@@ -1061,5 +1061,4 @@ void getSemVersion(char* semver)
 	snprintf(semver, SEMVERSION_LEN, "%s.%s.%s", 
 		SEMVERSION_MAJOR, SEMVERSION_MINOR, SEMVERSION_PATCH);
 }
-
 //=============================================================================
