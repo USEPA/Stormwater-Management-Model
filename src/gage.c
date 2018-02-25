@@ -271,7 +271,7 @@ void  gage_initState(int j)
     if ( IgnoreRainfall ) return;
 
     // --- for gage with file data:
-    if ( Gage[j].dataSource == RAIN_FILE || Gage[j].dataSource == RAIN_API )
+    if ( Gage[j].dataSource == RAIN_FILE)
     {
         // --- set current file position to start of period of record
         Gage[j].currentFilePos = Gage[j].startFilePos;
