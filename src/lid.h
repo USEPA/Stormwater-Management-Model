@@ -202,9 +202,9 @@ typedef struct LidGroup* TLidGroup;
 //-----------------------------------------------------------------------------
 //  Shared Variables
 //-----------------------------------------------------------------------------
-static TLidProc*  LidProcs;            // array of LID processes
+TLidProc*  LidProcs;            // array of LID processes
 static int        LidCount;            // number of LID processes
-static TLidGroup* LidGroups;           // array of LID process groups
+TLidGroup* LidGroups;           // array of LID process groups
 static int        GroupCount;          // number of LID groups (subcatchments)
 
 static double     EvapRate;            // evaporation rate (ft/s)

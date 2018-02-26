@@ -812,13 +812,13 @@ int DLLEXPORT swmm_getLidUParam(int subIndex, int lidIndex, int Param, double *v
 // Return:  API Error
 // Purpose: Gets Lid Parameter
 {
-	int errcode = 0;
+    int errcode = 0;
 	int currLidIndex = 0;
 	TLidUnit* lidUnit;
 	TLidList* lidList;
 	TLidGroup lidGroup;
 
-	// Check if Open
+    // Check if Open
 	if (swmm_IsOpenFlag() == FALSE)
 	{
 		errcode = ERR_API_INPUTNOTOPEN;
@@ -826,43 +826,42 @@ int DLLEXPORT swmm_getLidUParam(int subIndex, int lidIndex, int Param, double *v
 	// Check if subcatchment index is within bounds
 	else if (subIndex < 0 || subIndex >= Nobjects[SUBCATCH])
 	{
-		errcode = ERR_API_OBJECT_INDEX;
+	    errcode = ERR_API_OBJECT_INDEX;
 	}
 	else
 	{
 		lidGroup = LidGroups[subIndex];
 		lidList = lidGroup->lidList;
 
-		// Empty lidgroup 
-		//if (lidGroup == NULL) 
-		//{
-		//errcode = 
-		//return(errcode);
-		//}
-
-		// Traverse through lid list to find lid unit
-		while ((lidList) || (currLidIndex <= lidIndex))
+		if (!lidGroup)
+	    {
+		    return(errcode);
+		}
+        
+        // Traverse through lid list to find lid unit
+        lidUnit = lidList->lidUnit;
+		while ((lidList) && (currLidIndex < lidIndex))
 		{
-			lidUnit = lidList->lidUnit;
-			currLidIndex += 1;
+            lidUnit = lidList->lidUnit;
+		    currLidIndex += 1;
 			lidList = lidList->nextLidUnit;
 		}
 
 		// Verify that the lid unit found matches the one specified by the user
-		//if !(currLidIndex == lidIndex)
-		//{
-		//errcode = 
-		//return(errcode);
-		//}
+		if (!(currLidIndex == lidIndex))
+		{
+		    //errcode = 
+		    return(errcode);
+		}
 
 		switch (Param)
 		{
-		case SM_INDEX:
-			*value = lidUnit->lidIndex; break;
-		case SM_NUMBER:
-			*value = lidUnit->number; break;
+//		case SM_INDEX:
+//			*value = lidUnit->lidIndex; break;
+//		case SM_NUMBER:
+//			*value = lidUnit->number; break;
 		case SM_UNITAREA:
-			*value = lidUnit->area; break;
+            *value = lidUnit->area * UCF(LANDAREA); break;
 		case SM_FWIDTH:
 			*value = lidUnit->fullWidth * UCF(LENGTH); break;
 		case SM_BWIDTH:
@@ -871,15 +870,16 @@ int DLLEXPORT swmm_getLidUParam(int subIndex, int lidIndex, int Param, double *v
 			*value = lidUnit->initSat; break;
 		case SM_FROMIMPERV:
 			*value = lidUnit->fromImperv; break;
-		case SM_TOPERV:
-			*value = lidUnit->toPerv; break;
-		case SM_DRAINSUB:
-			*value = lidUnit->drainSubcatch; break;
-		case SM_DRAINNODE:
-			*value = lidUnit->drainNode; break;
+//		case SM_TOPERV:
+//			*value = lidUnit->toPerv; break;
+//		case SM_DRAINSUB:
+//			*value = lidUnit->drainSubcatch; break;
+//		case SM_DRAINNODE:
+//			*value = lidUnit->drainNode; break;
 		default: errcode = ERR_API_OUTBOUNDS; break;
 		}
 	}
+    
 	return(errcode);
 }
 
