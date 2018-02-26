@@ -214,17 +214,19 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
     error = SMO_getSubcatchSeries(p_handle, 1, SMO_runoff_rate, 0, 10, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
 
-   std::vector<float> ref_vec({0.0,
-                               1.2438242,
-                               2.5639679,
-                               4.524055,
-                               2.5115132,
-                               0.69808137,
-                               0.040894926,
-                               0.011605669,
-                               0.00509294,
-                               0.0027438672,
-                               10.0});
+    int ref_dim = 10;
+    float ref_array[ref_dim] = {0.0,
+                                1.2438242,
+                                2.5639679,
+                                4.524055,
+                                2.5115132,
+                                0.69808137,
+                                0.040894926,
+                                0.011605669,
+                                0.00509294,
+                                0.0027438672};
+    std::vector<float> ref_vec;
+    ref_vec.assign(ref_array, ref_array + ref_dim);
 
 
     std::vector<float> test_vec;
@@ -237,8 +239,9 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
     
     error = SMO_getSubcatchResult(p_handle, 1, 1, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
-
-    std::vector<float> ref_vec({0.5,
+    
+    int ref_dim = 10;
+    float ref_array[ref_dim] = {0.5,
                                 0.0,
                                 0.0,
                                 0.125,
@@ -247,7 +250,9 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
                                 0.0,
                                 0.0,
                                 33.481991,
-                                6.6963983});
+                                6.6963983};
+    std::vector<float> ref_vec;
+    ref_vec.assign(ref_array, ref_array + ref_dim);
 
     std::vector<float> test_vec;
     test_vec.assign(array, array + array_dim);
@@ -260,14 +265,17 @@ BOOST_FIXTURE_TEST_CASE(test_getNodeResult, Fixture) {
     error = SMO_getNodeResult(p_handle, 2, 2, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
     
-    std::vector<float> ref_vec({0.296234,
+    int ref_dim = 8;
+    float ref_array[ref_dim] = {0.296234,
                                 995.296204,
                                 0.0,
                                 1.302650,
                                 1.302650,
                                 0.0,
                                 15.361463,
-                                3.072293});
+                                3.072293};
+    std::vector<float> ref_vec;
+    ref_vec.assign(ref_array, ref_array + ref_dim);
 
     std::vector<float> test_vec;
     test_vec.assign(array, array + array_dim);
@@ -276,17 +284,21 @@ BOOST_FIXTURE_TEST_CASE(test_getNodeResult, Fixture) {
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getLinkResult, Fixture) {
-    
+
     error = SMO_getLinkResult(p_handle, 3, 3, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
 
-    std::vector<float> ref_vec({4.631762,
+    
+    int ref_dim = 7;
+    float ref_array[ref_dim] = {4.631762,
                                 1.0,
                                 5.8973422,
                                 314.15927,
                                 1.0,
                                 19.070757,
-                                3.8141515});
+                                3.8141515};
+    std::vector<float> ref_vec;
+    ref_vec.assign(ref_array, ref_array + ref_dim);
 
     std::vector<float> test_vec;
     test_vec.assign(array, array + array_dim);
@@ -299,7 +311,8 @@ BOOST_FIXTURE_TEST_CASE(test_getSystemResult, Fixture) {
     error = SMO_getSystemResult(p_handle, 4, 4, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
 
-    std::vector<float> ref_vec({70.0,
+    int ref_dim = 7;
+    float ref_array[ref_dim] = {70.0,
                                 0.1,
                                 0.0,
                                 0.19042271,
@@ -312,7 +325,9 @@ BOOST_FIXTURE_TEST_CASE(test_getSystemResult, Fixture) {
                                 0.55517411,
                                 13.622702,
                                 2913.0793,
-                                0.0});
+                                0.0};
+    std::vector<float> ref_vec;
+    ref_vec.assign(ref_array, ref_array + ref_dim);
 
     std::vector<float> test_vec;
     test_vec.assign(array, array + array_dim);
