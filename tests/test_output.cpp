@@ -104,6 +104,9 @@ struct Fixture{
         error = SMO_init(&p_handle);
         SMO_clearError(p_handle);
         error = SMO_open(p_handle, path.c_str());
+
+        array = NULL;
+        array_dim = 0;
     }
     ~Fixture() {
         SMO_free((void**)&array);
@@ -111,11 +114,11 @@ struct Fixture{
     }
    
     std::string path;
-    int error = 0;
-    SMO_Handle p_handle = NULL;
+    int error;
+    SMO_Handle p_handle;
 
-    float* array = NULL;
-    int array_dim = 0;
+    float* array;
+    int array_dim;
 };
 
 BOOST_AUTO_TEST_SUITE(test_output_fixture)
