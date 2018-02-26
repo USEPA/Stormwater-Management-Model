@@ -54,7 +54,7 @@ boost::test_tools::predicate_result check_cdd(std::vector<float>& test,
     if (min_cdd == 100.0)
         return true; 
     else
-        return std::lround(min_cdd) <= cdd_tol;
+        return floor(min_cdd) <= cdd_tol;
 }
 
 boost::test_tools::predicate_result check_string(std::string test, std::string ref)
