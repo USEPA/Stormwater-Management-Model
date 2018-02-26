@@ -9,7 +9,7 @@
  */
 
 // NOTE: Travis installs libboost test version 1.5.4
-#define BOOST_TEST_DYN_LINK
+//#define BOOST_TEST_DYN_LINK
 
 #define BOOST_TEST_MODULE "output"
 #include <boost/test/included/unit_test.hpp>
