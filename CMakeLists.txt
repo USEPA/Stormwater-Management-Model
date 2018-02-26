@@ -64,6 +64,13 @@ endif(WIN32)
 # the binary output file API        
 add_library(swmm-output SHARED ${SWMM_OUT_SOURCES} ${SWMM_OUT_HEADERS})
 #set_target_properties(swmm-output PROPERTIES EXCLUDE_FROM_ALL TRUE)
+# creates import lib 
+include(GenerateExportHeader)
+GENERATE_EXPORT_HEADER(swmm-output
+    BASE_NAME swmm-output
+    EXPORT_MACRO_NAME swmout_exports
+    EXPORT_FILE_NAME swmout_exports.h
+    STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
 
 # install
 #install(TARGETS run-swmm DESTINATION bin)
