@@ -813,74 +813,91 @@ int DLLEXPORT swmm_getLidUParam(int subIndex, int lidIndex, int Param, double *v
 // Purpose: Gets Lid Parameter
 {
     int errcode = 0;
-	int currLidIndex = 0;
-	TLidUnit* lidUnit;
-	TLidList* lidList;
-	TLidGroup lidGroup;
+    int currLidIndex = 0;
+    int lidCount = 0;
+    TLidUnit* lidUnit;
+    TLidList* lidList;
+    TLidList* lidListCount;
+    TLidGroup lidGroup;
 
     // Check if Open
-	if (swmm_IsOpenFlag() == FALSE)
-	{
-		errcode = ERR_API_INPUTNOTOPEN;
-	}
-	// Check if subcatchment index is within bounds
-	else if (subIndex < 0 || subIndex >= Nobjects[SUBCATCH])
-	{
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+	    errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if subcatchment index is within bounds
+    else if (subIndex < 0 || subIndex >= Nobjects[SUBCATCH])
+    {
 	    errcode = ERR_API_OBJECT_INDEX;
-	}
-	else
-	{
-		lidGroup = LidGroups[subIndex];
-		lidList = lidGroup->lidList;
+    }
+    else
+    {
+        lidGroup = LidGroups[subIndex];
+        lidList = lidGroup->lidList;
+        lidListCount = lidGroup->lidList;
 
-		if (!lidGroup)
-	    {
-		    return(errcode);
-		}
+        if (!lidGroup)
+        {
+            return(errcode);
+        }
         
+        // Patch solution for now
+        // Realized the lid units are stored in reverse order of
+        // how they are defined in the [LID USAGE]
+        // For now, I will just count the number of Lid Units in Lid List 
+        while (lidListCount)
+        {
+            lidUnit = lidListCount->lidUnit;
+            lidListCount = lidListCount->nextLidUnit;
+            lidCount += 1;
+        }
+
+        // update lidIndex due to reverse order
+        lidIndex = lidCount - lidIndex - 1;
+
         // Traverse through lid list to find lid unit
-        lidUnit = lidList->lidUnit;
-		while ((lidList) && (currLidIndex < lidIndex))
-		{
+        while ((lidList) && (currLidIndex <= lidIndex))
+        {
             lidUnit = lidList->lidUnit;
-		    currLidIndex += 1;
-			lidList = lidList->nextLidUnit;
-		}
+            currLidIndex += 1;
+            lidList = lidList->nextLidUnit;
+        }
 
-		// Verify that the lid unit found matches the one specified by the user
-		if (!(currLidIndex == lidIndex))
-		{
-		    //errcode = 
-		    return(errcode);
-		}
-
-		switch (Param)
-		{
-//		case SM_INDEX:
-//			*value = lidUnit->lidIndex; break;
-//		case SM_NUMBER:
-//			*value = lidUnit->number; break;
-		case SM_UNITAREA:
+        // Verify that the lid unit found matches the one specified by the user
+        /*
+        if (!(currLidIndex == lidIndex))
+        {
+            //errcode = 
+            return(errcode);
+        }*/
+        
+        switch (Param)
+        {
+            //		case SM_INDEX:
+            //			*value = lidUnit->lidIndex; break;
+            //		case SM_NUMBER:
+            //			*value = lidUnit->number; break;
+            case SM_UNITAREA:
             *value = lidUnit->area * UCF(LANDAREA); break;
-		case SM_FWIDTH:
-			*value = lidUnit->fullWidth * UCF(LENGTH); break;
-		case SM_BWIDTH:
-			*value = lidUnit->botWidth * UCF(LENGTH); break;
-		case SM_INITSAT:
-			*value = lidUnit->initSat; break;
-		case SM_FROMIMPERV:
-			*value = lidUnit->fromImperv; break;
-//		case SM_TOPERV:
-//			*value = lidUnit->toPerv; break;
-//		case SM_DRAINSUB:
-//			*value = lidUnit->drainSubcatch; break;
-//		case SM_DRAINNODE:
-//			*value = lidUnit->drainNode; break;
-		default: errcode = ERR_API_OUTBOUNDS; break;
-		}
-	}
+            case SM_FWIDTH:
+            *value = lidUnit->fullWidth * UCF(LENGTH); break;
+            case SM_BWIDTH:
+            *value = lidUnit->botWidth * UCF(LENGTH); break;
+            case SM_INITSAT:
+            *value = lidUnit->initSat; break;
+            case SM_FROMIMPERV:
+            *value = lidUnit->fromImperv; break;
+            //		case SM_TOPERV:
+            //			*value = lidUnit->toPerv; break;
+            //		case SM_DRAINSUB:
+            //			*value = lidUnit->drainSubcatch; break;
+            //		case SM_DRAINNODE:
+            //			*value = lidUnit->drainNode; break;
+            default: errcode = ERR_API_OUTBOUNDS; break;
+        }
+    }
     
-	return(errcode);
+return(errcode);
 }
 
 //-------------------------------
