@@ -140,9 +140,14 @@ BOOST_FIXTURE_TEST_CASE(test_getProjectSize, Fixture) {
 
     std::vector<int> test;
     test.assign(i_array, i_array + array_dim);
+    
     // subcatchs, nodes, links, pollutants
-    std::vector<int> ref({8,14,13,2});
-
+    int ref_dim = 4;
+    int ref_array[ref_dim] = {8,14,13,2};
+    
+    std::vector<int> ref;
+    ref.assign(ref_array, ref_array + ref_dim);
+    
     BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(), test.end());
 
     SMO_free((void**)&i_array);
@@ -164,7 +169,12 @@ BOOST_FIXTURE_TEST_CASE(test_getPollutantUnits, Fixture) {
 
     std::vector<int> test;
     test.assign(i_array, i_array + array_dim);
-    std::vector<int> ref({0, 1});
+
+    int ref_dim = 2;
+    int ref_array[ref_dim] = {0, 1};
+    
+    std::vector<int> ref;
+    ref.assign(ref_array, ref_array + ref_dim);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(), test.end());
 
