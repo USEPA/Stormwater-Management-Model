@@ -142,7 +142,7 @@ BOOST_FIXTURE_TEST_CASE(test_getProjectSize, Fixture) {
     test.assign(i_array, i_array + array_dim);
     
     // subcatchs, nodes, links, pollutants
-    int ref_dim = 4;
+    const int ref_dim = 4;
     int ref_array[ref_dim] = {8,14,13,2};
     
     std::vector<int> ref;
@@ -170,7 +170,7 @@ BOOST_FIXTURE_TEST_CASE(test_getPollutantUnits, Fixture) {
     std::vector<int> test;
     test.assign(i_array, i_array + array_dim);
 
-    int ref_dim = 2;
+    const int ref_dim = 2;
     int ref_array[ref_dim] = {0, 1};
     
     std::vector<int> ref;
@@ -224,7 +224,7 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
     error = SMO_getSubcatchSeries(p_handle, 1, SMO_runoff_rate, 0, 10, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
 
-    int ref_dim = 10;
+    const int ref_dim = 10;
     float ref_array[ref_dim] = {0.0,
                                 1.2438242,
                                 2.5639679,
@@ -236,7 +236,7 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
                                 0.00509294,
                                 0.0027438672};
     std::vector<float> ref_vec;
-    ref_vec.assign(ref_array, ref_array + ref_dim);
+    ref_vec.assign(ref_array, ref_array + 10);
 
 
     std::vector<float> test_vec;
@@ -250,7 +250,7 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
     error = SMO_getSubcatchResult(p_handle, 1, 1, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
     
-    int ref_dim = 10;
+    const int ref_dim = 10;
     float ref_array[ref_dim] = {0.5,
                                 0.0,
                                 0.0,
@@ -275,7 +275,7 @@ BOOST_FIXTURE_TEST_CASE(test_getNodeResult, Fixture) {
     error = SMO_getNodeResult(p_handle, 2, 2, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
     
-    int ref_dim = 8;
+    const int ref_dim = 8;
     float ref_array[ref_dim] = {0.296234,
                                 995.296204,
                                 0.0,
@@ -299,7 +299,7 @@ BOOST_FIXTURE_TEST_CASE(test_getLinkResult, Fixture) {
     BOOST_REQUIRE(error == 0);
 
     
-    int ref_dim = 7;
+    const int ref_dim = 7;
     float ref_array[ref_dim] = {4.631762,
                                 1.0,
                                 5.8973422,
@@ -321,7 +321,7 @@ BOOST_FIXTURE_TEST_CASE(test_getSystemResult, Fixture) {
     error = SMO_getSystemResult(p_handle, 4, 4, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
 
-    int ref_dim = 7;
+    const int ref_dim = 14;
     float ref_array[ref_dim] = {70.0,
                                 0.1,
                                 0.0,
