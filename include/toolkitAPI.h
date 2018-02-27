@@ -135,8 +135,18 @@ typedef enum {
     SM_AREA         = 1,  /**< Area */
     SM_FRACIMPERV   = 2,  /**< Impervious Fraction */
     SM_SLOPE        = 3,  /**< Slope */
-    SM_CURBLEN      = 4,   /**< Curb Length */
+    SM_CURBLEN      = 4,  /**< Curb Length */
 } SM_SubcProperty;
+
+typedef enum {
+    SM_INFLOW       = 0,  /**< Total Inflow */
+    SM_EVAP         = 1,  /**< Total Evaporation */
+    SM_INFIL        = 2,  /**< Total Infiltration */
+    SM_SURFFLOW     = 3,  /**< Total Surface runoff */
+    SM_DRAINFLOW    = 4,  /**< Total Underdrain flow */
+    SM_INITVOL      = 5,  /**< Initial Stored Volume */
+    SM_FINALVOL     = 6,  /**< Final Stored Volume */
+} SM_LidResult;
 
 /// Node result property codes
 typedef enum {
@@ -181,18 +191,20 @@ typedef enum {
 
 /// Lid unit property codes
 typedef enum {
-	SM_INDEX		= 0,  /**< Lid Process Index */
-	SM_NUMBER		= 1,  /**< Number of Replicate Units */
-	SM_UNITAREA		= 2,  /**< Area of Single Replicate Unit */
-	SM_FWIDTH		= 3,  /**< Full Top Width of Single Unit */
-	SM_BWIDTH		= 4,  /**< Bottom Width of Single Unit */
-	SM_INITSAT		= 5,  /**< Initial Saturation of Soil and Storage Layer */
-	SM_FROMIMPERV	= 6,  /**< Fraction of Impervious Area Runoff Treated */
-	SM_TOPERV		= 7,  /**< Outflow to Pervious Area */
-	SM_DRAINSUB		= 8,  /**< Subcatchment recieving drain flow */
-	SM_DRAINNODE	= 9,  /**< Node recieving drain flow */
-	SM_RPTFILE		= 10,  /**< Detailed report file path */
+	SM_UNITAREA		= 0,  /**< Area of Single Replicate Unit */
+	SM_FWIDTH		= 1,  /**< Full Top Width of Single Unit */
+	SM_BWIDTH		= 2,  /**< Bottom Width of Single Unit */
+	SM_INITSAT		= 3,  /**< Initial Saturation of Soil and Storage Layer */
+	SM_FROMIMPERV	= 4,  /**< Fraction of Impervious Area Runoff Treated */
 } SM_LidUProperty;
+
+typedef enum {
+    SM_INDEX        = 0,  /**< Lid Process Index */
+    SM_NUMBER       = 1,  /**< Number of Replicate Units */
+    SM_TOPERV       = 2,  /**< Outflow to Pervious Area */
+    SM_DRAINSUB     = 3,  /**< Subcatchment Recieving Drain Flow */
+    SM_DRAINNODE    = 4,  /**< Node Recieving Drain Flow */
+} SM_LidUOptions;
 
 // --- Define the SWMM toolkit structures
 

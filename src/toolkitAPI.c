@@ -37,6 +37,91 @@ int  stats_getSubcatchStat(int index, SM_SubcatchStats *subcatchStats);
 double* newDoubleArray(int n);
 
 //-----------------------------------------------------------------------------
+//  Internal API Functions
+//-----------------------------------------------------------------------------
+TLidUnit* getLidUnit(int subIndex, int lidIndex, int* errcode)
+//
+// Input:   subIndex = Index of desired subcatchment 
+//          lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
+//          errcode  = ptr to errcode
+// Output:  TLidUnit = TLidUnit ptr 
+// Return:  TLidUnit ptr 
+// Purpose: Gets lid unit (TLidUnit) ptr
+{   
+    int currLidIndex = 0;
+    int unitCount = 0;
+    TLidUnit* lidUnit;
+    TLidList* lidList;
+    TLidGroup lidGroup;
+
+    lidGroup = LidGroups[subIndex];
+    lidList = lidGroup->lidList;
+
+    if (!lidGroup || !lidList)
+    {
+        // Return Null for empty lidGroup or lidList structure
+        // No lids are defined for subcatchment
+        *errcode = ERR_API_UNDEFINED_LID;
+        return(NULL);
+    }
+
+    
+    unitCount = getLidUnitCount(subIndex);
+ 
+    if (lidIndex > (unitCount - 1))
+    {
+        *errcode = ERR_API_LIDUNIT_INDEX;
+        return(NULL);
+    }
+
+    // update lidIndex due to reverse order
+    lidIndex = unitCount - lidIndex - 1;
+
+    // Traverse through lid list to find lid unit
+    while ((lidList) && (currLidIndex <= lidIndex))
+    {
+        lidUnit = lidList->lidUnit;
+        currLidIndex += 1;
+        lidList = lidList->nextLidUnit;
+    }
+
+    // Verify that the lid unit found matches the one specified by the user
+    if (!((currLidIndex - 1) == lidIndex))
+    {
+        *errcode = ERR_API_LIDUNIT_INDEX;
+        return(NULL);
+    }
+
+    return lidUnit;
+}
+
+int getLidUnitCount(int subIndex)
+// Input:   subIndex = Index of desired subcatchment 
+// Output:  int = number of lid units for subcatchment 
+// Return:  number of lid units for subcatchment
+// Purpose: count number of lid units for subcatchment
+{
+    int unitCount = 0;
+    TLidUnit* lidUnit;
+    TLidList* lidList;
+    TLidGroup lidGroup;
+
+    lidGroup = LidGroups[subIndex];
+    lidList = lidGroup->lidList;
+
+    // Patch solution for now
+    // Realized the lid units are stored in reverse order of
+    // how they are defined in the [LID USAGE]
+    // For now, I will just count the number of Lid Units in Lid List 
+    while (lidList)
+    {
+        lidList = lidList->nextLidUnit;
+        unitCount += 1;
+    }
+
+    return unitCount;
+}
+//-----------------------------------------------------------------------------
 //  Extended API Functions
 //-----------------------------------------------------------------------------
 void DLLEXPORT swmm_getAPIError(int errcode, char *s)
@@ -588,6 +673,7 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
     }
     else
     {
+         
         switch(Param)
         {
             case SM_OFFSET1:
@@ -724,7 +810,7 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
         errcode = ERR_API_INPUTNOTOPEN;
     }
      // Check if Simulation is Running
-    else if(swmm_IsStartedFlag() == TRUE)
+    else if (swmm_IsStartedFlag() == TRUE)
     {
         errcode = ERR_API_SIM_NRUNNING;
     }
@@ -735,8 +821,9 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
     }
     else
     {
-        switch(Param)
+        switch (Param)
         {
+<<<<<<< HEAD
             case SM_WIDTH:
                 Subcatch[index].width = value / UCF(LENGTH); break;
             case SM_AREA:
@@ -752,6 +839,19 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
             case SM_CURBLEN:
                 Subcatch[index].curbLength = value / UCF(LENGTH); break;
             default: errcode = ERR_API_OUTBOUNDS; break;
+=======
+        case SM_WIDTH:
+            Subcatch[index].width = value / UCF(LENGTH); break;
+        case SM_AREA:
+            Subcatch[index].area = value / UCF(LANDAREA); break;
+        case SM_FRACIMPERV:
+            Subcatch[index].fracImperv; break;
+        case SM_SLOPE:
+            Subcatch[index].slope; break;
+        case SM_CURBLEN:
+            Subcatch[index].curbLength = value / UCF(LENGTH); break;
+        default: errcode = ERR_API_OUTBOUNDS; break;
+>>>>>>> added lid options and results
         }
         //re-validate subcatchment
         subcatch_validate(index); // incorprate callback here
@@ -760,7 +860,8 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
     return(errcode);
 }
 
-int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *ObjIndex )
+
+int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *ObjIndex)
 //
 // Input:   index = Index of desired ID
 //         (Subcatchments can load to Node or another Subcatchment)
@@ -773,7 +874,7 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *ObjIndex 
     *type = -1;
     *ObjIndex = -1;
     // Check if Open
-    if(swmm_IsOpenFlag() == FALSE)
+    if (swmm_IsOpenFlag() == FALSE)
     {
         errcode = ERR_API_INPUTNOTOPEN;
     }
@@ -803,102 +904,114 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *ObjIndex 
     return(errcode);
 }
 
+
 int DLLEXPORT swmm_getLidUParam(int subIndex, int lidIndex, int Param, double *value)
 //
 // Input:   subIndex = Index of desired subcatchment 
-//			lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
+//          lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
 //          param = Parameter desired (Based on enum SM_LidUProperty)
 // Output:  value = value to be output
 // Return:  API Error
 // Purpose: Gets Lid Parameter
 {
     int errcode = 0;
-    int currLidIndex = 0;
-    int lidCount = 0;
     TLidUnit* lidUnit;
-    TLidList* lidList;
-    TLidList* lidListCount;
-    TLidGroup lidGroup;
 
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
     {
-	    errcode = ERR_API_INPUTNOTOPEN;
+        errcode = ERR_API_INPUTNOTOPEN;
     }
     // Check if subcatchment index is within bounds
     else if (subIndex < 0 || subIndex >= Nobjects[SUBCATCH])
     {
-	    errcode = ERR_API_OBJECT_INDEX;
+        errcode = ERR_API_OBJECT_INDEX;
     }
     else
     {
-        lidGroup = LidGroups[subIndex];
-        lidList = lidGroup->lidList;
-        lidListCount = lidGroup->lidList;
+        lidUnit = getLidUnit(subIndex, lidIndex, &errcode);
 
-        if (!lidGroup)
+        // There are no Lid Units defined for the subcatchments
+        if (!lidUnit)
         {
+            errcode = ERR_API_UNDEFINED_LID;
             return(errcode);
         }
-        
-        // Patch solution for now
-        // Realized the lid units are stored in reverse order of
-        // how they are defined in the [LID USAGE]
-        // For now, I will just count the number of Lid Units in Lid List 
-        while (lidListCount)
-        {
-            lidUnit = lidListCount->lidUnit;
-            lidListCount = lidListCount->nextLidUnit;
-            lidCount += 1;
-        }
-
-        // update lidIndex due to reverse order
-        lidIndex = lidCount - lidIndex - 1;
-
-        // Traverse through lid list to find lid unit
-        while ((lidList) && (currLidIndex <= lidIndex))
-        {
-            lidUnit = lidList->lidUnit;
-            currLidIndex += 1;
-            lidList = lidList->nextLidUnit;
-        }
-
-        // Verify that the lid unit found matches the one specified by the user
-        /*
-        if (!(currLidIndex == lidIndex))
-        {
-            //errcode = 
-            return(errcode);
-        }*/
         
         switch (Param)
         {
-            //		case SM_INDEX:
-            //			*value = lidUnit->lidIndex; break;
-            //		case SM_NUMBER:
-            //			*value = lidUnit->number; break;
             case SM_UNITAREA:
-            *value = lidUnit->area * UCF(LANDAREA); break;
+                *value = lidUnit->area * UCF(LANDAREA); break;
             case SM_FWIDTH:
-            *value = lidUnit->fullWidth * UCF(LENGTH); break;
+                *value = lidUnit->fullWidth * UCF(LENGTH); break;
             case SM_BWIDTH:
-            *value = lidUnit->botWidth * UCF(LENGTH); break;
+                *value = lidUnit->botWidth * UCF(LENGTH); break;
             case SM_INITSAT:
-            *value = lidUnit->initSat; break;
+                *value = lidUnit->initSat; break;
             case SM_FROMIMPERV:
-            *value = lidUnit->fromImperv; break;
-            //		case SM_TOPERV:
-            //			*value = lidUnit->toPerv; break;
-            //		case SM_DRAINSUB:
-            //			*value = lidUnit->drainSubcatch; break;
-            //		case SM_DRAINNODE:
-            //			*value = lidUnit->drainNode; break;
-            default: errcode = ERR_API_OUTBOUNDS; break;
+                *value = lidUnit->fromImperv; break;
+            default: 
+                errcode = ERR_API_OUTBOUNDS; break;
         }
     }
     
-return(errcode);
+    return(errcode);
 }
+
+
+int DLLEXPORT swmm_getLidUOption(int subIndex, int lidIndex, int Param, int *value)
+//
+// Input:   subIndex = Index of desired subcatchment 
+//          lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
+//          param = Parameter desired (Based on enum SM_LidUOption)
+// Output:  value = value to be output
+// Return:  API Error
+// Purpose: Gets Lid Option Parameter
+{
+    int errcode = 0;
+    TLidUnit* lidUnit;
+
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if subcatchment index is within bounds
+    else if (subIndex < 0 || subIndex >= Nobjects[SUBCATCH])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else
+    {
+        lidUnit = getLidUnit(subIndex, lidIndex, &errcode);
+
+        // There are no Lid Units defined for the subcatchments
+        if (!lidUnit)
+        {
+            errcode = ERR_API_UNDEFINED_LID;
+            return(errcode);
+        }
+
+        switch (Param)
+        {
+        case SM_INDEX:
+            *value = lidUnit->lidIndex; break;
+        case SM_NUMBER:
+            *value = lidUnit->number; break;
+        case SM_TOPERV:
+            *value = lidUnit->toPerv; break;
+        case SM_DRAINSUB:
+            *value = lidUnit->drainSubcatch; break;
+        case SM_DRAINNODE:
+            *value = lidUnit->drainNode; break;
+        default: 
+            errcode = ERR_API_OUTBOUNDS; break;
+        }
+    }
+
+    return(errcode);
+}
+
 
 //-------------------------------
 // Active Simulation Results API
@@ -933,6 +1046,62 @@ int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr)
 
     strcpy(dtimestr, _DTimeStr);
     return(0);
+}
+
+
+int DLLEXPORT swmm_getLidUResult(int subIndex, int lidIndex, int type, double *result)
+//
+// Input:   subIndex = Index of desired subcatchment 
+//          lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
+// Output:  result = result data desired (byref)
+// Return:  API Error
+// Purpose: Gets Lid Unit Water Balance Simulated Value at Current Time
+{
+    int errcode = 0;
+    TLidUnit* lidUnit;
+
+    // Check if Simulation is Running
+    if (swmm_IsStartedFlag() == FALSE)
+    {
+        errcode = ERR_API_SIM_NRUNNING;
+    }
+    // Check if object index is within bounds
+    else if (subIndex < 0 || subIndex >= Nobjects[SUBCATCH])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else
+    {
+        lidUnit = getLidUnit(subIndex, lidIndex, &errcode);
+
+        // There are no Lid Units defined for the subcatchments
+        if (!lidUnit)
+        {
+            errcode = ERR_API_UNDEFINED_LID;
+            return(errcode);
+        }
+
+        switch (type)
+        {
+        case SM_INFLOW:
+            *result = lidUnit->waterBalance.inflow * UCF(RAINDEPTH); break;
+        case SM_EVAP:
+            *result = lidUnit->waterBalance.evap * UCF(RAINDEPTH); break;
+        case SM_INFIL:
+            *result = lidUnit->waterBalance.infil * UCF(RAINDEPTH); break;
+        case SM_SURFFLOW:
+            *result = lidUnit->waterBalance.surfFlow * UCF(RAINDEPTH); break;
+        case SM_DRAINFLOW:
+            *result = lidUnit->waterBalance.drainFlow * UCF(RAINDEPTH); break;
+        case SM_INITVOL:
+            *result = lidUnit->waterBalance.initVol * UCF(RAINDEPTH); break;
+        case SM_FINALVOL:
+            *result = lidUnit->waterBalance.finalVol * UCF(RAINDEPTH); break;
+        default: 
+            errcode = ERR_API_OUTBOUNDS; break;
+        }
+    }
+    return(errcode);
 }
 
 
