@@ -138,16 +138,6 @@ typedef enum {
     SM_CURBLEN      = 4,  /**< Curb Length */
 } SM_SubcProperty;
 
-typedef enum {
-    SM_INFLOW       = 0,  /**< Total Inflow */
-    SM_EVAP         = 1,  /**< Total Evaporation */
-    SM_INFIL        = 2,  /**< Total Infiltration */
-    SM_SURFFLOW     = 3,  /**< Total Surface runoff */
-    SM_DRAINFLOW    = 4,  /**< Total Underdrain flow */
-    SM_INITVOL      = 5,  /**< Initial Stored Volume */
-    SM_FINALVOL     = 6,  /**< Final Stored Volume */
-} SM_LidResult;
-
 /// Node result property codes
 typedef enum {
     SM_TOTALINFLOW    = 0,  /**< Total Inflow */
@@ -199,12 +189,59 @@ typedef enum {
 } SM_LidUProperty;
 
 typedef enum {
+    SM_THICKNESS    = 0,  /**< Storage Height */
+    SM_VOIDFRAC     = 1,  /**< Available Fraction of Storage Volume */
+    SM_ROUGHNESS    = 2,  /**< Manning n */
+    SM_SURFSLOPE    = 3,  /**< Surface Slope (fraction) */
+    SM_SIDESLOPE    = 4,  /**< Side Slope (run/rise) */
+    SM_ALPHA        = 5,  /**< Slope/Roughness Term in Manning Eqn */
+    SM_POROSITY     = 6,  /**< Void Volume / Total Volume */
+    SM_FIELDCAP     = 7,  /**< Field Capacity */
+    SM_WILTPOINT    = 8,  /**< Wilting Point */
+    SM_SUCTION      = 9,  /**< Suction Head at Wetting Front */
+    SM_KSAT         = 10, /**< Saturated Hydraulic Conductivity */
+    SM_KSLOPE       = 11, /**< Slope of Log(k) v. Moisture Content Curve */
+    SM_CLOGFACTOR   = 12, /**< Clogging Factor */
+    SM_IMPERVFRAC   = 13, /**< Impervious Area Fraction */
+    SM_COEFF        = 14, /**< Underdrain Flow Coefficient */
+    SM_EXPON        = 15, /**< Underdrain Head Exponent */
+    SM_OFFSET       = 16, /**< Offset Height of Underdrain */
+    SM_DELAY        = 17, /** Rain Barrel Drain Delay Time */
+} SM_LidLayerProperty;
+
+typedef enum {
+    SM_SURFACE = 0,  /**< Lid Surface Layer */
+    SM_SOIL = 1,  /**< Lid Soil Layer */
+    SM_STOR = 2,  /**< Lid Storage Layer */
+    SM_PAVE = 3,  /**< Lid Pavement Layer */
+    SM_DRAIN = 4,  /**< Lid Underdrain Layer */
+    SM_DRAINMAT = 5,  /**< Lid Drainage Mat Layer */
+} SM_LidLayer;
+
+typedef enum {
     SM_INDEX        = 0,  /**< Lid Process Index */
     SM_NUMBER       = 1,  /**< Number of Replicate Units */
     SM_TOPERV       = 2,  /**< Outflow to Pervious Area */
     SM_DRAINSUB     = 3,  /**< Subcatchment Recieving Drain Flow */
     SM_DRAINNODE    = 4,  /**< Node Recieving Drain Flow */
 } SM_LidUOptions;
+
+typedef enum {
+    SM_INFLOW = 0,  /**< Total Inflow */
+    SM_EVAP = 1,  /**< Total Evaporation */
+    SM_INFIL = 2,  /**< Total Infiltration */
+    SM_SURFFLOW = 3,  /**< Total Surface runoff */
+    SM_DRAINFLOW = 4,  /**< Total Underdrain flow */
+    SM_INITVOL = 5,  /**< Initial Stored Volume */
+    SM_FINALVOL = 6,  /**< Final Stored Volume */
+    SM_SURFDEPTH = 7,  /**< Depth of Ponded Water on Surface Layer */
+    SM_PAVEDEPTH = 8,  /**< Depth of Water in Porous Pavement Layer */
+    SM_SOILMOIST = 9,  /**< Moisture Content of Biocell Soil Layer */
+    SM_STORDEPTH = 10, /**< Depth of Water in Storage Layer */
+    SM_DRYTIME = 11, /**< Time Since Last Rainfall */
+    SM_OLDDRAINFLOW = 12, /**< Previous Drain Flow */
+    SM_NEWDRAINFLOW = 13, /**< Current Drain Flow*/
+} SM_LidResult;
 
 // --- Define the SWMM toolkit structures
 
