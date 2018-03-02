@@ -9,19 +9,30 @@
 #              US EPA ORD/NRMRL
 # 
 
+cmake_minimum_required (VERSION 3.0)
+
+
 #Setup CMake to run tests
 enable_testing()
+
+
+# Sets for output directory for executables and libraries. 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 
 if(UNIX)
     set(CMAKE_CXX_FLAGS "-std=c++11")
 endif(UNIX)
 
+
 #Prep ourselves for compiling boost
 find_package(Boost REQUIRED)
-include_directories (${Boost_INCLUDE_DIRS} ../include ../tools/swmm-output/src)
+include_directories (${Boost_INCLUDE_DIRS})
 
-#I like to keep test files in a separate source directory called test
-file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test_*.cpp)
+
+# Test files are a separate source directory called tests
+file(GLOB TEST_SRCS . test_*.cpp)
+
 
 #Run through each source
 foreach(testSrc ${TEST_SRCS})
@@ -34,13 +45,9 @@ foreach(testSrc ${TEST_SRCS})
         #link to Boost libraries AND your targets and dependencies
         target_link_libraries(${testName} ${Boost_LIBRARIES} swmm5 swmm-output)
 
-        #I like to move testing binaries into a testBin directory
-        set_target_properties(${testName} PROPERTIES 
-            RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/bin)
-
         #Finally add it to test execution - 
         #Notice the WORKING_DIRECTORY and COMMAND
         add_test(NAME ${testName}
-                 COMMAND ${CMAKE_BINARY_DIR}/bin/${testName}  
+                 COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${testName}  
                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data)
 endforeach(testSrc)

@@ -22,8 +22,6 @@
 #include "swmm_output.h"
 
 
-// NOTE: Project Home needs to be updated to run unit test
-//#define PROJECT_HOME "C:/Users/mtryby/Workspace/GitRepo/michaeltryby/Stormwater-Management-Model"
 // NOTE: Reference data for the unit tests is currently tied to SWMM 5.1.7
 #define DATA_PATH "./Example1.out"
 
@@ -73,9 +71,20 @@ BOOST_AUTO_TEST_CASE(InitTest) {
     int error = SMO_init(&p_handle);
     BOOST_REQUIRE(error == 0);
     BOOST_CHECK(p_handle != NULL);
+
+    SMO_close(&p_handle);
 }
 
-BOOST_AUTO_TEST_CASE(OpenTest) {
+BOOST_AUTO_TEST_CASE(CloseTest) {
+    SMO_Handle p_handle = NULL;
+    SMO_init(&p_handle);
+
+    int error = SMO_close(&p_handle);
+    BOOST_REQUIRE(error == 0);
+    BOOST_CHECK(p_handle == NULL);
+}
+
+BOOST_AUTO_TEST_CASE(InitOpenCloseTest) {
     std::string path = std::string(DATA_PATH);
     SMO_Handle p_handle = NULL;
     SMO_init(&p_handle);
@@ -84,15 +93,6 @@ BOOST_AUTO_TEST_CASE(OpenTest) {
     BOOST_REQUIRE(error == 0);
 
     SMO_close(&p_handle);
-}
-
-BOOST_AUTO_TEST_CASE(CloseTest) {
-    SMO_Handle p_handle = NULL;
-    int error = SMO_init(&p_handle);
-
-    error = SMO_close(&p_handle);
-    BOOST_REQUIRE(error == -1);
-    BOOST_CHECK(p_handle != NULL);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -179,6 +179,7 @@ BOOST_FIXTURE_TEST_CASE(test_getPollutantUnits, Fixture) {
     BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(), test.end());
 
     SMO_free((void**)&i_array);
+    BOOST_CHECK(i_array == NULL);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getStartDate, Fixture) {
@@ -216,7 +217,6 @@ BOOST_FIXTURE_TEST_CASE(test_getElementName, Fixture) {
     BOOST_CHECK(check_string(test, ref));
 
     SMO_free((void**)&c_array);
-
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
@@ -225,16 +225,16 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
     BOOST_REQUIRE(error == 0);
 
     const int ref_dim = 10;
-    float ref_array[ref_dim] = {0.0,
-                                1.2438242,
-                                2.5639679,
-                                4.524055,
-                                2.5115132,
-                                0.69808137,
-                                0.040894926,
-                                0.011605669,
-                                0.00509294,
-                                0.0027438672};
+    float ref_array[ref_dim] = {0.0f,
+                                1.2438242f,
+                                2.5639679f,
+                                4.524055f,
+                                2.5115132f,
+                                0.69808137f,
+                                0.040894926f,
+                                0.011605669f,
+                                0.00509294f,
+                                0.0027438672f};
     std::vector<float> ref_vec;
     ref_vec.assign(ref_array, ref_array + 10);
 
@@ -251,16 +251,16 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
     BOOST_REQUIRE(error == 0);
     
     const int ref_dim = 10;
-    float ref_array[ref_dim] = {0.5,
-                                0.0,
-                                0.0,
-                                0.125,
-                                1.2438242,
-                                0.0,
-                                0.0,
-                                0.0,
-                                33.481991,
-                                6.6963983};
+    float ref_array[ref_dim] = {0.5f,
+                                0.0f,
+                                0.0f,
+                                0.125f,
+                                1.2438242f,
+                                0.0f,
+                                0.0f,
+                                0.0f,
+                                33.481991f,
+                                6.6963983f};
     std::vector<float> ref_vec;
     ref_vec.assign(ref_array, ref_array + ref_dim);
 
@@ -276,14 +276,14 @@ BOOST_FIXTURE_TEST_CASE(test_getNodeResult, Fixture) {
     BOOST_REQUIRE(error == 0);
     
     const int ref_dim = 8;
-    float ref_array[ref_dim] = {0.296234,
-                                995.296204,
-                                0.0,
-                                1.302650,
-                                1.302650,
-                                0.0,
-                                15.361463,
-                                3.072293};
+    float ref_array[ref_dim] = {0.296234f,
+                                995.296204f,
+                                0.0f,
+                                1.302650f,
+                                1.302650f,
+                                0.0f,
+                                15.361463f,
+                                3.072293f};
     std::vector<float> ref_vec;
     ref_vec.assign(ref_array, ref_array + ref_dim);
 
@@ -300,13 +300,13 @@ BOOST_FIXTURE_TEST_CASE(test_getLinkResult, Fixture) {
 
     
     const int ref_dim = 7;
-    float ref_array[ref_dim] = {4.631762,
-                                1.0,
-                                5.8973422,
-                                314.15927,
-                                1.0,
-                                19.070757,
-                                3.8141515};
+    float ref_array[ref_dim] = {4.631762f,
+                                1.0f,
+                                5.8973422f,
+                                314.15927f,
+                                1.0f,
+                                19.070757f,
+                                3.8141515f};
     std::vector<float> ref_vec;
     ref_vec.assign(ref_array, ref_array + ref_dim);
 
@@ -322,20 +322,20 @@ BOOST_FIXTURE_TEST_CASE(test_getSystemResult, Fixture) {
     BOOST_REQUIRE(error == 0);
 
     const int ref_dim = 14;
-    float ref_array[ref_dim] = {70.0,
-                                0.1,
-                                0.0,
-                                0.19042271,
-                                14.172027,
-                                0.0,
-                                0.0,
-                                0.0,
-                                0.0,
-                                14.172027,
-                                0.55517411,
-                                13.622702,
-                                2913.0793,
-                                0.0};
+    float ref_array[ref_dim] = {70.0f,
+                                0.1f,
+                                0.0f,
+                                0.19042271f,
+                                14.172027f,
+                                0.0f,
+                                0.0f,
+                                0.0f,
+                                0.0f,
+                                14.172027f,
+                                0.55517411f,
+                                13.622702f,
+                                2913.0793f,
+                                0.0f};
     std::vector<float> ref_vec;
     ref_vec.assign(ref_array, ref_array + ref_dim);
 

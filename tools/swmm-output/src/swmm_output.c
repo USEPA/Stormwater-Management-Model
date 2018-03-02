@@ -134,7 +134,7 @@ int DLLEXPORT SMO_close(SMO_Handle* p_handle)
 
     p_data = (data_t*)*p_handle;
 
-    if (p_data == NULL || p_data->file == NULL)
+    if (p_data == NULL)
         errorcode = -1;
 
     else
@@ -148,8 +148,10 @@ int DLLEXPORT SMO_close(SMO_Handle* p_handle)
         }
 
         dst_errormanager(p_data->error_handle);
-
-        fclose(p_data->file);
+        
+        if (p_data->file != NULL)
+            fclose(p_data->file);
+        
         free(p_data);
 
         *p_handle = NULL;
@@ -333,8 +335,6 @@ int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* le
     data_t* p_data;
 
     p_data = (data_t*)p_handle;
-
-    temp = newIntArray(p_data->Npolluts);
 
     if (p_data == NULL) errorcode = -1;
     else if (MEMCHECK(temp = newIntArray(p_data->Npolluts))) errorcode = 414;
