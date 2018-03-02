@@ -227,20 +227,22 @@ typedef enum {
 } SM_LidUOptions;
 
 typedef enum {
-    SM_INFLOW = 0,  /**< Total Inflow */
-    SM_EVAP = 1,  /**< Total Evaporation */
-    SM_INFIL = 2,  /**< Total Infiltration */
-    SM_SURFFLOW = 3,  /**< Total Surface runoff */
-    SM_DRAINFLOW = 4,  /**< Total Underdrain flow */
-    SM_INITVOL = 5,  /**< Initial Stored Volume */
-    SM_FINALVOL = 6,  /**< Final Stored Volume */
-    SM_SURFDEPTH = 7,  /**< Depth of Ponded Water on Surface Layer */
-    SM_PAVEDEPTH = 8,  /**< Depth of Water in Porous Pavement Layer */
-    SM_SOILMOIST = 9,  /**< Moisture Content of Biocell Soil Layer */
-    SM_STORDEPTH = 10, /**< Depth of Water in Storage Layer */
-    SM_DRYTIME = 11, /**< Time Since Last Rainfall */
-    SM_OLDDRAINFLOW = 12, /**< Previous Drain Flow */
-    SM_NEWDRAINFLOW = 13, /**< Current Drain Flow*/
+    SM_INFLOW       = 0,  /**< Total Inflow */
+    SM_EVAP         = 1,  /**< Total Evaporation */
+    SM_INFIL        = 2,  /**< Total Infiltration */
+    SM_SURFFLOW     = 3,  /**< Total Surface runoff */
+    SM_DRAINFLOW    = 4,  /**< Total Underdrain flow */
+    SM_INITVOL      = 5,  /**< Initial Stored Volume */
+    SM_FINALVOL     = 6,  /**< Final Stored Volume */
+    SM_SURFDEPTH    = 7,  /**< Depth of Ponded Water on Surface Layer */
+    SM_PAVEDEPTH    = 8,  /**< Depth of Water in Porous Pavement Layer */
+    SM_SOILMOIST    = 9,  /**< Moisture Content of Biocell Soil Layer */
+    SM_STORDEPTH    = 10, /**< Depth of Water in Storage Layer */
+    SM_DRYTIME      = 11, /**< Time Since Last Rainfall */
+    SM_OLDDRAINFLOW = 12, /**< Previous Drain Flow (unit and group) */ 
+    SM_NEWDRAINFLOW = 13, /**< Current Drain Flow (unit and group) */
+    SM_PERVAREA     = 14, /**< Amount of Pervious Area (group) */
+    SM_FLOWTOPERV   = 15, /**< Total Flow Sent to Pervious Area */
 } SM_LidResult;
 
 // --- Define the SWMM toolkit structures

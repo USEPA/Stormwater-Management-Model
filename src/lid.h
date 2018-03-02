@@ -44,11 +44,13 @@ enum LidTypes {
     POROUS_PAVEMENT,         // porous pavement
     RAIN_BARREL,             // rain barrel
     VEG_SWALE,               // vegetative swale
-    ROOF_DISCON};            // roof disconnection                             //(5.1.008)
+    ROOF_DISCON
+};            // roof disconnection                             //(5.1.008)
 
 enum TimePeriod {
     PREVIOUS,                // previous time period                           //(5.1.008)
-    CURRENT};                // current time period                            //(5.1.008)
+    CURRENT
+};                // current time period                            //(5.1.008)
 
 //-----------------------------------------------------------------------------
 //  Data Structures
@@ -172,7 +174,7 @@ typedef struct
 
     // net inflow - outflow from previous time step for each LID layer (ft/s)
     double   oldFluxRates[MAX_LAYERS];
-                                     
+
     double   dryTime;        // time since last rainfall (sec)
     double   oldDrainFlow;   // previous drain flow (cfs)                      //(5.1.008)
     double   newDrainFlow;   // current drain flow (cfs)                       //(5.1.008)
@@ -182,8 +184,8 @@ typedef struct
 // LID List - list of LID units contained in an LID group
 struct LidList
 {
-	TLidUnit*        lidUnit;     // ptr. to a LID unit
-	struct LidList*  nextLidUnit;
+    TLidUnit*        lidUnit;     // ptr. to a LID unit
+    struct LidList*  nextLidUnit;
 };
 typedef struct LidList TLidList;
 
@@ -191,26 +193,26 @@ typedef struct LidList TLidList;
 ////  Re-defined for release 5.1.008. ////                                     //(5.1.008)
 struct LidGroup
 {
-	double         pervArea;      // amount of pervious area in group (ft2)
-	double         flowToPerv;    // total flow sent to pervious area (cfs)
-	double         oldDrainFlow;  // total drain flow in previous period (cfs)
-	double         newDrainFlow;  // total drain flow in current period (cfs)
-	TLidList*      lidList;       // list of LID units in the group
+    double         pervArea;      // amount of pervious area in group (ft2)
+    double         flowToPerv;    // total flow sent to pervious area (cfs)
+    double         oldDrainFlow;  // total drain flow in previous period (cfs)
+    double         newDrainFlow;  // total drain flow in current period (cfs)
+    TLidList*      lidList;       // list of LID units in the group
 };
 typedef struct LidGroup* TLidGroup;
+
 
 //-----------------------------------------------------------------------------
 //  Shared Variables
 //-----------------------------------------------------------------------------
-TLidProc*  LidProcs;            // array of LID processes
+TLidProc*  LidProcs;                   // array of LID processes
 static int        LidCount;            // number of LID processes
-TLidGroup* LidGroups;           // array of LID process groups
+TLidGroup* LidGroups;                  // array of LID process groups
 static int        GroupCount;          // number of LID groups (subcatchments)
 
 static double     EvapRate;            // evaporation rate (ft/s)
 static double     NativeInfil;         // native soil infil. rate (ft/s)
 static double     MaxNativeInfil;      // native soil infil. rate limit (ft/s)
-
 //-----------------------------------------------------------------------------
 //   LID Methods
 //-----------------------------------------------------------------------------
@@ -241,15 +243,17 @@ void     lid_getRunoff(int subcatch, double tStep);                            /
 void     lid_writeSummary(void);
 void     lid_writeWaterBalance(void);
 
+void   validateLidProc(int j);
+void   validateLidGroup(int j);
 //-----------------------------------------------------------------------------
 
 void     lidproc_initWaterBalance(TLidUnit *lidUnit, double initVol);
 
 double   lidproc_getOutflow(TLidUnit* lidUnit, TLidProc* lidProc,
-         double inflow, double evap, double infil, double maxInfil,            //(5.1.008)
-         double tStep, double* lidEvap, double* lidInfil, double* lidDrain);   //(5.1.008)
+    double inflow, double evap, double infil, double maxInfil,            //(5.1.008)
+    double tStep, double* lidEvap, double* lidInfil, double* lidDrain);   //(5.1.008)
 
 void     lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall,            //(5.1.011)
-         double ucfRainDepth);
+    double ucfRainDepth);
 
 #endif
