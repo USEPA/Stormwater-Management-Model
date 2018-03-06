@@ -22,7 +22,8 @@ setup(
     name = "swmm-output",
     version = "1.0",
     ext_modules = [
-        Extension("_swmm_output", 
+        Extension("_swmm_output",
+            define_macros = [('swmm_output_EXPORTS', None)], 
             sources = ['src/swmm_output.i', 'src/swmm_output.c', 'src/errormanager.c'],
             swig_opts=['-modern'],
             language='C'
