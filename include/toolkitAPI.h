@@ -49,7 +49,7 @@ typedef enum {
     SM_UNITHYD      = 12, /**< RDII unit hydrograph */
     SM_SNOWMELT     = 13, /**< Snowmelt parameter set */
     SM_SHAPE        = 14, /**< Custom conduit shape */
-    SM_LID          = 15,  /**< LID treatment units */
+    SM_LID          = 15  /**< LID treatment units */
 } SM_ObjectType;
 
 /// Node object type codes
@@ -57,7 +57,7 @@ typedef enum {
     SM_JUNCTION    = 0,  /**< Manhole Junction */
     SM_OUTFALL     = 1,  /**< Outfall */
     SM_STORAGE     = 2,  /**< Storage */
-    SM_DIVIDER     = 3,   /**< Divider */
+    SM_DIVIDER     = 3   /**< Divider */
 } SM_NodeType;
 
 /// Link object type codes
@@ -89,7 +89,7 @@ typedef enum {
     SM_IGNORESNOW   = 4, /**< Ignore Snowmelt */
     SM_IGNOREGW     = 5, /**< Ignore Groundwater */
     SM_IGNOREROUTE  = 6, /**< Ignore Routing */
-    SM_IGNORERQUAL  = 7,  /**< Ignore Quality */
+    SM_IGNORERQUAL  = 7  /**< Ignore Quality */
 } SM_SimOption;
 
 typedef enum {
@@ -135,7 +135,7 @@ typedef enum {
     SM_AREA         = 1,  /**< Area */
     SM_FRACIMPERV   = 2,  /**< Impervious Fraction */
     SM_SLOPE        = 3,  /**< Slope */
-    SM_CURBLEN      = 4,  /**< Curb Length */
+    SM_CURBLEN      = 4   /**< Curb Length */
 } SM_SubcProperty;
 
 /// Node result property codes
@@ -147,7 +147,7 @@ typedef enum {
     SM_NODEFLOOD      = 4,  /**< Flooding Rate */
     SM_NODEDEPTH      = 5,  /**< Node Depth */
     SM_NODEHEAD       = 6,  /**< Node Head */
-    SM_LATINFLOW      = 7,   /**< Lateral Inflow Rate */
+    SM_LATINFLOW      = 7   /**< Lateral Inflow Rate */
 } SM_NodeResult;
 
 /// Link result property codes
@@ -179,15 +179,17 @@ typedef enum {
     SM_SNOWFALL      = 2   //**< Snowfall Rate */)
 } SM_GagePrecip;
 
-/// Lid unit property codes
+/// Lid control layer codes
 typedef enum {
-	SM_UNITAREA		= 0,  /**< Area of Single Replicate Unit */
-	SM_FWIDTH		= 1,  /**< Full Top Width of Single Unit */
-	SM_BWIDTH		= 2,  /**< Bottom Width of Single Unit */
-	SM_INITSAT		= 3,  /**< Initial Saturation of Soil and Storage Layer */
-	SM_FROMIMPERV	= 4,  /**< Fraction of Impervious Area Runoff Treated */
-} SM_LidUProperty;
+    SM_SURFACE      = 0,  /**< Lid Surface Layer */
+    SM_SOIL         = 1,  /**< Lid Soil Layer */
+    SM_STOR         = 2,  /**< Lid Storage Layer */
+    SM_PAVE         = 3,  /**< Lid Pavement Layer */
+    SM_DRAIN        = 4,  /**< Lid Underdrain Layer */
+    SM_DRAINMAT     = 5,  /**< Lid Drainage Mat Layer */
+} SM_LidLayer;
 
+/// Lid control layer property codes
 typedef enum {
     SM_THICKNESS    = 0,  /**< Storage Height */
     SM_VOIDFRAC     = 1,  /**< Available Fraction of Storage Volume */
@@ -209,15 +211,16 @@ typedef enum {
     SM_DELAY        = 17, /** Rain Barrel Drain Delay Time */
 } SM_LidLayerProperty;
 
+/// Lid unit property codes
 typedef enum {
-    SM_SURFACE = 0,  /**< Lid Surface Layer */
-    SM_SOIL = 1,  /**< Lid Soil Layer */
-    SM_STOR = 2,  /**< Lid Storage Layer */
-    SM_PAVE = 3,  /**< Lid Pavement Layer */
-    SM_DRAIN = 4,  /**< Lid Underdrain Layer */
-    SM_DRAINMAT = 5,  /**< Lid Drainage Mat Layer */
-} SM_LidLayer;
+	SM_UNITAREA		= 0,  /**< Area of Single Replicate Unit */
+	SM_FWIDTH		= 1,  /**< Full Top Width of Single Unit */
+	SM_BWIDTH		= 2,  /**< Bottom Width of Single Unit */
+	SM_INITSAT		= 3,  /**< Initial Saturation of Soil and Storage Layer */
+	SM_FROMIMPERV	= 4,  /**< Fraction of Impervious Area Runoff Treated */
+} SM_LidUProperty;
 
+/// Lid unit option codes
 typedef enum {
     SM_INDEX        = 0,  /**< Lid Process Index */
     SM_NUMBER       = 1,  /**< Number of Replicate Units */
@@ -226,6 +229,7 @@ typedef enum {
     SM_DRAINNODE    = 4,  /**< Node Recieving Drain Flow */
 } SM_LidUOptions;
 
+/// Lid unit result codes
 typedef enum {
     SM_INFLOW       = 0,  /**< Total Inflow */
     SM_EVAP         = 1,  /**< Total Evaporation */
@@ -544,16 +548,6 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value);
 int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month,
                                          int *day, int *hour, int *minute,
                                          int *seconds);
-
-/**
-@brief Get a property value for specified lid unit.
-@param subIndex The index of a subcatchment
-@param lidIndex The index of a lid unit within lidlist
-@param Param The property type code (See @ref SM_LidUProperty)
-@param[out] value The value of the lid unit's property
-@return Error code
-*/
-int DLLEXPORT swmm_getLidUParam(int subindex, int lidIndex, int Param, double *value);
 
 /**
  @brief Set simulation datetime information.
