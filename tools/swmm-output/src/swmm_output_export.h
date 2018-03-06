@@ -9,7 +9,7 @@
 #  ifndef DLLEXPORT
 #    ifdef swmm_output_EXPORTS
         /* We are building this library */
-#      define DLLEXPORT __declspec(dllexport)
+#      define DLLEXPORT __declspec(dllexport) __stdcall
 #    else
         /* We are using this library */
 #      define DLLEXPORT __declspec(dllimport)
