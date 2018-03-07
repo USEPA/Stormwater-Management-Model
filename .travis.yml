@@ -23,9 +23,9 @@ script:
   # run unit tests
   - cd tests
   - ctest
+  - cd $SWMM_HOME
   # install dependencies for nrtest
   - pip install --src build/packages -r tools/requirements.txt
   # run regression tests
-  - cd $SWMM_HOME
   - tools/gen-config.sh $SWMM_HOME/$BUILD_HOME/bin > $TEST_HOME/apps/swmm-$TRAVIS_COMMIT.json
   - tools/run-nrtest.sh $TEST_HOME $TRAVIS_COMMIT
