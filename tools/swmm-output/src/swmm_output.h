@@ -85,17 +85,18 @@ typedef enum {
 } SMO_systemAttribute;
 
 
-// #ifdef WINDOWS
+//#ifdef WINDOWS
 //  #ifdef __cplusplus
-//  #define DLLEXPORT __declspec(dllexport) __cdecl
+//    #define DLLEXPORT __declspec(dllexport) __cdecl
 //  #else
-//  #define DLLEXPORT __declspec(dllexport) __stdcall
+//    #define DLLEXPORT __declspec(dllexport) __stdcall
 //  #endif
-// #else
+//#else
 //  #define DLLEXPORT
-// #endif
+//#endif
 
 #include "swmm_output_export.h"
+
 
 #ifdef __cplusplus
   extern "C" {

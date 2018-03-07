@@ -28,7 +28,7 @@ set(SWMM_OUT_HEADER src/swmm_output.h)
 
 # the binary output file API        
 add_library(swmm-output SHARED ${SWMM_OUT_SOURCES} ${SWMM_OUT_HEADERS})
-target_include_directories(swmm-output PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(swmm-output PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR})
 
 
 include(GenerateExportHeader)
@@ -37,4 +37,3 @@ generate_export_header(swmm-output
   EXPORT_MACRO_NAME DLLEXPORT
   EXPORT_FILE_NAME swmm_output_export.h
   STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
-

@@ -1,7 +1,6 @@
 # SWMM LIBRARY
 cmake_minimum_required (VERSION 3.0.2)
 
-include(GenerateExportHeader)
 
 project(SWMM)
 
@@ -71,12 +70,12 @@ add_library(swmm5 SHARED src/swmm5.c $<TARGET_OBJECTS:swmm_objs>)
 target_include_directories(swmm5 PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 # Create export headers for use when linking with MSVC
-include(GenerateExportHeader)
-GENERATE_EXPORT_HEADER(swmm5
-    BASE_NAME swmm5
-    EXPORT_MACRO_NAME DLLEXPORT
-    EXPORT_FILE_NAME swmm5_exports.h
-    STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
+#include(GenerateExportHeader)
+#GENERATE_EXPORT_HEADER(swmm5
+#    BASE_NAME swmm5
+#    EXPORT_MACRO_NAME DLLEXPORT
+#    EXPORT_FILE_NAME swmm5_exports.h
+#    STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
 
 
 # Creates the swmm5 command line executable

@@ -76,14 +76,13 @@ init:
   - echo %GENERATOR%
   - echo %BOOST_ROOT%
   - echo %BOOST_LIB%
+
 install:
   # Install SWIG using chocolatey
   - choco install swig
   - swig -version
   # `C:\Python27` (x86) is default on path for `python` command
   - python --version
-  # Install nrtest and dependencies for regression tests
-  - python -m pip install --src %BUILD_HOME%\packages -r tools\requirements.txt
 
 before_build:
   - cmake -G %GENERATOR% 
@@ -97,9 +96,16 @@ build_script:
   - cmake --build . --config Release
 
 before_test: 
+  # Install nrtest and dependencies for regression tests
+  - python -m pip install --src %BUILD_HOME%\packages -r tools\requirements.txt
+  # 
   - cd %SWMM_HOME%
   - tools\gen-config.cmd %SWMM_HOME%\bin\Release > %TEST_HOME%\apps\swmm-%APPVEYOR_REPO_COMMIT%.json
 
 test_script:
   # Run regression tests
   - tools\run-nrtest.cmd %NRTEST_SCRIPT% %TEST_HOME% %APPVEYOR_REPO_COMMIT%
+
+cache:
+  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> appveyor.yml

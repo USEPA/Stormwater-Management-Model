@@ -11,8 +11,7 @@ before_install:
   - sudo apt-get install -y libboost-test-dev
   - sudo apt-get install -y swig 
 
-install:
-  - pip install --src build/packages -r tools/requirements.txt
+#install:
 
 before_script:
   - mkdir -p $BUILD_HOME
@@ -24,6 +23,8 @@ script:
   # run unit tests
   - cd tests
   - ctest
+  # install dependencies for nrtest
+  - pip install --src build/packages -r tools/requirements.txt
   # run regression tests
   - cd $SWMM_HOME
   - tools/gen-config.sh $SWMM_HOME/$BUILD_HOME/bin > $TEST_HOME/apps/swmm-$TRAVIS_COMMIT.json
