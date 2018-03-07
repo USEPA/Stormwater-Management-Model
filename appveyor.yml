@@ -104,7 +104,7 @@ before_test:
 
 test_script:
   # run unit tests
-  - cd %BUILD_HOME%\tests
+  - cd %SWMM_HOME%\tests
   - ctest
   - cd %SWMM_HOME%
   # Run regression tests
