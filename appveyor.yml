@@ -103,6 +103,10 @@ before_test:
   - tools\gen-config.cmd %SWMM_HOME%\bin\Release > %TEST_HOME%\apps\swmm-%APPVEYOR_REPO_COMMIT%.json
 
 test_script:
+  # run unit tests
+  - cd %BUILD_HOME%\tests
+  - ctest
+  - cd %SWMM_HOME%
   # Run regression tests
   - tools\run-nrtest.cmd %NRTEST_SCRIPT% %TEST_HOME% %APPVEYOR_REPO_COMMIT%
 
