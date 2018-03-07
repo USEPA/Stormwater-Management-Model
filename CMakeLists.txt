@@ -21,13 +21,12 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Sets compiler flags when building with Visual Studio. 
 if(MSVC)
-    set(CMAKE_C_FLAGS "/fp:fast /fp:except- /Gd /Oy- /Ob2 /Ot /LTCG")
-    set(CMAKE_C_FLAGS_DEBUG "/MTd /W4")
-    set(CMAKE_C_FLAGS_RELEASE "/O2 /MT /W4")
+    set(CMAKE_C_FLAGS "/fp:fast /fp:except- /EHsc ")
+    set(CMAKE_C_FLAGS_DEBUG "/ZI /Od /Gm  /RTC1")
+    set(CMAKE_C_FLAGS_RELEASE "/Zi /O2 /Oi /GL /MT /Gy")
 
-    set(CMAKE_CXX_FLAGS "/fp:fast /fp:except- /Gd /Oy- /Ob2 /Ot /LTCG /EHa")
-    set(CMAKE_CXX_FLAGS_DEBUG "/MTd /W4")
-    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /MT /W4")
+    set(CMAKE_SHARED_LINKER_FLAGS "/LTCG")
+    set(CMAKE_EXE_LINKER_FLAGS "/LTCG")
 endif(MSVC)
 
 
