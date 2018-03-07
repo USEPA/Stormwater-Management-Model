@@ -67,7 +67,7 @@ init:
   - set SWMM_HOME=%APPVEYOR_BUILD_FOLDER%
   - set BUILD_HOME=buildprod
   - set TEST_HOME=tests\swmm-nrtestsuite
-  - set NRTEST_SCRIPT=%SWMM_HOME%\%BUILD_HOME%\packages\nrtest\scripts
+  - set NRTEST_SCRIPT=C:\Python27\Scripts
   - if "%ARCH%"=="Win64" ( set VS_ARCH= Win64)
   - set GENERATOR="Visual Studio %VS_VERSION%%VS_ARCH%"
   # See set values
