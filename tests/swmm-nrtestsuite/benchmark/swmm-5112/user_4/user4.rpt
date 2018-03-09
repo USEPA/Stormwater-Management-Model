@@ -829,7 +829,7 @@
   Routing Time Step ........ 5.00 sec
   Variable Time Step ....... NO
   Maximum Trials ........... 8
-  Number of Threads ........ 32
+  Number of Threads ........ 1
   Head Tolerance ........... 0.005000 ft
   
   
@@ -1928,6 +1928,6 @@
   23810025-23810024           0.01      0.01      0.01      0.02         0.01
   
 
-  Analysis begun on:  Tue Feb 06 10:57:30 2018
-  Analysis ended on:  Tue Feb 06 10:57:35 2018
-  Total elapsed time: 00:00:05
+  Analysis begun on:  Fri Mar 09 15:35:49 2018
+  Analysis ended on:  Fri Mar 09 15:36:01 2018
+  Total elapsed time: 00:00:12

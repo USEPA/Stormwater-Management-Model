@@ -28,6 +28,7 @@ SKIP_STEADY_STATE   	NO
 IGNORE_RAINFALL     	NO
 FORCE_MAIN_EQUATION 	D-W
 LINK_OFFSETS        	DEPTH
+THREADS                 1
 
 [JUNCTIONS]
 ;;              	Invert    	Max.      	Init.     	Surcharge 	Ponded    
