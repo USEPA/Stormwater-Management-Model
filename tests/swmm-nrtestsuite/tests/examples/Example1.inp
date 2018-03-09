@@ -37,7 +37,7 @@ HEAD_TOLERANCE       0
 SYS_FLOW_TOL         5
 LAT_FLOW_TOL         5
 ;MINIMUM_STEP         0.5
-;THREADS              1
+THREADS              1
 
 [EVAPORATION]
 ;;Data Source    Parameters

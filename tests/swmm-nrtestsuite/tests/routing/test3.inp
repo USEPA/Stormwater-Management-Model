@@ -26,7 +26,8 @@ DROP WITH SURCHARGE EXAMPLE
  MIN_SURFAREA          0
  NORMAL_FLOW_LIMITED   BOTH
  SKIP_STEADY_STATE     NO
-
+ THREADS               1
+ 
 [JUNCTIONS]
 ;;                 Invert     Max.       Init.      Surcharge  Ponded    
 ;;Name             Elev.      Depth      Depth      Depth      Area      
