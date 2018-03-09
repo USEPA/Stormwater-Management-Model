@@ -7319,7 +7319,7 @@
   Routing Time Step ........ 0.50 sec
   Variable Time Step ....... NO
   Maximum Trials ........... 8
-  Number of Threads ........ 32
+  Number of Threads ........ 1
   Head Tolerance ........... 0.005000 ft
   
   
@@ -8655,6 +8655,6 @@
   Brad_Out                    1.88      3.83      1.99      2.01         1.47
   
 
-  Analysis begun on:  Tue Feb 06 10:57:35 2018
-  Analysis ended on:  Tue Feb 06 10:57:43 2018
-  Total elapsed time: 00:00:08
+  Analysis begun on:  Fri Mar 09 15:36:02 2018
+  Analysis ended on:  Fri Mar 09 15:36:29 2018
+  Total elapsed time: 00:00:27

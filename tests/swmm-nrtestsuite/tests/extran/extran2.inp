@@ -25,7 +25,8 @@
  LENGTHENING_STEP      0
  MIN_SURFAREA          0
  NORMAL_FLOW_LIMITED   BOTH
-
+ THREADS               1
+ 
 [JUNCTIONS]
 ;;                 Invert     Max.       Init.      Surcharge  Ponded    
 ;;Name             Elev.      Depth      Depth      Depth      Area      
