@@ -37,6 +37,7 @@ MAX_TRIALS          	8
 HEAD_TOLERANCE      	0.005
 SYS_FLOW_TOL        	5
 LAT_FLOW_TOL        	5
+THREADS                 1
 
 [EVAPORATION]
 ;;Evap Data     	Parameters
