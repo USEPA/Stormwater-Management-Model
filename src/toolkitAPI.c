@@ -1248,7 +1248,7 @@ int DLLEXPORT swmm_getSystemRunoffStats(SM_RunoffTotals *runoffTot)
     return(errorcode);
 }
 
-int DLLEXPORT swmm_getGagePrecip(int index, double *value)
+int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, double *total)
 //
 // Input:   index = Index of desired ID
 // Output:  value = value to be output
@@ -1269,7 +1269,9 @@ int DLLEXPORT swmm_getGagePrecip(int index, double *value)
     // Read the rainfall value
     else
     {
-	    *value = Gage[index].rainfall / UCF(RAINFALL);
+	    *rainfall = Gage[index].rainfall / UCF(RAINFALL);
+        *snowfall = 0.0;
+        *total = 0.0;
     }
     return(errcode);
 }
@@ -1295,7 +1297,10 @@ int DLLEXPORT swmm_setGagePrecip(int index, double value)
     // Read the rainfall value
     else
     {
-	    Gage[index].dataSource = RAIN_API;
+        if (Gage[index].dataSource != RAIN_API)
+        {
+            Gage[index].dataSource = RAIN_API;
+        }
 	    Gage[index].externalRain = value * UCF(RAINFALL);
     }
     return(errcode);
