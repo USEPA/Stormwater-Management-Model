@@ -266,7 +266,7 @@ void  gage_initState(int j)
     Gage[j].isUsed = FALSE;
     Gage[j].rainfall = 0.0;
     Gage[j].reportRainfall = 0.0;
-    // Rainfall API sets external rainfall rate
+    // --- rainfall api sets external rainfall rate
     Gage[j].externalRain = 0.0;
     if ( IgnoreRainfall ) return;
 
