@@ -25,7 +25,8 @@ Example User4
  MIN_SURFAREA          12.556
  NORMAL_FLOW_LIMITED   BOTH
  SKIP_STEADY_STATE     NO
-
+ THREADS               1
+ 
 [EVAPORATION]
 ;;Type         Parameters
 ;;-----------------------

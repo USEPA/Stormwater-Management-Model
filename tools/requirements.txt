@@ -10,6 +10,7 @@
 # command: pip install -r requirements.txt --src build/packages
 #
 
--e  git+https://github.com/OpenWaterAnalytics/nrtest.git@master#egg=nrtest
+#-e  git+https://github.com/OpenWaterAnalytics/nrtest.git@master#egg=nrtest
+nrtest>=0.2.3
 -e ./tools/swmm-output
 -e ./tools/nrtest-swmm

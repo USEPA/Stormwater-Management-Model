@@ -34,7 +34,7 @@
   Routing Time Step ........ 0.50 sec
   Variable Time Step ....... NO
   Maximum Trials ........... 8
-  Number of Threads ........ 32
+  Number of Threads ........ 1
   Head Tolerance ........... 0.001524 m
   
   
@@ -1256,6 +1256,6 @@
   PUMP5@CMRYCOR-I-CMRYCSO    95.73           1      0.00      0.31      1.35     6.335      6.69    0.0    0.0
   
 
-  Analysis begun on:  Tue Feb 06 10:57:19 2018
-  Analysis ended on:  Tue Feb 06 10:57:29 2018
-  Total elapsed time: 00:00:10
+  Analysis begun on:  Fri Mar 09 15:35:34 2018
+  Analysis ended on:  Fri Mar 09 15:35:49 2018
+  Total elapsed time: 00:00:15

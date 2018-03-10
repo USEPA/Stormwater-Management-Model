@@ -25,7 +25,8 @@ TEST PROBLEM USER1
  MIN_SURFAREA          12.566
  NORMAL_FLOW_LIMITED   BOTH
  SKIP_STEADY_STATE     NO
-
+ THREADS               1
+ 
 [EVAPORATION]
 ;;Type         Parameters
 ;;-----------------------

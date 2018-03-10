@@ -134,7 +134,7 @@ int DLLEXPORT SMO_close(SMO_Handle* p_handle)
 
     p_data = (data_t*)*p_handle;
 
-    if (p_data == NULL || p_data->file == NULL)
+    if (p_data == NULL)
         errorcode = -1;
 
     else
@@ -148,8 +148,10 @@ int DLLEXPORT SMO_close(SMO_Handle* p_handle)
         }
 
         dst_errormanager(p_data->error_handle);
-
-        fclose(p_data->file);
+        
+        if (p_data->file != NULL)
+            fclose(p_data->file);
+        
         free(p_data);
 
         *p_handle = NULL;
@@ -333,8 +335,6 @@ int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* le
     data_t* p_data;
 
     p_data = (data_t*)p_handle;
-
-    temp = newIntArray(p_data->Npolluts);
 
     if (p_data == NULL) errorcode = -1;
     else if (MEMCHECK(temp = newIntArray(p_data->Npolluts))) errorcode = 414;
@@ -1073,7 +1073,7 @@ int _fopen(FILE **f, const char *name, const char *mode) {
     //  Note: fopen_s is part of C++11 standard
     //
     int ret = 0;
-#ifdef _WIN32
+#ifdef _MSC_VER
     ret = (int)fopen_s(f, name, mode);
 #else
     *f = fopen(name, mode);
@@ -1088,7 +1088,7 @@ int _fseek(FILE* stream, F_OFF offset, int whence)
 //  Purpose: Selects platform fseek() for large file support
 //
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 #define FSEEK64 _fseeki64
 #else
 #define FSEEK64 fseeko
@@ -1102,7 +1102,7 @@ F_OFF _ftell(FILE* stream)
 //  Purpose: Selects platform ftell() for large file support
 //
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
 #define FTELL64 _ftelli64
 #else
 #define FTELL64 ftello
