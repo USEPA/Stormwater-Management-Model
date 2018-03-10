@@ -1273,9 +1273,9 @@ int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, 
         *snowfall = 0.0;
         if ( !IgnoreSnowmelt && Temp.ta <= Snow.snotmp )
         {
-            *snowfall = Gage[j].rainfall * Gage[j].snowFactor / UCF(RAINFALL);
+            *snowfall = Gage[index].rainfall * Gage[index].snowFactor / UCF(RAINFALL);
         }
-        else *rainfall = Gage[j].rainfall / UCF(RAINFALL);
+        else *rainfall = Gage[index].rainfall / UCF(RAINFALL);
         *total = (*rainfall) + (*snowfall);
     }
     return(errcode);
