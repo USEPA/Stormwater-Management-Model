@@ -38,7 +38,7 @@ setup(
         'header_detail_footer>=2.3',
         'nrtest>=0.2.0',
         'numpy>=1.7.0',
-        'swmm_output>=1.0.0',
+        'swmm_output',
     ],
     keywords='nrtest_swmm'  
 )
