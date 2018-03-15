@@ -572,9 +572,11 @@ int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats);
 int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
     
 /**
-@brief Get rainfall information for a gage.
+@brief Get rainfall rates for a gage.
 @param index The index of gage
-@param[out] rainfall and snow associated with the gage.
+@param[out] rainfall rainfall rate
+@param[out] snowfall snowfall rate
+@param[out] total total precipitation rate
 @return Error code
 */
 int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, double *total);
