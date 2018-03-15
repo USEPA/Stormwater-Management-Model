@@ -100,6 +100,7 @@ typedef struct
 typedef struct
 {
    char*         ID;              // raingage name
+   int		     externalRain;    // rainfall-rate injected RAIN API
    int           dataSource;      // data from time series or file 
    int           tSeries;         // rainfall data time series index
    char          fname[MAXFNAME+1]; // name of rainfall data file
