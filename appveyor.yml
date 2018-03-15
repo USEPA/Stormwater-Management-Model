@@ -94,7 +94,7 @@ build_script:
 
 before_test: 
   - cd %SWMM_HOME%
-  - tools\gen-config.cmd %SWMM_HOME%\bin\Release > %TEST_HOME%\apps\swmm-%APPVEYOR_REPO_COMMIT%.json
+  - tools\gen-config.cmd %SWMM_HOME%\%BUILD_HOME%\bin\Release > %TEST_HOME%\apps\swmm-%APPVEYOR_REPO_COMMIT%.json
 
 test_script:
   # run unit tests
