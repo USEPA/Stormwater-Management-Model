@@ -98,7 +98,7 @@ before_test:
 
 test_script:
   # run unit tests
-  - cd %SWMM_HOME%\tests
+  - cd %BUILD_HOME%\tests
   - ctest -C Release
     # Run regression tests
   - cd %SWMM_HOME%
