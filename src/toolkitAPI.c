@@ -1251,7 +1251,7 @@ int DLLEXPORT swmm_getSystemRunoffStats(SM_RunoffTotals *runoffTot)
 int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, double *total)
 //
 // Input:   index = Index of desired ID
-// Output:  value = value to be output
+// Output:  Rainfall intensity and snow for the gage
 // Return:  API Error
 // Purpose: Gets the precipitaion value in the gage. 
 {
@@ -1277,7 +1277,7 @@ int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, 
 int DLLEXPORT swmm_setGagePrecip(int index, double value)
 //
 // Input:   index = Index of desired ID
-//          value = value to be output
+//          value = rainfall intensity to be set
 // Return:  API Error
 // Purpose: Sets the precipitation in from the external database
 {

@@ -569,6 +569,14 @@ int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats);
  pre-allocated by the caller.
  @return Error code
 */
+int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, double *total)
+    
+/**
+@brief Get rainfall information for a gage.
+@param index The index of gage
+@param[out] rainfall and snow associated with the gage.
+@return Error code
+*/
 int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
 
 /**
@@ -641,5 +649,12 @@ int DLLEXPORT swmm_setOutfallStage(int index, double stage);
 }    // matches the linkage specification from above */
 #endif
 
+int DLLEXPORT swmm_setGagePrecip(int index, double value);
 
+/**
+ @brief Set an rainfall intensity to the gage.
+ @param index The gage index.
+ @param value The new rainfall intensity.
+ @return Error code
+ */
 #endif
