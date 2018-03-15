@@ -569,7 +569,7 @@ int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats);
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, double *total)
+int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
     
 /**
 @brief Get rainfall information for a gage.
@@ -577,7 +577,7 @@ int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, 
 @param[out] rainfall and snow associated with the gage.
 @return Error code
 */
-int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
+int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, double *total);
 
 /**
  @brief Get subcatchment statistics.
@@ -645,16 +645,17 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate);
 */
 int DLLEXPORT swmm_setOutfallStage(int index, double stage);
 
+/**
+@brief Set an rainfall intensity to the gage.
+@param index The gage index.
+@param value The new rainfall intensity.
+@return Error code
+*/
+int DLLEXPORT swmm_setGagePrecip(int index, double value);
+
 #ifdef __cplusplus
 }    // matches the linkage specification from above */
 #endif
 
-int DLLEXPORT swmm_setGagePrecip(int index, double value);
 
-/**
- @brief Set an rainfall intensity to the gage.
- @param index The gage index.
- @param value The new rainfall intensity.
- @return Error code
- */
 #endif
