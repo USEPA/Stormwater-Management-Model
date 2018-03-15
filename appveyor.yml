@@ -78,27 +78,22 @@ init:
   - echo %BOOST_LIB%
 
 install:
-  # Install SWIG using chocolatey
-  - choco install swig
-  - swig -version
-  # `C:\Python27` (x86) is default on path for `python` command
-  - python --version
+  # Install nrtest and dependencies for regression tests
+  - python -m pip install -r tools\requirements-appveyor.txt
 
 before_build:
+  - mkdir %BUILD_HOME%
+  - cd %BUILD_HOME%
   - cmake -G %GENERATOR% 
     -DBOOST_ROOT="%BOOST_ROOT%"
     -DBOOST_LIBRARYDIR="%BOOST_LIB%"
     -DBoost_USE_STATIC_LIBS="ON"
-    -DCMAKE_INSTALL_PREFIX:PATH=%BUILD_HOME% 
     -DCMAKE_BUILD_TYPE:STRING=Release
 
 build_script:
   - cmake --build . --config Release
 
 before_test: 
-  # Install nrtest and dependencies for regression tests
-  - python -m pip install --src %BUILD_HOME%\packages -r tools\requirements.txt
-  # 
   - cd %SWMM_HOME%
   - tools\gen-config.cmd %SWMM_HOME%\bin\Release > %TEST_HOME%\apps\swmm-%APPVEYOR_REPO_COMMIT%.json
 
@@ -106,10 +101,10 @@ test_script:
   # run unit tests
   - cd %SWMM_HOME%\tests
   - ctest -C Release
+    # Run regression tests
   - cd %SWMM_HOME%
-  # Run regression tests
   - tools\run-nrtest.cmd %NRTEST_SCRIPT% %TEST_HOME% %APPVEYOR_REPO_COMMIT%
 
-cache:
-  - C:\ProgramData\chocolatey\bin -> appveyor.yml
-  - C:\ProgramData\chocolatey\lib -> appveyor.yml
+#cache:
+#  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+#  - C:\ProgramData\chocolatey\lib -> appveyor.yml

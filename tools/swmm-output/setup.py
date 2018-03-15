@@ -20,7 +20,7 @@ except ImportError:
 
 setup(
     name = "swmm-output",
-    version = "1.0",
+    version = "0.1.0-alpha",
     ext_modules = [
         Extension("_swmm_output",
             define_macros = [('swmm_output_EXPORTS', None)], 
