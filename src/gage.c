@@ -372,6 +372,14 @@ void gage_setState(int j, DateTime t)
 	    Gage[j].rainfall = 0.0;
 	    return;
 	}
+    
+    // --- rain api
+    if ( Gage[j].dataSource == RAIN_API)
+    {
+        getNextRainfall(j);
+        Gage[j].rainfall = Gage[j].nextRainfall;
+        return;
+    }
 
 	// --- otherwise update next rainfall interval date
 	Gage[j].startDate = Gage[j].nextDate;
