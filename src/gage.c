@@ -334,60 +334,59 @@ void gage_setState(int j, DateTime t)
         Gage[j].rainfall = Gage[Gage[j].coGage].rainfall;
         return;
     }
-
-    // --- otherwise march through rainfall record until date t is bracketed
-    t += OneSecond;
-    for (;;)
-    {
-	// --- no rainfall if no interval start date
-	if ( Gage[j].startDate == NO_DATE )
-	{
-	    Gage[j].rainfall = 0.0;
-	    return;
-	}
-
-	// --- no rainfall if time is before interval start date
-	if ( t < Gage[j].startDate )
-	{
-	    Gage[j].rainfall = 0.0;
-	    return;
-	}
-
-	// --- use current rainfall if time is before interval end date
-	if ( t < Gage[j].endDate )
-	{
-	    return;
-	}
-
-	// --- no rainfall if t >= interval end date & no next interval exists
-	if ( Gage[j].nextDate == NO_DATE)
-	{
-	    Gage[j].rainfall = 0.0;
-	    return;
-	}
-
-	// --- no rainfall if t > interval end date & <  next interval date
-	if ( t < Gage[j].nextDate )
-	{
-	    Gage[j].rainfall = 0.0;
-	    return;
-	}
-    
     // --- rain api
     if ( Gage[j].dataSource == RAIN_API)
     {
         getNextRainfall(j);
         Gage[j].rainfall = Gage[j].nextRainfall;
-        return;
     }
+    else
+    {
+        // --- otherwise march through rainfall record until date t is bracketed
+        t += OneSecond;
+        for (;;)
+        {
+        // --- no rainfall if no interval start date
+        if ( Gage[j].startDate == NO_DATE )
+        {
+            Gage[j].rainfall = 0.0;
+            return;
+        }
 
-	// --- otherwise update next rainfall interval date
-	Gage[j].startDate = Gage[j].nextDate;
-	Gage[j].endDate = datetime_addSeconds(Gage[j].startDate,
-			  Gage[j].rainInterval);
-	Gage[j].rainfall = Gage[j].nextRainfall;
+        // --- no rainfall if time is before interval start date
+        if ( t < Gage[j].startDate )
+        {
+            Gage[j].rainfall = 0.0;
+            return;
+        }
 
-	if ( !getNextRainfall(j) ) Gage[j].nextDate = NO_DATE;
+        // --- use current rainfall if time is before interval end date
+        if ( t < Gage[j].endDate )
+        {
+            return;
+        }
+
+        // --- no rainfall if t >= interval end date & no next interval exists
+        if ( Gage[j].nextDate == NO_DATE)
+        {
+            Gage[j].rainfall = 0.0;
+            return;
+        }
+
+        // --- no rainfall if t > interval end date & <  next interval date
+        if ( t < Gage[j].nextDate )
+        {
+            Gage[j].rainfall = 0.0;
+            return;
+        }
+        }
+        // --- otherwise update next rainfall interval date
+        Gage[j].startDate = Gage[j].nextDate;
+        Gage[j].endDate = datetime_addSeconds(Gage[j].startDate,
+                  Gage[j].rainInterval);
+        Gage[j].rainfall = Gage[j].nextRainfall;
+
+        if ( !getNextRainfall(j) ) Gage[j].nextDate = NO_DATE;
     }
 }
 
