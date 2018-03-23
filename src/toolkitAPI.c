@@ -1299,7 +1299,7 @@ int DLLEXPORT swmm_setGagePrecip(int index, double value)
         {
             Gage[index].dataSource = RAIN_API;
         }
-	    Gage[index].externalRain = value * UCF(RAINFALL);
+	    Gage[index].externalRain = value* UCF(RAINFALL);
     }
     return(errcode);
 }
