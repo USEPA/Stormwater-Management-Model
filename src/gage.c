@@ -334,11 +334,12 @@ void gage_setState(int j, DateTime t)
         Gage[j].rainfall = Gage[Gage[j].coGage].rainfall;
         return;
     }
-    // --- rain api
-    if ( Gage[j].dataSource == RAIN_API)
+
+    if (Gage[j].dataSource == RAIN_API)
     {
         getNextRainfall(j);
         Gage[j].rainfall = Gage[j].nextRainfall;
+        return;
     }
     else
     {
@@ -379,7 +380,7 @@ void gage_setState(int j, DateTime t)
             Gage[j].rainfall = 0.0;
             return;
         }
-        }
+
         // --- otherwise update next rainfall interval date
         Gage[j].startDate = Gage[j].nextDate;
         Gage[j].endDate = datetime_addSeconds(Gage[j].startDate,
@@ -387,6 +388,7 @@ void gage_setState(int j, DateTime t)
         Gage[j].rainfall = Gage[j].nextRainfall;
 
         if ( !getNextRainfall(j) ) Gage[j].nextDate = NO_DATE;
+        }
     }
 }
 
