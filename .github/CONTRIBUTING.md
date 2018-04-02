@@ -38,7 +38,7 @@ https://www.microsoft.com/en-us/download/details.aspx?id=34677
 
 ###### Install Boost 
 
-Boost binaries for Windows offer a convenient installation solution. Be sure to select for download the boost installer exe that corresponds to the version of Visual Studio you have installed. 
+Boost binaries for Windows offer a convenient installation solution. Be sure to select download the boost installer exe that corresponds to the version of Visual Studio you have installed. 
 
 https://sourceforge.net/projects/boost/files/boost-binaries/1.58.0/
 
