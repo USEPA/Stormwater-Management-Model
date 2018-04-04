@@ -2017,9 +2017,9 @@ double lid_getLidGResult(int index, int type, int* errcode)
 // Return:  result = result data desired
 // Purpose: Gets Lid Group Data at Current Time
 {
+    double result;
     TLidGroup lidGroup;
     lidGroup = LidGroups[index];
-    double result;
     if (!lidGroup)
     {
         *errcode = ERR_API_UNDEFINED_LID;
