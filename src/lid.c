@@ -2019,8 +2019,7 @@ double lid_getLidGResult(int index, int type, int* errcode)
 {
     TLidGroup lidGroup;
     lidGroup = LidGroups[index];
-    double result = 10;
-
+    double result;
     if (!lidGroup)
     {
         *errcode = ERR_API_UNDEFINED_LID;
