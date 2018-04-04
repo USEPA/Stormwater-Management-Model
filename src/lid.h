@@ -212,7 +212,7 @@ void     lid_writeWaterBalance(void);
 int         lid_getLidUnitCount(int index);
 TLidUnit*   lid_getLidUnit(int index, int lidIndex, int* errcode);
 TLidProc*   lid_getLidProc(int index);
-double      lid_getLidGResult(int index, int type, double *result);   
+double      lid_getLidGResult(int index, int type, int* errcode);   
 void        lid_validateLidProc(int index);
 void        lid_validateLidGroup(int index);
 //-----------------------------------------------------------------------------
