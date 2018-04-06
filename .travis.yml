@@ -4,7 +4,7 @@ env:
   global: 
     - SWMM_HOME=`pwd`
     - BUILD_HOME=build
-    - TEST_HOME=tests/swmm-nrtestsuite
+    - TEST_HOME=nrtestsuite
 
 before_install:
   - sudo apt-get -qq update
@@ -27,5 +27,5 @@ script:
   # install dependencies for nrtest
   - pip install --src build/packages -r tools/requirements.txt
   # run regression tests
-  - tools/gen-config.sh $SWMM_HOME/$BUILD_HOME/bin > $TEST_HOME/apps/swmm-$TRAVIS_COMMIT.json
+  - tools/before-test.sh $TEST_HOME $SWMM_HOME/$BUILD_HOME/bin $TRAVIS_COMMIT
   - tools/run-nrtest.sh $TEST_HOME $TRAVIS_COMMIT
