@@ -66,7 +66,7 @@ environment:
 init:
   - set SWMM_HOME=%APPVEYOR_BUILD_FOLDER%
   - set BUILD_HOME=buildprod
-  - set TEST_HOME=tests\swmm-nrtestsuite
+  - set TEST_HOME=nrtestsuite
   - set NRTEST_SCRIPT=C:\Python27\Scripts
   - if "%ARCH%"=="Win64" ( set VS_ARCH= Win64)
   - set GENERATOR="Visual Studio %VS_VERSION%%VS_ARCH%"
@@ -94,7 +94,7 @@ build_script:
 
 before_test: 
   - cd %SWMM_HOME%
-  - tools\gen-config.cmd %SWMM_HOME%\%BUILD_HOME%\bin\Release > %TEST_HOME%\apps\swmm-%APPVEYOR_REPO_COMMIT%.json
+  - tools\before-test.cmd %TEST_HOME% %SWMM_HOME%\%BUILD_HOME%\bin\Release %APPVEYOR_REPO_COMMIT%
 
 test_script:
   # run unit tests

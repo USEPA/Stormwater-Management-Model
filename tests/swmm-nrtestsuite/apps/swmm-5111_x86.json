@@ -1,7 +1,0 @@
-{
-	"name" : "swmm",
-	"version" : "5.1.11", 
-	"description" : "Windows, MS VC2010, 32 Bit",
-	"setup_script" : "",
-	"exe" : "C:/Users/mtryby/bin/swmm5111_x86.exe"
-}
