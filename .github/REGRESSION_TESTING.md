@@ -41,7 +41,7 @@ $ pip install -r tools/requirements.txt
 ```
 $ cd ..
 $ tools/before-test.sh nrtestsuite `pwd`/buildprod/bin <build id>
-$ tools/run-nrtest.sh `pwd`/tests/swmm-nrtestsuite <build id>
+$ tools/run-nrtest.sh nrtestsuite <build id>
 ```
 
 ## Step by Step Guide for Windows 
