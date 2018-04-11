@@ -20,7 +20,6 @@
 #include "swmm5.h"                     // declaration of exportable functions
 #include "hash.h"
 
-
 // Function Declarations for API
 int     massbal_getRoutingFlowTotal(SM_RoutingTotals *routingTot);
 int     massbal_getRunoffTotal(SM_RunoffTotals *runoffTot);
@@ -57,6 +56,13 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month, in
 // Purpose: Get the simulation start, end and report date times
 {
     int errcode = 0;
+    *year = 1900;
+    *month = 1;
+    *day = 1;
+    *hours = 0;
+    *minutes = 0;
+    *seconds = 0;
+
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
     {
@@ -150,6 +156,7 @@ int DLLEXPORT  swmm_getSimulationUnit(int type, int *value)
 // Purpose: get simulation unit types
 {
     int errcode = 0;
+    *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -181,6 +188,7 @@ int DLLEXPORT  swmm_getSimulationAnalysisSetting(int type, int *value)
 // Purpose: get simulation analysis setting
 {
     int errcode = 0;
+    *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -221,7 +229,7 @@ int DLLEXPORT  swmm_getSimulationParam(int type, double *value)
 // Purpose: Get simulation analysis parameter
 {
     int errcode = 0;
-
+    *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -274,6 +282,7 @@ int DLLEXPORT  swmm_countObjects(int type, int *count)
 // Returns: API Error
 // Purpose: uses Object Count table to find number of elements of an object
 {
+    *count = 0;
     if(type >= MAX_OBJ_TYPES)return ERR_API_OUTBOUNDS;
     *count = Nobjects[type];
     return (0);
@@ -351,6 +360,7 @@ int DLLEXPORT swmm_getNodeType(int index, int *Ntype)
 // Purpose: Gets Node Type
 {
     int errcode = 0;
+    *Ntype = -1;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -374,6 +384,7 @@ int DLLEXPORT swmm_getLinkType(int index, int *Ltype)
 // Purpose: Gets Link Type
 {
     int errcode = 0;
+    *Ltype = -1;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -397,6 +408,8 @@ int DLLEXPORT swmm_getLinkConnections(int index, int *Node1, int *Node2)
 // Purpose: Gets link Connection ID Indeces
 {
     int errcode = 0;
+    *Node1 = -1;
+    *Node2 = -1;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -423,6 +436,7 @@ int DLLEXPORT swmm_getLinkDirection(int index, signed char *value)
 // Purpose: Gets Link Direction
 {
     int errcode = 0;
+    *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -449,6 +463,7 @@ int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value)
 // Purpose: Gets Node Parameter
 {
     int errcode = 0;
+    *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -534,6 +549,7 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
 // Purpose: Gets Link Parameter
 {
     int errcode = 0;
+    *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -611,11 +627,11 @@ int DLLEXPORT swmm_setLinkParam(int index, int Param, double value)
             case SM_FLOWLIMIT:
                 Link[index].qLimit = value / UCF(FLOW); break;
             case SM_INLETLOSS:
-                Link[index].cLossInlet; break;
+                Link[index].cLossInlet = value; break;
             case SM_OUTLETLOSS:
-                Link[index].cLossOutlet; break;
+                Link[index].cLossOutlet = value; break;
             case SM_AVELOSS:
-                Link[index].cLossAvg; break;
+                Link[index].cLossAvg = value; break;
             default: errcode = ERR_API_OUTBOUNDS; break;
         }
         // re-validated link
@@ -635,6 +651,7 @@ int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value)
 // Purpose: Gets Subcatchment Parameter
 {
     int errcode = 0;
+    *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -699,15 +716,19 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
                 Subcatch[index].area = value / UCF(LANDAREA); break;
             case SM_FRACIMPERV:
                 Subcatch[index].fracImperv; break;
+                // Cannot Open Function just yet.  Need
+                // to adjust some internal functions to 
+                // ensure parameters are recalculated
+                // = MIN(value, 100.0) / 100.0; break;
             case SM_SLOPE:
-                Subcatch[index].slope; break;
+                Subcatch[index].slope = value; break;
             case SM_CURBLEN:
                 Subcatch[index].curbLength = value / UCF(LENGTH); break;
             default: errcode = ERR_API_OUTBOUNDS; break;
         }
+        //re-validate subcatchment
+        subcatch_validate(index); // incorprate callback here
     }
-    //re-validate subcatchment
-    subcatch_validate(index); // incorprate callback here
 
     return(errcode);
 }
@@ -722,6 +743,8 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *ObjIndex 
 // Purpose: Gets Subcatchment Connection ID Indeces for either Node or Subcatchment
 {
     int errcode = 0;
+    *type = -1;
+    *ObjIndex = -1;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -764,6 +787,7 @@ int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr)
 // Return:  API Error
 // Purpose: Get the current simulation time
 {
+    //strcpy(dtimestr,"");
     //Provide Empty Character Array
     char     theDate[12];
     char     theTime[9];
@@ -798,6 +822,8 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result)
 // Purpose: Gets Node Simulated Value at Current Time
 {
     int errcode = 0;
+    *result = 0;
+
     // Check if Simulation is Running
     if(swmm_IsStartedFlag() == FALSE)
     {
@@ -844,6 +870,8 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
 // Purpose: Gets Link Simulated Value at Current Time
 {
     int errcode = 0;
+    *result = 0;
+
     // Check if Simulation is Running
     if(swmm_IsStartedFlag() == FALSE)
     {
@@ -889,6 +917,8 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 // Purpose: Gets Subcatchment Simulated Value at Current Time
 {
     int errcode = 0;
+    *result = 0;
+
     // Check if Simulation is Running
     if(swmm_IsStartedFlag() == FALSE)
     {
@@ -965,7 +995,7 @@ int DLLEXPORT swmm_getNodeTotalInflow(int index, double *value)
 // Return:  API Error
 // Purpose: Get Node Total Inflow Volume.
 {
-
+    //*value = 0;
     int errorcode = massbal_getNodeTotalInflow(index, value);
 
     if (errorcode == 0)
@@ -1132,6 +1162,7 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats)
 //       to free the pollutants array.
 {
     int p;
+
     int errorcode = stats_getSubcatchStat(index, subcatchStats);
 
     if (errorcode == 0)
@@ -1256,6 +1287,9 @@ int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, 
 // Purpose: Gets the precipitaion value in the gage. 
 {
     int errcode = 0;
+    *rainfall = 0;
+    *snowfall = 0;
+    *total = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {

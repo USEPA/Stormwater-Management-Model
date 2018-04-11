@@ -28,6 +28,8 @@ extern "C" {
 
 #define _CRT_SECURE_NO_DEPRECATE
 
+#include "../src/datetime.h"
+
 // --- Define the SWMM toolkit constants
 
 /// Object type codes
