@@ -13,7 +13,7 @@ The module output_reader provides the class used to implement the output
 generator. 
 '''
 
-import six
+import sys
 
 # project import
 import swmm_output as oapi
@@ -58,7 +58,11 @@ class OutputReader():
 
     def __enter__(self):     
         self.handle = oapi.smo_init()
-        oapi.smo_open(self.handle, six.u(self.filepath))
+        if sys.version_info < (3,0):
+            file_path = self.filepath.decode()
+        else:
+            file_path = self.filepath
+        oapi.smo_open(self.handle, file_path)
         self.count = oapi.smo_get_project_size(self.handle)
         return self
 
