@@ -247,47 +247,52 @@ BOOST_FIXTURE_TEST_CASE(getset_subcatch, FixtureOpenClose) {
     
     // Get/Set Subcatchment SM_WIDTH
     error = swmm_getSubcatchParam(subc_ind, SM_WIDTH, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 500, 0.0001);
     error = swmm_setSubcatchParam(subc_ind, SM_WIDTH, 600);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getSubcatchParam(subc_ind, SM_WIDTH, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 600, 0.0001);
 
     // Get/Set Subcatchment SM_AREA
     error = swmm_getSubcatchParam(subc_ind, SM_AREA, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 15, 0.0001);
     error = swmm_setSubcatchParam(subc_ind, SM_AREA, 20);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getSubcatchParam(subc_ind, SM_AREA, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 20, 0.0001);
 
     // Get/Set Subcatchment SM_FRACIMPERV
     error = swmm_getSubcatchParam(subc_ind, SM_FRACIMPERV, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - .50, 0.0001);
     error = swmm_setSubcatchParam(subc_ind, SM_FRACIMPERV, .70);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getSubcatchParam(subc_ind, SM_FRACIMPERV, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - .50, 0.0001);
     
     // Get/Set Subcatchment SM_SLOPE
     error = swmm_getSubcatchParam(subc_ind, SM_SLOPE, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 0.0001, 0.000001);
     error = swmm_setSubcatchParam(subc_ind, SM_SLOPE, 0.0005);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getSubcatchParam(subc_ind, SM_SLOPE, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 0.0005, 0.000001);
 
     // Get/Set Subcatchment SM_CURBLEN
     error = swmm_getSubcatchParam(subc_ind, SM_CURBLEN, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 0, 0.0001);
     error = swmm_setSubcatchParam(subc_ind, SM_CURBLEN, 1);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getSubcatchParam(subc_ind, SM_CURBLEN, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 1, 0.0001);
 }
 
@@ -301,47 +306,52 @@ BOOST_FIXTURE_TEST_CASE(getset_node, FixtureOpenClose) {
     
     // Get/Set Node SM_INVERTEL
     error = swmm_getNodeParam(node_ind, SM_INVERTEL, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 990, 0.0001);
     error = swmm_setNodeParam(node_ind, SM_INVERTEL, 991);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getNodeParam(node_ind, SM_INVERTEL, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 991, 0.0001);
 
     // Get/Set Node SM_FULLDEPTH
     error = swmm_getNodeParam(node_ind, SM_FULLDEPTH, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 3, 0.0001);
     error = swmm_setNodeParam(node_ind, SM_FULLDEPTH, 5);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getNodeParam(node_ind, SM_FULLDEPTH, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 5, 0.0001);
 
     // Get/Set Node SM_SURCHDEPTH
     error = swmm_getNodeParam(node_ind, SM_SURCHDEPTH, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 0, 0.0001);
     error = swmm_setNodeParam(node_ind, SM_SURCHDEPTH, 20);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getNodeParam(node_ind, SM_SURCHDEPTH, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 20, 0.0001);
     
     // Get/Set Node SM_PONDAREA
     error = swmm_getNodeParam(node_ind, SM_PONDAREA, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 0, 0.000001);
     error = swmm_setNodeParam(node_ind, SM_PONDAREA, 5000);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getNodeParam(node_ind, SM_PONDAREA, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 5000, 0.000001);
 
     // Get/Set Node SM_INITDEPTH
     error = swmm_getNodeParam(node_ind, SM_INITDEPTH, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 0, 0.0001);
     error = swmm_setNodeParam(node_ind, SM_INITDEPTH, 1);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getNodeParam(node_ind, SM_INITDEPTH, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 1, 0.0001);
 }
 
@@ -355,65 +365,72 @@ BOOST_FIXTURE_TEST_CASE(getset_link, FixtureOpenClose) {
     
     // Get/Set Link SM_OFFSET1
     error = swmm_getLinkParam(link_ind, SM_OFFSET1, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 0, 0.0001);
     error = swmm_setLinkParam(link_ind, SM_OFFSET1, 1);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getLinkParam(link_ind, SM_OFFSET1, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 1, 0.0001);
 
     // Get/Set Link SM_OFFSET2
     error = swmm_getLinkParam(link_ind, SM_OFFSET2, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 0, 0.0001);
     error = swmm_setLinkParam(link_ind, SM_OFFSET2, 1);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getLinkParam(link_ind, SM_OFFSET2, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 1, 0.0001);
 
     // Get/Set Link SM_INITFLOW
     error = swmm_getLinkParam(link_ind, SM_INITFLOW, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 0, 0.0001);
     error = swmm_setLinkParam(link_ind, SM_INITFLOW, 1);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getLinkParam(link_ind, SM_INITFLOW, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 1, 0.0001);
     
     // Get/Set Link SM_FLOWLIMIT
     error = swmm_getLinkParam(link_ind, SM_FLOWLIMIT, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 0, 0.0001);
     error = swmm_setLinkParam(link_ind, SM_FLOWLIMIT, 1);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getLinkParam(link_ind, SM_FLOWLIMIT, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 1, 0.0001);
 
     // Get/Set Link SM_INLETLOSS
     error = swmm_getLinkParam(link_ind, SM_INLETLOSS, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 0, 0.0001);
     error = swmm_setLinkParam(link_ind, SM_INLETLOSS, 1);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getLinkParam(link_ind, SM_INLETLOSS, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 1, 0.0001);
 
     // Get/Set Link SM_OUTLETLOSS
     error = swmm_getLinkParam(link_ind, SM_OUTLETLOSS, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 0, 0.0001);
     error = swmm_setLinkParam(link_ind, SM_OUTLETLOSS, 1);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getLinkParam(link_ind, SM_OUTLETLOSS, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 1, 0.0001);
 
     // Get/Set Link SM_AVELOSS
     error = swmm_getLinkParam(link_ind, SM_AVELOSS, &val);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 0, 0.0001);
     error = swmm_setLinkParam(link_ind, SM_AVELOSS, 1);
-    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getLinkParam(link_ind, SM_AVELOSS, &val);
+    BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 1, 0.0001);
 }
 
