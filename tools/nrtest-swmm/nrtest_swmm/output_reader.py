@@ -59,7 +59,7 @@ class OutputReader():
     def __enter__(self):     
         self.handle = oapi.smo_init()
         if sys.version_info < (3,0):
-            file_path = self.filepath.decode()
+            file_path = self.filepath.encode()
         else:
             file_path = self.filepath
         oapi.smo_open(self.handle, file_path)
