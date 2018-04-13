@@ -10,8 +10,14 @@
 Provides entry point main. Useful for development and testing purposes. 
 '''
 
+import sys
 import cStringIO
-import itertools as it
+
+if sys.version_info < (3,0):
+    from itertools import izip as _zip
+else:
+    _zip = zip
+
 import time
 
 import header_detail_footer as hdf
@@ -34,7 +40,7 @@ def result_compare(path_test, path_ref, comp_args):
     test_reader = ordr.output_generator(path_test)
     ref_reader = ordr.output_generator(path_ref)
     
-    for test, ref in it.izip(test_reader, ref_reader):
+    for test, ref in _zip(test_reader, ref_reader):
         total += 1
         if total%100000 == 0:
         print(total)
@@ -81,8 +87,8 @@ def report_compare(path_test, path_ref, (comp_args)):
     Compares results in two report files ignoring contents of header and footer. 
     '''
     with open(path_test ,'r') as ftest, open(path_ref, 'r') as fref:
-        for (test_line, ref_line) in it.izip(hdf.parse(ftest, 4, 4)[1], 
-                                             hdf.parse(fref, 4, 4)[1]): 
+        for (test_line, ref_line) in _zip(hdf.parse(ftest, 4, 4)[1], 
+                                          hdf.parse(fref, 4, 4)[1]): 
             if test_line != ref_line: 
                 return False
               
@@ -148,36 +154,3 @@ def nrtest_execute(app_path, test_path, output_path):
 
     # Non-zero exit code indicates failure
     exit(not success)
-
-
-if __name__ == "__main__":
-
-    import sys
-    
-    root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
-    
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    ch.setFormatter(formatter)
-    root.addHandler(ch)   
-    
-#    app_path = "C:\\Users\\mtryby\\Workspace\\GitRepo\\michaeltryby\\Stormwater-Management-Model\\tests\\swmm-nrtestsuite\\apps\\swmm-517_x86.json"
-#    test_path = "C:\\Users\\mtryby\\Workspace\\GitRepo\\michaeltryby\\Stormwater-Management-Model\\tests\\swmm-nrtestsuite\\tests\\examples\\example1.json"
-#    output_path = "C:\\Users\\mtryby\\Workspace\\GitRepo\\michaeltryby\\Stormwater-Management-Model\\tests\\swmm-nrtestsuite\\benchmarks\\test"
-#    nrtest_execute(app_path, [test_path], output_path)
- 
-#    test_path = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5111_x64"
-#    ref_path  = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5111_x86"
-#    nrtest_compare(test_path, ref_path, 0.001, 0.0)
-
-    
-#    path_test = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5111\\Example_4\\Example4.out"
-#    path_ref  = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5110\\Example_4\\Example4.out"    
-#    result_compare(path_test, path_ref, (0.001, 0.0))
-
-    path_test = "C:\\Users\\mtryby\\Workspace\\GitRepo\\michaeltryby\\Stormwater-Management-Model\\tests\\swmm-nrtestsuite\\benchmark\\swmm-5112"
-    path_ref  = "C:\\Users\\mtryby\\Workspace\\GitRepo\\michaeltryby\\Stormwater-Management-Model\\tests\\swmm-nrtestsuite\\benchmark\\swmm-520dev1"
-    nrtest_compare(path_test, path_ref, 0.0, 1.0)
-#    print(result_compare(path_test, path_ref, (0.0, 0.1)))

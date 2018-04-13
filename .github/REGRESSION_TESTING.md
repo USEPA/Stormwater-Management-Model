@@ -17,7 +17,7 @@ The following are step by step instructions to compare the current SWMM OWA buil
 
 1. Clone the swmm github repository. 
 ```
-$ git clone --depth=50 --branch=feature-nrtest https://github.com/OpenWaterAnalytics/Stormwater-Management-Model.git
+$ git clone --branch=develop https://github.com/OpenWaterAnalytics/Stormwater-Management-Model.git
 ```
 
 2. Make repository root the current working directory
@@ -25,23 +25,23 @@ $ git clone --depth=50 --branch=feature-nrtest https://github.com/OpenWaterAnaly
 $ cd Stormwater-Management-Model
 ```
 
-3. Install the required python packages. 
-```
-$ pip install --src buildprod/packages -r tools/requirements.txt 
-```
-
-4. Build swmm using cmake. 
+3. Build swmm using cmake. 
 ```
 $ cd buildprod
 $ cmake -DCMAKE_BUILD_TYPE=Release ..
 $ cmake --build . --config Release
 ```
 
+4. Install the required python packages. 
+```
+$ pip install -r tools/requirements.txt 
+```
+
 5. Configure and run the regression tests: where <build id> - is the build identifier (i.e. swmm version number).
 ```
 $ cd ..
-$ tools/gen-config.sh `pwd`/buildprod/bin > ./tests/apps/swmm-<build id>.json
-$ tools/run-nrtest.sh `pwd`/tests/swmm-nrtestsuite <build id>
+$ tools/before-test.sh nrtestsuite `pwd`/buildprod/bin <build id>
+$ tools/run-nrtest.sh nrtestsuite <build id>
 ```
 
 ## Step by Step Guide for Windows 
@@ -51,7 +51,9 @@ Coming soon ...
 
 ## Working with nrtest 
 
-Using `nrtest` it is possible to compare any two versions of SWMM aslong as they share the same binary file format. `nrtest` comes with a python scripts for running its `execute` and `compare` commands. 
+Using `nrtest` it is possible to compare any two versions of SWMM as long as 
+they share the same binary file format. `nrtest` comes with a python scripts 
+for running its `execute` and `compare` commands. 
 ```
 $ python nrtest execute apps/<app.json> tests/<test.json> -o benchmark/
 $ python nrtest compare test_benchmark/ ref_benchmark/ --rtol --atol
@@ -74,6 +76,12 @@ More information on nrtest is available in the nrtest [docs](https://nrtest.read
 
 ## Extending the Testsuite
 
+**Where did the test and benchmark files go?**
+
+The test and benchmark files are kept in a seperate 
+[repo](https://github.com/OpenWaterAnalytics/swmm-example-networks). The script 
+before-test.sh has been provided to retreive and stage the needed files for testing. 
+
 **How to add a new or different version of SWMM?** 
 
 nrtest runs the command line execuatable version of SWMM for testing purposes. To add a new 
@@ -85,13 +93,15 @@ designated locations.
 
 **How to add a test?** 
 
-To add a new test the [REPORTS] section of the input file should be configured to write 
-all results out to the binary file. A json file also needs to be created that describes how 
-to execute the test, what files are needed, what files get generated, what comparison 
-routines to use, and meta-data describing the test. The format and data found in the json 
-files is resonably well described in the nrtest documentation. The input file, any auxiliary
-file need to run the test, and the json file describing the test should be added to the apps\
-in the swmm-nrtestsuite folder.
+To add a new test the [REPORTS] section of the input file should be configured 
+to write all results out to the binary file. A json file also needs to be 
+created that describes how to execute the test, what files are needed, what 
+files get generated, what comparison routines to use, and meta-data describing 
+the test. The format and data found in the json files is resonably well 
+described in the nrtest documentation. The input file, any auxiliary file need 
+to run the test, and the json file describing the test should be added to the 
+swmm-tests folder found in the swmm-example-networks repo. Finally, the test 
+needs to be added to run-nrtest.sh so it gets called and run. 
 
 
 **How to add a new comparison routine?** 
