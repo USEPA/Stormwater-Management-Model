@@ -11,7 +11,9 @@ Building OWA's fork of SWMM from source is a basic skill that all developers int
 1. how to configure your machine to build the project locally; 
 2. how to obtain the project files using git; 
 3. how to use cmake to generate build files and build the project; and 
-4. how to use ctest and nrtest to perform unit and regression testing on the build artifacts produced. Be advised, you will need local admin privileges on your machine to follow this tutorial. Let’s begin! 
+4. how to use ctest and nrtest to perform unit and regression testing on the build artifacts produced. 
+
+Be advised, you will need local admin privileges on your machine to follow this tutorial. Let’s begin! 
 
 ### Dependencies
 
