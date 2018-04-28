@@ -288,6 +288,29 @@ int DLLEXPORT  swmm_countObjects(int type, int *count)
     return (0);
 }
 
+int DLLEXPORT swmm_getObjectIndex(int type, char *id, int *errcode)
+//
+// Input:   type = object type (Based on SM_ObjectType enum)
+//          char* = ID name
+// Output:  errorcode = pointer to error code
+// Return:  Object Index
+// Purpose: Gets object id index
+{
+    int index;
+    *errcode = 0;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        *errcode = ERR_API_INPUTNOTOPEN;
+    }
+    else
+    {
+        index = project_findObject(type, id);
+    }
+    return (index);
+}
+
 int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
 //
 // Input:   type = object type (Based on SM_ObjectType enum)
@@ -824,10 +847,10 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result)
     int errcode = 0;
     *result = 0;
 
-    // Check if Simulation is Running
-    if(swmm_IsStartedFlag() == FALSE)
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
     {
-        errcode = ERR_API_SIM_NRUNNING;
+        errcode = ERR_API_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[NODE])
@@ -872,10 +895,10 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
     int errcode = 0;
     *result = 0;
 
-    // Check if Simulation is Running
-    if(swmm_IsStartedFlag() == FALSE)
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
     {
-        errcode = ERR_API_SIM_NRUNNING;
+        errcode = ERR_API_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[LINK])
@@ -919,10 +942,10 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
     int errcode = 0;
     *result = 0;
 
-    // Check if Simulation is Running
-    if(swmm_IsStartedFlag() == FALSE)
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
     {
-        errcode = ERR_API_SIM_NRUNNING;
+        errcode = ERR_API_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[SUBCATCH])
@@ -951,6 +974,36 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
     return(errcode);
 }
 
+int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, double *total)
+//
+// Input:   index = Index of desired ID
+// Output:  Rainfall intensity and snow for the gage
+// Return:  API Error
+// Purpose: Gets the precipitaion value in the gage. 
+{
+    int errcode = 0;
+    *rainfall = 0;
+    *snowfall = 0;
+    *total = 0;
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[GAGE])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    // Read the rainfall value
+    else
+    {
+        *total = gage_getPrecip(index, rainfall, snowfall)* UCF(RAINFALL);
+        *rainfall *= UCF(RAINFALL);
+        *snowfall *= UCF(RAINFALL);
+    }
+    return(errcode);
+}
 
 int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats)
 //
@@ -1279,66 +1332,6 @@ int DLLEXPORT swmm_getSystemRunoffStats(SM_RunoffTotals *runoffTot)
     return(errorcode);
 }
 
-int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, double *total)
-//
-// Input:   index = Index of desired ID
-// Output:  Rainfall intensity and snow for the gage
-// Return:  API Error
-// Purpose: Gets the precipitaion value in the gage. 
-{
-    int errcode = 0;
-    *rainfall = 0;
-    *snowfall = 0;
-    *total = 0;
-    // Check if Open
-    if(swmm_IsOpenFlag() == FALSE)
-    {
-	    errcode = ERR_API_INPUTNOTOPEN;
-    }
-    // Check if object index is within bounds
-    else if (index < 0 || index >= Nobjects[GAGE])
-    {
-	    errcode = ERR_API_OBJECT_INDEX;
-    }
-    // Read the rainfall value
-    else
-    {
-        *total = gage_getPrecip(index, rainfall, snowfall);
-    }
-    return(errcode);
-}
-
-int DLLEXPORT swmm_setGagePrecip(int index, double value)
-//
-// Input:   index = Index of desired ID
-//          value = rainfall intensity to be set
-// Return:  API Error
-// Purpose: Sets the precipitation in from the external database
-{
-    int errcode = 0;
-    // Check if Open
-    if(swmm_IsOpenFlag() == FALSE)
-    {
-	    errcode = ERR_API_INPUTNOTOPEN;
-    }
-    // Check if object index is within bounds
-    else if (index < 0 || index >= Nobjects[GAGE])
-    {
-	    errcode = ERR_API_OBJECT_INDEX;
-    }
-    // Read the rainfall value
-    else
-    {
-        if (Gage[index].dataSource != RAIN_API)
-        {
-            Gage[index].dataSource = RAIN_API;
-        }
-	    Gage[index].externalRain = value* UCF(RAINFALL);
-    }
-    return(errcode);
-}
-
-
 //-------------------------------
 // Setters API
 //-------------------------------
@@ -1478,6 +1471,36 @@ int DLLEXPORT swmm_setOutfallStage(int index, double stage)
             Outfall[k].type = STAGED_OUTFALL;
         }
         Outfall[k].outfallStage = stage / UCF(LENGTH);
+    }
+    return(errcode);
+}
+
+int DLLEXPORT swmm_setGagePrecip(int index, double value)
+//
+// Input:   index = Index of desired ID
+//          value = rainfall intensity to be set
+// Return:  API Error
+// Purpose: Sets the precipitation in from the external database
+{
+    int errcode = 0;
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[GAGE])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    // Read the rainfall value
+    else
+    {
+        if (Gage[index].dataSource != RAIN_API)
+        {
+            Gage[index].dataSource = RAIN_API;
+        }
+     Gage[index].externalRain = value / UCF(RAINFALL);
     }
     return(errcode);
 }

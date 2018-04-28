@@ -349,6 +349,15 @@ int DLLEXPORT swmm_countObjects(int type, int *count);
 int DLLEXPORT swmm_getObjectId(int type, int index, char *id);
 
 /**
+ @brief Gets Object ID Index
+ @param type Option code (see @ref SM_ObjectType)
+ @param id of the Object
+ @param[out] Error code
+ @return Object Injdex
+ */
+int DLLEXPORT swmm_getObjectIndex(int type, char *id, int *errcode);
+
+/**
  @brief Get the type of node with specified index.
  @param index The index of a node
  @param[out] Ntype The type code for the node (@ref SM_NodeType). 
@@ -511,6 +520,16 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
 int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
 
 /**
+@brief Get precipitation rates for a gage.
+@param index The index of gage
+@param[out] rainfall rainfall rate
+@param[out] snowfall snowfall rate
+@param[out] total total precipitation rate
+@return Error code
+*/
+int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, double *total);
+
+/**
  @brief Get a node statistics.
  @param index The index of a node
  @param[out] nodeStats The Node Stats struct (see @ref SM_NodeStats). 
@@ -572,16 +591,6 @@ int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats);
  @return Error code
 */
 int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
-    
-/**
-@brief Get rainfall rates for a gage.
-@param index The index of gage
-@param[out] rainfall rainfall rate
-@param[out] snowfall snowfall rate
-@param[out] total total precipitation rate
-@return Error code
-*/
-int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, double *total);
 
 /**
  @brief Get subcatchment statistics.

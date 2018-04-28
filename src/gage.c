@@ -329,7 +329,7 @@ void gage_setState(int j, DateTime t)
 
     // --- use rainfall from co-gage (gage with lower index that uses
     //     same rainfall time series or file) if it exists
-    if ( Gage[j].coGage >= 0)
+    if ( Gage[j].coGage >= 0 && Gage[j].dataSource != RAIN_API)
     {
         Gage[j].rainfall = Gage[Gage[j].coGage].rainfall;
         return;
@@ -544,39 +544,39 @@ int getNextRainfall(int j)
     Gage[j].nextRainfall = 0.0;
     if (Gage[j].dataSource == RAIN_API)
     {
-	    rNext = Gage[j].externalRain;
+        rNext = Gage[j].externalRain;
     }
     else
     {
-	    do
-	    {
-		if ( Gage[j].dataSource == RAIN_FILE )
-		{
-		    if ( Frain.file && Gage[j].currentFilePos < Gage[j].endFilePos )
-		    {
-			fseek(Frain.file, Gage[j].currentFilePos, SEEK_SET);
-			fread(&Gage[j].nextDate, sizeof(DateTime), 1, Frain.file);
-			fread(&vNext, sizeof(float), 1, Frain.file);
-			Gage[j].currentFilePos = ftell(Frain.file);
-			rNext = convertRainfall(j, (double)vNext);
-		    }
-		    else return 0;
-		}
+        do
+        {
+        if ( Gage[j].dataSource == RAIN_FILE )
+        {
+            if ( Frain.file && Gage[j].currentFilePos < Gage[j].endFilePos )
+            {
+            fseek(Frain.file, Gage[j].currentFilePos, SEEK_SET);
+            fread(&Gage[j].nextDate, sizeof(DateTime), 1, Frain.file);
+            fread(&vNext, sizeof(float), 1, Frain.file);
+            Gage[j].currentFilePos = ftell(Frain.file);
+            rNext = convertRainfall(j, (double)vNext);
+            }
+            else return 0;
+        }
 
-		else if (Gage[j].dataSource == RAIN_TSERIES)
-		{
-		    k = Gage[j].tSeries;
-		    if ( k >= 0 )
-		    {
-			if ( !table_getNextEntry(&Tseries[k],
-				&Gage[j].nextDate, &rNext) ) return 0;
-			rNext = convertRainfall(j, rNext);
-		    }
-		    else return 0;
-		}
+        else if (Gage[j].dataSource == RAIN_TSERIES)
+        {
+            k = Gage[j].tSeries;
+            if ( k >= 0 )
+            {
+            if ( !table_getNextEntry(&Tseries[k],
+                &Gage[j].nextDate, &rNext) ) return 0;
+            rNext = convertRainfall(j, rNext);
+            }
+            else return 0;
+        }
 
 
-	    } while (rNext == 0.0);
+        } while (rNext == 0.0);
     }
     Gage[j].nextRainfall = rNext;
     return 1;
