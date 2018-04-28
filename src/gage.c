@@ -486,8 +486,15 @@ int getFirstRainfall(int j)
     // --- initialize internal cumulative rainfall value
     Gage[j].rainAccum = 0;
 
+    // --- use rainfall API if provided
+    if (Gage[j].dataSource == RAIN_API)
+    {
+        Gage[j].rainfall = Gage[j].externalRain;
+        return 1;
+    }
+
     // --- use rain interface file if applicable
-    if ( Gage[j].dataSource == RAIN_FILE )
+    else if ( Gage[j].dataSource == RAIN_FILE )
     {
         if ( Frain.file && Gage[j].endFilePos > Gage[j].startFilePos )
         {
