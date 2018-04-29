@@ -48,7 +48,7 @@ using namespace std;
 */
 struct FixtureOpenClose{
     FixtureOpenClose() {
-        swmm_open(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);
+        swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
     }
     ~FixtureOpenClose() {
         swmm_close();
@@ -65,7 +65,7 @@ struct FixtureOpenClose{
 */
 struct FixtureBeforeStart{
     FixtureBeforeStart() {
-        swmm_open(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);
+        swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
     }
     ~FixtureBeforeStart() {
         swmm_start(0);
@@ -91,7 +91,7 @@ struct FixtureBeforeStart{
 */
 struct FixtureBeforeStep{
     FixtureBeforeStep() {
-        swmm_open(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);
+        swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
         swmm_start(0);
     }
     ~FixtureBeforeStep() {
@@ -108,7 +108,7 @@ struct FixtureBeforeStep{
 */
 struct FixtureBeforeStep_RTK{
     FixtureBeforeStep_RTK() {
-        swmm_open(DATA_PATH_INP_RTK, DATA_PATH_RPT_RTK, DATA_PATH_OUT_RTK);
+        swmm_open((char *)DATA_PATH_INP_RTK, (char *)DATA_PATH_RPT_RTK, (char *)DATA_PATH_OUT_RTK);
         swmm_start(0);
     }
     ~FixtureBeforeStep_RTK() {
@@ -126,7 +126,7 @@ struct FixtureBeforeStep_RTK{
 */
 struct FixtureBeforeEnd{
     FixtureBeforeEnd() {
-        swmm_open(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);
+        swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
         swmm_start(0);
 
         int error;
@@ -153,7 +153,7 @@ struct FixtureBeforeEnd{
 */
 struct FixtureBeforeClose{
     FixtureBeforeClose() {
-        swmm_open(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);
+        swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
         swmm_start(0);
 
         int error;
