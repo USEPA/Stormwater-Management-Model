@@ -1500,6 +1500,14 @@ int DLLEXPORT swmm_setGagePrecip(int index, double value)
         {
             Gage[index].dataSource = RAIN_API;
         }
+        if (Gage[index].isUsed == FALSE)
+        {
+            Gage[index].isUsed = TRUE;
+        }
+        if (Gage[index].coGage != -1)
+        {
+            Gage[index].coGage = -1;
+        }
      Gage[index].externalRain = value;
     }
     return(errcode);
