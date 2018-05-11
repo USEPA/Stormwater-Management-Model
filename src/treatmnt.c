@@ -39,7 +39,6 @@ static double  Q;                      // node inflow (cfs)
 static double  V;                      // node volume (ft3)
 static double* R;                      // array of pollut. removals
 static double* Cin;                    // node inflow concentrations
-//static TTreatment* Treatment; // defined locally in treatmnt_treat()         //(5.1.008)
 
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
@@ -208,7 +207,7 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
     int    p;                          // pollutant index
     double cOut;                       // concentration after treatment
     double massLost;                   // mass lost by treatment per time step
-    TTreatment* treatment;             // pointer to treatment object          //(5.1.008)
+    TTreatment* treatment;             // pointer to treatment object
 
     // --- set locally shared variables for node j
     if ( Node[j].treatment == NULL ) return;
@@ -225,11 +224,11 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
     for ( p = 0; p < Nobjects[POLLUT]; p++)
     {
         // --- removal is zero if there is no treatment equation
-        treatment = &Node[j].treatment[p];                                     //(5.1.008)
-        if ( treatment->equation == NULL ) R[p] = 0.0;                         //(5.1.008)
+        treatment = &Node[j].treatment[p];
+        if ( treatment->equation == NULL ) R[p] = 0.0;
 
         // --- no removal for removal-type expression when there is no inflow 
-	    else if ( treatment->treatType == REMOVAL && q <= ZERO ) R[p] = 0.0;   //(5.1.008)
+	    else if ( treatment->treatType == REMOVAL && q <= ZERO ) R[p] = 0.0;
 
         // --- otherwise evaluate the treatment expression to find R[p]
         else getRemoval(p);
@@ -245,11 +244,11 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
     else for ( p = 0; p < Nobjects[POLLUT]; p++ )
     {
         if ( R[p] == 0.0 ) continue;
-        treatment = &Node[j].treatment[p];                                     //(5.1.008)
+        treatment = &Node[j].treatment[p];
 
         // --- removal-type treatment equations get applied to inflow stream
 
-        if ( treatment->treatType == REMOVAL )                                 //(5.1.008)
+        if ( treatment->treatType == REMOVAL )
         {
             // --- if no pollutant in inflow then cOut is current nodal concen.
             if ( Cin[p] == 0.0 ) cOut = Node[j].newQual[p];
@@ -344,7 +343,7 @@ double getVariableValue(int varCode)
 {
     int    p;
     double a1, a2, y;
-    TTreatment* treatment;                                                     //(5.1.008)
+    TTreatment* treatment;
 
     // --- variable is a process variable
     if ( varCode < PVMAX )
@@ -381,8 +380,8 @@ double getVariableValue(int varCode)
     else if ( varCode < PVMAX + Nobjects[POLLUT] )
     {
         p = varCode - PVMAX;
-        treatment = &Node[J].treatment[p];                                     //(5.1.008)
-        if ( treatment->treatType == REMOVAL ) return Cin[p];                  //(5.1.008)
+        treatment = &Node[J].treatment[p];
+        if ( treatment->treatType == REMOVAL ) return Cin[p];
         return Node[J].newQual[p];
     }
 
@@ -406,7 +405,7 @@ double  getRemoval(int p)
 {
     double c0 = Node[J].newQual[p];    // initial node concentration
     double r;                          // removal value
-    TTreatment* treatment;                                                     //(5.1.008)
+    TTreatment* treatment;
 
     // --- case where removal already being computed for another pollutant
     if ( R[p] > 1.0 || ErrCode )
@@ -431,12 +430,12 @@ double  getRemoval(int p)
     }
 
     // --- apply treatment eqn.
-    treatment = &Node[J].treatment[p];                                         //(5.1.008)
-    r = mathexpr_eval(treatment->equation, getVariableValue);                  //(5.1.008)
+    treatment = &Node[J].treatment[p];
+    r = mathexpr_eval(treatment->equation, getVariableValue);
     r = MAX(0.0, r);
 
     // --- case where treatment eqn. is for removal
-    if ( treatment->treatType == REMOVAL )                                     //(5.1.008)
+    if ( treatment->treatType == REMOVAL )
     {
         r = MIN(1.0, r);
         R[p] = r;

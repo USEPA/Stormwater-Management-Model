@@ -46,8 +46,8 @@ int  datetime_daysPerMonth(int year, int month);
 // Functions for converting a DateTime value to a string
 void datetime_dateToStr(DateTime date, char* s);
 void datetime_timeToStr(DateTime time, char* s);
-void datetime_getTimeStamp(int fmt, DateTime aDate, int stampSize,             //5.1.011
-                           char* timeStamp);                                   //5.1.011
+void datetime_getTimeStamp(int fmt, DateTime aDate, int stampSize,
+                           char* timeStamp);
 
 // Functions for converting a string date or time to a DateTime value
 int  datetime_findMonth(char* s);

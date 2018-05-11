@@ -5,12 +5,16 @@
 //   Version:  5.1
 //   Date:     03/20/10  (Build 5.1.001)
 //             09/15/14  (Build 5.1.007)
+//             05/10/18  (Build 5.1.013)
 //   Author:   L. Rossman
 //
 //   Rain gage functions.
 //
 //   Build 5.1.007:
 //   - Support for monthly rainfall adjustments added.
+//
+//   Build 5.1.013:
+//   - Validation no longer performed on unused gages.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -213,8 +217,28 @@ void  gage_validate(int j)
     // --- for gage with time series data:
     if ( Gage[j].dataSource == RAIN_TSERIES )
     {
-        // --- check gage's recording interval against that of time series
+        // --- no validation for an unused gage
+        if ( !Gage[j].isUsed ) return;
+
+        // --- see if gage uses same time series as another gage
         k = Gage[j].tSeries;
+        for (i=0; i<j; i++)
+        {
+            if ( Gage[i].dataSource == RAIN_TSERIES && Gage[i].tSeries == k
+                 && Gage[i].isUsed )
+            {
+                Gage[j].coGage = i;
+
+                // --- check that both gages record same type of data
+                if ( Gage[j].rainType != Gage[i].rainType )
+                {
+                    report_writeErrorMsg(ERR_RAIN_GAGE_FORMAT, Gage[j].ID);
+                }
+                return;
+            }
+        }
+
+        // --- check gage's recording interval against that of time series
         if ( Tseries[k].refersTo >= 0 )
         {
             report_writeErrorMsg(ERR_RAIN_GAGE_TSERIES, Gage[j].ID);
@@ -233,22 +257,6 @@ void  gage_validate(int j)
             report_writeWarningMsg(WARN01, Gage[j].ID);
             WetStep = Gage[j].rainInterval;
         }
-
-        // --- see if gage uses same time series as another gage
-        for (i=0; i<j; i++)
-        {
-            if ( Gage[i].dataSource == RAIN_TSERIES && Gage[i].tSeries == k )
-            {
-                Gage[j].coGage = i;
-
-                // --- check that both gages record same type of data
-                if ( Gage[j].rainType != Gage[i].rainType )
-                {
-                    report_writeErrorMsg(ERR_RAIN_GAGE_FORMAT, Gage[j].ID);
-                }
-                return;
-            }
-        }
     }
 }
 
@@ -261,9 +269,7 @@ void  gage_initState(int j)
 //  Purpose: initializes state of rain gage.
 //
 {
-    // --- assume gage not used by any subcatchment
-    //     (will be updated in subcatch_initState)
-    Gage[j].isUsed = FALSE;
+    // --- initialize actual and reported rainfall                             //(5.1.013)
     Gage[j].rainfall = 0.0;
     Gage[j].reportRainfall = 0.0;
     if ( IgnoreRainfall ) return;
@@ -591,7 +597,7 @@ double convertRainfall(int j, double r)
 
       default: r1 = r;
     }
-    return r1 * Gage[j].unitsFactor * Adjust.rainFactor;                       //(5.1.007)
+    return r1 * Gage[j].unitsFactor * Adjust.rainFactor;
 }
 
 //=============================================================================
