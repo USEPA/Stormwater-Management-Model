@@ -15,11 +15,9 @@ environment:
   matrix:
     # Python 3.4
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-      VS_VERSION: "10 2010"
-      ARCH: Win32
+      GENERATOR: "Visual Studio 10 2010"
       GROUP: "SUPPORTED"
-      BOOST_ROOT: "C:\\Libraries\\boost"
-      BOOST_LIB: "C:\\Libraries\\boost\\lib32-msvc-12.0"
+      BOOST_ROOT: "C:/Libraries/boost"
     #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
     #  VS_VERSION: "10 2010"
     #  ARCH: Win64
@@ -58,24 +56,21 @@ environment:
     #  VS_VERSION: "15 2017"
     #  ARCH: Win32
     #  GROUP: "EXPERIMENTAL"
-    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    #  VS_VERSION: "15 2017"
-    #  ARCH: Win64
-    #  GROUP: "EXPERIMENTAL"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR: "Visual Studio 15 2017 Win64"
+      GROUP: "EXPERIMENTAL"
+      BOOST_ROOT: "C:/Libraries/boost_1_67_0"
 
 init:
   - set SWMM_HOME=%APPVEYOR_BUILD_FOLDER%
   - set BUILD_HOME=buildprod
   - set TEST_HOME=nrtestsuite
   - set NRTEST_SCRIPT=C:\Python27\Scripts
-  - if "%ARCH%"=="Win64" ( set VS_ARCH= Win64)
-  - set GENERATOR="Visual Studio %VS_VERSION%%VS_ARCH%"
   # See set values
   - echo %APPVEYOR_BUILD_WORKER_IMAGE%
-  - echo %ARCH%
+  - echo %BUILD_HOME%
   - echo %GENERATOR%
   - echo %BOOST_ROOT%
-  - echo %BOOST_LIB%
 
 install:
   # Install nrtest and dependencies for regression tests
@@ -84,9 +79,8 @@ install:
 before_build:
   - mkdir %BUILD_HOME%
   - cd %BUILD_HOME%
-  - cmake -G %GENERATOR% 
+  - cmake -G "%GENERATOR%" 
     -DBOOST_ROOT="%BOOST_ROOT%"
-    -DBOOST_LIBRARYDIR="%BOOST_LIB%"
     -DBoost_USE_STATIC_LIBS="ON" ..
 
 build_script:
