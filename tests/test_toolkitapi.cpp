@@ -34,8 +34,9 @@ BOOST_AUTO_TEST_SUITE(test_toolkitapi)
 // Test Model Not Open
 BOOST_AUTO_TEST_CASE(model_not_open) {
     int error, index;
-    double val, val1, val2;
+    double val;
     double input_val = 0;
+    double *precip_array;
     std::string id = std::string("test");
 
     //Project
@@ -43,7 +44,7 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
     //Gage
-    error = swmm_getGagePrecip(0, &val, &val1, &val2);
+    error = swmm_getGagePrecip(0, &precip_array);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
     error = swmm_setGagePrecip(0, input_val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
@@ -115,11 +116,12 @@ BOOST_FIXTURE_TEST_CASE(sim_started_check, FixtureBeforeStep) {
 // Testing for invalid object index
 BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
     int error;
-    double val, val1, val2;
+    double val;
     double input_val = 0;
+    double *precip_array;
 
     //Gage
-    error = swmm_getGagePrecip(100, &val, &val1, &val2);
+    error = swmm_getGagePrecip(100, &precip_array);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
     //Subcatchment
@@ -418,17 +420,14 @@ BOOST_FIXTURE_TEST_CASE(sim_after_start_check, FixtureBeforeStep){
 // Testing Results Getters (During Simulation)
 BOOST_FIXTURE_TEST_CASE(get_result_during_sim, FixtureBeforeStep){
     int error, step_ind;
-    int rg_ind, subc_ind, nde_ind, lnk_ind;
-    double val, val1, val2;
+    int subc_ind, nde_ind, lnk_ind;
+    double val;
     double elapsedTime = 0.0;
-    
-    std::string rgid = std::string("RG1");
+
     std::string subid = std::string("1");
     std::string ndeid = std::string("19");
     std::string lnkid = std::string("14");
 
-    rg_ind = swmm_getObjectIndex(SM_GAGE, (char *)rgid.c_str(), &error);
-    BOOST_REQUIRE(error == ERR_NONE);
     subc_ind = swmm_getObjectIndex(SM_SUBCATCH, (char *)subid.c_str(), &error);
     BOOST_REQUIRE(error == ERR_NONE);
     nde_ind = swmm_getObjectIndex(SM_NODE, (char *)ndeid.c_str(), &error);
@@ -443,13 +442,6 @@ BOOST_FIXTURE_TEST_CASE(get_result_during_sim, FixtureBeforeStep){
         
         if (step_ind == 200) // (Jan 1, 1998 3:20am)
         {
-            // Gage
-            error = swmm_getGagePrecip(rg_ind, &val, &val1, &val2);
-            BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_SMALL(val - 0.8, 0.0001);
-            BOOST_CHECK_SMALL(val1 - 0.0, 0.0001);
-            BOOST_CHECK_SMALL(val2 - 0.8, 0.0001);
-
             // Subcatchment
             error = swmm_getSubcatchResult(subc_ind, SM_SUBCRAIN, &val);
             BOOST_REQUIRE(error == ERR_NONE);

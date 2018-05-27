@@ -172,6 +172,13 @@ typedef enum {
     SM_SUBCSNOW      = 5,  /**< Snow Depth */
 } SM_SubcResult;
 
+/// Gage precip array property codes
+typedef enum {
+    SM_TOTALPRECIP  = 0,   //**< Total Precipitation Rate */
+    SM_RAINFALL      = 1,  //**< Rainfall Rate */
+    SM_SNOWFALL      = 2   //**< Snowfall Rate */)
+} SM_GagePrecip;
+
 // --- Define the SWMM toolkit structures
 
 /// Node stats structure
@@ -522,12 +529,10 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
 /**
 @brief Get precipitation rates for a gage.
 @param index The index of gage
-@param[out] rainfall rainfall rate
-@param[out] snowfall snowfall rate
-@param[out] total total precipitation rate
+@param[out] Fage precipitation rates array [total, rainfall, snowfall]
 @return Error code
 */
-int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, double *total);
+int DLLEXPORT swmm_getGagePrecip(int index, double **GageArray);
 
 /**
  @brief Get a node statistics.
@@ -659,12 +664,18 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate);
 int DLLEXPORT swmm_setOutfallStage(int index, double stage);
 
 /**
-@brief Set an rainfall intensity to the gage.
+@brief Set a total precipitation intensity to the gage.
 @param index The gage index.
-@param value The new rainfall intensity.
+@param total_precip The new total precipitation intensity.
 @return Error code
 */
-int DLLEXPORT swmm_setGagePrecip(int index, double value);
+int DLLEXPORT swmm_setGagePrecip(int index, double total_precip);
+
+/**
+@brief Helper function to free memory array allocated in SWMM.
+@param array The pointer to the array
+*/
+void DLLEXPORT freeArray(void* array);
 
 #ifdef __cplusplus
 }    // matches the linkage specification from above */

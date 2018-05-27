@@ -33,6 +33,10 @@ int  stats_getLinkStat(int index, SM_LinkStats *linkStats);
 int  stats_getPumpStat(int index, SM_PumpStats *pumpStats);
 int  stats_getSubcatchStat(int index, SM_SubcatchStats *subcatchStats);
 
+// Utilty Function Declarations
+double* newDoubleArray(int n);
+void freeDoubleArray(void* array);
+
 //-----------------------------------------------------------------------------
 //  Extended API Functions
 //-----------------------------------------------------------------------------
@@ -974,17 +978,19 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
     return(errcode);
 }
 
-int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, double *total)
+int DLLEXPORT swmm_getGagePrecip(int index, double **GageArray)
 //
 // Input:   index = Index of desired ID
-// Output:  Rainfall intensity and snow for the gage
+// Output:  GageArray pointer (three elements)
 // Return:  API Error
 // Purpose: Gets the precipitaion value in the gage. 
 {
     int errcode = 0;
-    *rainfall = 0;
-    *snowfall = 0;
-    *total = 0;
+    double rainfall = 0;
+    double snowfall = 0;
+    double total = 0;
+    double* temp;
+
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -995,12 +1001,18 @@ int DLLEXPORT swmm_getGagePrecip(int index, double *rainfall, double *snowfall, 
     {
         errcode = ERR_API_OBJECT_INDEX;
     }
+    else if (MEMCHECK(temp = newDoubleArray(3)))
+    {
+        errcode = ERR_MEMORY;
+    }
     // Read the rainfall value
     else
     {
-        *total = gage_getPrecip(index, rainfall, snowfall)* UCF(RAINFALL);
-        *rainfall *= UCF(RAINFALL);
-        *snowfall *= UCF(RAINFALL);
+        total = gage_getPrecip(index, &rainfall, &snowfall);
+        temp[0] = total * UCF(RAINFALL);
+        temp[1] = rainfall * UCF(RAINFALL);
+        temp[2] = snowfall * UCF(RAINFALL);
+        *GageArray = temp;
     }
     return(errcode);
 }
@@ -1475,10 +1487,10 @@ int DLLEXPORT swmm_setOutfallStage(int index, double stage)
     return(errcode);
 }
 
-int DLLEXPORT swmm_setGagePrecip(int index, double value)
+int DLLEXPORT swmm_setGagePrecip(int index, double total_precip)
 //
 // Input:   index = Index of desired ID
-//          value = rainfall intensity to be set
+//          total_precip = rainfall intensity to be set
 // Return:  API Error
 // Purpose: Sets the precipitation in from the external database
 {
@@ -1493,7 +1505,7 @@ int DLLEXPORT swmm_setGagePrecip(int index, double value)
     {
         errcode = ERR_API_OBJECT_INDEX;
     }
-    // Read the rainfall value
+    // Set the Rainfall rate
     else
     {
         if (Gage[index].dataSource != RAIN_API)
@@ -1508,7 +1520,31 @@ int DLLEXPORT swmm_setGagePrecip(int index, double value)
         {
             Gage[index].coGage = -1;
         }
-     Gage[index].externalRain = value;
+     Gage[index].externalRain = total_precip;
     }
     return(errcode);
+}
+
+//-------------------------------
+// Utility Functions
+//-------------------------------
+
+double* newDoubleArray(int n)
+//
+//  Warning: Caller must free memory allocated by this function.
+//
+{
+    return (double*) malloc((n)*sizeof(double));
+}
+
+
+void DLLEXPORT freeArray(void* array)
+//
+// Helper function used to free array allocated memory by API.
+//
+{
+    if (array != NULL) {
+        FREE(array);
+        array = NULL;
+    }
 }
