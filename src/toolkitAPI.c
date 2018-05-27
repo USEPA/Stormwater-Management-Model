@@ -35,7 +35,6 @@ int  stats_getSubcatchStat(int index, SM_SubcatchStats *subcatchStats);
 
 // Utilty Function Declarations
 double* newDoubleArray(int n);
-void freeDoubleArray(void* array);
 
 //-----------------------------------------------------------------------------
 //  Extended API Functions
