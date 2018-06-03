@@ -102,7 +102,8 @@
 //-------------------------------------
  enum GageDataType {
       RAIN_TSERIES,                    // rainfall from user-supplied time series
-      RAIN_FILE};                      // rainfall from external file
+      RAIN_FILE,                       // rainfall from external file
+      RAIN_API}; 		       // rainfall from API(Modify rainfall mid simulation)
 
 //-------------------------------------
 // Cross section shape types
@@ -379,7 +380,7 @@ enum  CompatibilityType {
  enum OutfallType {
       FREE_OUTFALL,                    // critical depth outfall condition
       NORMAL_OUTFALL,                  // normal flow depth outfall condition
-      FIXED_OUTFALL,                   // fixed depth outfall condition
+      STAGED_OUTFALL,                  // fixed depth outfall condition (API Support)
       TIDAL_OUTFALL,                   // variable tidal stage outfall condition
       TIMESERIES_OUTFALL};             // variable time series outfall depth
 

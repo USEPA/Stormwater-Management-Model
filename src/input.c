@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>
 #include "headers.h"
 #include "lid.h"
@@ -59,7 +59,6 @@ static int  readControl(char* tok[], int ntoks);
 static int  readNode(int type);
 static int  readLink(int type);
 static int  readEvent(char* tok[], int ntoks);                                 //(5.1.011)
-
 
 //=============================================================================
 

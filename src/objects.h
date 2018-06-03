@@ -100,6 +100,7 @@ typedef struct
 typedef struct
 {
    char*         ID;              // raingage name
+   int		     externalRain;    // rainfall-rate injected RAIN API
    int           dataSource;      // data from time series or file 
    int           tSeries;         // rainfall data time series index
    char          fname[MAXFNAME+1]; // name of rainfall data file
@@ -430,6 +431,7 @@ struct ExtInflow
    double         cFactor;       // units conversion factor for mass inflow
    double         baseline;      // constant baseline value
    double         sFactor;       // time series scaling factor
+   double         extIfaceInflow;// external interfacing inflow
    struct ExtInflow* next;       // pointer to next inflow data object
 };
 typedef struct ExtInflow TExtInflow;
@@ -531,7 +533,7 @@ typedef struct
 {
    int        type;               // outfall type code
    char       hasFlapGate;        // true if contains flap gate
-   double     fixedStage;         // fixed outfall stage (ft)
+   double     outfallStage;       // outfall stage (ft)
    int        tideCurve;          // index of tidal stage curve
    int        stageSeries;        // index of outfall stage time series
    int        routeTo;            // subcatchment index routed onto            //(5.1.008)
@@ -966,8 +968,10 @@ typedef struct
     double       evap;
     double       infil;
     double       runoff;
-    double       maxFlow;         
+    double       maxFlow;
+    double*      surfaceBuildup;
 }  TSubcatchStats;
+
 
 //----------------
 // NODE STATISTICS

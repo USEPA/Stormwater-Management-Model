@@ -20,16 +20,14 @@
 //-----------------------------------------------------------------------------
 
 #define FMT01 \
- "\n Correct syntax is:\n swmm5 <input file> <report file> <output file>\n"
-#define FMT02 "\n... EPA-SWMM 5.1 (Build 5.1.012)\n"                           //(5.1.012)
+ "\tswmm5 <input file> <report file> <output file>\n"
 
 #define FMT03 " There are errors.\n"
 #define FMT04 " There are warnings.\n"
 #define FMT05 "\n"
 #define FMT06 "\n o  Retrieving project data"
 #define FMT07 "\n o  Writing output report"
-#define FMT08 \
-  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build 5.1.012)"         //(5.1.012)
+
 #define FMT09 \
   "\n  --------------------------------------------------------------"
 #define FMT10 "\n"

@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 
-'''
-Created on Aug 11, 2016
+#
+#  setup.py 
+# 
+#  Author:     Michael E. Tryby
+#              US EPA - ORD/NRMRL
+#
 
-@author: mtryby
-'''
+''' Setup up script for nrtest_swmm package. '''
 
 try: 
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
-
 
 entry_points = {
     'nrtest.compare': [
@@ -20,10 +22,9 @@ entry_points = {
     ]
 }
 
-
 setup(
     name='nrtest-swmm',
-    version='0.2.0',
+    version='0.3.0',
     description="SWMM extension for nrtest",
     
     author="Michael E. Tryby",
@@ -32,13 +33,12 @@ setup(
 
     packages=['nrtest_swmm',],
     entry_points=entry_points,
-    include_package_data=True,
+
     install_requires=[
         'header_detail_footer>=2.3',
         'nrtest>=0.2.0',
-        'numpy>=1.6.0',
-        'swmm_reader>=0.2.0',
+        'numpy>=1.7.0',
+        'swmm_output',
     ],
-    zipsafe=True,  
     keywords='nrtest_swmm'  
 )

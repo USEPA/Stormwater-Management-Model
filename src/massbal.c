@@ -36,9 +36,11 @@
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
+#include <string.h>
 #include <stdlib.h>
 #include <math.h>
 #include "headers.h"
+#include "swmm5.h"
 
 //-----------------------------------------------------------------------------
 //  Constants   
@@ -94,10 +96,8 @@ double   TotalArea;               // total drainage area (ft2)
 double massbal_getBuildup(int pollut);
 double massbal_getStorage(char isFinalStorage);
 double massbal_getStoredMass(int pollut);
-double massbal_getRunoffError(void);
 double massbal_getLoadingError(void);
 double massbal_getGwaterError(void);
-double massbal_getFlowError(void);
 double massbal_getQualError(void);
 
 
@@ -1086,3 +1086,94 @@ double massbal_getStoredMass(int p)
 }
 
 //=============================================================================
+
+int massbal_getRoutingFlowTotal(TRoutingTotals *RoutingTotal)
+//
+// Input:    element = element to return
+// Return:   value
+// Purpose:  Gets the routing total for toolkitAPI
+//
+{
+	int errorcode = 0;
+
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+	{
+		errorcode = ERR_API_INPUTNOTOPEN;
+	}
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	else
+	{
+		memcpy(RoutingTotal, &FlowTotals, sizeof(TRoutingTotals));
+	}
+
+	return errorcode;
+}
+
+int massbal_getRunoffTotal(TRunoffTotals *runoffTot)
+//
+// Input:    element = element to return
+// Return:   value
+// Purpose:  Gets the runoff total for toolkitAPI
+//
+{
+	int errorcode = 0;
+
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+	{
+		errorcode = ERR_API_INPUTNOTOPEN;
+	}
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	else
+	{
+		memcpy(runoffTot, &RunoffTotals, sizeof(TRunoffTotals));
+	}
+	return errorcode;
+}
+
+double massbal_getTotalArea(void)
+//
+// Return: Total Area for Runoff Surface
+// Purpose: Used for Toolkit API Unit Conversion
+{
+	return TotalArea;
+}
+
+int massbal_getNodeTotalInflow(int index, double *value)
+//
+// Input:  NodeIndex
+// Output: Volume
+// Return: Error
+// Purpose: Used for ToolkitAPI to pull total Node Inflow.
+{
+    int errorcode = 0;
+
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+        errorcode = ERR_API_INPUTNOTOPEN;
+    }
+	// Check if Simulation is Running
+    else if (swmm_IsStartedFlag() == FALSE)
+    {
+        errorcode = ERR_API_SIM_NRUNNING;
+    }
+    else
+    {
+		*value = NodeInflow[index];
+    }
+    return errorcode;
+}

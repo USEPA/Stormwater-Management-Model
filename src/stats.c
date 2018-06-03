@@ -34,9 +34,13 @@
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
-#include <omp.h>                                                               //(5.1.008)
+#if defined(_OPENMP)
+  #include <omp.h>                                                             //(5.1.008)
+#endif
 #include "headers.h"
+#include "swmm5.h"
 
 //-----------------------------------------------------------------------------
 //  Shared variables
@@ -51,14 +55,14 @@ static double          SysOutfallFlow;
 //-----------------------------------------------------------------------------
 //  Exportable variables (shared with statsrpt.c)
 //-----------------------------------------------------------------------------
-TSubcatchStats* SubcatchStats;
-TNodeStats*     NodeStats;
-TLinkStats*     LinkStats;
-TStorageStats*  StorageStats;
-TOutfallStats*  OutfallStats;
-TPumpStats*     PumpStats;
-double          MaxOutfallFlow;
-double          MaxRunoffFlow;
+TSubcatchStats*     SubcatchStats;
+TNodeStats*         NodeStats;
+TLinkStats*         LinkStats;
+TStorageStats*      StorageStats;
+TOutfallStats*      OutfallStats;
+TPumpStats*         PumpStats;
+double              MaxOutfallFlow;
+double              MaxRunoffFlow;
 
 //-----------------------------------------------------------------------------
 //  Imported variables
@@ -95,7 +99,7 @@ int  stats_open()
 //  Purpose: opens the simulation statistics system.
 //
 {
-    int j, k;
+    int j, k, p;
 
     // --- set all pointers to NULL
     NodeStats = NULL;
@@ -123,6 +127,20 @@ int  stats_open()
             SubcatchStats[j].infil   = 0.0;
             SubcatchStats[j].runoff  = 0.0;
             SubcatchStats[j].maxFlow = 0.0;
+
+            if ( Nobjects[POLLUT] > 0 )
+            {
+                SubcatchStats[j].surfaceBuildup =
+                    (double *) calloc(Nobjects[POLLUT], sizeof(double));
+                if ( !SubcatchStats[j].surfaceBuildup )
+                {
+                    report_writeErrorMsg(ERR_MEMORY, "");
+                    return ErrorCode;
+                }
+                for ( p = 0; p < Nobjects[POLLUT]; p++ )
+                    SubcatchStats[j].surfaceBuildup[p] = 0.0;
+            }
+            else SubcatchStats[j].surfaceBuildup = NULL;
         }
 
 ////  Added to release 5.1.008.  ////                                          //(5.1.008)
@@ -291,7 +309,12 @@ void  stats_close()
 {
     int j;
 
-    FREE(SubcatchStats);
+    if ( SubcatchStats)
+    {
+        for ( j=0; j<Nobjects[SUBCATCH]; j++ )
+            FREE(SubcatchStats[j].surfaceBuildup);
+        FREE(SubcatchStats);
+    }
     FREE(NodeStats);
     FREE(LinkStats);
     FREE(StorageStats); 
@@ -340,15 +363,24 @@ void   stats_updateSubcatchStats(int j, double rainVol, double runonVol,
 //           runoffVol = runoff volume (ft3)
 //           runoff    = runoff rate (cfs)
 //  Output:  none
-//  Purpose: updates totals of runoff components for a specific subcatchment.
+//  Purpose: updates totals of runoff components and the surface buildup
+//           of pollutants for a specific subcatchment.
 //
 {
+    int p;
+    
     SubcatchStats[j].precip += rainVol;
     SubcatchStats[j].runon  += runonVol;
     SubcatchStats[j].evap   += evapVol;
     SubcatchStats[j].infil  += infilVol;
     SubcatchStats[j].runoff += runoffVol;
     SubcatchStats[j].maxFlow = MAX(SubcatchStats[j].maxFlow, runoff);
+    
+    for ( p = 0; p < Nobjects[POLLUT]; p++ )
+    {
+        SubcatchStats[j].surfaceBuildup[p] = subcatch_getBuildup( j, p );
+    }
+        
 }
 
 //=============================================================================
@@ -554,7 +586,7 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
         for (p=0; p<Nobjects[POLLUT]; p++)
         {
             OutfallStats[k].totalLoad[p] += Node[j].inflow * 
-				Node[j].newQual[p] * tStep;
+                Node[j].newQual[p] * tStep;
         }
         SysOutfallFlow += Node[j].inflow;
     }
@@ -787,3 +819,279 @@ void  stats_updateMaxStats(TMaxStats maxStats[], int i, int j, double x)
 }
 
 //=============================================================================
+//
+int stats_getNodeStat(int index, TNodeStats *nodeStats)
+//
+// Input:    index
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Node Stat for toolkitAPI
+//
+{
+	int errorcode = 0;
+
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+	{
+		errorcode = ERR_API_INPUTNOTOPEN;
+	}
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[NODE])
+	{
+		errorcode = ERR_API_OBJECT_INDEX;
+	}
+
+	else
+	{
+		memcpy(nodeStats, &NodeStats[index], sizeof(TNodeStats));
+	}
+	return errorcode;
+}
+
+int stats_getStorageStat(int index, TStorageStats *storageStats)
+//
+// Input:    subindex
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Storage Stat for toolkitAPI
+//
+{
+	int errorcode = 0;
+
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+	{
+		errorcode = ERR_API_INPUTNOTOPEN;
+	}
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[NODE])
+	{
+		errorcode = ERR_API_OBJECT_INDEX;
+	}
+
+	// Check Node Type is storage
+	else if (Node[index].type != STORAGE)
+	{
+		errorcode = ERR_API_WRONG_TYPE;
+	}
+
+	else
+	{
+		// fetch sub index
+		int k = Node[index].subIndex;
+		// Copy Structure
+		memcpy(storageStats, &StorageStats[k], sizeof(TStorageStats));
+	}
+	return errorcode;
+}
+
+int stats_getOutfallStat(int index, TOutfallStats *outfallStats)
+//
+// Input:    subindex
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Outfall Stat for toolkitAPI
+//
+{
+	int errorcode = 0;
+    int p;
+
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+	{
+		errorcode = ERR_API_INPUTNOTOPEN;
+	}
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[NODE])
+	{
+		errorcode = ERR_API_OBJECT_INDEX;
+	}
+
+	// Check Node Type is outfall
+	else if (Node[index].type != OUTFALL)
+	{
+		errorcode = ERR_API_WRONG_TYPE;
+	}
+
+	else
+	{
+		// fetch sub index
+		int k = Node[index].subIndex;
+		// Copy Structure
+		memcpy(outfallStats, &OutfallStats[k], sizeof(TOutfallStats));
+		
+		// Perform Deep Copy of Pollutants Results
+        if (Nobjects[POLLUT] > 0)
+        {
+            outfallStats->totalLoad =
+                (double *)calloc(Nobjects[POLLUT], sizeof(double));
+            if (!outfallStats->totalLoad)
+            {
+                errorcode = ERR_MEMORY;
+            }
+            if (errorcode == 0)
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                    outfallStats->totalLoad[p] = OutfallStats[k].totalLoad[p];
+            }
+        }
+        else outfallStats->totalLoad = NULL;
+    }
+    return errorcode;
+}
+
+int stats_getLinkStat(int index, TLinkStats *linkStats)
+//
+// Input:    index
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Link Stat for toolkitAPI
+//
+{
+	int errorcode = 0;
+
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+	{
+		errorcode = ERR_API_INPUTNOTOPEN;
+	}
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[LINK])
+	{
+		errorcode = ERR_API_OBJECT_INDEX;
+	}
+
+	else
+	{
+		// Copy Structure
+		memcpy(linkStats, &LinkStats[index], sizeof(TLinkStats));
+	}
+	return errorcode;
+}
+
+int stats_getPumpStat(int index, TPumpStats *pumpStats)
+//
+// Input:    subindex
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Pump Stat for toolkitAPI
+//
+{
+	int errorcode = 0;
+
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+	{
+		errorcode = ERR_API_INPUTNOTOPEN;
+	}
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[LINK])
+	{
+		errorcode = ERR_API_OBJECT_INDEX;
+	}
+	
+	// Check if pump
+	else if (Link[index].type != PUMP)
+	{
+		errorcode = ERR_API_WRONG_TYPE;
+	}
+
+	else
+	{
+		// fetch sub index
+		int k = Link[index].subIndex;
+		// Copy Structure
+		memcpy(pumpStats, &PumpStats[k], sizeof(TPumpStats));
+	}
+	return errorcode;
+}
+
+int stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats)
+//
+// Input:    index
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Subcatchment Stat for toolkitAPI
+//
+{
+	int errorcode = 0;
+    int p;
+
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+	{
+		errorcode = ERR_API_INPUTNOTOPEN;
+	}
+
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+		errorcode = ERR_API_SIM_NRUNNING;
+	}
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[SUBCATCH])
+	{
+		errorcode = ERR_API_OBJECT_INDEX;
+	}
+
+	else
+	{
+		// Copy Structure
+		memcpy(subcatchStats, &SubcatchStats[index], sizeof(TSubcatchStats));
+        
+        // Perform Deep Copy of Pollutant Buildup Results
+        if (Nobjects[POLLUT] > 0)
+        {
+            subcatchStats->surfaceBuildup =
+                (double *)calloc(Nobjects[POLLUT], sizeof(double));
+            if (!subcatchStats->surfaceBuildup)
+            {
+                errorcode = ERR_MEMORY;
+            }
+            if (errorcode == 0)
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                    subcatchStats->surfaceBuildup[p] = SubcatchStats[index].surfaceBuildup[p];
+            }
+        }
+        else subcatchStats->surfaceBuildup = NULL;
+	}
+	return errorcode;
+}
+

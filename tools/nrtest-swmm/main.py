@@ -1,17 +1,29 @@
 # -*- coding: utf-8 -*-
+
+#
+#  main.py 
+# 
+#  Author:     Michael E. Tryby
+#              US EPA - ORD/NRMRL
+#
 '''
 Provides entry point main. Useful for development and testing purposes. 
 '''
 
+import sys
 import cStringIO
-import itertools as it
+
+if sys.version_info < (3,0):
+    from itertools import izip as _zip
+else:
+    _zip = zip
+
 import time
 
 import header_detail_footer as hdf
 import numpy as np
 
-import swmm_reader as sr
-
+import nrtest_swmm.output_reader as ordr
 
 def result_compare(path_test, path_ref, comp_args):
 
@@ -25,15 +37,15 @@ def result_compare(path_test, path_ref, comp_args):
     
     start = time.time()
     
-    test_reader = sr.swmm_output_generator(path_test)
-    ref_reader = sr.swmm_output_generator(path_ref)
+    test_reader = ordr.output_generator(path_test)
+    ref_reader = ordr.output_generator(path_ref)
     
-    for test, ref in it.izip(test_reader, ref_reader):
+    for test, ref in _zip(test_reader, ref_reader):
         total += 1
         if total%100000 == 0:
-            print(total)
+        print(total)
         
-        if test.size != ref.size:
+        if len(test) != len(ref):
             raise ValueError('Inconsistent lengths')
         
         # Skip results if they are zero or equal
@@ -75,10 +87,11 @@ def report_compare(path_test, path_ref, (comp_args)):
     Compares results in two report files ignoring contents of header and footer. 
     '''
     with open(path_test ,'r') as ftest, open(path_ref, 'r') as fref:
-        for (test_line, ref_line) in it.izip(hdf.parse(ftest, 4, 4)[1], hdf.parse(fref, 4, 4)[1]): 
+        for (test_line, ref_line) in _zip(hdf.parse(ftest, 4, 4)[1], 
+                                          hdf.parse(fref, 4, 4)[1]): 
             if test_line != ref_line: 
                 return False
-
+              
     return True 
 
 
@@ -141,25 +154,3 @@ def nrtest_execute(app_path, test_path, output_path):
 
     # Non-zero exit code indicates failure
     exit(not success)
-
-
-if __name__ == "__main__":
-#    app_path = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\apps\\swmm-5111_x64.json"
-#    test_path = "C:\\Users\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\tests\\update_5111\\events_example.json"
-#    output_path = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5111_x64"
-#    nrtest_execute(app_path, [test_path], output_path)
- 
-#    test_path = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5111_x64"
-#    ref_path  = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5111_x86"
-#    nrtest_compare(test_path, ref_path, 0.001, 0.0)
-
-    
-#    path_test = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5111\\Example_4\\Example4.out"
-#    path_ref  = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5110\\Example_4\\Example4.out"    
-#    result_compare(path_test, path_ref, (0.001, 0.0))
-
-    path_test = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5111_bf\\lid_cat\\lid_cat.out"
-    path_ref  = "C:\\Users\\mtryby\\Workspace\\GitRepo\\Local\\swmm-testsuite\\benchmarks\\v5110\\lid_cat\\lid_cat.out"
-    print(result_compare(path_test, path_ref, (1.0, 0.0)))
-
-    

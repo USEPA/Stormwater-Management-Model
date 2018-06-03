@@ -28,6 +28,31 @@
 //-----------------------------------------------------------------------------
 //   Project Manager Methods
 //-----------------------------------------------------------------------------
+// --- define WINDOWS
+
+#undef WINDOWS
+#ifdef _WIN32
+#define WINDOWS
+#endif
+#ifdef __WIN32__
+#define WINDOWS
+#endif
+
+// --- define DLLEXPORT
+
+#ifdef WINDOWS
+	#ifdef __MINGW32__
+		// Seems to be more wrapper friendly
+		#define DLLEXPORT __declspec(dllexport) __cdecl 
+	#else
+		#define DLLEXPORT __declspec(dllexport) __stdcall
+	#endif
+#else
+	#define DLLEXPORT
+#endif
+
+#include "toolkitAPI.h"
+
 void     project_open(char *f1, char *f2, char *f3);
 void     project_close(void);
 
@@ -37,7 +62,15 @@ void     project_validate(void);
 int      project_init(void);
 
 int      project_addObject(int type, char* id, int n);
-int      project_findObject(int type, char* id);
+
+#ifdef __cplusplus
+extern "C" {		// --- use "C" linkage for C++ programs
+#endif 
+	int   DLLEXPORT   project_findObject(int type, char* id);
+#ifdef __cplusplus 
+}   // matches the linkage specification from above */ 
+#endif
+
 char*    project_findID(int type, char* id);
 
 double** project_createMatrix(int nrows, int ncols);
@@ -257,6 +290,8 @@ void    massbal_addReactedMass(int pollut, double mass);
 void    massbal_addSeepageLoss(int pollut, double seepLoss);                   //(5.1.008)
 void    massbal_addToFinalStorage(int pollut, double mass);                    //(5.1.008)
 double  massbal_getStepFlowError(void);
+double  massbal_getRunoffError(void);
+double  massbal_getFlowError(void);
 
 //-----------------------------------------------------------------------------
 //   Simulation Statistics Methods
@@ -302,6 +337,7 @@ void    subcatch_setOldState(int subcatch);
 double  subcatch_getFracPerv(int subcatch);
 double  subcatch_getStorage(int subcatch);
 double  subcatch_getDepth(int subcatch);
+double  subcatch_getBuildup(int subcatch, int pollut);
 
 void    subcatch_getRunon(int subcatch);
 void    subcatch_addRunonFlow(int subcatch, double flow);                      //(5.1.008)
@@ -352,7 +388,12 @@ void    node_getResults(int node, double wt, float x[]);
 int     inflow_readExtInflow(char* tok[], int ntoks);
 int     inflow_readDwfInflow(char* tok[], int ntoks);
 int     inflow_readDwfPattern(char* tok[], int ntoks);
-
+int     inflow_setExtInflow(int j, int param, int type, 
+						int tSeries, int basePat, double cf, 
+						double baseline, double sf);
+int     inflow_validate(int param, int type, int tSeries, 
+						int basePat, double *cf);					
+						
 void    inflow_initDwfInflow(TDwfInflow* inflow);
 void    inflow_initDwfPattern(int pattern);
 
@@ -510,3 +551,4 @@ void     writecon(char *s);                   // writes string to console
 DateTime getDateTime(double elapsedMsec);     // convert elapsed time to date
 void     getElapsedTime(DateTime aDate,       // convert elapsed date
          int* days, int* hrs, int* mins);
+void     getSemVersion(char* semver);         // get semantic version

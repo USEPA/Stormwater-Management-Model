@@ -1,0 +1,46 @@
+# https://circleci.com/gh/OpenWaterAnalytics/Stormwater-Management-Model/
+
+machine:
+  environment:
+    # Environment variables used by astropy helpers
+    TRAVIS_OS_NAME:        "linux"
+    TRAVIS_PYTHON_VERSION: "3.6"
+    # Conda variables and aliases for commands
+    CMD_CONDA:        /home/ubuntu/miniconda/bin/conda
+    CMD_TEST_PYTHON:  /home/ubuntu/miniconda/envs/test/bin/python
+    PATH:             /home/ubuntu/miniconda/bin:$PATH
+
+dependencies:
+  cache_directories:
+    - "~/condacache/pkgs"
+    - "~/.cache/pip"
+  override:
+    # Use Astropy ci helpers for initial setup
+    - git clone git://github.com/astropy/ci-helpers.git
+    - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
+    # Install dependencies
+    - $CMD_CONDA update -n root conda -q --no-pin;
+    - $CMD_CONDA install -n root conda-build anaconda-client -q --no-pin;
+    - $CMD_CONDA config --add pkgs_dirs ~/condacache/pkgs;
+    - $CMD_CONDA create -n format clangdev -c conda-forge
+    - conda-build conda.recipe;
+    - $CMD_CONDA install -n test libswmm --use-local;
+
+test:
+  override:
+    # Check file format with clang
+    - export PATH="$HOME/miniconda/bin:$PATH" && source activate format && conda info --json: # note the colon
+        parallel: true
+    - export PATH="$HOME/miniconda/bin:$PATH" && source activate format && python tools/clangformatter.py src/: # note the colon
+        parallel: true
+    # Test built package
+    - export PATH="$HOME/miniconda/bin:$PATH" && source activate test && conda info --json: # note the colon
+        parallel: true
+    - export PATH="$HOME/miniconda/bin:$PATH" && source activate test && run-swmm --help: # note the colon
+        parallel: true
+
+deployment:
+  develop:
+    branch: develop
+    commands:
+      - export PATH="$HOME/miniconda/bin:$PATH" && source activate root && conda-build conda.recipe --user owa --token $SWWM_CI_UPLOAD_TOKEN --old-build-string;

@@ -42,9 +42,11 @@
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include "headers.h"
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>
-#include <omp.h>                                                               //(5.1.008)
+#if defined(_OPENMP)
+  #include <omp.h>                                                             //(5.1.008)
+#endif
 
 //-----------------------------------------------------------------------------
 //     Constants 

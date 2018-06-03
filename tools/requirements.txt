@@ -1,0 +1,16 @@
+#
+# requirements.txt 
+# 
+# Date Created: 11/14/2017
+# Author: Michael E. Tryby
+#         US EPA ORD/NRMRL
+# 
+# Useful for configuring a python environment to run swmm-nrtestsuite. 
+#
+# command: pip install -r requirements.txt --src build/packages
+#
+
+#-e  git+https://github.com/OpenWaterAnalytics/nrtest.git@master#egg=nrtest
+nrtest>=0.2.3
+-e ./tools/swmm-output
+-e ./tools/nrtest-swmm
