@@ -1537,7 +1537,7 @@ double* newDoubleArray(int n)
 }
 
 
-void DLLEXPORT freeArray(void* array)
+void DLLEXPORT freeArray(void** array)
 //
 // Helper function used to free array allocated memory by API.
 //
