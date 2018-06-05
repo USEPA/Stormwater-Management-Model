@@ -675,7 +675,7 @@ int DLLEXPORT swmm_setGagePrecip(int index, double total_precip);
 @brief Helper function to free memory array allocated in SWMM.
 @param array The pointer to the array
 */
-void DLLEXPORT freeArray(void* array);
+void DLLEXPORT freeArray(void** array);
 
 #ifdef __cplusplus
 }    // matches the linkage specification from above */
