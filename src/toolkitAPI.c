@@ -1543,7 +1543,7 @@ void DLLEXPORT freeArray(void** array)
 //
 {
     if (array != NULL) {
-        FREE(array);
-        array = NULL;
+        FREE(*array);
+        *array = NULL;
     }
 }

@@ -97,7 +97,7 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
     // Time to call FEMA!
     BOOST_CHECK_SMALL(subcstats.precip - 24, 0.0001);
     swmm_freeSubcatchStats(&subcstats);
-    freeArray(precip_array);
+    freeArray((void**) &precip_array);
 
     swmm_end();
 }
