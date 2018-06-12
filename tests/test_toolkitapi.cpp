@@ -550,7 +550,6 @@ BOOST_FIXTURE_TEST_CASE(get_results_after_sim, FixtureBeforeEnd){
     BOOST_CHECK_SMALL(subc_stats.maxFlow - 4.6561, 0.0001);
     BOOST_CHECK_SMALL(subc_stats.precip - 2.65, 0.0001);
     BOOST_CHECK_SMALL(subc_stats.evap - 0.0, 0.0001);
-    swmm_freeSubcatchStats(&subc_stats);
 
 }
 BOOST_AUTO_TEST_SUITE_END()
