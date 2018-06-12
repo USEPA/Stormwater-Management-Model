@@ -1222,11 +1222,7 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats)
 // Output:  Subcatchment Stats Structure (SM_SubcatchStats)
 // Return:  API Error
 // Purpose: Gets Subcatchment Stats and Converts Units
-// Note: Caller is responsible for calling swmm_freeSubcatchStats
-//       to free the pollutants array.
 {
-    int p;
-
     int errorcode = stats_getSubcatchStat(index, subcatchStats);
 
     if (errorcode == 0)
@@ -1245,32 +1241,11 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats)
         subcatchStats->precip *= (UCF(RAINDEPTH) / a);
         // Cumulative Evaporation Volume
         subcatchStats->evap *= (UCF(RAINDEPTH) / a);
-
-        if (Nobjects[POLLUT] > 0)
-        {
-            for (p = 0; p < Nobjects[POLLUT]; p++)
-                subcatchStats->surfaceBuildup[p] /= (a * UCF(LANDAREA));
-                if (Pollut[p].units == COUNT)
-                {
-                    subcatchStats->surfaceBuildup[p] =
-                        LOG10(subcatchStats->surfaceBuildup[p]);
-                }
-        }
     }
 
     return (errorcode);
 }
 
-
-void DLLEXPORT swmm_freeSubcatchStats(SM_SubcatchStats *subcatchStats)
-//
-// Return:  API Error
-// Purpose: Frees Subcatchment Stats
-// Note:    API user is responsible for calling swmm_freeSubcatchStats
-//          since this function performs a memory allocation.
-{
-    FREE(subcatchStats->surfaceBuildup);
-}
 
 int DLLEXPORT swmm_getSystemRoutingStats(SM_RoutingTotals *routingTot)
 //

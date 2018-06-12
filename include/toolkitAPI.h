@@ -609,14 +609,6 @@ int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
 int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats);
 
 /**
- @brief Free subcatchment statistics structure.
- @param[out] subcatchStats The outfall Stats struct. This frees any allocated
- pollutants array.
- @return Error code
-*/
-void DLLEXPORT swmm_freeSubcatchStats(SM_SubcatchStats *subcatchStats);
-
-/**
  @brief Get system routing statistics.
  @param[out] routingTot The system Routing Stats struct (see @ref SM_RoutingTotals). 
  pre-allocated by the caller.
