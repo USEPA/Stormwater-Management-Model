@@ -977,12 +977,78 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
     return(errcode);
 }
 
+int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
+//
+// Input:   index = Index of desired ID
+//          type = Result Type (SM_SubcPollut)
+// Output:  PollutArray pointer (pollutant data desired, byref)
+// Return:  API Error
+// Purpose: Gets Subcatchment Simulated Pollutant Value at Current Time
+{
+    int p;
+    int errcode = 0;
+    double a = Subcatch[index].area;
+    double *result;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[SUBCATCH])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else if (Nobjects[POLLUT] == 0)
+    {
+        return(errcode); // or maybe this warrants a new error message here?
+    }
+    else if (MEMCHECK(result = newDoubleArray(Nobjects[POLLUT])))
+    {
+        errcode = ERR_MEMORY;
+    }
+    
+    else
+    {
+        switch (type)
+        {
+            case SM_BUILDUP:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Subcatch[index].surfaceBuildup[p] /
+                        (a * UCF(LANDAREA)); // ADD MASS CONVERSION???
+                    if (Pollut[p].units == COUNT)
+                    {
+                        result[p] = LOG10(result[p]);
+                    }
+                } *PollutArray = result;
+            } break;
+            case SM_CPONDED:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Subcatch[index].concPonded[p] /
+                        (LperFT3 * Pollut[p].mcf);
+                    if (Pollut[p].units == COUNT)
+                    {
+                        result[p] = LOG10(result[p]);
+                    }
+                } *PollutArray = result;
+            } break;
+            default: errcode = ERR_API_OUTBOUNDS; break;
+        }
+    }
+    return(errcode);
+}
+
 int DLLEXPORT swmm_getGagePrecip(int index, double **GageArray)
 //
 // Input:   index = Index of desired ID
 // Output:  GageArray pointer (three elements)
 // Return:  API Error
-// Purpose: Gets the precipitaion value in the gage. 
+// Purpose: Gets the precipitation value in the gage. 
 {
     int errcode = 0;
     double rainfall = 0;
