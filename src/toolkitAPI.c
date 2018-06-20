@@ -977,7 +977,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
     return(errcode);
 }
 
-int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
+int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double *PollutArray)
 //
 // Input:   index = Index of desired ID
 //          type = Result Type (SM_SubcPollut)
@@ -988,7 +988,6 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
     int p;
     int errcode = 0;
     double a = Subcatch[index].area;
-    double *result;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
@@ -1004,11 +1003,11 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
     {
         return(errcode); // or maybe this warrants a new error message here?
     }
-    else if (MEMCHECK(result = newDoubleArray(Nobjects[POLLUT])))
+    else if (MEMCHECK(&PollutArray = newDoubleArray(Nobjects[POLLUT])))
     {
         errcode = ERR_MEMORY;
     }
-    
+
     else
     {
         switch (type)
@@ -1017,25 +1016,25 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
             {
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
-                    result[p] = Subcatch[index].surfaceBuildup[p] /
-                        (a * UCF(LANDAREA)); // ADD MASS CONVERSION???
+                    PollutArray[p] = Subcatch[index].surfaceBuildup[p] /
+                        (a * UCF(LANDAREA)); // CHECK CONVERSIONS
                     if (Pollut[p].units == COUNT)
                     {
-                        result[p] = LOG10(result[p]);
+                        PollutArray[p] = LOG10(result[p]);
                     }
-                } *PollutArray = result;
+                }
             } break;
             case SM_CPONDED:
             {
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
-                    result[p] = Subcatch[index].concPonded[p] /
-                        (LperFT3 * Pollut[p].mcf);
+                    PollutArray[p] = Subcatch[index].concPonded[p] /
+                        (LperFT3 * Pollut[p].mcf); // CHECK CONVERSIONS
                     if (Pollut[p].units == COUNT)
                     {
-                        result[p] = LOG10(result[p]);
+                        PollutArray[p] = LOG10(result[p]);
                     }
-                } *PollutArray = result;
+                }
             } break;
             default: errcode = ERR_API_OUTBOUNDS; break;
         }
