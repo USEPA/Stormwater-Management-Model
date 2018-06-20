@@ -1003,10 +1003,10 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double *PollutArray)
     {
         return(errcode); // or maybe this warrants a new error message here?
     }
-    else if (MEMCHECK(&PollutArray = newDoubleArray(Nobjects[POLLUT])))
-    {
-        errcode = ERR_MEMORY;
-    }
+    //else if (MEMCHECK(&PollutArray = newDoubleArray(Nobjects[POLLUT])))
+    //{
+    //    errcode = ERR_MEMORY;
+    //}
 
     else
     {
@@ -1020,7 +1020,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double *PollutArray)
                         (a * UCF(LANDAREA)); // CHECK CONVERSIONS
                     if (Pollut[p].units == COUNT)
                     {
-                        PollutArray[p] = LOG10(result[p]);
+                        PollutArray[p] = LOG10(PollutArray[p]);
                     }
                 }
             } break;
@@ -1032,7 +1032,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double *PollutArray)
                         (LperFT3 * Pollut[p].mcf); // CHECK CONVERSIONS
                     if (Pollut[p].units == COUNT)
                     {
-                        PollutArray[p] = LOG10(result[p]);
+                        PollutArray[p] = LOG10(PollutArray[p]);
                     }
                 }
             } break;
