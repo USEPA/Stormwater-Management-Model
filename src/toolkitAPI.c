@@ -1003,7 +1003,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double *PollutArray)
     {
         return(errcode); // or maybe this warrants a new error message here?
     }
-    //else if (MEMCHECK(&PollutArray = newDoubleArray(Nobjects[POLLUT])))
+    //else if (MEMCHECK(&PollutArray == newDoubleArray(Nobjects[POLLUT])))
     //{
     //    errcode = ERR_MEMORY;
     //}
@@ -1018,10 +1018,6 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double *PollutArray)
                 {
                     PollutArray[p] = Subcatch[index].surfaceBuildup[p] /
                         (a * UCF(LANDAREA)); // CHECK CONVERSIONS
-                    if (Pollut[p].units == COUNT)
-                    {
-                        PollutArray[p] = LOG10(PollutArray[p]);
-                    }
                 }
             } break;
             case SM_CPONDED:
@@ -1030,7 +1026,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double *PollutArray)
                 {
                     PollutArray[p] = Subcatch[index].concPonded[p] /
                         (LperFT3 * Pollut[p].mcf); // CHECK CONVERSIONS
-                    if (Pollut[p].units == COUNT)
+                    if (Pollut[p].units == COUNT && PollutArray[p] > 0)
                     {
                         PollutArray[p] = LOG10(PollutArray[p]);
                     }
