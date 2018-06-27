@@ -977,12 +977,73 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
     return(errcode);
 }
 
+int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double *PollutArray)
+//
+// Input:   index = Index of desired ID
+//          type = Result Type (SM_SubcPollut)
+// Output:  PollutArray pointer (pollutant data desired, byref)
+// Return:  API Error
+// Purpose: Gets Subcatchment Simulated Pollutant Value at Current Time
+{
+    int p;
+    int errcode = 0;
+    double a = Subcatch[index].area;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[SUBCATCH])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else if (Nobjects[POLLUT] == 0)
+    {
+        return(errcode); // or maybe this warrants a new error message here?
+    }
+    //else if (MEMCHECK(&PollutArray == newDoubleArray(Nobjects[POLLUT])))
+    //{
+    //    errcode = ERR_MEMORY;
+    //}
+
+    else
+    {
+        switch (type)
+        {
+            case SM_BUILDUP:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    PollutArray[p] = Subcatch[index].surfaceBuildup[p] /
+                        (a * UCF(LANDAREA)); // CHECK CONVERSIONS
+                }
+            } break;
+            case SM_CPONDED:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    PollutArray[p] = Subcatch[index].concPonded[p] /
+                        (LperFT3 * Pollut[p].mcf); // CHECK CONVERSIONS
+                    if (Pollut[p].units == COUNT && PollutArray[p] > 0)
+                    {
+                        PollutArray[p] = LOG10(PollutArray[p]);
+                    }
+                }
+            } break;
+            default: errcode = ERR_API_OUTBOUNDS; break;
+        }
+    }
+    return(errcode);
+}
+
 int DLLEXPORT swmm_getGagePrecip(int index, double **GageArray)
 //
 // Input:   index = Index of desired ID
 // Output:  GageArray pointer (three elements)
 // Return:  API Error
-// Purpose: Gets the precipitaion value in the gage. 
+// Purpose: Gets the precipitation value in the gage. 
 {
     int errcode = 0;
     double rainfall = 0;
@@ -1222,11 +1283,7 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats)
 // Output:  Subcatchment Stats Structure (SM_SubcatchStats)
 // Return:  API Error
 // Purpose: Gets Subcatchment Stats and Converts Units
-// Note: Caller is responsible for calling swmm_freeSubcatchStats
-//       to free the pollutants array.
 {
-    int p;
-
     int errorcode = stats_getSubcatchStat(index, subcatchStats);
 
     if (errorcode == 0)
@@ -1245,32 +1302,11 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats)
         subcatchStats->precip *= (UCF(RAINDEPTH) / a);
         // Cumulative Evaporation Volume
         subcatchStats->evap *= (UCF(RAINDEPTH) / a);
-
-        if (Nobjects[POLLUT] > 0)
-        {
-            for (p = 0; p < Nobjects[POLLUT]; p++)
-                subcatchStats->surfaceBuildup[p] /= (a * UCF(LANDAREA));
-                if (Pollut[p].units == COUNT)
-                {
-                    subcatchStats->surfaceBuildup[p] =
-                        LOG10(subcatchStats->surfaceBuildup[p]);
-                }
-        }
     }
 
     return (errorcode);
 }
 
-
-void DLLEXPORT swmm_freeSubcatchStats(SM_SubcatchStats *subcatchStats)
-//
-// Return:  API Error
-// Purpose: Frees Subcatchment Stats
-// Note:    API user is responsible for calling swmm_freeSubcatchStats
-//          since this function performs a memory allocation.
-{
-    FREE(subcatchStats->surfaceBuildup);
-}
 
 int DLLEXPORT swmm_getSystemRoutingStats(SM_RoutingTotals *routingTot)
 //
