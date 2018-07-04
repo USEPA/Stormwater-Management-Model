@@ -19,10 +19,6 @@
 #include "headers.h"
 #include "swmm5.h"                     // declaration of exportable functions
 #include "hash.h"
-<<<<<<< HEAD
-=======
-
->>>>>>> reformat code as per review
 
 // Function Declarations for API
 int     massbal_getRoutingFlowTotal(SM_RoutingTotals *routingTot);
@@ -289,10 +285,7 @@ int DLLEXPORT  swmm_countObjects(int type, int *count)
 // Returns: API Error
 // Purpose: uses Object Count table to find number of elements of an object
 {
-<<<<<<< HEAD
     *count = 0;
-=======
->>>>>>> reformat code as per review
     if(type >= MAX_OBJ_TYPES)return ERR_API_OUTBOUNDS;
     *count = Nobjects[type];
     return (0);
@@ -1953,9 +1946,6 @@ int DLLEXPORT swmm_getSystemRunoffStats(SM_RunoffTotals *runoffTot)
     return(errorcode);
 }
 
-<<<<<<< HEAD
-=======
-
 int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, int layerIndex, double *result)
 //
 // Input:   index = Index of desired subcatchment 
@@ -2105,8 +2095,6 @@ int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, int type, double *resu
     return(errcode);
 }
 
-
->>>>>>> reformat code as per review
 //-------------------------------
 // Setters API
 //-------------------------------
