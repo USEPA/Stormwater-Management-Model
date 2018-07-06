@@ -19,6 +19,8 @@
          1. Subcatchments
          2. Nodes
          3. Links
+         4. LidGroups
+         5. LidControls
       - Result Get Tests
  */
 
@@ -35,6 +37,8 @@ BOOST_AUTO_TEST_SUITE(test_toolkitapi)
 BOOST_AUTO_TEST_CASE(model_not_open) {
     int error, index;
     double val;
+    int intVal;
+    char chrVal;
     double input_val = 0;
     double *precip_array;
     std::string id = std::string("test");
@@ -78,6 +82,28 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
     error = swmm_setLinkSetting(0, input_val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+
+    // Lid Unit
+    error = swmm_getLidUCount(0, &intVal);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    error = swmm_getLidUParam(0, 0, 0, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    error = swmm_setLidUParam(0, 0, 0, val);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    error = swmm_getLidUOption(0, 0, 0, &intVal);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    error = swmm_setLidUOption(0, 0, 0, val);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    
+    // Lid Control
+    error = swmm_getLidCOverflow(0, &chrVal);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    error = swmm_setLidCOverflow(0, chrVal);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    error = swmm_getLidCParam(0, 0, 0, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    error = swmm_setLidCParam(0, 0, 0, val);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
     }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -87,6 +113,9 @@ BOOST_AUTO_TEST_SUITE(test_toolkitapi_fixture)
 // Testing for Simulation Started Error
 BOOST_FIXTURE_TEST_CASE(sim_started_check, FixtureBeforeStep) {
     int error;
+    int intVal;
+    char chrVal;
+    double val;
 
     //Subcatchment
     error = swmm_setSubcatchParam(0, 0, 1);
@@ -111,11 +140,27 @@ BOOST_FIXTURE_TEST_CASE(sim_started_check, FixtureBeforeStep) {
     BOOST_CHECK_EQUAL(error, ERR_NONE);
     error = swmm_setLinkParam(0, SM_AVELOSS, 1);
     BOOST_CHECK_EQUAL(error, ERR_NONE);
+
+    //Lid Unit
+    error = swmm_getLidUCount(0, &intVal);
+    BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+    error = swmm_setLidUParam(0, 0, 0, val);
+    BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+    error = swmm_setLidUOption(0, 0, 0, intVal);
+    BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+    error = swmm_setLidCOverflow(0, chrVal);
+    BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+
+    //Lid Control
+    error = swmm_setLidCParam(0, 0, 0, val);
+    BOOST_CHECK_EQUAL(error, ERR_NONE);
 }
 
 // Testing for invalid object index
 BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
     int error;
+    int intVal;
+    char chrVal;
     double val;
     double input_val = 0;
     double *precip_array;
@@ -144,12 +189,54 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
     error = swmm_setLinkParam(100, 0, 1);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
+    // Lid Unit
+    error = swmm_getLidUCount(100, &intVal);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    error = swmm_getLidUParam(100, 0, 0, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    error = swmm_getLidUParam(0, 100, 0, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
+    error = swmm_setLidUParam(100, 0, 0, val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    error = swmm_setLidUParam(0, 100, 0, val);
+    BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
+    error = swmm_getLidUOption(100, 0, 0, &intVal);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    error = swmm_getLidUOption(0, 100, 0, &intVal);
+    BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
+    error = swmm_setLidUOption(100, 0, 0, val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    error = swmm_setLidUOption(0, 100, 0, val);
+    BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
+    error = swmm_getLidUFluxRates(100, 0, 0, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    error = swmm_getLidUFluxRates(0, 100, 0, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
+    error = swmm_getLidUResult(100, 0, 0, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    error = swmm_getLidUResult(0, 100, 0, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
+
+    // Lid Control
+    error = swmm_getLidCOverflow(100, &chrVal);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    error = swmm_setLidCOverflow(100, chrVal);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    error = swmm_getLidCParam(100, 0, 0, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    error = swmm_setLidCParam(100, 0, 0, val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    error = swmm_getLidGResult(100, 0, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 }
 
 // Testing for invalid parameter key
 BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose) {
     int error;
+    int intVal;
+    char chrVal;
     double val;
+
     //Subcatchment
     error = swmm_getSubcatchParam(0, 100, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
@@ -168,6 +255,31 @@ BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose) {
     error = swmm_setLinkParam(0, 100, 1);
     BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
 
+    // Lid Unit
+    error = swmm_getLidUParam(0, 0, 100, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+    error = swmm_setLidUParam(0, 0, 100, val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+    error = swmm_getLidUOption(0, 0, 100, &intVal);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+    error = swmm_setLidUOption(0, 0, 100, val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+    error = swmm_getLidUFluxRates(0, 0, 100, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+    error = swmm_getLidUResult(0, 0, 100, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+
+    // Lid Control
+    error = swmm_getLidCParam(0, 0, 100, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+    error = swmm_getLidCParam(0, 100, 0, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+    error = swmm_setLidCParam(0, 0, 100, val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+    error = swmm_setLidCParam(0, 100, 0, val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+    error = swmm_getLidGResult(0, 100, &val);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
 }
 
 // Testing for Project Settings after Open
