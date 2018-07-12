@@ -815,11 +815,6 @@ int DLLEXPORT swmm_getLidUCount(int index, int *value)
     {
         errcode = ERR_API_INPUTNOTOPEN;
     }
-    // Check if Simulation is Running
-    else if(swmm_IsStartedFlag() == TRUE)
-    {
-        errcode = ERR_API_SIM_NRUNNING;
-    }
     // Check if subcatchment index is within bounds
     else if(index < 0 || index >= Nobjects[SUBCATCH])
     {
@@ -861,11 +856,7 @@ int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int Param, double *valu
         lidUnit = lid_getLidUnit(index, lidIndex, &errcode);
 
         // There are no Lid Units defined for the subcatchments
-        if(!lidUnit)
-        {
-            errcode = ERR_API_UNDEFINED_LID;
-        }
-        else
+        if(lidUnit)
         {
             switch(Param)
             {
@@ -921,11 +912,7 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
         lidUnit = lid_getLidUnit(index, lidIndex, &errcode);
 
         // There are no Lid Units defined for the subcatchments
-        if(!lidUnit)
-        {
-            errcode = ERR_API_UNDEFINED_LID;
-        }
-        else
+        if(lidUnit)
         {
             switch(Param)
             {
@@ -942,12 +929,11 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }
+            // Validate Lid Unit 
+            // Only see function for validating all the lid units within subcatchments (lidGroup)
+            lid_validateLidGroup(index);
         }
     }
-
-    // Validate Lid Unit 
-    // Only see function for validating all the lid units within subcatchments (lidGroup)
-    lid_validateLidGroup(index);
 
     return(errcode);
 }
@@ -980,25 +966,22 @@ int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int Param, int *value)
         lidUnit = lid_getLidUnit(index, lidIndex, &errcode);
 
         // There are no Lid Units defined for the subcatchments
-        if(!lidUnit)
+        if(lidUnit)
         {
-            errcode = ERR_API_UNDEFINED_LID;
-        }
-		else{
 			switch(Param)
 			{
-			case SM_INDEX:
-				*value = lidUnit->lidIndex; break;
-			case SM_NUMBER:
-				*value = lidUnit->number; break;
-			case SM_TOPERV:
-				*value = lidUnit->toPerv; break;
-			case SM_DRAINSUB:
-				*value = lidUnit->drainSubcatch; break;
-			case SM_DRAINNODE:
-				*value = lidUnit->drainNode; break;
-			default:
-				errcode = ERR_API_OUTBOUNDS; break;
+			    case SM_INDEX:
+				    *value = lidUnit->lidIndex; break;
+			    case SM_NUMBER:
+				    *value = lidUnit->number; break;
+			    case SM_TOPERV:
+				    *value = lidUnit->toPerv; break;
+			    case SM_DRAINSUB:
+				    *value = lidUnit->drainSubcatch; break;
+			    case SM_DRAINNODE:
+				    *value = lidUnit->drainNode; break;
+			    default:
+				    errcode = ERR_API_OUTBOUNDS; break;
 			}
 		}
     }
@@ -1039,11 +1022,7 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int Param, int value)
         lidUnit = lid_getLidUnit(index, lidIndex, &errcode);
 
         // There are no Lid Units defined for the subcatchments
-        if(!lidUnit)
-        {
-            errcode = ERR_API_UNDEFINED_LID;
-        }
-        else
+        if(lidUnit)
         {
             switch(Param)
             {
@@ -1060,12 +1039,11 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int Param, int value)
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }
+            // Validate Lid Unit 
+            // Only see function for validating all the lid units within subcatchments (lidGroup)
+            lid_validateLidGroup(index);
         }
     }
-
-    // Validate Lid Unit 
-    // Only see function for validating all the lid units within subcatchments (lidGroup)
-    lid_validateLidGroup(index);
 
     return(errcode);
 }
@@ -1129,10 +1107,10 @@ int DLLEXPORT swmm_setLidCOverflow(int lidControlIndex, char condition)
     {
         lidProc = lid_getLidProc(lidControlIndex);
         lidProc->surface.canOverflow = condition;
+        
+        //re-validate lid control
+        lid_validateLidProc(lidControlIndex);
     }
-
-    //re-validate lid control
-    lid_validateLidProc(lidControlIndex);
 
     return(errcode);
 }
@@ -1413,15 +1391,13 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
                 break;
             default:
                 errcode = ERR_API_OUTBOUNDS; break;
+            //re-validate lid control
+            lid_validateLidProc(lidControlIndex);
         }
     }
     
-    //re-validate lid control
-    lid_validateLidProc(lidControlIndex);
-
     return(errcode);
 }
-
 
 //-------------------------------
 // Active Simulation Results API
@@ -1975,13 +1951,8 @@ int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, int layerIndex, dou
     int errcode = 0;
     TLidUnit* lidUnit;
 
-    // Check if Simulation is Running
-    if (swmm_IsStartedFlag() == FALSE)
-    {
-        errcode = ERR_API_SIM_NRUNNING;
-    }
     // Check if object index is within bounds
-    else if (index < 0 || index >= Nobjects[SUBCATCH])
+    if (index < 0 || index >= Nobjects[SUBCATCH])
     {
         errcode = ERR_API_OBJECT_INDEX;
     }
@@ -1990,12 +1961,7 @@ int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, int layerIndex, dou
         lidUnit = lid_getLidUnit(index, lidIndex, &errcode);
 
         // There are no Lid Units defined for the subcatchments
-        if (!lidUnit)
-        {
-            errcode = ERR_API_UNDEFINED_LID;
-
-        }
-        else
+        if (lidUnit)
         {
             switch (layerIndex)
             {
@@ -2025,13 +1991,8 @@ int DLLEXPORT swmm_getLidGResult(int index, int type, double *result)
 {
     int errcode = 0;
 
-    // Check if Simulation is Running
-    if (swmm_IsStartedFlag() == FALSE)
-    {
-        errcode = ERR_API_SIM_NRUNNING;
-    }
     // Check if object index is within bounds
-    else if (index < 0 || index >= Nobjects[SUBCATCH])
+    if (index < 0 || index >= Nobjects[SUBCATCH])
     {
         errcode = ERR_API_OBJECT_INDEX;
     }
@@ -2053,13 +2014,8 @@ int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, int type, double *resu
     int errcode = 0;
     TLidUnit* lidUnit;
 
-    // Check if Simulation is Running
-    if (swmm_IsStartedFlag() == FALSE)
-    {
-        errcode = ERR_API_SIM_NRUNNING;
-    }
     // Check if object index is within bounds
-    else if (index < 0 || index >= Nobjects[SUBCATCH])
+    if (index < 0 || index >= Nobjects[SUBCATCH])
     {
         errcode = ERR_API_OBJECT_INDEX;
     }
@@ -2068,12 +2024,8 @@ int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, int type, double *resu
         lidUnit = lid_getLidUnit(index, lidIndex, &errcode);
 
         // There are no Lid Units defined for the subcatchments
-        if (!lidUnit)
+        if (lidUnit)
         {
-            errcode = ERR_API_UNDEFINED_LID;
-        }
-        else
-        { 
             switch (type)
             {
                 case SM_INFLOW:

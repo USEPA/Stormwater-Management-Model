@@ -1924,13 +1924,13 @@ int lid_getLidUnitCount(int index)
 
     lidGroup = LidGroups[index];
     lidList = lidGroup->lidList;
-
+    
     while (lidList)
     {
         lidList = lidList->nextLidUnit;
         unitCount += 1;
     }
-
+    
     return unitCount;
 }
 
@@ -1945,51 +1945,51 @@ TLidUnit* lid_getLidUnit(int index, int lidIndex, int* errcode)
 // Purpose: Gets lid unit (TLidUnit) ptr
 {   
     int currLidIndex = 0;
-    int unitCount = 0;
-    TLidUnit* lidUnit;
+    int unitCount = 1;
+    TLidUnit* lidUnit = NULL;
     TLidList* lidList;
     TLidGroup lidGroup;
 
     lidGroup = LidGroups[index];
-    lidList = lidGroup->lidList;
-    lidUnit = NULL;
-
-    if (!lidGroup || !lidList)
+    if (!lidGroup)
     {
-        // Return Null for empty lidGroup or lidList structure
-        // No lids are defined for subcatchment
         *errcode = ERR_API_UNDEFINED_LID;
-        return(NULL);
     }
-
-    // Patch solution for now
-    // Realized the lid units are stored in reverse order of
-    // how they are defined in the [LID USAGE]
-    // For now, I will just count the number of Lid Units in Lid List 
-    unitCount = lid_getLidUnitCount(index);
- 
-    if (lidIndex > (unitCount - 1))
+    else 
     {
-        *errcode = ERR_API_LIDUNIT_INDEX;
-        return(NULL);
-    }
+        lidList = lidGroup->lidList;
 
-    // update lidIndex due to reverse order
-    lidIndex = unitCount - lidIndex - 1;
-
-    // Traverse through lid list to find lid unit
-    while ((lidList) && (currLidIndex <= lidIndex))
-    {
-        lidUnit = lidList->lidUnit;
-        currLidIndex += 1;
-        lidList = lidList->nextLidUnit;
-    }
-
-    // Verify that the lid unit found matches the one specified by the user
-    if (!((currLidIndex - 1) == lidIndex))
-    {
-        *errcode = ERR_API_LIDUNIT_INDEX;
-        return(NULL);
+        // Patch solution for now
+        // Realized the lid units are stored in reverse order of
+        // how they are defined in the [LID USAGE]
+        // For now, I will just count the number of Lid Units in Lid List 
+        unitCount = lid_getLidUnitCount(index);
+    
+        if (lidIndex > (unitCount - 1))
+        {
+            *errcode = ERR_API_LIDUNIT_INDEX;
+            return(NULL);
+        }
+        else
+        {
+            // update lidIndex due to reverse order
+            lidIndex = unitCount - lidIndex - 1;
+    
+            // Traverse through lid list to find lid unit
+            while ((lidList) && (currLidIndex <= lidIndex))
+            {
+                lidUnit = lidList->lidUnit;
+                currLidIndex += 1;
+                lidList = lidList->nextLidUnit;
+            }
+    
+            // Verify that the lid unit found matches the one specified by the user
+            if (!((currLidIndex - 1) == lidIndex))
+            {
+                *errcode = ERR_API_LIDUNIT_INDEX;
+                lidUnit = NULL;
+            }
+        }
     }
 
     return lidUnit;
@@ -2046,17 +2046,17 @@ double lid_getLidGResult(int index, int type, int* errcode)
 void lid_validateLidProc(int index)
 //
 //  Purpose: hook to lid internal function to validate LID process parameters.
-// Input:   index = Index of desired subcatchment 
+//  Input:   index = Index of desired subcatchment 
 //  Output:  none
 {
-    validateLidProc(index);
+    //validateLidProc(index);
 }
 
 
 void lid_validateLidGroup(int index)
 //
 //  Purpose: hook to lid internal function to validate LID process parameters.
-// Input:   index = Index of desired subcatchment 
+//  Input:   index = Index of desired subcatchment 
 //  Output:  none
 {
     validateLidGroup(index);

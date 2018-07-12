@@ -1,13 +1,17 @@
 [TITLE]
+;;Project Title/Notes
 Example 1
 
-
 [OPTIONS]
-;;Options            Value
-;;------------------ ------------
+;;Option             Value
 FLOW_UNITS           CFS
 INFILTRATION         HORTON
 FLOW_ROUTING         KINWAVE
+LINK_OFFSETS         DEPTH
+MIN_SLOPE            0
+ALLOW_PONDING        NO
+SKIP_STEADY_STATE    NO
+
 START_DATE           01/01/1998
 START_TIME           00:00:00
 REPORT_START_DATE    01/01/1998
@@ -20,40 +24,35 @@ DRY_DAYS             5
 REPORT_STEP          01:00:00
 WET_STEP             00:15:00
 DRY_STEP             01:00:00
-ROUTING_STEP         60
-ALLOW_PONDING        NO
+ROUTING_STEP         0:01:00 
+
 INERTIAL_DAMPING     PARTIAL
+NORMAL_FLOW_LIMITED  BOTH
+FORCE_MAIN_EQUATION  H-W
 VARIABLE_STEP        0.75
 LENGTHENING_STEP     0
 MIN_SURFAREA         0
-NORMAL_FLOW_LIMITED  BOTH
-SKIP_STEADY_STATE    NO
-FORCE_MAIN_EQUATION  H-W
-LINK_OFFSETS         DEPTH
-MIN_SLOPE            0
 MAX_TRIALS           0
 HEAD_TOLERANCE       0
 SYS_FLOW_TOL         5
 LAT_FLOW_TOL         5
-MINIMUM_STEP         0.5
+;MINIMUM_STEP         0.5
 THREADS              1
 
 [EVAPORATION]
-;;Type          Parameters
-;;------------- ----------
-CONSTANT     0.0
-DRY_ONLY     NO
+;;Data Source    Parameters
+;;-------------- ----------------
+CONSTANT         0.0
+DRY_ONLY         NO
 
 [RAINGAGES]
-;;               Rain      Time   Snow   Data      
-;;Name           Type      Intrvl Catch  Source    
+;;Name           Format    Interval SCF      Source    
 ;;-------------- --------- ------ ------ ----------
-RG1              INTENSITY 1:00   1.0    TIMESERIES TS1             
+RG1              INTENSITY 1:00     1.0      TIMESERIES TS1             
 
 [SUBCATCHMENTS]
-;;                                                 Total    Pcnt.             Pcnt.    Curb     Snow    
-;;Name           Raingage         Outlet           Area     Imperv   Width    Slope    Length   Pack    
-;;-------------- ---------------- ---------------- -------- -------- -------- -------- -------- --------
+;;Name           Rain Gage        Outlet           Area     %Imperv  Width    %Slope   CurbLen  SnowPack        
+;;-------------- ---------------- ---------------- -------- -------- -------- -------- -------- ----------------
 1                RG1              9                10       50       500      0.01     0                        
 2                RG1              10               10       50       500      0.01     0                        
 3                RG1              13               5        50       500      0.01     0                        
@@ -66,7 +65,7 @@ RG1              INTENSITY 1:00   1.0    TIMESERIES TS1
 [SUBAREAS]
 ;;Subcatchment   N-Imperv   N-Perv     S-Imperv   S-Perv     PctZero    RouteTo    PctRouted 
 ;;-------------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
-1                0.001      0.1        0.05       0.05       25         OUTLET    
+1                0.001      0.10       0.05       0.05       25         OUTLET    
 2                0.001      0.10       0.05       0.05       25         OUTLET    
 3                0.001      0.10       0.05       0.05       25         OUTLET    
 4                0.001      0.10       0.05       0.05       25         OUTLET    
@@ -78,7 +77,7 @@ RG1              INTENSITY 1:00   1.0    TIMESERIES TS1
 [INFILTRATION]
 ;;Subcatchment   MaxRate    MinRate    Decay      DryTime    MaxInfil  
 ;;-------------- ---------- ---------- ---------- ---------- ----------
-1                0.35       0.25       4.14       0.5        0         
+1                0.35       0.25       4.14       0.50       0         
 2                0.7        0.3        4.14       0.50       0         
 3                0.7        0.3        4.14       0.50       0         
 4                0.7        0.3        4.14       0.50       0         
@@ -100,12 +99,13 @@ LID              DRAIN      0.5        0.5        6          6
 [LID_USAGE]
 ;;Subcatchment   LID Process      Number  Area       Width      InitSatur  FromImprv  ToPerv     Report File                 Drain to         
 ;;-------------- ---------------- ------- ---------- ---------- ---------- ---------- ---------- --------------------------- ----------------
-1                LID              4       10000      20         10         50         1         
+2                LID              4       10000      20         0         50         1         
+
 
 [JUNCTIONS]
-;;               Invert     Max.       Init.      Surcharge  Ponded    
-;;Name           Elev.      Depth      Depth      Depth      Area      
+;;Name           Elevation  MaxDepth   InitDepth  SurDepth   Aponded   
 ;;-------------- ---------- ---------- ---------- ---------- ----------
+9                1000       3          0          0          0         
 10               995        3          0          0          0         
 13               995        3          0          0          0         
 14               990        3          0          0          0         
@@ -118,19 +118,21 @@ LID              DRAIN      0.5        0.5        6          6
 22               987        3          0          0          0         
 23               990        3          0          0          0         
 24               984        3          0          0          0         
-9                1000       3          0          0          0         
 
 [OUTFALLS]
-;;               Invert     Outfall      Stage/Table      Tide
-;;Name           Elev.      Type         Time Series      Gate Route To        
-;;-------------- ---------- ------------ ---------------- ---- ----------------
-18               975        FREE                          NO                   
+;;Name           Elevation  Type       Stage Data       Gated    Route To        
+;;-------------- ---------- ---------- ---------------- -------- ----------------
+18               975        FREE                        NO                       
 
 [CONDUITS]
-;;               Inlet            Outlet                      Manning    Inlet      Outlet     Init.      Max.      
-;;Name           Node             Node             Length     N          Offset     Offset     Flow       Flow      
+;;Name           From Node        To Node          Length     Roughness  InOffset   OutOffset  InitFlow   MaxFlow   
 ;;-------------- ---------------- ---------------- ---------- ---------- ---------- ---------- ---------- ----------
 1                9                10               400        0.01       0          0          0          0         
+4                19               20               200        0.01       0          0          0          0         
+5                20               21               200        0.01       0          0          0          0         
+6                10               21               400        0.01       0          1          0          0         
+7                21               22               300        0.01       1          1          0          0         
+8                22               16               300        0.01       0          0          0          0         
 10               17               18               400        0.01       0          0          0          0         
 11               13               14               400        0.01       0          0          0          0         
 12               14               15               400        0.01       0          0          0          0         
@@ -138,16 +140,16 @@ LID              DRAIN      0.5        0.5        6          6
 14               23               24               400        0.01       0          0          0          0         
 15               16               24               100        0.01       0          0          0          0         
 16               24               17               400        0.01       0          0          0          0         
-4                19               20               200        0.01       0          0          0          0         
-5                20               21               200        0.01       0          0          0          0         
-6                10               21               400        0.01       0          1          0          0         
-7                21               22               300        0.01       1          1          0          0         
-8                22               16               300        0.01       0          0          0          0         
 
 [XSECTIONS]
-;;Link           Shape        Geom1            Geom2      Geom3      Geom4      Barrels   
-;;-------------- ------------ ---------------- ---------- ---------- ---------- ----------
+;;Link           Shape        Geom1            Geom2      Geom3      Geom4      Barrels    Culvert   
+;;-------------- ------------ ---------------- ---------- ---------- ---------- ---------- ----------
 1                CIRCULAR     1.5              0          0          0          1                    
+4                CIRCULAR     1                0          0          0          1                    
+5                CIRCULAR     1                0          0          0          1                    
+6                CIRCULAR     1                0          0          0          1                    
+7                CIRCULAR     2                0          0          0          1                    
+8                CIRCULAR     2                0          0          0          1                    
 10               CIRCULAR     2                0          0          0          1                    
 11               CIRCULAR     1.5              0          0          0          1                    
 12               CIRCULAR     1.5              0          0          0          1                    
@@ -155,50 +157,40 @@ LID              DRAIN      0.5        0.5        6          6
 14               CIRCULAR     1                0          0          0          1                    
 15               CIRCULAR     2                0          0          0          1                    
 16               CIRCULAR     2                0          0          0          1                    
-4                CIRCULAR     1                0          0          0          1                    
-5                CIRCULAR     1                0          0          0          1                    
-6                CIRCULAR     1                0          0          0          1                    
-7                CIRCULAR     2                0          0          0          1                    
-8                CIRCULAR     2                0          0          0          1                    
-
-[LOSSES]
-;;Link           Inlet      Outlet     Average    Flap Gate  SeepageRate
-;;-------------- ---------- ---------- ---------- ---------- ----------
 
 [POLLUTANTS]
-;;               Mass   Rain       GW         I&I        Decay      Snow  Co-Pollut.       Co-Pollut. DWF        Init.
-;;Name           Units  Concen.    Concen.    Concen.    Coeff.     Only  Name             Fraction   Concen.    Concen.
-;;-------------- ------ ---------- ---------- ---------- ---------- ----- ---------------- ---------- ---------- ----------
-Lead             UG/L   0.0        0.0        0          0.0        NO    TSS              0.2        0          0         
-TSS              MG/L   0.0        0.0        0          0.0        NO    *                0.0        0          0         
+;;Name           Units  Crain      Cgw        Crdii      Kdecay     SnowOnly   Co-Pollutant     Co-Frac    Cdwf       Cinit     
+;;-------------- ------ ---------- ---------- ---------- ---------- ---------- ---------------- ---------- ---------- ----------
+TSS              MG/L   0.0        0.0        0          0.0        NO         *                0.0        0          0         
+Lead             UG/L   0.0        0.0        0          0.0        NO         TSS              0.2        0          0         
 
 [LANDUSES]
-;;               Cleaning   Fraction   Last      
-;;Name           Interval   Available  Cleaned   
+;;               Sweeping   Fraction   Last      
+;;Name           Interval   Available  Swept     
 ;;-------------- ---------- ---------- ----------
-Residential      0          0          0         
-Undeveloped      0          0          0         
+Residential                                      
+Undeveloped                                      
 
 [COVERAGES]
 ;;Subcatchment   Land Use         Percent   
 ;;-------------- ---------------- ----------
-1                Residential      100
-2                Residential      50.00
-2                Undeveloped      50.00
-3                Residential      100.00
-4                Residential      50.00
-4                Undeveloped      50.00
-5                Residential      100.00
-6                Undeveloped      100.00
-7                Undeveloped      100.00
-8                Undeveloped      100.00
+1                Residential      100.00    
+2                Residential      50.00     
+2                Undeveloped      50.00     
+3                Residential      100.00    
+4                Residential      50.00     
+4                Undeveloped      50.00     
+5                Residential      100.00    
+6                Undeveloped      100.00    
+7                Undeveloped      100.00    
+8                Undeveloped      100.00    
 
 [LOADINGS]
-;;Subcatchment   Pollutant        Loading   
+;;Subcatchment   Pollutant        Buildup   
 ;;-------------- ---------------- ----------
 
 [BUILDUP]
-;;LandUse        Pollutant        Function   Coeff1     Coeff2     Coeff3     Normalizer
+;;Land Use       Pollutant        Function   Coeff1     Coeff2     Coeff3     Per Unit  
 ;;-------------- ---------------- ---------- ---------- ---------- ---------- ----------
 Residential      TSS              SAT        50         0          2          AREA      
 Residential      Lead             NONE       0          0          0          AREA      
@@ -206,8 +198,7 @@ Undeveloped      TSS              SAT        100        0          3          AR
 Undeveloped      Lead             NONE       0          0          0          AREA      
 
 [WASHOFF]
-;;                                                                 Cleaning   BMP       
-;;Land Use       Pollutant        Function   Coeff1     Coeff2     Effic.     Effic.    
+;;Land Use       Pollutant        Function   Coeff1     Coeff2     SweepRmvl  BmpRmvl   
 ;;-------------- ---------------- ---------- ---------- ---------- ---------- ----------
 Residential      TSS              EXP        0.1        1          0          0         
 Residential      Lead             EMC        0          0          0          0         
@@ -231,6 +222,7 @@ TS1                         29:00      0.2
 TS1                         30:00      0.0       
 
 [REPORT]
+;;Reporting Options
 INPUT      NO
 CONTROLS   NO
 SUBCATCHMENTS ALL
@@ -240,115 +232,115 @@ LINKS ALL
 [TAGS]
 
 [MAP]
-DIMENSIONS       -188.4225        -154.7365        9514.7325        10196.8465      
-UNITS            None
+DIMENSIONS 0.000 0.000 10000.000 10000.000
+Units      None
 
 [COORDINATES]
-;;Node           X-Coord          Y-Coord         
-;;-------------- ---------------- ----------------
-10               4105.26          6947.37         
-13               2336.84          4357.89         
-14               3157.89          4294.74         
-15               3221.05          3242.11         
-16               4821.05          3326.32         
-17               6252.63          2147.37         
-19               7768.42          6736.84         
-20               5957.89          6589.47         
-21               4926.32          6105.26         
-22               4421.05          4715.79         
-23               6484.21          3978.95         
-24               5389.47          3031.58         
-9                4042.11          9600            
-18               6631.58          505.26          
+;;Node           X-Coord            Y-Coord           
+;;-------------- ------------------ ------------------
+9                4042.110           9600.000          
+10               4105.260           6947.370          
+13               2336.840           4357.890          
+14               3157.890           4294.740          
+15               3221.050           3242.110          
+16               4821.050           3326.320          
+17               6252.630           2147.370          
+19               7768.420           6736.840          
+20               5957.890           6589.470          
+21               4926.320           6105.260          
+22               4421.050           4715.790          
+23               6484.210           3978.950          
+24               5389.470           3031.580          
+18               6631.580           505.260           
 
 [VERTICES]
-;;Link           X-Coord          Y-Coord         
-;;-------------- ---------------- ----------------
-10               6673.68          1368.42         
+;;Link           X-Coord            Y-Coord           
+;;-------------- ------------------ ------------------
+10               6673.680           1368.420          
 
-[POLYGONS]
-;;Subcatchment   X-Coord          Y-Coord         
-;;-------------- ---------------- ----------------
-1                3936.84          6905.26         
-1                3494.74          6252.63         
-1                273.68           6336.84         
-1                252.63           8526.32         
-1                463.16           9200            
-1                1157.89          9726.32         
-1                4000             9705.26         
-1                3936.84          6905.26         
-2                7600             9663.16         
-2                7705.26          6736.84         
-2                5915.79          6694.74         
-2                4926.32          6294.74         
-2                4189.47          7200            
-2                4126.32          9621.05         
-3                2357.89          6021.05         
-3                2400             4336.84         
-3                3031.58          4252.63         
-3                2989.47          3389.47         
-3                315.79           3410.53         
-3                294.74           6000            
-4                3473.68          6105.26         
-4                3915.79          6421.05         
-4                4168.42          6694.74         
-4                4463.16          6463.16         
-4                4821.05          6063.16         
-4                4400             5263.16         
-4                4357.89          4442.11         
-4                4547.37          3705.26         
-4                4000             3431.58         
-4                3326.32          3368.42         
-4                3242.11          3536.84         
-4                3136.84          5157.89         
-4                2589.47          5178.95         
-4                2589.47          6063.16         
-4                3284.21          6063.16         
-4                3705.26          6231.58         
-4                4126.32          6715.79         
-5                2568.42          3200            
-5                4905.26          3136.84         
-5                5221.05          2842.11         
-5                5747.37          2421.05         
-5                6463.16          1578.95         
-5                6610.53          968.42          
-5                6589.47          505.26          
-5                1305.26          484.21          
-5                968.42           336.84          
-5                315.79           778.95          
-5                315.79           3115.79         
-6                9052.63          4147.37         
-6                7894.74          4189.47         
-6                6442.11          4105.26         
-6                5915.79          3642.11         
-6                5326.32          3221.05         
-6                4631.58          4231.58         
-6                4568.42          5010.53         
-6                4884.21          5768.42         
-6                5368.42          6294.74         
-6                6042.11          6568.42         
-6                8968.42          6526.32         
-7                8736.84          9642.11         
-7                9010.53          9389.47         
-7                9010.53          8631.58         
-7                9052.63          6778.95         
-7                7789.47          6800            
-7                7726.32          9642.11         
-8                9073.68          2063.16         
-8                9052.63          778.95          
-8                8505.26          336.84          
-8                7431.58          315.79          
-8                7410.53          484.21          
-8                6842.11          505.26          
-8                6842.11          589.47          
-8                6821.05          1178.95         
-8                6547.37          1831.58         
-8                6147.37          2378.95         
-8                5600             3073.68         
-8                6589.47          3894.74         
-8                8863.16          3978.95         
+[Polygons]
+;;Subcatchment   X-Coord            Y-Coord           
+;;-------------- ------------------ ------------------
+1                3936.840           6905.260          
+1                3494.740           6252.630          
+1                273.680            6336.840          
+1                252.630            8526.320          
+1                463.160            9200.000          
+1                1157.890           9726.320          
+1                4000.000           9705.260          
+2                7600.000           9663.160          
+2                7705.260           6736.840          
+2                5915.790           6694.740          
+2                4926.320           6294.740          
+2                4189.470           7200.000          
+2                4126.320           9621.050          
+3                2357.890           6021.050          
+3                2400.000           4336.840          
+3                3031.580           4252.630          
+3                2989.470           3389.470          
+3                315.790            3410.530          
+3                294.740            6000.000          
+4                3473.680           6105.260          
+4                3915.790           6421.050          
+4                4168.420           6694.740          
+4                4463.160           6463.160          
+4                4821.050           6063.160          
+4                4400.000           5263.160          
+4                4357.890           4442.110          
+4                4547.370           3705.260          
+4                4000.000           3431.580          
+4                3326.320           3368.420          
+4                3242.110           3536.840          
+4                3136.840           5157.890          
+4                2589.470           5178.950          
+4                2589.470           6063.160          
+4                3284.210           6063.160          
+4                3705.260           6231.580          
+4                4126.320           6715.790          
+5                2568.420           3200.000          
+5                4905.260           3136.840          
+5                5221.050           2842.110          
+5                5747.370           2421.050          
+5                6463.160           1578.950          
+5                6610.530           968.420           
+5                6589.470           505.260           
+5                1305.260           484.210           
+5                968.420            336.840           
+5                315.790            778.950           
+5                315.790            3115.790          
+6                9052.630           4147.370          
+6                7894.740           4189.470          
+6                6442.110           4105.260          
+6                5915.790           3642.110          
+6                5326.320           3221.050          
+6                4631.580           4231.580          
+6                4568.420           5010.530          
+6                4884.210           5768.420          
+6                5368.420           6294.740          
+6                6042.110           6568.420          
+6                8968.420           6526.320          
+7                8736.840           9642.110          
+7                9010.530           9389.470          
+7                9010.530           8631.580          
+7                9052.630           6778.950          
+7                7789.470           6800.000          
+7                7726.320           9642.110          
+8                9073.680           2063.160          
+8                9052.630           778.950           
+8                8505.260           336.840           
+8                7431.580           315.790           
+8                7410.530           484.210           
+8                6842.110           505.260           
+8                6842.110           589.470           
+8                6821.050           1178.950          
+8                6547.370           1831.580          
+8                6147.370           2378.950          
+8                5600.000           3073.680          
+8                6589.470           3894.740          
+8                8863.160           3978.950          
 
 [SYMBOLS]
-;;Gage           X-Coord          Y-Coord         
-;;-------------- ---------------- ----------------
-RG1              10084.21         8210.53         
+;;Gage           X-Coord            Y-Coord           
+;;-------------- ------------------ ------------------
+RG1              10084.210          8210.530          
+
