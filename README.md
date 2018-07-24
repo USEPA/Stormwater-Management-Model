@@ -30,7 +30,7 @@ See [CONTRIBUTING.md](https://github.com/OpenWaterAnalytics/Stormwater-Managemen
 
 # Regression Testing
 
-To run the test suite for please refer to the [tests/README.md](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/tests/README.md)
+To run the test suite for please refer to the [REGRESSION_TESTING.md](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/.github/REGRESSION_TESTING.md)
 
 # Code of conduct
 
