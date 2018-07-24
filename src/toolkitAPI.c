@@ -897,11 +897,6 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
     {
         errcode = ERR_API_INPUTNOTOPEN;
     }
-    // Check if Simulation is Running
-    else if(swmm_IsStartedFlag() == TRUE)
-    {
-        errcode = ERR_API_SIM_NRUNNING;
-    }
     // Check if subcatchment index is within bounds
     else if(index < 0 || index >= Nobjects[SUBCATCH])
     {
@@ -1007,11 +1002,6 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int Param, int value)
     {
         errcode = ERR_API_INPUTNOTOPEN;
     }
-    // Check if Simulation is Running
-    else if(swmm_IsStartedFlag() == TRUE)
-    {
-        errcode = ERR_API_SIM_NRUNNING;
-    }
     // Check if subcatchment index is within bounds
     else if(index < 0 || index >= Nobjects[SUBCATCH])
     {
@@ -1093,11 +1083,6 @@ int DLLEXPORT swmm_setLidCOverflow(int lidControlIndex, char condition)
     {
         errcode = ERR_API_INPUTNOTOPEN;
     }
-    // Check if Simulation is Running
-    else if(swmm_IsStartedFlag() == TRUE)
-    {
-        errcode = ERR_API_SIM_NRUNNING;
-    }
     // Check if subcatchment index is within bounds
     else if(lidControlIndex < 0 || lidControlIndex >= Nobjects[LID])
     {
@@ -1105,8 +1090,8 @@ int DLLEXPORT swmm_setLidCOverflow(int lidControlIndex, char condition)
     }
     else
     {
-        lidProc = lid_getLidProc(lidControlIndex);
-        lidProc->surface.canOverflow = condition;
+        //lidProc = lid_getLidProc(lidControlIndex);
+        //lidProc->surface.canOverflow = condition;
         
         //re-validate lid control
         lid_validateLidProc(lidControlIndex);
@@ -1154,7 +1139,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             case SM_ROUGHNESS:
                 *value = lidProc->surface.roughness; break;
             case SM_SURFSLOPE:
-                *value = lidProc->surface.surfSlope; break;
+                *value = lidProc->surface.surfSlope * 100; break;
             case SM_SIDESLOPE:
                 *value = lidProc->surface.sideSlope; break;
             case SM_ALPHA:
@@ -1174,12 +1159,12 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
                 *value = lidProc->soil.fieldCap; break;
             case SM_WILTPOINT:
                 *value = lidProc->soil.wiltPoint; break;
-            case SM_SUCTION:
-                *value = lidProc->soil.suction * UCF(RAINDEPTH); break;
             case SM_KSAT:
                 *value = lidProc->soil.kSat * UCF(RAINFALL); break;
             case SM_KSLOPE:
                 *value = lidProc->soil.kSlope; break;
+            case SM_SUCTION:
+                *value = lidProc->soil.suction * UCF(RAINDEPTH); break;
             default:
                 errcode = ERR_API_OUTBOUNDS; break;
             }
@@ -1190,11 +1175,13 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             case SM_THICKNESS:
                 *value = lidProc->storage.thickness * UCF(RAINDEPTH); break;
             case SM_VOIDFRAC:
-                *value = lidProc->storage.voidFrac; break;
+                *value = pow(pow(lidProc->storage.voidFrac, -1) - 1, -1); break;
             case SM_KSAT:
                 *value = lidProc->storage.kSat * UCF(RAINFALL); break;
             case SM_CLOGFACTOR:
-                *value = lidProc->storage.clogFactor; break;
+                *value = lidProc->storage.clogFactor / 
+                        (lidProc->storage.thickness * 
+                        lidProc->storage.voidFrac); break;
             default:
                 errcode = ERR_API_OUTBOUNDS; break;
             }
@@ -1205,13 +1192,16 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             case SM_THICKNESS:
                 *value = lidProc->pavement.thickness * UCF(RAINDEPTH); break;
             case SM_VOIDFRAC:
-                *value = lidProc->pavement.voidFrac; break;
+                *value = pow(pow(lidProc->pavement.voidFrac, -1) - 1, -1); break;
             case SM_IMPERVFRAC:
                 *value = lidProc->pavement.impervFrac; break;
             case SM_KSAT:
                 *value = lidProc->pavement.kSat * UCF(RAINFALL); break;
             case SM_CLOGFACTOR:
-                *value = lidProc->pavement.clogFactor; break;
+                *value = lidProc->pavement.clogFactor / 
+                        (lidProc->pavement.thickness * 
+                        lidProc->pavement.voidFrac * 
+                        (1 - lidProc->pavement.impervFrac)); break;
             default:
                 errcode = ERR_API_OUTBOUNDS; break;
             }
@@ -1226,7 +1216,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             case SM_OFFSET:
                 *value = lidProc->drain.offset * UCF(RAINDEPTH); break;
             case SM_DELAY:
-                *value = lidProc->drain.delay; break;
+                *value = lidProc->drain.delay / 3600; break;
             default:
                 errcode = ERR_API_OUTBOUNDS; break;
             }
@@ -1271,11 +1261,6 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
     {
         errcode = ERR_API_INPUTNOTOPEN;
     }
-    // Check if Simulation is Running
-    // else if (swmm_IsStartedFlag() == TRUE)
-    // {
-    //     errcode = ERR_API_SIM_NRUNNING;
-    // }
     // Check if subcatchment index is within bounds
     else if(lidControlIndex < 0 || lidControlIndex >= Nobjects[LID])
     {
@@ -1297,7 +1282,7 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
                     case SM_ROUGHNESS:
                         lidProc->surface.roughness = value; break;
                     case SM_SURFSLOPE:
-                        lidProc->surface.surfSlope = value; break;
+                        lidProc->surface.surfSlope = value / 100; break;
                     case SM_SIDESLOPE:
                         lidProc->surface.sideSlope = value; break;
                     case SM_ALPHA:
@@ -1317,12 +1302,12 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
                         lidProc->soil.fieldCap = value; break;
                     case SM_WILTPOINT:
                         lidProc->soil.wiltPoint = value; break;
-                    case SM_SUCTION:
-                        lidProc->soil.suction = value / UCF(RAINDEPTH); break;
                     case SM_KSAT:
                         lidProc->soil.kSat = value / UCF(RAINFALL); break;
                     case SM_KSLOPE:
                         lidProc->soil.kSlope = value; break;
+                    case SM_SUCTION:
+                        lidProc->soil.suction = value / UCF(RAINDEPTH); break;
                     default:
                         errcode = ERR_API_OUTBOUNDS; break;
                 }
@@ -1331,13 +1316,22 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
                 switch(Param)
                 {
                     case SM_THICKNESS:
-                        lidProc->storage.thickness = value / UCF(RAINDEPTH); break;
+                        lidProc->storage.clogFactor /= lidProc->storage.thickness;
+                        lidProc->storage.thickness = value / UCF(RAINDEPTH); 
+                        lidProc->storage.clogFactor *= lidProc->storage.thickness;
+                        break;
                     case SM_VOIDFRAC:
-                        lidProc->storage.voidFrac = value; break;
+                        lidProc->storage.clogFactor /= lidProc->storage.voidFrac;
+                        lidProc->storage.voidFrac = value / (value + 1); 
+                        lidProc->storage.clogFactor *= lidProc->storage.voidFrac;
+                        break;
                     case SM_KSAT:
                         lidProc->storage.kSat = value / UCF(RAINFALL); break;
                     case SM_CLOGFACTOR:
-                        lidProc->storage.clogFactor = value; break;
+                        lidProc->storage.clogFactor = value * 
+                        lidProc->storage.thickness * 
+                        lidProc->storage.voidFrac; 
+                        break;
                     default:
                         errcode = ERR_API_OUTBOUNDS; break;
                 }
@@ -1346,15 +1340,28 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
                 switch(Param)
                 {
                     case SM_THICKNESS:
-                        lidProc->pavement.thickness = value / UCF(RAINDEPTH); break;
+                        lidProc->pavement.clogFactor /= lidProc->pavement.thickness; 
+                        lidProc->pavement.thickness = value / UCF(RAINDEPTH); 
+                        lidProc->pavement.clogFactor *= lidProc->pavement.thickness;
+                        break;
                     case SM_VOIDFRAC:
-                        lidProc->pavement.voidFrac = value; break;
+                        lidProc->pavement.clogFactor /= lidProc->pavement.voidFrac;
+                        lidProc->pavement.voidFrac = value / (value + 1); 
+                        lidProc->pavement.clogFactor *= lidProc->pavement.voidFrac;
+                        break;
                     case SM_IMPERVFRAC:
-                        lidProc->pavement.impervFrac = value; break;
+                        lidProc->pavement.clogFactor /= (1 - lidProc->pavement.impervFrac);
+                        lidProc->pavement.impervFrac = value;
+                        lidProc->pavement.clogFactor *= (1 - lidProc->pavement.impervFrac);
+                        break;
                     case SM_KSAT:
                         lidProc->pavement.kSat = value / UCF(RAINFALL); break;
                     case SM_CLOGFACTOR:
-                        lidProc->pavement.clogFactor = value; break;
+                        lidProc->pavement.clogFactor = value *
+                        lidProc->pavement.thickness * 
+                        lidProc->pavement.voidFrac *
+                        (1.0 - lidProc->pavement.impervFrac); 
+                        break;
                     default:
                         errcode = ERR_API_OUTBOUNDS; break;
                 }
@@ -1369,7 +1376,7 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
                     case SM_OFFSET:
                         lidProc->drain.offset = value / UCF(RAINDEPTH); break;
                     case SM_DELAY:
-                        lidProc->drain.delay = value; break;
+                        lidProc->drain.delay = value * 3600; break;
                     default:
                         errcode = ERR_API_OUTBOUNDS; break;
                 }
@@ -1391,11 +1398,13 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
                 break;
             default:
                 errcode = ERR_API_OUTBOUNDS; break;
-            //re-validate lid control
-            lid_validateLidProc(lidControlIndex);
         }
+
     }
-    
+    if (errcode == ERR_NONE)
+    {
+        lid_validateLidProc(lidControlIndex);
+    }
     return(errcode);
 }
 

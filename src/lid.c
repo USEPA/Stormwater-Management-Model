@@ -621,7 +621,19 @@ int readPavementData(int j, char* toks[], int ntoks)
     LidProcs[j].pavement.voidFrac     = x[1];
     LidProcs[j].pavement.impervFrac   = x[2];
     LidProcs[j].pavement.kSat         = x[3] / UCF(RAINFALL);
-    LidProcs[j].pavement.clogFactor   = x[4];
+
+    if (LidProcs[j].pavement.thickness > 0.0)
+    {
+        LidProcs[j].pavement.clogFactor = x[4] *
+        LidProcs[j].pavement.thickness * 
+        LidProcs[j].pavement.voidFrac *
+        (1.0 - LidProcs[j].pavement.impervFrac);
+    }
+    else
+    {
+        LidProcs[j].pavement.clogFactor = 0.0;
+    }
+
     return 0;
 }
 
@@ -692,7 +704,18 @@ int readStorageData(int j, char* toks[], int ntoks)
     LidProcs[j].storage.thickness   = x[0] / UCF(RAINDEPTH);
     LidProcs[j].storage.voidFrac    = x[1];
     LidProcs[j].storage.kSat        = x[2] / UCF(RAINFALL);
-    LidProcs[j].storage.clogFactor  = x[3];
+
+    if (LidProcs[j].storage.thickness > 0.0)
+    {
+        LidProcs[j].storage.clogFactor = x[3] * 
+        LidProcs[j].storage.thickness * 
+        LidProcs[j].storage.voidFrac;
+    }
+    else 
+    {
+        LidProcs[j].storage.clogFactor = 0.0;
+    }
+
     return 0;
 }
  
@@ -975,20 +998,21 @@ void validateLidProc(int j)
     }
     else LidProcs[j].drainMat.alpha = 0.0;
 
-
+    // Relocated to readPavementData to allow multiple calls to validateLidProcs
     //... convert clogging factors to void volume basis
-    if ( LidProcs[j].pavement.thickness > 0.0 )
-    {
-        LidProcs[j].pavement.clogFactor *= 
-            LidProcs[j].pavement.thickness * LidProcs[j].pavement.voidFrac *
-            (1.0 - LidProcs[j].pavement.impervFrac);
-    }
-    if ( LidProcs[j].storage.thickness > 0.0 )
-    {
-        LidProcs[j].storage.clogFactor *=
-            LidProcs[j].storage.thickness * LidProcs[j].storage.voidFrac;
-    }
-    else LidProcs[j].storage.clogFactor = 0.0;                                 //(5.1.007)
+    //if ( LidProcs[j].pavement.thickness > 0.0 )
+    //{
+    //    LidProcs[j].pavement.clogFactor *= 
+    //        LidProcs[j].pavement.thickness * LidProcs[j].pavement.voidFrac *
+    //        (1.0 - LidProcs[j].pavement.impervFrac);
+    //}
+    // Relocated to readStorageData to allow multiple calls to validateLidProcs
+    //if ( LidProcs[j].storage.thickness > 0.0 )
+    //{
+    //    LidProcs[j].storage.clogFactor *=
+    //        LidProcs[j].storage.thickness * LidProcs[j].storage.voidFrac;
+    //}
+    //else LidProcs[j].storage.clogFactor = 0.0;                                 //(5.1.007)
 
     //... for certain LID types, immediate overflow of excess surface water
     //    occurs if either the surface roughness or slope is zero
@@ -1997,7 +2021,7 @@ TLidUnit* lid_getLidUnit(int index, int lidIndex, int* errcode)
 
 TLidProc* lid_getLidProc(int index)
 //
-// Input:   index = Index of desired subcatchment 
+// Input:   index = Index of desired lid control
 // Output:  ptr = TLidProc ptr 
 // Return:  TLidProc ptr 
 // Purpose: Gets lid process (TLidProc) ptr
@@ -2049,7 +2073,7 @@ void lid_validateLidProc(int index)
 //  Input:   index = Index of desired subcatchment 
 //  Output:  none
 {
-    //validateLidProc(index);
+    validateLidProc(index);
 }
 
 
