@@ -32,3 +32,6 @@
 performance.json
 stderr.log
 stdout.log
+tests/data/swmm_api_test.out
+tests/data/swmm_api_test.rpt
+tools/swmm-output/include/swmm_output_export.h
