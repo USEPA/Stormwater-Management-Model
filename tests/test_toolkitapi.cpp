@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
     //Gage
-    error = swmm_getGagePrecip(0, &result_array);
+    error = swmm_getGagePrecip(0, &precip_array);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
     error = swmm_setGagePrecip(0, input_val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
@@ -78,11 +78,7 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
     error = swmm_setLinkSetting(0, input_val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
-
-    //Pollutant
-    error = swmm_getSubcatchPollut(0, 0, &result_array);
-    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
-}
+    }
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -123,7 +119,6 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
     double val;
     double input_val = 0;
     double *precip_array;
-    double *pollut_array;
 
     //Gage
     error = swmm_getGagePrecip(100, &precip_array);
@@ -149,9 +144,6 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
     error = swmm_setLinkParam(100, 0, 1);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
-    //Pollutant
-    error = swmm_getSubcatchPollut(100, 0, &pollut_array);
-    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 }
 
 // Testing for invalid parameter key
