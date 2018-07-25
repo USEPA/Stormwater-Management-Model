@@ -112,27 +112,6 @@ char* LidTypeWords[] =
 //  Data Structures
 //-----------------------------------------------------------------------------
 
-// LID List - list of LID units contained in an LID group
-struct LidList
-{
-    TLidUnit*        lidUnit;     // ptr. to a LID unit
-    struct LidList*  nextLidUnit;
-};
-typedef struct LidList TLidList;
-
-// LID Group - collection of LID units applied to a specific subcatchment
-////  Re-defined for release 5.1.008. ////                                     //(5.1.008)
-struct LidGroup
-{
-    double         pervArea;      // amount of pervious area in group (ft2)
-    double         flowToPerv;    // total flow sent to pervious area (cfs)
-    double         oldDrainFlow;  // total drain flow in previous period (cfs)
-    double         newDrainFlow;  // total drain flow in current period (cfs)
-    TLidList*      lidList;       // list of LID units in the group
-};
-typedef struct LidGroup* TLidGroup;
-
-
 //-----------------------------------------------------------------------------
 //  Shared Variables
 //-----------------------------------------------------------------------------
@@ -2032,39 +2011,17 @@ TLidProc* lid_getLidProc(int index)
 }
 
 
-double lid_getLidGResult(int index, int type, int* errcode)
+TLidGroup lid_getLidGroup(int index)
 //
 // Input:   index = index of desired subcatchment 
-//          type = type of result data desired
-//          errcode = API error code
 // Output:  result = result data desired 
-// Return:  result = result data desired
-// Purpose: Gets Lid Group Data at Current Time
+// Return:  TLidGroup ptr
+// Purpose: Gets lid group (TLidGroup) ptr
 {
-    double result;
-    TLidGroup lidGroup;
-    lidGroup = LidGroups[index];
-    if (!lidGroup)
-    {
-        *errcode = ERR_API_UNDEFINED_LID;
-    }
-    else
-    {
-        switch (type)
-        {   
-            case SM_PERVAREA:
-                result = lidGroup->flowToPerv * UCF(LANDAREA); break;
-            case SM_FLOWTOPERV:
-                result = lidGroup->flowToPerv * UCF(FLOW); break;
-            case SM_OLDDRAINFLOW:
-                result = lidGroup->oldDrainFlow * UCF(FLOW); break;
-            case SM_NEWDRAINFLOW:
-                result = lidGroup->newDrainFlow * UCF(FLOW); break;
-            default:
-                *errcode = ERR_API_OUTBOUNDS; break;
-        }
-    }
-    return result;
+    TLidGroup ptr;
+    ptr = LidGroups[index];
+
+    return ptr;
 }
 
 void lid_validateLidProc(int index)
