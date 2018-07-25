@@ -861,15 +861,15 @@ int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int Param, double *valu
             switch(Param)
             {
                 case SM_UNITAREA:
-                    *value = lidUnit->area * UCF(LANDAREA); break;
+                    *value = lidUnit->area * SQR(UCF(LENGTH)); break;
                 case SM_FWIDTH:
                     *value = lidUnit->fullWidth * UCF(LENGTH); break;
                 case SM_BWIDTH:
                     *value = lidUnit->botWidth * UCF(LENGTH); break;
                 case SM_INITSAT:
-                    *value = lidUnit->initSat; break;
+                    *value = lidUnit->initSat * 100; break;
                 case SM_FROMIMPERV:
-                    *value = lidUnit->fromImperv; break;
+                    *value = lidUnit->fromImperv * 100; break;
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }
@@ -912,15 +912,15 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
             switch(Param)
             {
                 case SM_UNITAREA:
-                    lidUnit->area = value / UCF(LANDAREA); break;
+                    lidUnit->area = value / SQR(UCF(LENGTH)); break;
                 case SM_FWIDTH:
                     lidUnit->fullWidth = value / UCF(LENGTH); break;
                 case SM_BWIDTH:
                     lidUnit->botWidth = value / UCF(LENGTH); break;
                 case SM_INITSAT:
-                    lidUnit->initSat = value; break;
+                    lidUnit->initSat = value / 100; break;
                 case SM_FROMIMPERV:
-                    lidUnit->fromImperv = value; break;
+                    lidUnit->fromImperv = value / 100; break;
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }
@@ -963,22 +963,22 @@ int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int Param, int *value)
         // There are no Lid Units defined for the subcatchments
         if(lidUnit)
         {
-			switch(Param)
-			{
-			    case SM_INDEX:
-				    *value = lidUnit->lidIndex; break;
-			    case SM_NUMBER:
-				    *value = lidUnit->number; break;
-			    case SM_TOPERV:
-				    *value = lidUnit->toPerv; break;
-			    case SM_DRAINSUB:
-				    *value = lidUnit->drainSubcatch; break;
-			    case SM_DRAINNODE:
-				    *value = lidUnit->drainNode; break;
-			    default:
-				    errcode = ERR_API_OUTBOUNDS; break;
-			}
-		}
+            switch(Param)
+            {
+                case SM_INDEX:
+                    *value = lidUnit->lidIndex; break;
+                case SM_NUMBER:
+                    *value = lidUnit->number; break;
+                case SM_TOPERV:
+                    *value = lidUnit->toPerv; break;
+                case SM_DRAINSUB:
+                    *value = lidUnit->drainSubcatch; break;
+                case SM_DRAINNODE:
+                    *value = lidUnit->drainNode; break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
+            }
+        }
     }
 
     return(errcode);
@@ -1975,13 +1975,13 @@ int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, int layerIndex, dou
             switch (layerIndex)
             {
                 case SM_SURFACE:
-                    *result = lidUnit->oldFluxRates[SM_SURFACE] * UCF(FLOW); break;
+                    *result = lidUnit->oldFluxRates[SM_SURFACE]; break;
                 case SM_SOIL:
-                    *result = lidUnit->oldFluxRates[SM_SOIL] * UCF(FLOW); break;
+                    *result = lidUnit->oldFluxRates[SM_SOIL]; break;
                 case SM_STORAGE:
-                    *result = lidUnit->oldFluxRates[SM_STORAGE] * UCF(FLOW); break;
+                    *result = lidUnit->oldFluxRates[SM_STORAGE]; break;
                 case SM_PAVE:
-                    *result = lidUnit->oldFluxRates[SM_PAVE] * UCF(FLOW); break;
+                    *result = lidUnit->oldFluxRates[SM_PAVE]; break;
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }
@@ -1999,6 +1999,7 @@ int DLLEXPORT swmm_getLidGResult(int index, int type, double *result)
 // Purpose: Gets Lid Group Data at Current Time
 {
     int errcode = 0;
+    TLidGroup lidGroup;
 
     // Check if object index is within bounds
     if (index < 0 || index >= Nobjects[SUBCATCH])
@@ -2007,7 +2008,28 @@ int DLLEXPORT swmm_getLidGResult(int index, int type, double *result)
     }
     else
     {
-        *result = lid_getLidGResult(index, type, &errcode);
+        lidGroup = lid_getLidGroup(index);
+
+        if (!lidGroup)
+        {
+            errcode = ERR_API_UNDEFINED_LID;
+        }
+        else
+        {
+            switch (type)
+            {   
+                case SM_PERVAREA:
+                    *result = lidGroup->pervArea; break;
+                case SM_FLOWTOPERV:
+                    *result = lidGroup->flowToPerv; break;
+                case SM_OLDDRAINFLOW:
+                    *result = lidGroup->oldDrainFlow; break;
+                case SM_NEWDRAINFLOW:
+                    *result = lidGroup->newDrainFlow; break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
+            }
+        }
     }
     return(errcode);
 }
