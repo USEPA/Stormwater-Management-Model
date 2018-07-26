@@ -1000,10 +1000,6 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
     {
         errcode = ERR_API_OBJECT_INDEX;
     }
-    else if (Nobjects[POLLUT] == 0)
-    {
-        return(errcode); // or maybe this warrants a new error message here?
-    }
     else if (MEMCHECK(result = newDoubleArray(Nobjects[POLLUT])))
     {
         errcode = ERR_MEMORY;
