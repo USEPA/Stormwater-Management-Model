@@ -45,7 +45,7 @@
 //**********************************************************
 //#define CLE     /* Compile as a command line executable */
 //#define SOL     /* Compile as a shared object library */
-#define DLL     /* Compile as a Windows DLL */
+//#define DLL     /* Compile as a Windows DLL */
 
 // --- define WINDOWS
 #undef WINDOWS
@@ -64,6 +64,11 @@
   #ifdef _MSC_VER
     #define EXH
   #endif
+
+  // Use alias of methods unavailable before VS2015
+  #if _MSC_VER < 1900
+    #define snprintf _snprintf
+  #endif
 #endif
 
 
@@ -76,6 +81,22 @@
   #include <excpt.h>
 #endif
 ////
+
+
+// --- define DLLEXPORT
+
+//#ifndef DLLEXPORT
+#ifdef WINDOWS
+	#ifdef __MINGW32__
+		// Seems to be more wrapper friendly
+		#define DLLEXPORT __declspec(dllexport) __cdecl 
+	#else
+		#define DLLEXPORT __declspec(dllexport) __stdcall
+	#endif
+#else
+	#define DLLEXPORT
+#endif
+//#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -102,6 +123,7 @@
 #include "globals.h"                   // declaration of all global variables
 
 #include "swmm5.h"                     // declaration of exportable functions
+#include "toolkitAPI.h"
                                        //   callable from other programs
 #define  MAX_EXCEPTIONS 100            // max. number of exceptions handled
 
@@ -121,9 +143,13 @@ const double Ucf[10][2] =
       {2.203e-6,  1.0e-6    },         // MASS (lb, kg --> mg)
       {43560.0,   3048.0    }          // GWFLOW (cfs/ac, cms/ha --> ft/sec)
       };
+#ifdef __cplusplus
+extern const double Qcf[6] =           // Flow Conversion Factors:
+#else
 const double Qcf[6] =                  // Flow Conversion Factors:
-      { 1.0,     448.831, 0.64632,     // cfs, gpm, mgd --> cfs
-        0.02832, 28.317,  2.4466 };    // cms, lps, mld --> cfs
+#endif 
+    {1.0,     448.831, 0.64632,        // cfs, gpm, mgd --> cfs
+     0.02832, 28.317,  2.4466 };       // cms, lps, mld --> cfs
 
 //-----------------------------------------------------------------------------
 //  Shared variables
@@ -177,9 +203,16 @@ int  main(int argc, char *argv[])
     char *inputFile;
     char *reportFile;
     char *binaryFile;
+    char *arg1;
     char blank[] = "";
+    char SEMVERSION[SEMVERSION_LEN];
     time_t start;
     double runTime;
+
+    // Fetch SWMM Engine Version
+    getSemVersion(SEMVERSION);
+
+    start = time(0);
 
     // --- initialize flags
     IsOpenFlag = FALSE;
@@ -187,8 +220,35 @@ int  main(int argc, char *argv[])
     SaveResultsFlag = TRUE;
 
     // --- check for proper number of command line arguments
-    start = time(0);
-    if (argc < 3) writecon(FMT01);
+	if (argc == 1)
+	{
+		writecon("\nNot Enough Arguments (See Help --help)\n\n");
+	}
+	else if (argc == 2)
+	{
+		// --- extract first argument
+		arg1 = argv[1];
+
+		if (strcmp(arg1, "--help") == 0 || strcmp(arg1, "-h") == 0)
+		{
+			// Help
+			writecon("\n\nSTORMWATER MANAGEMENT MODEL (SWMM5) HELP\n\n");
+			writecon("COMMANDS:\n");
+			writecon("\t--help (-h)       Help Docs\n");
+			writecon("\t--version (-v)    Build Version\n");
+			sprintf(Msg, "\nRUNNING A SIMULATION:\n%s\n\n\n", FMT01);
+			writecon(Msg);
+		}
+		else if (strcmp(arg1, "--version") == 0 || strcmp(arg1, "-v") == 0)
+		{
+			// Output version number
+			writecon(SEMVERSION);
+		}
+		else
+		{
+			writecon("\nUnknown Argument (See Help --help)\n\n");
+		}
+	}
     else
     {
         // --- extract file names from command line arguments
@@ -196,7 +256,9 @@ int  main(int argc, char *argv[])
         reportFile = argv[2];
         if (argc > 3) binaryFile = argv[3];
         else          binaryFile = blank;
-        writecon(FMT02);
+        
+		sprintf(Msg, "\n... EPA-SWMM 5.1 (Build %s)\n", SEMVERSION);
+		writecon(Msg);
 
         // --- run SWMM
         swmm_run(inputFile, reportFile, binaryFile);
@@ -258,7 +320,8 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
                     theDay = (long)elapsedTime;
                     theHour = (long)((elapsedTime - floor(elapsedTime)) * 24.0);
                     writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-                    sprintf(Msg, "%-5d hour: %-2d", theDay, theHour);
+                    //sprintf(Msg, "%-5d hour: %-2d", theDay, theHour);
+					sprintf(Msg, "%-5ld hour: %-2ld", theDay, theHour);
                     writecon(Msg);
                     oldHour = newHour;
                 }
@@ -291,14 +354,18 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
 //  Purpose: opens a SWMM project.
 //
 {
-#ifdef DLL
-   _fpreset();              
-#endif
 
-#ifdef EXH                                                                     //(5.1.011)
-    // --- begin exception handling here
-    __try
-#endif
+	#ifndef __unix__
+	#ifdef DLL
+	   _fpreset();              
+	#endif
+	#endif
+
+	#ifdef EXH                                                                     //(5.1.011)
+		// --- begin exception handling here
+		_fpreset();
+		__try
+	#endif
     {
         // --- initialize error & warning codes
         datetime_setDateFormat(M_D_Y);
@@ -673,8 +740,32 @@ int  DLLEXPORT swmm_getVersion(void)
 //           uses a format of xyzzz where x = major version number,
 //           y = minor version number, and zzz = build number.
 //
+//  NOTE: Each New Release should be updated in consts.h
+//        THIS FUNCTION WILL EVENTUALLY BE DEPRECATED 
 {
     return VERSION;
+}
+
+void DLLEXPORT swmm_getSemVersion(char* semver)
+//
+//  Output: Returns Semantic Version
+//  Purpose: retrieves the current semantic version
+//  
+//  NOTE: Each New Release should be updated in consts.h
+{
+	getSemVersion(semver);
+}
+
+void DLLEXPORT swmm_getVersionInfo(char* major, char* minor, char* patch)
+//
+//  Output: Returns Semantic Version Info
+//  Purpose: retrieves the current semantic version
+//  
+//  NOTE: Each New Release should be updated in consts.h
+{
+	strncpy(major, SEMVERSION_MAJOR, sizeof SEMVERSION_MAJOR);
+	strncpy(minor, SEMVERSION_MINOR, sizeof SEMVERSION_MINOR);
+	strncpy(patch, SEMVERSION_PATCH, sizeof SEMVERSION_PATCH);
 }
 
 //=============================================================================
@@ -941,5 +1032,33 @@ int xfilter(int xc, char* module, double elapsedTime, long step)               /
 }
 #endif
 
+
+int swmm_IsOpenFlag()
+//
+// Check if Project is Open
+{
+	// TRUE if a project has been opened
+	return IsOpenFlag;
+}
+
+
+int swmm_IsStartedFlag()
+//
+// Check if Simulation has started
+{
+	// TRUE if a simulation has been started
+	return IsStartedFlag;
+}
+
+
+void getSemVersion(char* semver)
+//
+//  Output: Returns Semantic Version
+//  Purpose: retrieves the current semantic version
+//  
+//  NOTE: Each New Release should be updated in consts.h
+{
+	snprintf(semver, SEMVERSION_LEN, "%s.%s.%s", 
+		SEMVERSION_MAJOR, SEMVERSION_MINOR, SEMVERSION_PATCH);
+}
 //=============================================================================
-    

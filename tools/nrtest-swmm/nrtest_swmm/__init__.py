@@ -1,29 +1,40 @@
 # -*- coding: utf-8 -*-
+
+#
+#  __init__.py - nrtest_swmm module
+# 
+#  Author:     Michael E. Tryby
+#              US EPA - ORD/NRMRL
+#
+
 '''
 Numerical regression testing (nrtest) plugin for comparing SWMM binary results 
 files and SWMM text based report files. 
 '''
 
-# system imports
-import itertools as it
+import sys
+if sys.version_info < (3,0):
+    from itertools import izip as _zip
+else:
+    _zip = zip
 
 # third party imports
 import header_detail_footer as hdf
 import numpy as np
 
 # project imports
-import swmm_reader as sr
+import nrtest_swmm.output_reader as ordr
 
 
-__author__ = "Michael Tryby"
+__author__ = "Michael E. Tryby"
 __copyright__ = "None"
 __credits__ = "Colleen Barr, Maurizio Cingi, Mark Gray, David Hall, Bryant McDonnell"
 __license__ = "CC0 1.0 Universal"
 
-__version__ = "0.2.0"
-__date__ = "September 20, 2016"
+__version__ = "0.3.0"
+__date__ = "November 14, 2017"
 
-__maintainer__ = "Michael Tryby"
+__maintainer__ = "Michael E. Tryby"
 __email__ = "tryby.michael@epa.gov"
 __status  = "Development"
 
@@ -56,10 +67,10 @@ def swmm_allclose_compare(path_test, path_ref, rtol, atol):
         AssertionError()
         ...
     '''
-    for (test, ref) in it.izip(sr.swmm_output_generator(path_test), 
-                               sr.swmm_output_generator(path_ref)):
+    for (test, ref) in _zip(ordr.output_generator(path_test), 
+                            ordr.output_generator(path_ref)):
         
-        if test.size != ref.size:
+        if len(test) != len(ref):
             raise ValueError('Inconsistent lengths')
         
         # Skip over results if they are equal
@@ -103,8 +114,8 @@ def swmm_report_compare(path_test, path_ref, rtol, atol):
     
     with open(path_test ,'r') as ftest, open(path_ref, 'r') as fref:
         
-        for (test_line, ref_line) in it.izip(hdf.parse(ftest, HEADER, FOOTER)[1], 
-                                             hdf.parse(fref, HEADER, FOOTER)[1]): 
+        for (test_line, ref_line) in _zip(hdf.parse(ftest, HEADER, FOOTER)[1], 
+                                          hdf.parse(fref, HEADER, FOOTER)[1]): 
         
             if test_line != ref_line: 
                 return False

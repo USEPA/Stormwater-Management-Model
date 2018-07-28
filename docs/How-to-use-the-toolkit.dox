@@ -1,0 +1,73 @@
+/** 
+@page how-to-use How to Use the Toolkit
+
+Full Function collection can be found @ref toolkitAPI.h
+
+
+~~~~~~~~~~~~~~~{.c}
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "swmm5.h"
+#include "toolkitAPI.h"
+
+long newHour, oldHour = 0;
+long theDay, theHour;
+double elapsedTime = 0.0;
+
+char *inputFile;
+char *reportFile;
+char *binaryFile;
+
+inputFile = "<path2>/inputfile.inp";
+reportFile = "<path2>/reportfile.rpt";
+binaryFile = "<path2>/outputfile.out";
+
+// Open the files & read input data
+ErrorCode = swmm_open(inputFile, reportFile, binaryFile);
+
+// Run the simulation if input data OK
+if ( !ErrorCode )
+{
+    int ndType;
+    double depth = 0;
+    
+    swmm_getNodeType(0, &ndType);
+
+    printf("Node Type: %d", ndType); \\ Print node type (See SM_NodeType)
+    
+    // Initialize values and Start the Simulation
+    ErrorCode = swmm_start(TRUE);
+    
+    // Execute each time step until elapsed time is re-set to 0
+    if ( !ErrorCode )
+    {
+        do
+        {
+            ErrorCode = swmm_step(&elapsedTime);
+            
+            swmm_getNodeResult(0, SM_NODEDEPTH, &depth) \\ Stream Results!
+
+            printf("Node Depth %lf", depth); \\ Print node result (See SM_NodeResult)
+
+        } while ( elapsedTime > 0.0 && !ErrorCode );
+    }
+    // Clean up
+    ErrorCode = swmm_end();
+}
+
+// Get Stats for Node
+SM_NodeStats* Node0Stats;
+swmm_getNodeStats(0, &Node0Stats);
+
+printf("Node Max Depth %lf", Node0Stats->avgDepth);
+
+// Report results
+swmm_report();
+
+// Close the system
+swmm_close();
+~~~~~~~~~~~~~~~
+
+*/

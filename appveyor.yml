@@ -1,0 +1,103 @@
+# https://ci.appveyor.com/project/OpenWaterAnalytics/stormwater-management-model/
+
+version: 2.0.{build}
+
+platform:
+  - x64
+
+matrix:
+  allow_failures:
+    #Group: (EXPERIMENTAL / SUPPORTED)
+    #EXPERIMENTAL is allowed to fail under the build matrix
+    - GROUP: "EXPERIMENTAL"
+
+environment:
+  matrix:
+    # Python 3.4
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      GENERATOR: "Visual Studio 10 2010"
+      GROUP: "SUPPORTED"
+      BOOST_ROOT: "C:/Libraries/boost"
+    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    #  VS_VERSION: "10 2010"
+    #  ARCH: Win64
+    #  GROUP: "EXPERIMENTAL"
+    #  BOOST_ROOT: C:/Libraries/boost_1_58_0
+    #  BOOST_LIBDIR: C:/Libraries/boost_1_58_0/lib64-msvc-10.0
+    # Python 3.5 and 3.6
+    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    #  VS_VERSION: "14 2015"
+    #  ARCH: Win32
+    #  GROUP: "EXPERIMENTAL"
+    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    #  VS_VERSION: "14 2015"
+    #  ARCH: Win64
+    #  GROUP: "EXPERIMENTAL"
+    # Python 2.7
+    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    #  VS_VERSION: "9 2008"
+    #  ARCH: Win32
+    #  GROUP: "EXPERIMENTAL"
+    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    #  VS_VERSION: "9 2008"
+    #  ARCH: Win64
+    #  GROUP: "EXPERIMENTAL"
+    # Not used as a python compiler
+    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    #  VS_VERSION: "12 2013"
+    #  arch: Win32
+    #  GROUP: "EXPERIMENTAL"
+    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    #  VS_VERSION: "12 2013"
+    #  ARCH: Win64
+    #  GROUP: "EXPERIMENTAL"
+    # Not used as a python compiler. Swig is not working with these compilers
+    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    #  VS_VERSION: "15 2017"
+    #  ARCH: Win32
+    #  GROUP: "EXPERIMENTAL"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR: "Visual Studio 15 2017 Win64"
+      GROUP: "EXPERIMENTAL"
+      BOOST_ROOT: "C:/Libraries/boost_1_67_0"
+
+init:
+  - set SWMM_HOME=%APPVEYOR_BUILD_FOLDER%
+  - set BUILD_HOME=buildprod
+  - set TEST_HOME=nrtestsuite
+  - set NRTEST_SCRIPT=C:\Python27\Scripts
+  # See set values
+  - echo %APPVEYOR_BUILD_WORKER_IMAGE%
+  - echo %BUILD_HOME%
+  - echo %GENERATOR%
+  - echo %BOOST_ROOT%
+
+install:
+  # Install nrtest and dependencies for regression tests
+  - python -m pip install -r tools\requirements-appveyor.txt
+
+before_build:
+  - mkdir %BUILD_HOME%
+  - cd %BUILD_HOME%
+  - cmake -G "%GENERATOR%" 
+    -DBOOST_ROOT="%BOOST_ROOT%"
+    -DBoost_USE_STATIC_LIBS="ON" ..
+
+build_script:
+  - cmake --build . --config Release
+
+before_test: 
+  - cd %SWMM_HOME%
+  - tools\before-test.cmd %TEST_HOME% %SWMM_HOME%\%BUILD_HOME%\bin\Release %APPVEYOR_REPO_COMMIT%
+
+test_script:
+  # run unit tests
+  - cd %BUILD_HOME%\tests
+  - ctest -C Release
+    # Run regression tests
+  - cd %SWMM_HOME%
+  - tools\run-nrtest.cmd %NRTEST_SCRIPT% %TEST_HOME% %APPVEYOR_REPO_COMMIT%
+
+#cache:
+#  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+#  - C:\ProgramData\chocolatey\lib -> appveyor.yml

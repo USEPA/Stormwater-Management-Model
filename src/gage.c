@@ -266,10 +266,12 @@ void  gage_initState(int j)
     Gage[j].isUsed = FALSE;
     Gage[j].rainfall = 0.0;
     Gage[j].reportRainfall = 0.0;
+    // --- rainfall api sets external rainfall rate
+    Gage[j].externalRain = 0.0;
     if ( IgnoreRainfall ) return;
 
     // --- for gage with file data:
-    if ( Gage[j].dataSource == RAIN_FILE )
+    if ( Gage[j].dataSource == RAIN_FILE)
     {
         // --- set current file position to start of period of record
         Gage[j].currentFilePos = Gage[j].startFilePos;
@@ -327,16 +329,24 @@ void gage_setState(int j, DateTime t)
 
     // --- use rainfall from co-gage (gage with lower index that uses
     //     same rainfall time series or file) if it exists
-    if ( Gage[j].coGage >= 0)
+    if ( Gage[j].coGage >= 0 && Gage[j].dataSource != RAIN_API)
     {
         Gage[j].rainfall = Gage[Gage[j].coGage].rainfall;
         return;
     }
 
-    // --- otherwise march through rainfall record until date t is bracketed
-    t += OneSecond;
-    for (;;)
+    if (Gage[j].dataSource == RAIN_API)
     {
+        getNextRainfall(j);
+        Gage[j].rainfall = Gage[j].nextRainfall;
+        return;
+    }
+    else
+    {
+        // --- otherwise march through rainfall record until date t is bracketed
+        t += OneSecond;
+        for (;;)
+        {
         // --- no rainfall if no interval start date
         if ( Gage[j].startDate == NO_DATE )
         {
@@ -358,7 +368,7 @@ void gage_setState(int j, DateTime t)
         }
 
         // --- no rainfall if t >= interval end date & no next interval exists
-        if ( Gage[j].nextDate == NO_DATE )
+        if ( Gage[j].nextDate == NO_DATE)
         {
             Gage[j].rainfall = 0.0;
             return;
@@ -374,9 +384,11 @@ void gage_setState(int j, DateTime t)
         // --- otherwise update next rainfall interval date
         Gage[j].startDate = Gage[j].nextDate;
         Gage[j].endDate = datetime_addSeconds(Gage[j].startDate,
-                          Gage[j].rainInterval);
+                  Gage[j].rainInterval);
         Gage[j].rainfall = Gage[j].nextRainfall;
+
         if ( !getNextRainfall(j) ) Gage[j].nextDate = NO_DATE;
+        }
     }
 }
 
@@ -474,8 +486,15 @@ int getFirstRainfall(int j)
     // --- initialize internal cumulative rainfall value
     Gage[j].rainAccum = 0;
 
+    // --- use rainfall API if provided
+    if (Gage[j].dataSource == RAIN_API)
+    {
+        Gage[j].rainfall = Gage[j].externalRain;
+        return 1;
+    }
+
     // --- use rain interface file if applicable
-    if ( Gage[j].dataSource == RAIN_FILE )
+    else if ( Gage[j].dataSource == RAIN_FILE )
     {
         if ( Frain.file && Gage[j].endFilePos > Gage[j].startFilePos )
         {
@@ -530,33 +549,42 @@ int getNextRainfall(int j)
     double rNext;                      // next rain intensity (in/hr or mm/hr)
 
     Gage[j].nextRainfall = 0.0;
-    do
+    if (Gage[j].dataSource == RAIN_API)
     {
+        rNext = Gage[j].externalRain;
+    }
+    else
+    {
+        do
+        {
         if ( Gage[j].dataSource == RAIN_FILE )
         {
             if ( Frain.file && Gage[j].currentFilePos < Gage[j].endFilePos )
             {
-                fseek(Frain.file, Gage[j].currentFilePos, SEEK_SET);
-                fread(&Gage[j].nextDate, sizeof(DateTime), 1, Frain.file);
-                fread(&vNext, sizeof(float), 1, Frain.file);
-                Gage[j].currentFilePos = ftell(Frain.file);
-                rNext = convertRainfall(j, (double)vNext);
+            fseek(Frain.file, Gage[j].currentFilePos, SEEK_SET);
+            fread(&Gage[j].nextDate, sizeof(DateTime), 1, Frain.file);
+            fread(&vNext, sizeof(float), 1, Frain.file);
+            Gage[j].currentFilePos = ftell(Frain.file);
+            rNext = convertRainfall(j, (double)vNext);
             }
             else return 0;
         }
 
-        else
+        else if (Gage[j].dataSource == RAIN_TSERIES)
         {
             k = Gage[j].tSeries;
             if ( k >= 0 )
             {
-                if ( !table_getNextEntry(&Tseries[k],
-                        &Gage[j].nextDate, &rNext) ) return 0;
-                rNext = convertRainfall(j, rNext);
+            if ( !table_getNextEntry(&Tseries[k],
+                &Gage[j].nextDate, &rNext) ) return 0;
+            rNext = convertRainfall(j, rNext);
             }
             else return 0;
         }
-    } while (rNext == 0.0);
+
+
+        } while (rNext == 0.0);
+    }
     Gage[j].nextRainfall = rNext;
     return 1;
 }

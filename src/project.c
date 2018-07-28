@@ -52,14 +52,19 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>                                                              //(5.1.008)
-#include <omp.h>                                                               //(5.1.008)
+#if defined(_OPENMP)
+  #include <omp.h>                                                             //(5.1.008)
+#else
+  int omp_get_num_threads(void) { return 1;}
+#endif
 #include "headers.h"
 #include "lid.h" 
 #include "hash.h"
 #include "mempool.h"
 
+#include "swmm5.h"
 //-----------------------------------------------------------------------------
 //  Constants
 //-----------------------------------------------------------------------------
@@ -327,7 +332,7 @@ int   project_addObject(int type, char *id, int n)
 
 //=============================================================================
 
-int   project_findObject(int type, char *id)
+int DLLEXPORT  project_findObject(int type, char *id)
 //
 //  Input:   type = object type
 //           id   = object ID
@@ -337,6 +342,9 @@ int   project_findObject(int type, char *id)
 {
     return HTfind(Htable[type], id);
 }
+
+
+
 
 //=============================================================================
 
@@ -1275,3 +1283,15 @@ void deleteHashTables()
 }
 
 //=============================================================================
+
+
+
+
+
+
+
+
+
+
+
+

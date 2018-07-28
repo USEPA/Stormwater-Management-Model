@@ -54,7 +54,7 @@
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>
 #include "headers.h"
 
@@ -148,7 +148,9 @@ double   ControlValue;                 // value of controller variable
 double   SetPoint;                     // value of controller setpoint
 DateTime CurrentDate;                  // current date in whole days 
 DateTime CurrentTime;                  // current time of day (decimal)
-DateTime ElapsedTime;                  // elasped simulation time (decimal days)
+
+// Avoid Duplicate symbol error on C++
+//DateTime ElapsedTime;                  // elasped simulation time (decimal days)
 
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
