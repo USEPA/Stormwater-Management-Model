@@ -1014,19 +1014,14 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
                     result[p] = Subcatch[index].surfaceBuildup[p] /
-                        (a * UCF(LANDAREA)); // CHECK CONVERSIONS
+                        (a * UCF(LANDAREA));
                 } *PollutArray = result;
             } break;
             case SM_CPONDED:
             {
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
-                    result[p] = Subcatch[index].concPonded[p] /
-                        (LperFT3 * Pollut[p].mcf); // CHECK CONVERSIONS
-                    if (Pollut[p].units == COUNT && result[p] > 0)
-                    {
-                        result[p] = LOG10(result[p]);
-                    }
+                    result[p] = Subcatch[index].concPonded[p] / LperFT3;
                 } *PollutArray = result;
             } break;
             default: errcode = ERR_API_OUTBOUNDS; break;
