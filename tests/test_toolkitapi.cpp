@@ -832,7 +832,7 @@ BOOST_FIXTURE_TEST_CASE(getset_lidunit, FixtureOpenClose) {
 
     error = swmm_getLidUParam(subc_ind, 1, SM_BWIDTH, &val);
     BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(val - 0, 0.0001);
+    BOOST_CHECK_SMALL(val - 1, 0.0001);
     error = swmm_setLidUParam(subc_ind, 1, SM_BWIDTH, 5);
     BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getLidUParam(subc_ind, 1, SM_BWIDTH, &val);
@@ -1057,36 +1057,83 @@ BOOST_FIXTURE_TEST_CASE(get_result_during_sim, FixtureBeforeStep){
             error = swmm_getLinkResult(lnk_ind, SM_FROUDE, &val);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(val - 0.0, 0.0001);
-            /*
+        
+        }
+        
+        if (step_ind == 600) // (Jan 1, 1998 10:00am)
+        {
             // Lid Group
             error = swmm_getLidGResult(sub_lid, SM_PERVAREA, &val);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(val - 50000, 0.0001);
             error = swmm_getLidGResult(sub_lid, SM_FLOWTOPERV, &val);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_SMALL(val, 0.0001);
+            BOOST_CHECK_SMALL(val - 0.294977, 0.0001);
             error = swmm_getLidGResult(sub_lid, SM_OLDDRAINFLOW, &val);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(val - 0, 0.0001);
             error = swmm_getLidGResult(sub_lid, SM_NEWDRAINFLOW, &val);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(val - 0, 0.0001);
-       
+
             // Lid Unit
             error = swmm_getLidUFluxRates(sub_lid, 0, SM_SURFACE, &val);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_SMALL(val, 0.0001);
+            BOOST_CHECK_SMALL(val - 0, 0.0001);
             error = swmm_getLidUFluxRates(sub_lid, 0, SM_SOIL, &val);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_SMALL(val, 0.0001);
+            BOOST_CHECK_SMALL(val - (-0.000003), 0.000001);
             error = swmm_getLidUFluxRates(sub_lid, 0, SM_STORAGE, &val);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_SMALL(val, 0.0001);
+            BOOST_CHECK_SMALL(val - 0, 0.0001);
             error = swmm_getLidUFluxRates(sub_lid, 0, SM_PAVE, &val);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_SMALL(val, 0.0001);
-            */
+            BOOST_CHECK_SMALL(val - 0, 0.0001);
+
+            error = swmm_getLidUResult(sub_lid, 0, SM_INFLOW, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 0.5766, 0.0001);
+            error = swmm_getLidUResult(sub_lid, 0, SM_EVAP, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 0, 0.0001);
+            error = swmm_getLidUResult(sub_lid, 0, SM_INFIL, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 0.0012, 0.0001);
+            error = swmm_getLidUResult(sub_lid, 0, SM_SURFFLOW, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 0, 0.0001);
+            error = swmm_getLidUResult(sub_lid, 0, SM_DRAINFLOW, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 0.0347, 0.0001);
+            error = swmm_getLidUResult(sub_lid, 0, SM_INITVOL, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 0.2500, 0.0001);
+            error = swmm_getLidUResult(sub_lid, 0, SM_FINALVOL, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 0.7973, 0.0001);
+            error = swmm_getLidUResult(sub_lid, 0, SM_SURFDEPTH, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 0, 0.0001);
+            error = swmm_getLidUResult(sub_lid, 0, SM_PAVEDEPTH, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 0, 0.0001);
+            error = swmm_getLidUResult(sub_lid, 0, SM_SOILMOIST, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 0.2247, 0.0001);
+            error = swmm_getLidUResult(sub_lid, 0, SM_STORDEPTH, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 0.5343, 0.0001);
+            error = swmm_getLidUResult(sub_lid, 0, SM_DRYTIME, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 15300, 0.0001);
+            error = swmm_getLidUResult(sub_lid, 0, SM_OLDDRAINFLOW, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 0, 0.0001);
+            error = swmm_getLidUResult(sub_lid, 0, SM_NEWDRAINFLOW, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(val - 0, 0.0001);
         }
+
         step_ind+=1;
     }while (elapsedTime != 0 && !error);
     BOOST_REQUIRE(error == ERR_NONE);
