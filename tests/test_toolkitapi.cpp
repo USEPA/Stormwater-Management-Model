@@ -832,7 +832,7 @@ BOOST_FIXTURE_TEST_CASE(getset_lidunit, FixtureOpenClose) {
 
     error = swmm_getLidUParam(subc_ind, 1, SM_BWIDTH, &val);
     BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(val - 1, 0.0001);
+    BOOST_CHECK_SMALL(val - 0, 0.0001);
     error = swmm_setLidUParam(subc_ind, 1, SM_BWIDTH, 5);
     BOOST_REQUIRE(error == ERR_NONE);
     error = swmm_getLidUParam(subc_ind, 1, SM_BWIDTH, &val);
