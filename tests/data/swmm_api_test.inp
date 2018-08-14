@@ -36,7 +36,7 @@ MAX_TRIALS           0
 HEAD_TOLERANCE       0
 SYS_FLOW_TOL         5
 LAT_FLOW_TOL         5
-;MINIMUM_STEP         0.5
+MINIMUM_STEP         0.5
 THREADS              1
 
 [EVAPORATION]
@@ -85,6 +85,27 @@ RG1              INTENSITY 1:00     1.0      TIMESERIES TS1
 6                0.7        0.3        4.14       0.50       0         
 7                0.7        0.3        4.14       0.50       0         
 8                0.7        0.3        4.14       0.50       0         
+
+[LID_CONTROLS]
+;;Name           Type/Layer Parameters
+;;-------------- ---------- ----------
+LID              PP
+LID              SURFACE    10         0.5        0.013      1.0        5         
+LID              PAVEMENT   20         0.15       0.5        100        8         
+LID              SOIL       30         0.5        0.2        0.1        5          10.0       3.5       
+LID              STORAGE    40         0.75       0.5        0.2       
+LID              DRAIN      0.5        0.5        6          6         
+
+Green_LID        GR
+Green_LID        SURFACE    10         0.2        0.1        1.0        5         
+Green_LID        SOIL       45         0.5        0.2        0.1        0.5        10.0       3.5       
+Green_LID        DRAINMAT   3          0.5        0.1       
+
+[LID_USAGE]
+;;Subcatchment   LID Process      Number  Area       Width      InitSat    FromImp    ToPerv     RptFile                  DrainTo         
+;;-------------- ---------------- ------- ---------- ---------- ---------- ---------- ---------- ------------------------ ----------------
+2                LID              4       10000      20         0          50         1         
+2                LID              1       10000      10         0          10         1         
 
 [JUNCTIONS]
 ;;Name           Elevation  MaxDepth   InitDepth  SurDepth   Aponded   

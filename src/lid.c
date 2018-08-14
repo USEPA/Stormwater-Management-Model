@@ -112,27 +112,6 @@ char* LidTypeWords[] =
 //  Data Structures
 //-----------------------------------------------------------------------------
 
-// LID List - list of LID units contained in an LID group
-struct LidList
-{
-    TLidUnit*        lidUnit;     // ptr. to a LID unit
-    struct LidList*  nextLidUnit;
-};
-typedef struct LidList TLidList;
-
-// LID Group - collection of LID units applied to a specific subcatchment
-////  Re-defined for release 5.1.008. ////                                     //(5.1.008)
-struct LidGroup
-{
-    double         pervArea;      // amount of pervious area in group (ft2)
-    double         flowToPerv;    // total flow sent to pervious area (cfs)
-    double         oldDrainFlow;  // total drain flow in previous period (cfs)
-    double         newDrainFlow;  // total drain flow in current period (cfs)
-    TLidList*      lidList;       // list of LID units in the group
-};
-typedef struct LidGroup* TLidGroup;
-
-
 //-----------------------------------------------------------------------------
 //  Shared Variables
 //-----------------------------------------------------------------------------
@@ -195,7 +174,12 @@ extern char       HasWetLids;          // TRUE if any LIDs are wet             /
 //  lid_writeSummary         called by inputrpt_writeInput
 //  lid_writeWaterBalance    called by statsrpt_writeReport
 
-
+//  lid_getLidUnitCount      called by LID API toolkit
+//  lid_getLidUnit           called by LID API toolkit
+//  lid_getLidProc           called by LID API toolkit
+//  lid_getLidGroup          called by LID API toolkit
+//  lid_validateLidProc      called by LID API toolkit
+//  lid_validateLidGroup     called by LID API toolkit
 //-----------------------------------------------------------------------------
 // Local Functions
 //-----------------------------------------------------------------------------
@@ -616,7 +600,19 @@ int readPavementData(int j, char* toks[], int ntoks)
     LidProcs[j].pavement.voidFrac     = x[1];
     LidProcs[j].pavement.impervFrac   = x[2];
     LidProcs[j].pavement.kSat         = x[3] / UCF(RAINFALL);
-    LidProcs[j].pavement.clogFactor   = x[4];
+
+    if (LidProcs[j].pavement.thickness > 0.0)
+    {
+        LidProcs[j].pavement.clogFactor = x[4] *
+        LidProcs[j].pavement.thickness * 
+        LidProcs[j].pavement.voidFrac *
+        (1.0 - LidProcs[j].pavement.impervFrac);
+    }
+    else
+    {
+        LidProcs[j].pavement.clogFactor = 0.0;
+    }
+
     return 0;
 }
 
@@ -687,7 +683,18 @@ int readStorageData(int j, char* toks[], int ntoks)
     LidProcs[j].storage.thickness   = x[0] / UCF(RAINDEPTH);
     LidProcs[j].storage.voidFrac    = x[1];
     LidProcs[j].storage.kSat        = x[2] / UCF(RAINFALL);
-    LidProcs[j].storage.clogFactor  = x[3];
+
+    if (LidProcs[j].storage.thickness > 0.0)
+    {
+        LidProcs[j].storage.clogFactor = x[3] * 
+        LidProcs[j].storage.thickness * 
+        LidProcs[j].storage.voidFrac;
+    }
+    else 
+    {
+        LidProcs[j].storage.clogFactor = 0.0;
+    }
+
     return 0;
 }
  
@@ -970,20 +977,21 @@ void validateLidProc(int j)
     }
     else LidProcs[j].drainMat.alpha = 0.0;
 
-
+    // Relocated to readPavementData to allow multiple calls to validateLidProcs
     //... convert clogging factors to void volume basis
-    if ( LidProcs[j].pavement.thickness > 0.0 )
-    {
-        LidProcs[j].pavement.clogFactor *= 
-            LidProcs[j].pavement.thickness * LidProcs[j].pavement.voidFrac *
-            (1.0 - LidProcs[j].pavement.impervFrac);
-    }
-    if ( LidProcs[j].storage.thickness > 0.0 )
-    {
-        LidProcs[j].storage.clogFactor *=
-            LidProcs[j].storage.thickness * LidProcs[j].storage.voidFrac;
-    }
-    else LidProcs[j].storage.clogFactor = 0.0;                                 //(5.1.007)
+    //if ( LidProcs[j].pavement.thickness > 0.0 )
+    //{
+    //    LidProcs[j].pavement.clogFactor *= 
+    //        LidProcs[j].pavement.thickness * LidProcs[j].pavement.voidFrac *
+    //        (1.0 - LidProcs[j].pavement.impervFrac);
+    //}
+    // Relocated to readStorageData to allow multiple calls to validateLidProcs
+    //if ( LidProcs[j].storage.thickness > 0.0 )
+    //{
+    //    LidProcs[j].storage.clogFactor *=
+    //        LidProcs[j].storage.thickness * LidProcs[j].storage.voidFrac;
+    //}
+    //else LidProcs[j].storage.clogFactor = 0.0;                                 //(5.1.007)
 
     //... for certain LID types, immediate overflow of excess surface water
     //    occurs if either the surface roughness or slope is zero
@@ -1904,4 +1912,133 @@ void initLidRptFile(char* title, char* lidID, char* subcatchID, TLidUnit* lidUni
     //... initialize LID dryness state
     lidUnit->rptFile->wasDry = 1;                                              //(5.1.012)
     strcpy(lidUnit->rptFile->results, "");                                     //(5.1.012)
+}
+
+
+int lid_getLidUnitCount(int index)
+// Input:   index = Index of desired subcatchment 
+// Output:  int = number of lid units for subcatchment 
+// Return:  number of lid units for subcatchment
+// Purpose: count number of lid units for subcatchment
+{
+    int unitCount = 0;
+    TLidList* lidList;
+    TLidGroup lidGroup;
+
+    lidGroup = LidGroups[index];
+    lidList = lidGroup->lidList;
+    
+    while (lidList)
+    {
+        lidList = lidList->nextLidUnit;
+        unitCount += 1;
+    }
+    
+    return unitCount;
+}
+
+
+TLidUnit* lid_getLidUnit(int index, int lidIndex, int* errcode)
+//
+// Input:   index = Index of desired subcatchment 
+//          lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
+//          errcode  = ptr to errcode
+// Output:  TLidUnit = TLidUnit ptr 
+// Return:  TLidUnit ptr 
+// Purpose: Gets lid unit (TLidUnit) ptr
+{   
+    int currLidIndex = 0;
+    int unitCount = 1;
+    TLidUnit* lidUnit = NULL;
+    TLidList* lidList;
+    TLidGroup lidGroup;
+
+    lidGroup = LidGroups[index];
+    if (!lidGroup)
+    {
+        *errcode = ERR_API_UNDEFINED_LID;
+    }
+    else 
+    {
+        lidList = lidGroup->lidList;
+
+        // Patch solution for now
+        // Realized the lid units are stored in reverse order of
+        // how they are defined in the [LID USAGE]
+        // For now, I will just count the number of Lid Units in Lid List 
+        unitCount = lid_getLidUnitCount(index);
+    
+        if (lidIndex > (unitCount - 1))
+        {
+            *errcode = ERR_API_LIDUNIT_INDEX;
+            return(NULL);
+        }
+        else
+        {
+            // update lidIndex due to reverse order
+            lidIndex = unitCount - lidIndex - 1;
+    
+            // Traverse through lid list to find lid unit
+            while ((lidList) && (currLidIndex <= lidIndex))
+            {
+                lidUnit = lidList->lidUnit;
+                currLidIndex += 1;
+                lidList = lidList->nextLidUnit;
+            }
+    
+            // Verify that the lid unit found matches the one specified by the user
+            if (!((currLidIndex - 1) == lidIndex))
+            {
+                *errcode = ERR_API_LIDUNIT_INDEX;
+                lidUnit = NULL;
+            }
+        }
+    }
+
+    return lidUnit;
+}
+
+TLidProc* lid_getLidProc(int index)
+//
+// Input:   index = Index of desired lid control
+// Output:  ptr = TLidProc ptr 
+// Return:  TLidProc ptr 
+// Purpose: Gets lid process (TLidProc) ptr
+{
+    TLidProc* ptr;
+    ptr = &LidProcs[index];
+    return ptr;
+}
+
+
+TLidGroup lid_getLidGroup(int index)
+//
+// Input:   index = index of desired subcatchment 
+// Output:  result = result data desired 
+// Return:  TLidGroup ptr
+// Purpose: Gets lid group (TLidGroup) ptr
+{
+    TLidGroup ptr;
+    ptr = LidGroups[index];
+
+    return ptr;
+}
+
+void lid_validateLidProc(int index)
+//
+//  Purpose: hook to lid internal function to validate LID process parameters.
+//  Input:   index = Index of desired subcatchment 
+//  Output:  none
+{
+    validateLidProc(index);
+}
+
+
+void lid_validateLidGroup(int index)
+//
+//  Purpose: hook to lid internal function to validate LID process parameters.
+//  Input:   index = Index of desired subcatchment 
+//  Output:  none
+{
+    validateLidGroup(index);
 }

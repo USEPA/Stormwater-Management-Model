@@ -179,6 +179,76 @@ typedef enum {
     SM_SNOWFALL      = 2   //**< Snowfall Rate */)
 } SM_GagePrecip;
 
+/// Lid control layer codes
+typedef enum {
+    SM_SURFACE      = 0,  /**< Lid Surface Layer */
+    SM_SOIL         = 1,  /**< Lid Soil Layer */
+    SM_STOR         = 2,  /**< Lid Storage Layer */
+    SM_PAVE         = 3,  /**< Lid Pavement Layer */
+    SM_DRAIN        = 4,  /**< Lid Underdrain Layer */
+    SM_DRAINMAT     = 5,  /**< Lid Drainage Mat Layer */
+} SM_LidLayer;
+
+/// Lid control layer property codes
+typedef enum {
+    SM_THICKNESS    = 0,  /**< Storage Height */
+    SM_VOIDFRAC     = 1,  /**< Available Fraction of Storage Volume */
+    SM_ROUGHNESS    = 2,  /**< Manning n */
+    SM_SURFSLOPE    = 3,  /**< Surface Slope (fraction) */
+    SM_SIDESLOPE    = 4,  /**< Side Slope (run/rise) */
+    SM_ALPHA        = 5,  /**< Slope/Roughness Term in Manning Eqn */
+    SM_POROSITY     = 6,  /**< Void Volume / Total Volume */
+    SM_FIELDCAP     = 7,  /**< Field Capacity */
+    SM_WILTPOINT    = 8,  /**< Wilting Point */
+    SM_SUCTION      = 9,  /**< Suction Head at Wetting Front */
+    SM_KSAT         = 10, /**< Saturated Hydraulic Conductivity */
+    SM_KSLOPE       = 11, /**< Slope of Log(k) v. Moisture Content Curve */
+    SM_CLOGFACTOR   = 12, /**< Clogging Factor */
+    SM_IMPERVFRAC   = 13, /**< Impervious Area Fraction */
+    SM_COEFF        = 14, /**< Underdrain Flow Coefficient */
+    SM_EXPON        = 15, /**< Underdrain Head Exponent */
+    SM_OFFSET       = 16, /**< Offset Height of Underdrain */
+    SM_DELAY        = 17, /** Rain Barrel Drain Delay Time */
+} SM_LidLayerProperty;
+
+/// Lid unit property codes
+typedef enum {
+	SM_UNITAREA		= 0,  /**< Area of Single Replicate Unit */
+	SM_FWIDTH		= 1,  /**< Full Top Width of Single Unit */
+	SM_BWIDTH		= 2,  /**< Bottom Width of Single Unit */
+	SM_INITSAT		= 3,  /**< Initial Saturation of Soil and Storage Layer */
+	SM_FROMIMPERV	= 4,  /**< Fraction of Impervious Area Runoff Treated */
+} SM_LidUProperty;
+
+/// Lid unit option codes
+typedef enum {
+    SM_INDEX        = 0,  /**< Lid Process Index */
+    SM_NUMBER       = 1,  /**< Number of Replicate Units */
+    SM_TOPERV       = 2,  /**< Outflow to Pervious Area */
+    SM_DRAINSUB     = 3,  /**< Subcatchment Recieving Drain Flow */
+    SM_DRAINNODE    = 4,  /**< Node Recieving Drain Flow */
+} SM_LidUOptions;
+
+/// Lid unit result codes
+typedef enum {
+    SM_INFLOW       = 0,  /**< Total Inflow */
+    SM_EVAP         = 1,  /**< Total Evaporation */
+    SM_INFIL        = 2,  /**< Total Infiltration */
+    SM_SURFFLOW     = 3,  /**< Total Surface runoff */
+    SM_DRAINFLOW    = 4,  /**< Total Underdrain flow */
+    SM_INITVOL      = 5,  /**< Initial Stored Volume */
+    SM_FINALVOL     = 6,  /**< Final Stored Volume */
+    SM_SURFDEPTH    = 7,  /**< Depth of Ponded Water on Surface Layer */
+    SM_PAVEDEPTH    = 8,  /**< Depth of Water in Porous Pavement Layer */
+    SM_SOILMOIST    = 9,  /**< Moisture Content of Biocell Soil Layer */
+    SM_STORDEPTH    = 10, /**< Depth of Water in Storage Layer */
+    SM_DRYTIME      = 11, /**< Time Since Last Rainfall */
+    SM_OLDDRAINFLOW = 12, /**< Previous Drain Flow (unit and group) */ 
+    SM_NEWDRAINFLOW = 13, /**< Current Drain Flow (unit and group) */
+    SM_PERVAREA     = 14, /**< Amount of Pervious Area (group) */
+    SM_FLOWTOPERV   = 15, /**< Total Flow Sent to Pervious Area */
+} SM_LidResult;
+
 // --- Define the SWMM toolkit structures
 
 /// Node stats structure
@@ -409,6 +479,120 @@ int DLLEXPORT swmm_getLinkDirection(int index, signed char *value);
  @return Error code
 */
 int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index);
+
+/**
+ @brief Get the number of lid units on a subcatchment.
+ @param index The index of a subcatchment
+ @param[out] value The number of lid units on a subcatchment
+ @return Error code
+*/
+int DLLEXPORT swmm_getLidUCount(int index, int *value);
+
+/**
+ @brief Get a property value for a specified lid unit on a specified subcatchment
+ @param index The index of a subcatchment
+ @param lidIndex The index of specified lid unit 
+ @param Param The property type code (See @ref SM_LidUProperty)
+ @param[out] value The value of the lid unit's property
+ @return Error code
+*/
+int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int Param, double *value);
+
+/**
+ @brief Set a property value for a specified lid unit on a specified subcatchment
+ @param index The index of a subcatchment
+ @param lidIndex The index of specified lid unit 
+ @param Param The property type code (See @ref SM_LidUProperty)
+ @param value The new value of the lid unit's property
+ @return Error code
+*/
+int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value);
+
+/**
+ @brief Get the lid option for a specified lid unit on a specified subcatchment
+ @param index The index of a subcatchment
+ @param lidIndex The index of specified lid unit 
+ @param Param The lid option type code (See @ref SM_LidUOptions)
+ @param[out] value The value of the option for the lid unit
+ @return Error code
+*/
+int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int Param, int *value);
+
+/**
+ @brief Set the lid option for a specified lid unit on a specified subcatchment
+ @param index The index of a subcatchment
+ @param lidIndex The index of specified lid unit 
+ @param Param The lid option type code (See @ref SM_LidUOptions)
+ @param value The new value of the option for the lid unit
+ @return Error code
+*/
+int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int Param, int value);
+
+/**
+ @brief Get the lid control surface immediate overflow condition
+ @param lidControlIndex The index of specified lid control
+ @param[out] condition The value of surface immediate overflow condition  
+ @return Error code
+*/
+int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, char *condition);
+
+/**
+ @brief Set the lid control's surface immediate overflow condition
+ @param lidControlIndex The index of specified lid control
+ @param condition The new value for the surface immediate overflow condition  
+ @return Error code
+*/
+int DLLEXPORT swmm_setLidCOverflow(int lidControlIndex, char condition);
+
+/**
+ @brief Get a property value for specified lid control
+ @param lidControlIndex The index of specified lid control
+ @param layerIndex The index of specified lid layer (See @ref SM_LidLayer)
+ @param Param The property type code (See @ref SM_LidLayerProperty)
+ @param[out] value The value of lid control's property
+ @return Error code
+*/
+int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, double *value);
+
+/**
+ @brief Set a property value for specified lid control
+ @param lidControlIndex The index of specified lid control
+ @param layerIndex The index of specified lid layer (See @ref SM_LidLayer)
+ @param Param The property type code (See @ref SM_LidLayerProperty)
+ @param value The new value for the lid control's property
+ @return Error code
+*/
+int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, double value);
+
+/**
+ @brief Get the lid unit water balance simulated value at current time
+ @param index The index of a subcatchment
+ @param lidIndex The index of specified lid unit 
+ @param layerIndex The index of specified lid layer (See @ref SM_LidLayer)
+ @param Param The result type code (See @ref SM_LidResult)
+ @param[out] result The result for the specified lid unit
+ @return Error code
+*/
+int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, int layerIndex, double *result);
+
+/**
+ @brief Get the lid group of a specified subcatchment result at current time
+ @param index The index of a subcatchment
+ @param type The result type code (See @ref SM_LidResult)
+ @param[out] result The result for the specified lid group
+ @return Error code
+*/
+int DLLEXPORT swmm_getLidGResult(int index, int type, double *result);
+
+/**
+ @brief Get the lid unit of a specified subcatchment result at current time
+ @param index The index of a subcatchment
+ @param lidIndex The index of specified lid unit 
+ @param type The result type code (See @ref SM_LidResult)
+ @param[out] result The result for the specified lid unit
+ @return Error code
+*/
+int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, int type, double *result);
 
 /**
  @brief Get a property value for specified node.

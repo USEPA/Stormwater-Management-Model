@@ -22,3 +22,4 @@
 #include "keywords.h"
 #define  EXTERN extern
 #include "globals.h"
+#include "lid.h"
