@@ -987,7 +987,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
 {
     int p;
     int errcode = 0;
-    double a = Subcatch[index].area;
+    double a;
     double* result;
 
     // Check if Open
@@ -1011,6 +1011,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
         {
             case SM_BUILDUP:
             {
+                a = Subcatch[index].area;
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
                     result[p] = Subcatch[index].surfaceBuildup[p] /
