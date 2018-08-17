@@ -172,11 +172,17 @@ typedef enum {
     SM_SUBCSNOW      = 5,  /**< Snow Depth */
 } SM_SubcResult;
 
+/// Subcatchment pollutant result property codes
+typedef enum {
+    SM_BUILDUP      = 0,  /**< Pollutant Buildup Load */
+    SM_CPONDED      = 1,  /**< Ponded Pollutant Concentration */
+} SM_SubcPollut;
+
 /// Gage precip array property codes
 typedef enum {
-    SM_TOTALPRECIP  = 0,   //**< Total Precipitation Rate */
-    SM_RAINFALL      = 1,  //**< Rainfall Rate */
-    SM_SNOWFALL      = 2   //**< Snowfall Rate */)
+    SM_TOTALPRECIP   = 0,  /**< Total Precipitation Rate */
+    SM_RAINFALL      = 1,  /**< Rainfall Rate */
+    SM_SNOWFALL      = 2   /**< Snowfall Rate */
 } SM_GagePrecip;
 
 // --- Define the SWMM toolkit structures
@@ -266,7 +272,6 @@ typedef struct
     double       infil;
     double       runoff;
     double       maxFlow;
-    double*      surfaceBuildup;
 }  SM_SubcatchStats;
 
 /// System routing stats structure
@@ -527,9 +532,18 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
 int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
 
 /**
+ @brief Gets pollutant values for a specified subcatchment.
+ @param index The index of a subcatchment
+ @param result The property type code (see @ref SM_SubcPollut)
+ @param[out] Pollutant result array
+ @return Error code
+*/
+int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray);
+
+/**
 @brief Get precipitation rates for a gage.
 @param index The index of gage
-@param[out] Fage precipitation rates array [total, rainfall, snowfall]
+@param[out] Gage precipitation rates array [total, rainfall, snowfall]
 @return Error code
 */
 int DLLEXPORT swmm_getGagePrecip(int index, double **GageArray);
@@ -607,14 +621,6 @@ int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
  @return Error code
 */
 int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats);
-
-/**
- @brief Free subcatchment statistics structure.
- @param[out] subcatchStats The outfall Stats struct. This frees any allocated
- pollutants array.
- @return Error code
-*/
-void DLLEXPORT swmm_freeSubcatchStats(SM_SubcatchStats *subcatchStats);
 
 /**
  @brief Get system routing statistics.
