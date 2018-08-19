@@ -552,8 +552,8 @@ BOOST_FIXTURE_TEST_CASE(get_results_after_sim, FixtureBeforeEnd){
     error = swmm_getSubcatchStats(subc_ind, &subc_stats);
     BOOST_CHECK_EQUAL(error, ERR_NONE);
     BOOST_CHECK_SMALL(subc_stats.runon - 0.0, 0.0001);
-    BOOST_CHECK_SMALL(subc_stats.infil - 1.1594, 0.0001);
-    BOOST_CHECK_SMALL(subc_stats.runoff - 1.4815, 0.0001);
+    BOOST_CHECK_SMALL(subc_stats.infil - 42088, 1.0);
+    BOOST_CHECK_SMALL(subc_stats.runoff - 53781, 1.0);
     BOOST_CHECK_SMALL(subc_stats.maxFlow - 4.6561, 0.0001);
     BOOST_CHECK_SMALL(subc_stats.precip - 2.65, 0.0001);
     BOOST_CHECK_SMALL(subc_stats.evap - 0.0, 0.0001);

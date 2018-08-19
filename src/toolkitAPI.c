@@ -60,9 +60,9 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month, in
     *year = 1900;
     *month = 1;
     *day = 1;
-    *hours = 0;
-    *minutes = 0;
-    *seconds = 0;
+    *hour = 0;
+    *minute = 0;
+    *second = 0;
 
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
@@ -83,7 +83,7 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month, in
         default: return(ERR_API_OUTBOUNDS);
         }
         datetime_decodeDate(_dtime, year, month, day);
-        datetime_decodeTime(_dtime, hours, minutes, seconds);
+        datetime_decodeTime(_dtime, hour, minute, second);
     }
 
     return (errcode);
@@ -757,7 +757,7 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
     return(errcode);
 }
 
-int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index)
+int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *out_index)
 ///
 /// Input:   index = Index of desired ID
 ///         (Subcatchments can load to Node or another Subcatchment)
@@ -768,7 +768,7 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index)
 {
     int errcode = 0;
     *type = -1;
-    *ObjIndex = -1;
+    *out_index = -1;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -783,17 +783,17 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index)
     {
         if (Subcatch[index].outNode == -1 && Subcatch[index].outSubcatch == -1)
         {
-            *ObjIndex = index; // Case of self Loading subcatchment
+            *out_index = index; // Case of self Loading subcatchment
             *type = SUBCATCH;
         }
         if (Subcatch[index].outNode >= 0)
         {
-            *ObjIndex = Subcatch[index].outNode;
+            *out_index = Subcatch[index].outNode;
             *type = NODE;
         }
         if (Subcatch[index].outSubcatch >= 0)
         {
-            *ObjIndex = Subcatch[index].outSubcatch;
+            *out_index = Subcatch[index].outSubcatch;
             *type = SUBCATCH;
         }
     }
@@ -1282,17 +1282,17 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats)
         double a = Subcatch[index].area;
 
         // Cumulative Runon Volume
-        subcatchStats->runon *= (UCF(RAINDEPTH) / a);
+        subcatchStats->runon *= UCF(VOLUME);
         // Cumulative Infiltration Volume
-        subcatchStats->infil *= (UCF(RAINDEPTH) / a);
+        subcatchStats->infil *= UCF(VOLUME);
         // Cumulative Runoff Volume
-        subcatchStats->runoff *= (UCF(RAINDEPTH) / a);
+        subcatchStats->runoff *= UCF(VOLUME);
         // Maximum Runoff Rate
         subcatchStats->maxFlow *= UCF(FLOW);
         // Cumulative Rainfall Depth
         subcatchStats->precip *= (UCF(RAINDEPTH) / a);
         // Cumulative Evaporation Volume
-        subcatchStats->evap *= (UCF(RAINDEPTH) / a);
+        subcatchStats->evap *= UCF(VOLUME);
     }
 
     return (errorcode);
@@ -1345,24 +1345,28 @@ int DLLEXPORT swmm_getSystemRunoffStats(SM_RunoffTotals *runoffTot)
     if (errorcode == 0)
     {
         double TotalArea = massbal_getTotalArea();
-        // Cumulative Rainfall Volume
+        // Cumulative Rainfall Depth
         runoffTot->rainfall *= (UCF(RAINDEPTH) / TotalArea);
         // Cumulative Evaporation Volume
-        runoffTot->evap *= (UCF(RAINDEPTH) / TotalArea);
+        runoffTot->evap *= UCF(VOLUME);
         // Cumulative Infiltration Volume
-        runoffTot->infil *= (UCF(RAINDEPTH) / TotalArea);
+        runoffTot->infil *= UCF(VOLUME);
         // Cumulative Runoff Volume
-        runoffTot->runoff *= (UCF(RAINDEPTH) / TotalArea);
+        runoffTot->runoff *= UCF(VOLUME);
         // Cumulative Runon Volume
-        runoffTot->runon *= (UCF(RAINDEPTH) / TotalArea);
+        runoffTot->runon *= UCF(VOLUME);
         // Cumulative Drain Volume
-        runoffTot->drains *= (UCF(RAINDEPTH) / TotalArea);
+        runoffTot->drains *= UCF(VOLUME);
         // Cumulative Snow Removed Volume
         runoffTot->snowRemoved *= (UCF(RAINDEPTH) / TotalArea);
         // Initial Storage Volume
         runoffTot->initStorage *= (UCF(RAINDEPTH) / TotalArea);
+        // Final Storage Volume
+        runoffTot->finalStorage *= (UCF(RAINDEPTH) / TotalArea);
         // Initial Snow Cover Volume
         runoffTot->initSnowCover *= (UCF(RAINDEPTH) / TotalArea);
+        // Final Snow Cover Volume
+        runoffTot->finalSnowCover *= (UCF(RAINDEPTH) / TotalArea);
         // Continuity Error
         runoffTot->pctError *= 100;
     }
@@ -1398,10 +1402,10 @@ int DLLEXPORT swmm_setLinkSetting(int index, double setting)
     else
     {
         // --- check that new setting lies within feasible limits
-        if (targetSetting < 0.0) targetSetting = 0.0;
-        if (Link[index].type != PUMP && targetSetting > 1.0) targetSetting = 1.0;
+        if (setting < 0.0) setting = 0.0;
+        if (Link[index].type != PUMP && setting > 1.0) setting = 1.0;
 
-        Link[index].targetSetting = targetSetting;
+        Link[index].targetSetting = setting;
 
         // Use internal function to apply the new setting
         link_setSetting(index, 0.0);
@@ -1410,7 +1414,7 @@ int DLLEXPORT swmm_setLinkSetting(int index, double setting)
         if (RptFlags.controls)
         {
             currentTime = getDateTime(NewRoutingTime);
-            report_writeControlAction(currentTime, Link[index].ID, targetSetting, _rule_);
+            report_writeControlAction(currentTime, Link[index].ID, setting, _rule_);
         }
     }
     return(errcode);

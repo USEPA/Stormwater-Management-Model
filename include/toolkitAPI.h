@@ -290,45 +290,45 @@ typedef struct
 /** @struct SM_LinkStats
  *  @brief Link Statatistics 
  *
-   @var SM_LinkStats::maxFlow
-     maximum flow (flowrate) (from routing step)
-   @var SM_LinkStats::maxFlowDate
-     date of maximum flowrate
-   @var SM_LinkStats::maxVeloc
-     maximum velocity (from routing step)
-   @var SM_LinkStats::maxDepth
-     maximum depth (level)
-   @var SM_LinkStats::timeNormalFlow
-     time in normal flow
-   @var SM_LinkStats::timeInletControl
-     time under inlet control
-   @var SM_LinkStats::timeSurcharged
-     time surcharged
-   @var SM_LinkStats::timeFullUpstream
-     time full upstream
-   @var SM_LinkStats::timeFullDnstream
-     time full downstream
-   @var SM_LinkStats::timeFullFlow
-     time full flow
-   @var SM_LinkStats::timeCapacityLimited
-     time capacity limited
-   @var SM_LinkStats::timeInFlowClass
-     time in flow class:
-       | class | description |
-       | :--- | --- |
-       | DRY | dry conduit |
-       | UP_DRY | upstream end is dry |
-       | DN_DRY | downstream end is dry |
-       | SUBCRITICAL | sub-critical flow |
-       | SUPCRITICAL | super-critical flow |
-       | UP_CRITICAL | free-fall at upstream end |
-       | DN_CRITICAL | free-fall at downstream end |
-   @var SM_LinkStats::timeCourantCritical
-     time courant critical
-   @var SM_LinkStats::flowTurns
-     number of flow turns
-   @var SM_LinkStats::flowTurnSign
-     number of flow turns sign
+ * @var SM_LinkStats::maxFlow
+ *   maximum flow (flowrate) (from routing step)
+ * @var SM_LinkStats::maxFlowDate
+ *   date of maximum flowrate
+ * @var SM_LinkStats::maxVeloc
+ *   maximum velocity (from routing step)
+ * @var SM_LinkStats::maxDepth
+ *   maximum depth (level)
+ * @var SM_LinkStats::timeNormalFlow
+ *   time in normal flow
+ * @var SM_LinkStats::timeInletControl
+ *   time under inlet control
+ * @var SM_LinkStats::timeSurcharged
+ *   time surcharged
+ * @var SM_LinkStats::timeFullUpstream
+ *   time full upstream
+ * @var SM_LinkStats::timeFullDnstream
+ *   time full downstream
+ * @var SM_LinkStats::timeFullFlow
+ *   time full flow
+ * @var SM_LinkStats::timeCapacityLimited
+ *   time capacity limited
+ * @var SM_LinkStats::timeInFlowClass
+ *   time in flow class:
+ *     | class | description |
+ *     | :--- | --- |
+ *     | DRY | dry conduit |
+ *     | UP_DRY | upstream end is dry |
+ *     | DN_DRY | downstream end is dry |
+ *     | SUBCRITICAL | sub-critical flow |
+ *     | SUPCRITICAL | super-critical flow |
+ *     | UP_CRITICAL | free-fall at upstream end |
+ *     | DN_CRITICAL | free-fall at downstream end |
+ * @var SM_LinkStats::timeCourantCritical
+ *   time courant critical
+ * @var SM_LinkStats::flowTurns
+ *   number of flow turns
+ * @var SM_LinkStats::flowTurnSign
+ *   number of flow turns sign
  */
 typedef struct
 {
@@ -349,7 +349,30 @@ typedef struct
    int           flowTurnSign;
 }  SM_LinkStats;
 
-/// Pump stats structure
+/** @struct SM_PumpStats
+ *  @brief Pump Statistics 
+ *
+ * @var SM_PumpStats::utilized
+ *   time utilized
+ * @var SM_PumpStats::minFlow
+ *   minimum flowrate
+ * @var SM_PumpStats::avgFlow
+ *   average flowrate
+ * @var SM_PumpStats::maxFlow
+ *   maximum flowrate
+ * @var SM_PumpStats::volume
+ *   total pumping volume (volume)
+ * @var SM_PumpStats::energy
+ *   total energy demand
+ * @var SM_PumpStats::offCurveLow
+ *   hysteresis low (off depth wrt curve)
+ * @var SM_PumpStats::offCurveHigh
+ *   hysteresis high (on depth wrt curve)
+ * @var SM_PumpStats::startUps
+ *   number of start ups
+ * @var SM_PumpStats::totalPeriods
+ *   total simulation steps (from routing step)
+ */
 typedef struct
 {
    double       utilized;
@@ -364,7 +387,22 @@ typedef struct
    int          totalPeriods;
 }  SM_PumpStats;
 
-/// Subcatchment stats structure
+/** @struct SM_SubcatchStats
+ *  @brief Subcatchment Statistics 
+ *
+ * @var SM_SubcatchStats::precip
+ *   total precipication (length)
+ * @var SM_SubcatchStats::runon
+ *   total runon (volume)
+ * @var SM_SubcatchStats::evap
+ *   total evaporation (volume)
+ * @var SM_SubcatchStats::infil
+ *   total infiltration (volume)
+ * @var SM_SubcatchStats::runoff
+ *   total runoff (volume)
+ * @var SM_SubcatchStats::maxFlow
+ *   maximum runoff rate (flowrate)
+ */
 typedef struct
 {
     double       precip;
@@ -375,39 +413,98 @@ typedef struct
     double       maxFlow;
 }  SM_SubcatchStats;
 
-/// System routing stats structure
+/** @struct SM_RoutingTotals
+ *  @brief System Flow Routing Statistics 
+ *
+ * @var SM_RoutingTotals::dwInflow
+ *   dry weather inflow
+ * @var SM_RoutingTotals::wwInflow
+ *   wet weather inflow   
+ * @var SM_RoutingTotals::gwInflow
+ *   groundwater inflow   
+ * @var SM_RoutingTotals::iiInflow
+ *   RDII inflow   
+ * @var SM_RoutingTotals::exInflow
+ *   direct inflow   
+ * @var SM_RoutingTotals::flooding
+ *   internal flooding   
+ * @var SM_RoutingTotals::outflow
+ *   external outflow   
+ * @var SM_RoutingTotals::evapLoss
+ *   evaporation loss   
+ * @var SM_RoutingTotals::seepLoss
+ *   seepage loss   
+ * @var SM_RoutingTotals::reacted
+ *   reaction losses   
+ * @var SM_RoutingTotals::initStorage
+ *   initial storage volume   
+ * @var SM_RoutingTotals::finalStorage
+ *   final storage volume   
+ * @var SM_RoutingTotals::pctError
+ *   continuity error   
+ */
 typedef struct
-{                                  // All routing totals are in ft3.
-   double        dwInflow;         // dry weather inflow
-   double        wwInflow;         // wet weather inflow
-   double        gwInflow;         // groundwater inflow
-   double        iiInflow;         // RDII inflow
-   double        exInflow;         // direct inflow
-   double        flooding;         // internal flooding
-   double        outflow;          // external outflow
-   double        evapLoss;         // evaporation loss
-   double        seepLoss;         // seepage loss
-   double        reacted;          // reaction losses
-   double        initStorage;      // initial storage volume
-   double        finalStorage;     // final storage volume
-   double        pctError;         // continuity error
+{
+   double        dwInflow;
+   double        wwInflow;
+   double        gwInflow;
+   double        iiInflow;
+   double        exInflow;
+   double        flooding;
+   double        outflow;
+   double        evapLoss;
+   double        seepLoss;
+   double        reacted;
+   double        initStorage;
+   double        finalStorage;
+   double        pctError;
 }  SM_RoutingTotals;
 
 /// System runoff stats structure
+
+
+/** @struct SM_RunoffTotals
+ *  @brief System Runoff Statistics 
+ *
+ * @var SM_RunoffTotals::rainfall
+ *   rainfall total (depth)
+ * @var SM_RunoffTotals::evap
+ *   evaporation loss (volume)
+ * @var SM_RunoffTotals::infil
+ *   infiltration loss (volume)
+ * @var SM_RunoffTotals::runoff
+ *   runoff volume (volume)
+ * @var SM_RunoffTotals::drains
+ *   LID drains (volume)
+ * @var SM_RunoffTotals::runon
+ *   runon from outfalls (volume)
+ * @var SM_RunoffTotals::initStorage
+ *   inital surface storage (depth)
+ * @var SM_RunoffTotals::finalStorage
+ *   final surface storage (depth)
+ * @var SM_RunoffTotals::initSnowCover
+ *   initial snow cover (depth)
+ * @var SM_RunoffTotals::finalSnowCover
+ *   final snow cover (depth)
+ * @var SM_RunoffTotals::snowRemoved
+ *   snow removal (depth)
+ * @var SM_RunoffTotals::pctError
+ *   continuity error (%)
+ */
 typedef struct
-{                                 // All volume totals are in ft3.
-   double        rainfall;        // rainfall volume 
-   double        evap;            // evaporation loss
-   double        infil;           // infiltration loss
-   double        runoff;          // runoff volume
-   double        drains;          // LID drains
-   double        runon;           // runon from outfalls
-   double        initStorage;     // inital surface storage
-   double        finalStorage;    // final surface storage
-   double        initSnowCover;   // initial snow cover
-   double        finalSnowCover;  // final snow cover
-   double        snowRemoved;     // snow removal
-   double        pctError;        // continuity error (%)
+{
+   double        rainfall;
+   double        evap;
+   double        infil;
+   double        runoff;
+   double        drains;
+   double        runon;
+   double        initStorage;
+   double        finalStorage;
+   double        initSnowCover;
+   double        finalSnowCover;
+   double        snowRemoved;
+   double        pctError;
 }  SM_RunoffTotals;
 
 /**
@@ -508,10 +605,10 @@ int DLLEXPORT swmm_getLinkDirection(int index, signed char *value);
  node, another subcatchment, or itself.
  @param index The index of a Subcatchment
  @param[out] type The type of object loading (See @ref SM_ObjectType)
- @param[out] Index The object index
+ @param[out] out_index The object index
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *Index);
+int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *out_index);
 
 /**
  @brief Get a property value for specified node.
@@ -769,8 +866,9 @@ int DLLEXPORT swmm_setOutfallStage(int index, double stage);
 int DLLEXPORT swmm_setGagePrecip(int index, double total_precip);
 
 /**
-@brief Helper function to free memory array allocated in SWMM.
-@param array The pointer to the array
+ @brief Helper function to free memory array allocated in SWMM.
+ @param array The pointer to the array
+ @return Void.
 */
 void DLLEXPORT freeArray(void** array);
 
