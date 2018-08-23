@@ -44,7 +44,7 @@
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <ctype.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
@@ -529,8 +529,8 @@ void deleteTree(ExprTree *tree)
 
 //=============================================================================
 
-// Turn on "precise" floating point option                                     //(5.1.008)
-#pragma float_control(precise, on, push)                                       //(5.1.008)
+// Turn on "precise" floating point option
+#pragma float_control(precise, on, push)
 
 double mathexpr_eval(MathExpr *expr, double (*getVariableValue) (int))
 //  Mathematica expression evaluation using a stack
@@ -730,14 +730,14 @@ double mathexpr_eval(MathExpr *expr, double (*getVariableValue) (int))
     }
     r1 = ExprStack[stackindex];
 
-    // Set result to 0 if it is NaN due to an illegal math op                  //(5.1.008)
-    if ( r1 != r1 ) r1 = 0.0;                                                  //(5.1.008)
+    // Set result to 0 if it is NaN due to an illegal math op
+    if ( r1 != r1 ) r1 = 0.0;
 
     return r1;
 }
 
-// Turn off "precise" floating point option                                    //(5.1.008)
-#pragma float_control(pop)                                                     //(5.1.008)
+// Turn off "precise" floating point option
+#pragma float_control(pop)
 
 //=============================================================================
 

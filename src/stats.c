@@ -8,6 +8,7 @@
 //             03/19/15   (Build 5.1.008)
 //             08/01/16   (Build 5.1.011)
 //             03/14/17   (Build 5.1.012)
+//             05/10/18   (Build 5.1.013)
 //   Author:   L. Rossman (EPA)
 //             R. Dickinson (CDM)
 //
@@ -30,13 +31,22 @@
 //   - Time step statistics now evaluated only in non-steady state periods.
 //   - Check for full conduit flow now accounts for number of barrels.
 //
+//   Build 5.1.013:
+//   - Include omp.h protected against lack of compiler support for OpenMP.
+//   - Statistics on impervious and pervious runoff totals added.
+//   - Storage nodes with a non-zero surcharge depth (e.g. enclosed tanks)
+//     can now be classified as being surcharged.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
-#include <omp.h>                                                               //(5.1.008)
 #include "headers.h"
+#include "swmm5.h"
+#if defined(_OPENMP)                                                           //(5.1.013)
+#include <omp.h>
+#endif
 
 //-----------------------------------------------------------------------------
 //  Shared variables
@@ -73,10 +83,10 @@ extern double*         NodeOutflow;    // defined in massbal.c
 //  stats_close                   (called from swmm_end in swmm5.c)
 //  stats_report                  (called from swmm_end in swmm5.c)
 //  stats_updateSubcatchStats     (called from subcatch_getRunoff)
-//  stats_updateGwaterStats       (called from gwater_getGroundwater)          //(5.1.008)
+//  stats_updateGwaterStats       (called from gwater_getGroundwater)
 //  stats_updateFlowStats         (called from routing_execute)
 //  stats_updateCriticalTimeCount (called from getVariableStep in dynwave.c)
-//  stats_updateMaxNodeDepth      (called from output_saveNodeResults)         //(5.1.008)
+//  stats_updateMaxNodeDepth      (called from output_saveNodeResults)
 
 //-----------------------------------------------------------------------------
 //  Local functions
@@ -123,10 +133,10 @@ int  stats_open()
             SubcatchStats[j].infil   = 0.0;
             SubcatchStats[j].runoff  = 0.0;
             SubcatchStats[j].maxFlow = 0.0;
+            SubcatchStats[j].impervRunoff = 0.0;                               //(5.1.013)
+            SubcatchStats[j].pervRunoff   = 0.0;                               //
         }
 
-////  Added to release 5.1.008.  ////                                          //(5.1.008)
-////
         for (j=0; j<Nobjects[SUBCATCH]; j++)
         {
             if ( Subcatch[j].groundwater == NULL ) continue;
@@ -138,7 +148,6 @@ int  stats_open()
             Subcatch[j].groundwater->stats.evap = 0.0;
             Subcatch[j].groundwater->stats.maxFlow = 0.0;
         }
-////
     }
 
     // --- allocate memory for node & link stats
@@ -159,7 +168,7 @@ int  stats_open()
         NodeStats[j].avgDepth = 0.0;
         NodeStats[j].maxDepth = 0.0;
         NodeStats[j].maxDepthDate = StartDateTime;
-        NodeStats[j].maxRptDepth = 0.0;                                        //(5.1.008)
+        NodeStats[j].maxRptDepth = 0.0;
         NodeStats[j].volFlooded = 0.0;
         NodeStats[j].timeFlooded = 0.0;
         NodeStats[j].timeSurcharged = 0.0;
@@ -210,7 +219,7 @@ int  stats_open()
             StorageStats[j].maxVol = 0.0;
             StorageStats[j].maxFlow = 0.0;
             StorageStats[j].evapLosses = 0.0;
-            StorageStats[j].exfilLosses = 0.0;                                 //(5.1.007)
+            StorageStats[j].exfilLosses = 0.0;
             StorageStats[j].maxVolDate = StartDateTime;
         }
     }
@@ -330,6 +339,7 @@ void  stats_report()
 
 void   stats_updateSubcatchStats(int j, double rainVol, double runonVol,
                                  double evapVol, double infilVol,
+	                             double impervVol, double pervVol,
                                  double runoffVol, double runoff)
 //
 //  Input:   j = subcatchment index
@@ -337,6 +347,8 @@ void   stats_updateSubcatchStats(int j, double rainVol, double runonVol,
 //           runonVol  = runon volume from other subcatchments (ft3)
 //           evapVol   = evaporation volume (ft3)
 //           infilVol  = infiltration volume (ft3)
+//           impervVol = impervious runoff volume (ft3)
+//           pervVol   = pervious runoff volume (ft3)
 //           runoffVol = runoff volume (ft3)
 //           runoff    = runoff rate (cfs)
 //  Output:  none
@@ -347,13 +359,13 @@ void   stats_updateSubcatchStats(int j, double rainVol, double runonVol,
     SubcatchStats[j].runon  += runonVol;
     SubcatchStats[j].evap   += evapVol;
     SubcatchStats[j].infil  += infilVol;
-    SubcatchStats[j].runoff += runoffVol;
+	SubcatchStats[j].runoff += runoffVol;
     SubcatchStats[j].maxFlow = MAX(SubcatchStats[j].maxFlow, runoff);
+	SubcatchStats[j].impervRunoff += impervVol;                                //(5.1.013)
+	SubcatchStats[j].pervRunoff += pervVol;                                    //
 }
 
 //=============================================================================
-
-////  New function added to release 5.1.008.  ////                             //(5.1.008)
 
 void  stats_updateGwaterStats(int j, double infil, double evap, double latFlow,
                               double deepFlow, double theta, double waterTable,
@@ -391,8 +403,6 @@ void  stats_updateMaxRunoff()
 
 //=============================================================================
 
-////  New function added for release 5.1.008.  ////                            //(5.1.008)
-
 void   stats_updateMaxNodeDepth(int j, double depth)
 //
 //   Input:   j = node index
@@ -425,17 +435,15 @@ void   stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
     SysOutfallFlow = 0.0;
 
     // --- update node & link stats
-#pragma omp parallel num_threads(NumThreads)                                   //(5.1.008)
+#pragma omp parallel num_threads(NumThreads)
 {
-    #pragma omp for                                                            //(5.1.008)
+    #pragma omp for
     for ( j=0; j<Nobjects[NODE]; j++ )
         stats_updateNodeStats(j, tStep, aDate);
-    #pragma omp for                                                            //(5.1.008)
+    #pragma omp for
     for ( j=0; j<Nobjects[LINK]; j++ )
         stats_updateLinkStats(j, tStep, aDate);
 }
-
-////  Following code segment modified for release 5.1.012.  ////               //(5.1.012)
 
     // --- update count of times in steady state
     SysStats.steadyStateCount += steadyState;
@@ -454,8 +462,6 @@ void   stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
         // --- update iteration step count stats
         SysStats.avgStepCount += stepCount;
 	}
-
-////
 
     // --- update max. system outfall flow
     MaxOutfallFlow = MAX(MaxOutfallFlow, SysOutfallFlow);
@@ -477,8 +483,6 @@ void stats_updateCriticalTimeCount(int node, int link)
 
 //=============================================================================
 
-////  Function modified for release 5.1.008.  ////                             //(5.1.008)
-
 void stats_updateNodeStats(int j, double tStep, DateTime aDate)
 //
 //  Input:   j = node index
@@ -491,6 +495,7 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
     int    k, p;
     double newVolume = Node[j].newVolume;
     double newDepth = Node[j].newDepth;
+    double yCrown = Node[j].crownElev - Node[j].invertElev;
     int    canPond = (AllowPonding && Node[j].pondedArea > 0.0);
 
     // --- update depth statistics
@@ -513,12 +518,15 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
                     (newVolume - Node[j].fullVolume));
         }
 
-        // --- for dynamic wave routing, classify a non-storage node as        //(5.1.011)
-        //     surcharged if its water level exceeds its crown elev.           //(5.1.011)
-        if ( RouteModel == DW && Node[j].type != STORAGE &&                    //(5.1.011)
-             newDepth + Node[j].invertElev + FUDGE >= Node[j].crownElev )
+        // --- for dynamic wave routing, classify a node as                    //(5.1.013)
+        //     surcharged if its water level exceeds its crown elev.
+        if (RouteModel == DW)                                                  //(5.1.013)
         {
-            NodeStats[j].timeSurcharged += tStep;
+            if ((Node[j].type != STORAGE || Node[j].surDepth > 0.0) &&         //(5.1.013)
+                newDepth + Node[j].invertElev + FUDGE >= Node[j].crownElev)
+            {
+                NodeStats[j].timeSurcharged += tStep;
+            }
         }
     }
 
@@ -554,7 +562,7 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
         for (p=0; p<Nobjects[POLLUT]; p++)
         {
             OutfallStats[k].totalLoad[p] += Node[j].inflow * 
-				Node[j].newQual[p] * tStep;
+            Node[j].newQual[p] * tStep;
         }
         SysOutfallFlow += Node[j].inflow;
     }
@@ -607,7 +615,6 @@ void  stats_updateLinkStats(int j, double tStep, DateTime aDate)
     if ( v > LinkStats[j].maxVeloc )
     {
         LinkStats[j].maxVeloc = v;
-        //LinkStats[j].maxVelocDate = aDate;                                   //(5.1.008)
     }
 
     // --- update max. depth
@@ -657,13 +664,11 @@ void  stats_updateLinkStats(int j, double tStep, DateTime aDate)
 
         // --- update time conduit is full
         k = Link[j].subIndex;
-        if ( q >= Link[j].qFull * (double)Conduit[k].barrels )                 //(5.1.012)
+        if ( q >= Link[j].qFull * (double)Conduit[k].barrels )
             LinkStats[j].timeFullFlow += tStep; 
         if ( Conduit[k].capacityLimited )
             LinkStats[j].timeCapacityLimited += tStep;
 
-////  Following section modified for release 5.1.008.  ////                    //(5.1.008)
-////
         switch (Conduit[k].fullState)
         {
         case ALL_FULL:
@@ -677,7 +682,6 @@ void  stats_updateLinkStats(int j, double tStep, DateTime aDate)
         case DN_FULL:
             LinkStats[j].timeFullDnstream += tStep;
         }
-////
     }
 
     // --- update flow turn count
@@ -743,7 +747,7 @@ void  stats_findMaxStats()
     if ( RouteModel != DW || CourantFactor == 0.0 ) return;
 
     // --- find nodes most frequently Courant critical
-    if ( StepCount == 0 ) return;                                              //(5.1.008)
+    if ( StepCount == 0 ) return;
     for (j=0; j<Nobjects[NODE]; j++)
     {
         x = NodeStats[j].timeCourantCritical / StepCount;
@@ -785,5 +789,3 @@ void  stats_updateMaxStats(TMaxStats maxStats[], int i, int j, double x)
         }
     }
 }
-
-//=============================================================================

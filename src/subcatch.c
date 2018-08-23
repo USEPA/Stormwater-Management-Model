@@ -10,6 +10,7 @@
 //             08/05/15  (Build 5.1.010)
 //             08/01/16  (Build 5.1.011)
 //             03/14/17  (Build 5.1.012)
+//             05/10/18  (Build 5.1.013)
 //   Author:   L. Rossman
 //
 //   Subcatchment runoff functions.
@@ -37,6 +38,13 @@
 //   - Subcatchment bottom elevation used instead of aquifer's when
 //     saving water table value to results file.
 //
+//   Build 5.1.013:
+//   - Rain gage isUsed property now set in subcatch_validate().
+//   - Cumulative impervious and pervious area runoff volumes added
+//     to subcatchment statistics.
+//   - Support added for monthly adjustment of subcatchment's depression
+//     storage, pervious N, and infiltration.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -56,7 +64,7 @@ const double ODETOL    = 0.0001;            // acceptable error for ODE solver
 //-----------------------------------------------------------------------------
 // Globally shared variables   
 //-----------------------------------------------------------------------------
-// Volumes (ft3) for a subcatchment over a time step                           //(5.1.008)
+// Volumes (ft3) for a subcatchment over a time step
 double     Vevap;         // evaporation
 double     Vpevap;        // pervious area evaporation
 double     Vinfil;        // non-LID infiltration
@@ -72,6 +80,8 @@ double     VlidReturn;    // LID outflow returned to pervious area
 // Locally shared variables   
 //-----------------------------------------------------------------------------
 static  TSubarea* theSubarea;     // subarea to which getDdDt() is applied
+static  double    Dstore;         // monthly adjusted depression storage (ft)  //(5.1.013)
+static  double    Alpha;          // monthly adjusted runoff coeff.            //
 static  char *RunoffRoutingWords[] = { w_OUTLET,  w_IMPERV, w_PERV, NULL};
 
 //-----------------------------------------------------------------------------
@@ -88,7 +98,7 @@ static  char *RunoffRoutingWords[] = { w_OUTLET,  w_IMPERV, w_PERV, NULL};
 //  subcatch_setOldState       (called from runoff_execute)
 //  subcatch_getRunon          (called from runoff_execute)
 //  subcatch_addRunon          (called from subcatch_getRunon,
-//                              lid_addDrainRunon, & runoff_getOutfallRunon)   //(5.1.008)
+//                              lid_addDrainRunon, & runoff_getOutfallRunon)
 //  subcatch_getRunoff         (called from runoff_execute)
 //  subcatch_hadRunoff         (called from runoff_execute)
 
@@ -103,13 +113,14 @@ static  char *RunoffRoutingWords[] = { w_OUTLET,  w_IMPERV, w_PERV, NULL};
 // Function declarations
 //-----------------------------------------------------------------------------
 static void   getNetPrecip(int j, double* netPrecip, double tStep);
-static double getSubareaRunoff(int subcatch, int subarea, double area,         //(5.1.008)
+static double getSubareaRunoff(int subcatch, int subarea, double area,
               double rainfall, double evap, double tStep);
 static double getSubareaInfil(int j, TSubarea* subarea, double precip,
               double tStep);
-static double findSubareaRunoff(TSubarea* subarea, double tRunoff);            //(5.1.008)
+static double findSubareaRunoff(TSubarea* subarea, double tRunoff);
 static void   updatePondedDepth(TSubarea* subarea, double* tx);
 static void   getDdDt(double t, double* d, double* dddt);
+static void   adjustSubareaParams(int subareaType, int subcatch);              //(5.1.013)
 
 //=============================================================================
 
@@ -171,10 +182,13 @@ int  subcatch_readParams(int j, char* tok[], int ntoks)
     Subcatch[j].outNode     = (int)x[1];
     Subcatch[j].outSubcatch = (int)x[2];
     Subcatch[j].area        = x[3] / UCF(LANDAREA);
-    Subcatch[j].fracImperv  = MIN(x[4], 100.0) / 100.0;                        //(5.1.011)
+    Subcatch[j].fracImperv  = MIN(x[4], 100.0) / 100.0;
     Subcatch[j].width       = x[5] / UCF(LENGTH);
     Subcatch[j].slope       = x[6] / 100.0;
     Subcatch[j].curbLength  = x[7];
+    Subcatch[j].nPervPattern  = -1;                                            //(5.1.013
+    Subcatch[j].dStorePattern = -1;                                            //
+    Subcatch[j].infilPattern  = -1;                                            //
 
     // --- create the snow pack object if it hasn't already been created
     if ( x[8] >= 0 )
@@ -392,7 +406,7 @@ void  subcatch_validate(int j)
         Subcatch[j].subArea[i].alpha = 0.0;
 
 ////  Possible change to how sub-area width should be assigned.  ////
-////        area = nonLidArea;                                                     //(5.1.011)
+////        area = nonLidArea; 
 /////////////////////////////////////////////////////////////////////
 
         if ( area > 0.0 && Subcatch[j].subArea[i].N > 0.0 )
@@ -401,6 +415,11 @@ void  subcatch_validate(int j)
                 sqrt(Subcatch[j].slope) / Subcatch[j].subArea[i].N;
         }
     }
+
+    // --- set isUsed property of subcatchment's rain gage                     //(5.1.013)
+    i = Subcatch[j].gage;                                                      //
+    if (i >= 0) Gage[i].isUsed = TRUE;                                         //
+
 }
 
 //=============================================================================
@@ -414,6 +433,8 @@ void  subcatch_initState(int j)
 {
     int    i;
 
+//// isUsed property of subcatchment's rain gage now set in subcatch_validate  //(5.1.013)
+
     // --- initialize rainfall, runoff, & snow depth
     Subcatch[j].rainfall = 0.0;
     Subcatch[j].oldRunoff = 0.0;
@@ -421,16 +442,8 @@ void  subcatch_initState(int j)
     Subcatch[j].oldSnowDepth = 0.0;
     Subcatch[j].newSnowDepth = 0.0;
     Subcatch[j].runon = 0.0;
-    Subcatch[j].evapLoss = 0.0;                                                //(5.1.008)
-    Subcatch[j].infilLoss = 0.0;                                               //(5.1.008)
-
-    // --- set isUsed property of subcatchment's rain gage
-    i = Subcatch[j].gage;
-    if ( i >= 0 )
-    {
-        Gage[i].isUsed = TRUE;
-        if ( Gage[i].coGage >= 0 ) Gage[Gage[i].coGage].isUsed = TRUE;
-    }
+    Subcatch[j].evapLoss = 0.0;
+    Subcatch[j].infilLoss = 0.0;
 
     // --- initialize state of infiltration, groundwater, & snow pack objects
     if ( Subcatch[j].infil == j )  infil_initState(j, InfilModel);
@@ -470,7 +483,7 @@ void subcatch_setOldState(int j)
         Subcatch[j].oldQual[i] = Subcatch[j].newQual[i];
         Subcatch[j].newQual[i] = 0.0;
     }
-    lid_setOldGroupState(j);                                                   //(5.1.008)
+    lid_setOldGroupState(j);
 }
 
 //=============================================================================
@@ -516,8 +529,6 @@ double subcatch_getStorage(int j)
 }
 
 //=============================================================================
-
-////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
 
 void subcatch_getRunon(int j)
 //
@@ -596,8 +607,6 @@ void subcatch_getRunon(int j)
 
 //=============================================================================
 
-////  New function added to release 5.1.008.  ////                            //(5.1.008)
-
 void  subcatch_addRunonFlow(int k, double q)
 //
 //  Input:   k = subcatchment index
@@ -627,8 +636,6 @@ void  subcatch_addRunonFlow(int k, double q)
 
 //=============================================================================
 
-////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
-
 double subcatch_getRunoff(int j, double tStep)
 //
 //  Input:   j = subcatchment index
@@ -654,6 +661,9 @@ double subcatch_getRunoff(int j, double tStep)
     double vOutflow  = 0.0;            // runoff volume leaving subcatch (ft3)
     double runoff    = 0.0;            // total runoff flow on subcatch (cfs)
     double evapRate  = 0.0;            // potential evaporation rate (ft/sec)
+    double subAreaRunoff;              // sub-area runoff rate (cfs)           //(5.1.013)
+    double vImpervRunoff = 0.0;        // impervious area runoff volume (ft3)  //
+    double vPervRunoff = 0.0;          // pervious area runoff volume (ft3)    //
 
     // --- initialize shared water balance variables
     Vevap     = 0.0;
@@ -673,11 +683,9 @@ double subcatch_getRunoff(int j, double tStep)
     vRunon = Subcatch[j].runon * tStep * nonLidArea;
     Vinflow = vRunon + subcatch_getDepth(j) * nonLidArea;
 
-////  Added to release 5.1.009.  ////                                          //(5.1.009)
     // --- find LID runon only if LID occupies full subcatchment
     if ( nonLidArea == 0.0 )
         vRunon = Subcatch[j].runon * tStep * Subcatch[j].area;
-////
 
     // --- get net precip. (rainfall + snowfall + snowmelt) on the 3 types
     //     of subcatchment sub-areas and update Vinflow with it
@@ -686,6 +694,9 @@ double subcatch_getRunoff(int j, double tStep)
     // --- find potential evaporation rate
     if ( Evap.dryOnly && Subcatch[j].rainfall > 0.0 ) evapRate = 0.0;
     else evapRate = Evap.rate;
+
+    // --- set monthly infiltration adjustment factor                          //(5.1.013)
+    infil_setInfilFactor(j);                                                   //(5.1.013)
 
     // --- examine each type of sub-area (impervious w/o depression storage,
     //     impervious w/ depression storage, and pervious)
@@ -696,7 +707,10 @@ double subcatch_getRunoff(int j, double tStep)
         area = nonLidArea * Subcatch[j].subArea[i].fArea;
         Subcatch[j].subArea[i].runoff =
             getSubareaRunoff(j, i, area, netPrecip[i], evapRate, tStep);
-        runoff += Subcatch[j].subArea[i].runoff * area;
+        subAreaRunoff = Subcatch[j].subArea[i].runoff * area;                  //(5.1.013)
+        if (i == PERV) vPervRunoff = subAreaRunoff * tStep;                    //
+        else           vImpervRunoff += subAreaRunoff * tStep;                 //
+        runoff += subAreaRunoff;                                               //
     }
 
     // --- evaluate any LID treatment provided (updating Vevap,
@@ -709,7 +723,7 @@ double subcatch_getRunoff(int j, double tStep)
     // --- update groundwater levels & flows if applicable
     if ( !IgnoreGwater && Subcatch[j].groundwater )
     {
-        gwater_getGroundwater(j, Vpevap, Vinfil+VlidInfil, tStep);             //(5.1.010)
+        gwater_getGroundwater(j, Vpevap, Vinfil+VlidInfil, tStep);
     }
 
     // --- save subcatchment's total loss rates (ft/s)
@@ -729,8 +743,8 @@ double subcatch_getRunoff(int j, double tStep)
 
     // --- update the cumulative stats for this subcatchment
     stats_updateSubcatchStats(j, vRain, vRunon, Vevap, Vinfil + VlidInfil,
-                              vOutflow + VlidDrain,
-                              Subcatch[j].newRunoff + VlidDrain/tStep);
+        vImpervRunoff, vPervRunoff, vOutflow + VlidDrain,                      //(5.1.013)
+        Subcatch[j].newRunoff + VlidDrain/tStep);
 
     // --- include this subcatchment's contribution to overall flow balance
     //     only if its outlet is a drainage system node
@@ -790,8 +804,6 @@ void getNetPrecip(int j, double* netPrecip, double tStep)
 }
 
 //=============================================================================
-
-////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
 
 double subcatch_getDepth(int j)
 //
@@ -859,18 +871,15 @@ void  subcatch_getResults(int j, double f, float x[])
     x[SUBCATCH_INFIL] = (float)(Subcatch[j].infilLoss * UCF(RAINFALL));
     runoff = f1 * Subcatch[j].oldRunoff + f * Subcatch[j].newRunoff;
 
-////  Following code segement added to release 5.1.008.  ////                  //(5.1.008)
-////
     // --- add any LID drain flow to reported runoff
     if ( Subcatch[j].lidArea > 0.0 )
     {
         runoff += f1 * lid_getDrainFlow(j, PREVIOUS) +
                   f * lid_getDrainFlow(j, CURRENT);
     }
-////
 
     // --- if runoff is really small, report it as zero
-    if ( runoff < MIN_RUNOFF * Subcatch[j].area ) runoff = 0.0;                //(5.1.008)
+    if ( runoff < MIN_RUNOFF * Subcatch[j].area ) runoff = 0.0;
     x[SUBCATCH_RUNOFF] = (float)(runoff * UCF(FLOW));
 
     // --- retrieve groundwater results
@@ -879,7 +888,7 @@ void  subcatch_getResults(int j, double f, float x[])
     {
         z = (f1 * gw->oldFlow + f * gw->newFlow) * Subcatch[j].area * UCF(FLOW);
         x[SUBCATCH_GW_FLOW] = (float)z;
-        z = (gw->bottomElev + gw->lowerDepth) * UCF(LENGTH);                   //(5.1.012)
+        z = (gw->bottomElev + gw->lowerDepth) * UCF(LENGTH);
         x[SUBCATCH_GW_ELEV] = (float)z;
         z = gw->theta;
         x[SUBCATCH_SOIL_MOIST] = (float)z;
@@ -904,8 +913,6 @@ void  subcatch_getResults(int j, double f, float x[])
 //=============================================================================
 //                              SUB-AREA METHODS
 //=============================================================================
-
-////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
 
 double getSubareaRunoff(int j, int i, double area, double precip, double evap,
     double tStep)
@@ -953,6 +960,11 @@ double getSubareaRunoff(int j, int i, double area, double precip, double evap,
     Vevap += surfEvap * area * tStep;
     if ( i == PERV ) Vpevap += Vevap;
     Vinfil += infil * area * tStep;
+
+    // --- assign adjusted runoff coeff. & storage to shared variables         //(5.1.013)
+    Alpha = subarea->alpha;                                                    //
+    Dstore = subarea->dStore;                                                  //
+    adjustSubareaParams(i, j);                                                 // 
 
     // --- if losses exceed available moisture then no ponded water remains
     if ( surfEvap + infil >= surfMoisture )
@@ -1008,8 +1020,6 @@ double getSubareaInfil(int j, TSubarea* subarea, double precip, double tStep)
 
 //=============================================================================
 
-////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
-
 double findSubareaRunoff(TSubarea* subarea, double tRunoff)
 //
 //  Purpose: computes runoff (ft/s) from subarea after current time step.
@@ -1018,7 +1028,7 @@ double findSubareaRunoff(TSubarea* subarea, double tRunoff)
 //  Output:  returns runoff rate (ft/s)
 //
 {
-    double xDepth = subarea->depth - subarea->dStore;
+    double xDepth = subarea->depth - Dstore;                                   //(5.1.013)
     double runoff = 0.0;
 
     if ( xDepth > ZERO )
@@ -1026,14 +1036,14 @@ double findSubareaRunoff(TSubarea* subarea, double tRunoff)
         // --- case where nonlinear routing is used
         if ( subarea->N > 0.0 )
         {
-            runoff = subarea->alpha * pow(xDepth, MEXP);
+            runoff = Alpha * pow(xDepth, MEXP);                                //(5.1.013)
         }
 
         // --- case where no routing is used (Mannings N = 0)
         else
         {
             runoff = xDepth / tRunoff;
-            subarea->depth = subarea->dStore;
+            subarea->depth = Dstore;                                           //(5.1.013)
         }
     }
     else
@@ -1053,12 +1063,12 @@ void updatePondedDepth(TSubarea* subarea, double* dt)
 //  Purpose: computes new ponded depth over subarea after current time step.
 //
 {
-    double ix = subarea->inflow;       // excess inflow to subarea (ft/sec)    //(5.1.008)
+    double ix = subarea->inflow;       // excess inflow to subarea (ft/sec)
     double dx;                         // depth above depression storage (ft)
     double tx = *dt;                   // time over which dx > 0 (sec)
-
+    
     // --- see if not enough inflow to fill depression storage (dStore)
-    if ( subarea->depth + ix*tx <= subarea->dStore )
+    if ( subarea->depth + ix*tx <= Dstore )                                    //(5.1.013)
     {
         subarea->depth += ix * tx;
     }
@@ -1066,16 +1076,16 @@ void updatePondedDepth(TSubarea* subarea, double* dt)
     // --- otherwise use the ODE solver to integrate flow depth
     else
     {
-        // --- if depth < dStore then fill up dStore & reduce time step
-        dx = subarea->dStore - subarea->depth;
+        // --- if depth < Dstore then fill up Dstore & reduce time step        //(5.1.013)
+        dx = Dstore - subarea->depth;                                          //
         if ( dx > 0.0 && ix > 0.0 )
         {
             tx -= dx / ix;
-            subarea->depth = subarea->dStore;
+            subarea->depth = Dstore;                                           //(5.1.013)
         }
 
         // --- now integrate depth over remaining time step tx
-        if ( subarea->alpha > 0.0 && tx > 0.0 )
+        if ( Alpha > 0.0 && tx > 0.0 )                                         //(5.1.013)
         {
             theSubarea = subarea;
             odesolve_integrate(&(subarea->depth), 1, 0, tx, ODETOL, tx,
@@ -1107,17 +1117,52 @@ void  getDdDt(double t, double* d, double* dddt)
 //           for the subarea whose runoff is being computed.
 //
 {
-    double ix = theSubarea->inflow;                                            //(5.1.008)
-    double rx = *d - theSubarea->dStore;
+    double ix = theSubarea->inflow;
+    double rx = *d - Dstore;                                                   //(5.1.013)
     if ( rx < 0.0 )
     {
         rx = 0.0;
     }
     else
     {
-        rx = theSubarea->alpha * pow(rx, MEXP);
+        rx = Alpha * pow(rx, MEXP);                                            //(5.1.013)
     }
     *dddt = ix - rx;
 }
 
 //=============================================================================
+
+////  New function added to release 5.1.013.  ////                             //(5.1.013)
+
+void adjustSubareaParams(int i, int j)
+//
+//  Input:   i = type of subarea being analyzed
+//           j = index of current subcatchment being analyzed
+//  Output   adjusted values of module-level variables Dstore & Alpha
+//  Purpose: adjusts a subarea's depression storage and its pervious
+//           runoff coeff. by month of the year.
+//
+{
+    int p;              // monthly pattern index
+    int m;              // current month of the year
+    double f;           // adjustment factor
+
+     // --- depression storage adjustment
+     p = Subcatch[j].dStorePattern;
+     if (p >= 0 && Pattern[p].type == MONTHLY_PATTERN)
+     {
+         m = datetime_monthOfYear(getDateTime(OldRunoffTime)) - 1;
+         f = Pattern[p].factor[m];
+         if (f >= 0.0) Dstore *= f;
+     }
+
+    // --- pervious area roughness
+    p = Subcatch[j].nPervPattern;
+    if (i == PERV && p >= 0 && Pattern[p].type == MONTHLY_PATTERN)
+    {
+         m = datetime_monthOfYear(getDateTime(OldRunoffTime)) - 1;
+         f = Pattern[p].factor[m];
+         if (f <= 0.0) Alpha = 0.0;
+         else          Alpha /= f;
+     }
+}

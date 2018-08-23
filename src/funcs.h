@@ -7,6 +7,7 @@
 //             09/15/14  (Build 5.1.007)
 //             04/02/15  (Build 5.1.008)
 //             08/05/15  (Build 5.1.010)
+//             05/10/18  (Build 5.1.013)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -23,10 +24,9 @@
 //   Build 5.1.010:
 //   - New roadway_getInflow() function added.
 //
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-//   Project Manager Methods
+//   Build 5.1.013:
+//   - Additional arguments added to function stats_updateSubcatchStats.
+//
 //-----------------------------------------------------------------------------
 void     project_open(char *f1, char *f2, char *f3);
 void     project_close(void);
@@ -93,12 +93,12 @@ void    statsrpt_writeReport(void);
 //-----------------------------------------------------------------------------
 int      climate_readParams(char* tok[], int ntoks);
 int      climate_readEvapParams(char* tok[], int ntoks);
-int      climate_readAdjustments(char* tok[], int ntoks);                      //(5.1.007)
+int      climate_readAdjustments(char* tok[], int ntoks);
 void     climate_validate(void);
 void     climate_openFile(void);
 void     climate_initState(void);
 void     climate_setState(DateTime aDate);
-DateTime climate_getNextEvapDate(void);                                        //(5.1.008)
+DateTime climate_getNextEvapDate(void);
 
 //-----------------------------------------------------------------------------
 //   Rainfall Processing Methods
@@ -148,6 +148,7 @@ void    output_end(void);
 void    output_close(void);
 void    output_checkFileSize(void);
 void    output_saveResults(double reportTime);
+void    output_updateAvgResults(void);
 void    output_readDateTime(int period, DateTime *aDate);
 void    output_readSubcatchResults(int period, int area);
 void    output_readNodeResults(int period, int node);
@@ -197,8 +198,8 @@ void    landuse_getInitBuildup(TLandFactor* landFactor,  double* initBuildup,
 double  landuse_getBuildup(int landuse, int pollut, double area, double curb,
         double buildup, double tStep);
 
-double  landuse_getWashoffLoad(int landuse, int p, double area,                //(5.1.008)
-        TLandFactor landFactor[], double runoff, double vOutflow);             //(5.1.008)
+double  landuse_getWashoffLoad(int landuse, int p, double area,
+        TLandFactor landFactor[], double runoff, double vOutflow);
 double  landuse_getAvgBmpEffic(int j, int p);
 double  landuse_getCoPollutLoad(int p, double washoff[]);
 
@@ -213,7 +214,7 @@ int     flowrout_execute(int links[], int routingModel, double tStep);
 void    toposort_sortLinks(int links[]);
 int     kinwave_execute(int link, double* qin, double* qout, double tStep);
 
-void    dynwave_validate(void);                                                //(5.1.008)
+void    dynwave_validate(void);
 void    dynwave_init(void);
 void    dynwave_close(void);
 double  dynwave_getRoutingStep(double fixedStep);
@@ -240,7 +241,7 @@ int     massbal_open(void);
 void    massbal_close(void);
 void    massbal_report(void);
 
-void    massbal_updateRunoffTotals(int type, double v);                        //(5.1.008)
+void    massbal_updateRunoffTotals(int type, double v);
 void    massbal_updateLoadingTotals(int type, int pollut, double w);
 void    massbal_updateGwaterTotals(double vInfil, double vUpperEvap,
         double vLowerEvap, double vLowerPerc, double vGwater);
@@ -254,9 +255,11 @@ void    massbal_addOutflowQual(int pollut, double mass, int isFlooded);
 void    massbal_addNodeLosses(double evapLoss, double infilLoss);
 void    massbal_addLinkLosses(double evapLoss, double infilLoss);
 void    massbal_addReactedMass(int pollut, double mass);
-void    massbal_addSeepageLoss(int pollut, double seepLoss);                   //(5.1.008)
-void    massbal_addToFinalStorage(int pollut, double mass);                    //(5.1.008)
+void    massbal_addSeepageLoss(int pollut, double seepLoss);
+void    massbal_addToFinalStorage(int pollut, double mass);
 double  massbal_getStepFlowError(void);
+double  massbal_getRunoffError(void);
+double  massbal_getFlowError(void);
 
 //-----------------------------------------------------------------------------
 //   Simulation Statistics Methods
@@ -268,13 +271,14 @@ void    stats_report(void);
 void    stats_updateCriticalTimeCount(int node, int link);
 void    stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
         int steadyState);
-void    stats_updateSubcatchStats(int subcatch, double rainVol, double runonVol,
-        double evapVol, double infilVol, double runoffVol, double runoff);
-void    stats_updateGwaterStats(int j, double infil, double evap,              //(5.1.008)
-        double latFlow, double deepFlow, double theta, double waterTable,      //(5.1.008)
-        double tStep);                                                         //(5.1.008)
+void    stats_updateSubcatchStats(int subcatch, double rainVol, 
+        double runonVol, double evapVol, double infilVol,
+        double impervVol, double pervVol, double runoffVol, double runoff);    //(5.1.013)
+void    stats_updateGwaterStats(int j, double infil, double evap,
+        double latFlow, double deepFlow, double theta, double waterTable,
+        double tStep);
 void    stats_updateMaxRunoff(void);
-void    stats_updateMaxNodeDepth(int node, double depth);                      //(5.1.008)
+void    stats_updateMaxNodeDepth(int node, double depth);
 
 //-----------------------------------------------------------------------------
 //   Raingage Methods
@@ -304,13 +308,12 @@ double  subcatch_getStorage(int subcatch);
 double  subcatch_getDepth(int subcatch);
 
 void    subcatch_getRunon(int subcatch);
-void    subcatch_addRunonFlow(int subcatch, double flow);                      //(5.1.008)
+void    subcatch_addRunonFlow(int subcatch, double flow);
 double  subcatch_getRunoff(int subcatch, double tStep);
 
 double  subcatch_getWtdOutflow(int subcatch, double wt);
 void    subcatch_getResults(int subcatch, double wt, float x[]);
 
-////  New functions added to release 5.1.008.  ////                            //(5.1.008)
 //-----------------------------------------------------------------------------
 //  Surface Pollutant Buildup/Washoff Methods
 //-----------------------------------------------------------------------------
@@ -337,7 +340,6 @@ void    node_setDividerCutoff(int node, int link);
 double  node_getSurfArea(int node, double depth);
 double  node_getDepth(int node, double volume);
 double  node_getVolume(int node, double depth);
-//double  node_getPondedDepth(int node, double volume); removed                //(5.1.008)
 double  node_getPondedArea(int node, double depth);
 
 double  node_getOutflow(int node, int link);
@@ -352,7 +354,12 @@ void    node_getResults(int node, double wt, float x[]);
 int     inflow_readExtInflow(char* tok[], int ntoks);
 int     inflow_readDwfInflow(char* tok[], int ntoks);
 int     inflow_readDwfPattern(char* tok[], int ntoks);
-
+int     inflow_setExtInflow(int j, int param, int type, 
+						int tSeries, int basePat, double cf, 
+						double baseline, double sf);
+int     inflow_validate(int param, int type, int tSeries, 
+						int basePat, double *cf);					
+						
 void    inflow_initDwfInflow(TDwfInflow* inflow);
 void    inflow_initDwfPattern(int pattern);
 
@@ -405,8 +412,8 @@ double  link_getYnorm(int link, double q);
 double  link_getVelocity(int link, double q, double y);
 double  link_getFroude(int link, double v, double y);
 double  link_getPower(int link);
-double  link_getLossRate(int link, double q, double tStep);                    //(5.1.008)
-char    link_getFullState(double a1, double a2, double aFull);                 //(5.1.008)
+double  link_getLossRate(int link, double q, double tStep);
+char    link_getFullState(double a1, double a2, double aFull);
 
 void    link_getResults(int link, double wt, float x[]);
 
@@ -430,11 +437,11 @@ double  xsect_getWofY(TXsect* xsect, double y);
 double  xsect_getYcrit(TXsect* xsect, double q);
 
 //-----------------------------------------------------------------------------
-//   Culvert/Roadway Methods                                                   //(5.1.010)
+//   Culvert/Roadway Methods
 //-----------------------------------------------------------------------------
 double  culvert_getInflow(int link, double q, double h);
 double  roadway_getInflow(int link, double dir, double hcrest, double h1,
-        double h2);                                                            //(5.1.010)
+        double h2);
 
 //-----------------------------------------------------------------------------
 //   Force Main Methods
@@ -478,7 +485,6 @@ void    table_deleteEntries(TTable* table);
 
 void    table_init(TTable* table);
 int     table_validate(TTable* table);
-//      table_interpolate now defined in table.c                               //(5.1.008)
 
 double  table_lookup(TTable* table, double x);
 double  table_lookupEx(TTable* table, double x);
