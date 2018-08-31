@@ -87,14 +87,14 @@
 
 //#ifndef DLLEXPORT
 #ifdef WINDOWS
-	#ifdef __MINGW32__
-		// Seems to be more wrapper friendly
-		#define DLLEXPORT __declspec(dllexport) __cdecl 
-	#else
-		#define DLLEXPORT __declspec(dllexport) __stdcall
-	#endif
+    #ifdef __MINGW32__
+        // Seems to be more wrapper friendly
+        #define DLLEXPORT __declspec(dllexport) __cdecl 
+    #else
+        #define DLLEXPORT __declspec(dllexport) __stdcall
+    #endif
 #else
-	#define DLLEXPORT
+    #define DLLEXPORT
 #endif
 //#endif
 
@@ -220,35 +220,35 @@ int  main(int argc, char *argv[])
     SaveResultsFlag = TRUE;
 
     // --- check for proper number of command line arguments
-	if (argc == 1)
-	{
-		writecon("\nNot Enough Arguments (See Help --help)\n\n");
-	}
-	else if (argc == 2)
-	{
-		// --- extract first argument
-		arg1 = argv[1];
+    if (argc == 1)
+    {
+        writecon("\nNot Enough Arguments (See Help --help)\n\n");
+    }
+    else if (argc == 2)
+    {
+        // --- extract first argument
+        arg1 = argv[1];
 
-		if (strcmp(arg1, "--help") == 0 || strcmp(arg1, "-h") == 0)
-		{
-			// Help
-			writecon("\n\nSTORMWATER MANAGEMENT MODEL (SWMM5) HELP\n\n");
-			writecon("COMMANDS:\n");
-			writecon("\t--help (-h)       Help Docs\n");
-			writecon("\t--version (-v)    Build Version\n");
-			sprintf(Msg, "\nRUNNING A SIMULATION:\n%s\n\n\n", FMT01);
-			writecon(Msg);
-		}
-		else if (strcmp(arg1, "--version") == 0 || strcmp(arg1, "-v") == 0)
-		{
-			// Output version number
-			writecon(SEMVERSION);
-		}
-		else
-		{
-			writecon("\nUnknown Argument (See Help --help)\n\n");
-		}
-	}
+        if (strcmp(arg1, "--help") == 0 || strcmp(arg1, "-h") == 0)
+        {
+            // Help
+            writecon("\n\nSTORMWATER MANAGEMENT MODEL (SWMM5) HELP\n\n");
+            writecon("COMMANDS:\n");
+            writecon("\t--help (-h)       Help Docs\n");
+            writecon("\t--version (-v)    Build Version\n");
+            sprintf(Msg, "\nRUNNING A SIMULATION:\n%s\n\n\n", FMT01);
+            writecon(Msg);
+        }
+        else if (strcmp(arg1, "--version") == 0 || strcmp(arg1, "-v") == 0)
+        {
+            // Output version number
+            writecon(SEMVERSION);
+        }
+        else
+        {
+            writecon("\nUnknown Argument (See Help --help)\n\n");
+        }
+    }
     else
     {
         // --- extract file names from command line arguments
@@ -257,8 +257,8 @@ int  main(int argc, char *argv[])
         if (argc > 3) binaryFile = argv[3];
         else          binaryFile = blank;
         
-		sprintf(Msg, "\n... EPA-SWMM 5.1 (Build %s)\n", SEMVERSION);
-		writecon(Msg);
+        sprintf(Msg, "\n... EPA-SWMM 5.2 (Build %s)\n", SEMVERSION);
+        writecon(Msg);
 
         // --- run SWMM
         swmm_run(inputFile, reportFile, binaryFile);
@@ -321,7 +321,7 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
                     theHour = (long)((elapsedTime - floor(elapsedTime)) * 24.0);
                     writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
                     //sprintf(Msg, "%-5d hour: %-2d", theDay, theHour);
-					sprintf(Msg, "%-5ld hour: %-2ld", theDay, theHour);
+                    sprintf(Msg, "%-5ld hour: %-2ld", theDay, theHour);
                     writecon(Msg);
                     oldHour = newHour;
                 }
@@ -355,17 +355,17 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
 //
 {
 
-	#ifndef __unix__
-	#ifdef DLL
-	   _fpreset();              
-	#endif
-	#endif
+    #ifndef __unix__
+    #ifdef DLL
+       _fpreset();              
+    #endif
+    #endif
 
-	#ifdef EXH                                                                     //(5.1.011)
-		// --- begin exception handling here
-		_fpreset();
-		__try
-	#endif
+    #ifdef EXH                                                                     //(5.1.011)
+        // --- begin exception handling here
+        _fpreset();
+        __try
+    #endif
     {
         // --- initialize error & warning codes
         datetime_setDateFormat(M_D_Y);
@@ -481,7 +481,7 @@ int DLLEXPORT swmm_start(int saveResults)
         stats_open();
 
         // --- write project options to report file 
-	    report_writeOptions();
+        report_writeOptions();
         if ( RptFlags.controls ) report_writeControlActionsHeading();
 ////
     }
@@ -753,7 +753,7 @@ void DLLEXPORT swmm_getSemVersion(char* semver)
 //  
 //  NOTE: Each New Release should be updated in consts.h
 {
-	getSemVersion(semver);
+    getSemVersion(semver);
 }
 
 void DLLEXPORT swmm_getVersionInfo(char* major, char* minor, char* patch)
@@ -763,9 +763,9 @@ void DLLEXPORT swmm_getVersionInfo(char* major, char* minor, char* patch)
 //  
 //  NOTE: Each New Release should be updated in consts.h
 {
-	strncpy(major, SEMVERSION_MAJOR, sizeof SEMVERSION_MAJOR);
-	strncpy(minor, SEMVERSION_MINOR, sizeof SEMVERSION_MINOR);
-	strncpy(patch, SEMVERSION_PATCH, sizeof SEMVERSION_PATCH);
+    strncpy(major, SEMVERSION_MAJOR, sizeof SEMVERSION_MAJOR);
+    strncpy(minor, SEMVERSION_MINOR, sizeof SEMVERSION_MINOR);
+    strncpy(patch, SEMVERSION_PATCH, sizeof SEMVERSION_PATCH);
 }
 
 //=============================================================================
@@ -799,8 +799,8 @@ int  DLLEXPORT swmm_getError(char* errMsg, int msgLen)
     if ( ErrorCode > 0 && strlen(ErrorMsg) == 0 ) sstrncpy(errMsg, "", 1);
     else
     {
-	    errMsgLen = MIN(errMsgLen, strlen(ErrorMsg));
-	    errMsg = sstrncpy(errMsg, ErrorMsg, errMsgLen);
+        errMsgLen = MIN(errMsgLen, strlen(ErrorMsg));
+        errMsg = sstrncpy(errMsg, ErrorMsg, errMsgLen);
     }
 
     // --- remove leading line feed from errMsg
@@ -1037,8 +1037,8 @@ int swmm_IsOpenFlag()
 //
 // Check if Project is Open
 {
-	// TRUE if a project has been opened
-	return IsOpenFlag;
+    // TRUE if a project has been opened
+    return IsOpenFlag;
 }
 
 
@@ -1046,8 +1046,8 @@ int swmm_IsStartedFlag()
 //
 // Check if Simulation has started
 {
-	// TRUE if a simulation has been started
-	return IsStartedFlag;
+    // TRUE if a simulation has been started
+    return IsStartedFlag;
 }
 
 
@@ -1058,7 +1058,7 @@ void getSemVersion(char* semver)
 //  
 //  NOTE: Each New Release should be updated in consts.h
 {
-	snprintf(semver, SEMVERSION_LEN, "%s.%s.%s", 
-		SEMVERSION_MAJOR, SEMVERSION_MINOR, SEMVERSION_PATCH);
+    snprintf(semver, SEMVERSION_LEN, "%s.%s.%s", 
+        SEMVERSION_MAJOR, SEMVERSION_MINOR, SEMVERSION_PATCH);
 }
 //=============================================================================

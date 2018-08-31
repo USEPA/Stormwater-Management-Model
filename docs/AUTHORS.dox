@@ -3,6 +3,11 @@
 
 The OWA-SWMM project builds on top of the contributions put forward by Lew Rossman with his original work on delivering EPA-SWMM5. We are grateful for all the work that has been put into SWMM5 and we are committed to delivering advances to the engine in a community driven approach. 
 
+Authors with Contributions in the Public Domain:
+
+- Lewis Rossman <LRossman@cinci.rr.com>
+- Robert Dickinson <robert.dickinson@gmail.com>
+- Michael Tryby <tryby.michael@epa.gov>
 
 Authors with contributions under the @subpage MIT-License. Authors ordered by first contribution. The authors listed here are contributors to this open source initiative and hold copyright on their contributions. 
 
@@ -12,10 +17,6 @@ Authors with contributions under the @subpage MIT-License. Authors ordered by fi
 - Gonzalo Peña-Castellanos <goanpeca@gmail.com>
 - Katherine Ratliff <ratliff.katherine@epa.gov>
 - Abhiram Mullapudi <abhiramm@umich.edu>
-
-
-Authors with Contributions in the Public Domain:
-- Michael Tryby <tryby.michael@epa.gov>
 
 Stand on the shoulders of Giants! For a list of all the contributors over time (SWMM5 and before), please see [Acknowledgements](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/wiki/Acknowledgements)
 */
