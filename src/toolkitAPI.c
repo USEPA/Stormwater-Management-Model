@@ -50,11 +50,11 @@ void DLLEXPORT swmm_getAPIError(int errcode, char *s)
 }
 
 
-int DLLEXPORT swmm_project_findID(int type, char *id, int *index)
+int DLLEXPORT swmm_project_findObject(int type, char *id, int *index)
 {
     int errorcode = 0;
 
-	int idx = project_findID(type, id);
+	int idx = project_findObject(type, id);
     
 	if (idx == -1) {
         *index    = NULL;

@@ -510,10 +510,10 @@ void DLLEXPORT swmm_getAPIError(int errcode, char *s);
  @brief Finds the index of an object given its ID.
  @param type An object type
  @param id The object ID
- @param index The objects index
+ @param[out] index The objects index
  @return Error code
 */
-int DLLEXPORT swmm_project_findID(int type, char *id, int *index);
+int DLLEXPORT swmm_project_findObject(int type, char *id, int *index);
 
 /**
 @brief Gets Simulation Unit
