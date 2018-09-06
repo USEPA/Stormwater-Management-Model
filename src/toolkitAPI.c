@@ -10,12 +10,13 @@
 */
 #define _CRT_SECURE_NO_DEPRECATE
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <string.h>
 
 #include "headers.h"
 #include "swmm5.h"                     // declaration of exportable functions
+#include "toolkitAPI.h"
 #include "hash.h"
 
 // Function Declarations for API
@@ -46,6 +47,22 @@ void DLLEXPORT swmm_getAPIError(int errcode, char *s)
 {
     char *errmsg = error_getMsg(errcode);
     strcpy(s, errmsg);
+}
+
+
+int DLLEXPORT swmm_project_findID(int type, char *id, int *index)
+{
+    int errorcode = 0;
+
+	int idx = project_findID(type, id);
+    
+	if (idx == -1) {
+        *index    = NULL;
+        errorcode = ERR_API_OBJECT_INDEX; 
+	} else
+        *index = idx;
+
+	return errorcode;
 }
 
 int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month, int *day,
