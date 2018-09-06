@@ -9,6 +9,7 @@
 //            03/19/15  (Build 5.1.008)
 //            08/01/16  (Build 5.1.011)
 //            03/14/17  (Build 5.1.012)
+//            05/10/18  (Build 5.1.013)
 //   Author:  L. Rossman
 //
 //   Global Variables
@@ -31,6 +32,9 @@
 //
 //   Build 5.1.012:
 //   - InSteadyState variable made local to routing_execute in routing.c.
+//
+//   Build 5.1.013:
+//   - CrownCutoff and RuleStep added as analysis option variables.
 //-----------------------------------------------------------------------------
 
 EXTERN TFile
@@ -53,7 +57,7 @@ EXTERN long
 
 EXTERN char
                   Msg[MAXMSG+1],            // Text of output message
-                  ErrorMsg[MAXMSG+1],       // Text of error message           //(5.1.011)
+                  ErrorMsg[MAXMSG+1],       // Text of error message
                   Title[MAXTITLE][MAXMSG+1],// Project title
                   TempDir[MAXFNAME+1];      // Temporary file directory
 
@@ -70,6 +74,7 @@ EXTERN int
                   RouteModel,               // Flow routing method
                   ForceMainEqn,             // Flow equation for force mains
                   LinkOffsets,              // Link offset convention
+                  SurchargeMethod,          // EXTRAN or SLOT method           //(5.1.013)
                   AllowPonding,             // Allow water to pond at nodes
                   InertDamping,             // Degree of inertial damping
                   NormalFlowLtd,            // Normal flow limited
@@ -77,26 +82,27 @@ EXTERN int
                   Compatibility,            // SWMM 5/3/4 compatibility
                   SkipSteadyState,          // Skip over steady state periods
                   IgnoreRainfall,           // Ignore rainfall/runoff
-                  IgnoreRDII,               // Ignore RDII                     //(5.1.004)
+                  IgnoreRDII,               // Ignore RDII
                   IgnoreSnowmelt,           // Ignore snowmelt
                   IgnoreGwater,             // Ignore groundwater
                   IgnoreRouting,            // Ignore flow routing
                   IgnoreQuality,            // Ignore water quality
                   ErrorCode,                // Error code number
-                  Warnings,                 // Number of warning messages      //(5.1.011)
+                  Warnings,                 // Number of warning messages
                   WetStep,                  // Runoff wet time step (sec)
                   DryStep,                  // Runoff dry time step (sec)
                   ReportStep,               // Reporting time step (sec)
+                  RuleStep,                 // Rule evaluation time step (sec) //(5.1.013)
                   SweepStart,               // Day of year when sweeping starts
                   SweepEnd,                 // Day of year when sweeping ends
                   MaxTrials,                // Max. trials for DW routing
-                  NumThreads,               // Number of parallel threads used //(5.1.008)
-                  NumEvents;                // Number of detailed events       //(5.1.011)
-                //InSteadyState;            // System flows remain constant    //(5.1.012)
+                  NumThreads,               // Number of parallel threads used
+                  NumEvents;                // Number of detailed events
+                //InSteadyState;            // System flows remain constant
 
 EXTERN double
                   RouteStep,                // Routing time step (sec)
-                  MinRouteStep,             // Minimum variable time step (sec) //(5.1.008)
+                  MinRouteStep,             // Minimum variable time step (sec)
                   LengtheningStep,          // Time step for lengthening (sec)
                   StartDryDays,             // Antecedent dry days
                   CourantFactor,            // Courant time step factor
@@ -108,7 +114,8 @@ EXTERN double
                   QualError,                // Quality routing error
                   HeadTol,                  // DW routing head tolerance (ft)
                   SysFlowTol,               // Tolerance for steady system flow
-                  LatFlowTol;               // Tolerance for steady nodal inflow       
+                  LatFlowTol,               // Tolerance for steady nodal inflow
+                  CrownCutoff;              // Fractional pipe crown cutoff    //(5.1.013)
 
 EXTERN DateTime
                   StartDate,                // Starting date
@@ -128,13 +135,13 @@ EXTERN double
                   OldRoutingTime,           // Previous routing time (msec)
                   NewRoutingTime,           // Current routing time (msec)
                   TotalDuration,            // Simulation duration (msec)
-                  ElapsedTime;              // Current elapsed time (days)     //(5.1.011)
+                  ElapsedTime;              // Current elapsed time (days)
 
 EXTERN TTemp      Temp;                     // Temperature data
 EXTERN TEvap      Evap;                     // Evaporation data
 EXTERN TWind      Wind;                     // Wind speed data
 EXTERN TSnow      Snow;                     // Snow melt data
-EXTERN TAdjust    Adjust;                   // Climate adjustments             //(5.1.007)
+EXTERN TAdjust    Adjust;                   // Climate adjustments
 
 EXTERN TSnowmelt* Snowmelt;                 // Array of snow melt objects
 EXTERN TGage*     Gage;                     // Array of rain gages
@@ -158,4 +165,4 @@ EXTERN TTable*    Curve;                    // Array of curve tables
 EXTERN TTable*    Tseries;                  // Array of time series tables
 EXTERN TTransect* Transect;                 // Array of transect data
 EXTERN TShape*    Shape;                    // Array of custom conduit shapes
-EXTERN TEvent*    Event;                    // Array of routing events         //(5.1.011)
+EXTERN TEvent*    Event;                    // Array of routing events

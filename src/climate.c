@@ -8,6 +8,7 @@
 //            03/19/15 (Build 5.1.008)
 //            08/05/15 (Build 5.1.010)
 //            08/01/16 (Build 5.1.011)
+//            05/10/18 (Build 5.1.013)
 //   Author:  L. Rossman
 //
 //   Climate related functions.
@@ -27,6 +28,10 @@
 //             
 //   Build 5.1.011:
 //   - Monthly adjustment for hyd. conductivity <= 0 is ignored.
+//
+//   Build 5.1.013:
+//   - Reads names of monthly adjustment patterns for various parameters
+//     of a subcatchment from the [ADJUSTMENTS] section of input file.
 ///-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -41,7 +46,7 @@
 //-----------------------------------------------------------------------------
 enum ClimateFileFormats {UNKNOWN_FORMAT,
                          USER_PREPARED,     // SWMM 5's own user format
-                         GHCND,             // NCDC GHCN Daily format          //(5.1.007)
+                         GHCND,             // NCDC GHCN Daily format
                          TD3200,            // NCDC TD3200 format
                          DLY0204};          // Canadian DLY02 or DLY04 format
 static const int    MAXCLIMATEVARS  = 4;
@@ -49,11 +54,10 @@ static const int    MAXDAYSPERMONTH = 32;
 
 // These variables are used when processing climate files.
 enum   ClimateVarType {TMIN, TMAX, EVAP, WIND};
-enum   WindSpeedType  {WDMV, AWND};                                            //(5.1.007)
-static char* ClimateVarWords[] = {"TMIN", "TMAX", "EVAP", "WDMV", "AWND",      //(5.1.007)
+enum   WindSpeedType  {WDMV, AWND};
+static char* ClimateVarWords[] = {"TMIN", "TMAX", "EVAP", "WDMV", "AWND",
                                   NULL};
 
-////  Added for release 5.1.010.  ////                                         //(5.1.010)
 //-----------------------------------------------------------------------------
 //  Data Structures
 //-----------------------------------------------------------------------------
@@ -67,7 +71,7 @@ typedef struct
     int       maxCount;      // maximum length of moving average window
     int       front;         // index of front of moving average window
 } TMovAve;
-////
+
 
 //-----------------------------------------------------------------------------
 //  Shared variables
@@ -84,7 +88,7 @@ static double    Hrday;                // avg. of min/max temp times
 static double    Dhrdy;                // hrs. between min. & max. temp. times
 static double    Dydif;                // hrs. between max. & min. temp. times
 static DateTime  LastDay;              // date of last day with temp. data
-static TMovAve   Tma;                  // moving average of daily temperatures //(5.1.010)
+static TMovAve   Tma;                  // moving average of daily temperatures
 
 // Evaporation variables
 static DateTime  NextEvapDate;         // next date when evap. rate changes
@@ -101,9 +105,9 @@ static double   FileValue[4];          // current day's values of climate data
 static double   FileData[4][32];       // month's worth of daily climate data
 static char     FileLine[MAXLINE+1];   // line from climate data file
 
-static int      FileFieldPos[4];       // start of data fields for file record //(5.1.007)
-static int      FileDateFieldPos;      // start of date field for file record  //(5.1.007)
-static int      FileWindType;          // wind speed type;                     //(5.1.007)
+static int      FileFieldPos[4];       // start of data fields for file record
+static int      FileDateFieldPos;      // start of date field for file record 
+static int      FileWindType;          // wind speed type
 
 //-----------------------------------------------------------------------------
 //  External functions (defined in funcs.h)
@@ -114,7 +118,7 @@ static int      FileWindType;          // wind speed type;                     /
 //  climate_openFile                   // called by runoff_open
 //  climate_initState                  // called by project_init
 //  climate_setState                   // called by runoff_execute
-//  climate_getNextEvapDate            // called by runoff_getTimeStep         //(5.1.008)
+//  climate_getNextEvapDate            // called by runoff_getTimeStep
 
 //-----------------------------------------------------------------------------
 //  Local functions
@@ -126,13 +130,13 @@ static void readTD3200FileLine(int *year, int *month);
 static void readDLY0204FileLine(int *year, int *month);
 static void readFileValues(void);
 
-static void setNextEvapDate(DateTime thedate);                                 //(5.1.008)
+static void setNextEvapDate(DateTime thedate);
 static void setEvap(DateTime theDate);
 static void setTemp(DateTime theDate);
 static void setWind(DateTime theDate);
 static void updateTempTimes(int day);
-static void updateTempMoveAve(double tmin, double tmax);                       //(5.1.010)
-static double getTempEvap(int day, double ta, double tr);                      //(5.1.010)
+static void updateTempMoveAve(double tmin, double tmax);
+static double getTempEvap(int day, double ta, double tr);
 
 static void updateFileValues(DateTime theDate);
 static void parseUserFileLine(void);
@@ -140,9 +144,9 @@ static void parseTD3200FileLine(void);
 static void parseDLY0204FileLine(void);
 static void setTD3200FileValues(int param);
 
-static int  isGhcndFormat(char* line);                                         //(5.1.007)
-static void readGhcndFileLine(int *year, int *month);                          //(5.1.007)
-static void parseGhcndFileLine(void);                                          //(5.1.007)
+static int  isGhcndFormat(char* line);
+static void readGhcndFileLine(int *year, int *month);
+static void parseGhcndFileLine(void);
 
 //=============================================================================
 
@@ -356,8 +360,6 @@ int climate_readEvapParams(char* tok[], int ntoks)
 
 //=============================================================================
 
-////  New function added to release 5.1.007.  ////                             //(5.1.007)
-
 int climate_readAdjustments(char* tok[], int ntoks)
 //
 //  Input:   tok[] = array of string tokens
@@ -370,9 +372,13 @@ int climate_readAdjustments(char* tok[], int ntoks)
 //    TEMPERATURE   v1 ... v12
 //    EVAPORATION   v1 ... v12
 //    RAINFALL      v1 ... v12
-//    CONDUCTIVITY  v1 ... v12                                                 //(5.1.008)
+//    CONDUCTIVITY  v1 ... v12
+//    N-PERV        subcatchID  patternID                                      //(5.1.013
+//    DSTORE        subcatchID  patternID                                      //
+//    INFIL         subcatchID  patternID                                      //
 {
-    int i;
+    int i, j;                                                                  //(5.1.013)
+
     if (ntoks == 1) return 0;
 
     if ( match(tok[0], "TEMP") )
@@ -408,8 +414,6 @@ int climate_readAdjustments(char* tok[], int ntoks)
         return 0;
     }
 
-////  Following code segment added for release 5.1.008.  ////                  //(5.1.008)
-////
     if ( match(tok[0], "CONDUCT") )
     {
         if ( ntoks < 13 )  return error_setInpError(ERR_ITEMS, "");
@@ -417,8 +421,42 @@ int climate_readAdjustments(char* tok[], int ntoks)
         {
             if ( !getDouble(tok[i], &Adjust.hydcon[i-1]) )
                 return error_setInpError(ERR_NUMBER, tok[i]);
-            if ( Adjust.hydcon[i-1] <= 0.0 ) Adjust.hydcon[i-1] = 1.0;         //(5.1.011)
+            if ( Adjust.hydcon[i-1] <= 0.0 ) Adjust.hydcon[i-1] = 1.0;
         }
+        return 0;
+    }
+
+////  Following code segments added to release 5.1.013.  ////                  //(5.1.013)
+    if ( match(tok[0], "N-PERV") )
+    {
+        if ( ntoks < 3 ) return error_setInpError(ERR_ITEMS, "");
+        i = project_findObject(SUBCATCH, tok[1]);
+        if (i < 0) return error_setInpError(ERR_NAME, tok[1]);
+        j = project_findObject(TIMEPATTERN, tok[2]);
+        if (j < 0) return error_setInpError(ERR_NAME, tok[2]);
+        Subcatch[i].nPervPattern = j;
+        return 0;
+    }
+
+    if ( match(tok[0], "DSTORE") )
+    {
+        if (ntoks < 3) return error_setInpError(ERR_ITEMS, "");
+        i = project_findObject(SUBCATCH, tok[1]);
+        if (i < 0) return error_setInpError(ERR_NAME, tok[1]);
+        j = project_findObject(TIMEPATTERN, tok[2]);
+        if (j < 0) return error_setInpError(ERR_NAME, tok[2]);
+        Subcatch[i].dStorePattern = j;
+        return 0;
+    }
+
+    if (match(tok[0], "INFIL"))
+    {
+        if (ntoks < 3) return error_setInpError(ERR_ITEMS, "");
+        i = project_findObject(SUBCATCH, tok[1]);
+        if (i < 0) return error_setInpError(ERR_NAME, tok[1]);
+        j = project_findObject(TIMEPATTERN, tok[2]);
+        if (j < 0) return error_setInpError(ERR_NAME, tok[2]);
+        Subcatch[i].infilPattern = j;
         return 0;
     }
 ////
@@ -434,10 +472,10 @@ void climate_validate()
 //  Purpose: validates climatological variables
 //
 {
-    int       i;                                                               //(5.1.007)
+    int       i;
     double    a, z, pa;
 
-    // --- check if climate data comes from external data file                 //(5.1.007)
+    // --- check if climate data comes from external data file 
     if ( Wind.type == FILE_WIND || Evap.type == FILE_EVAP ||
          Evap.type == TEMPERATURE_EVAP )
     {
@@ -447,8 +485,8 @@ void climate_validate()
         }
     }
 
-    // --- open the climate data file                                          //(5.1.007)
-    if ( Fclimate.mode == USE_FILE ) climate_openFile();                       //(5.1.007)
+    // --- open the climate data file
+    if ( Fclimate.mode == USE_FILE ) climate_openFile();
 
     // --- snow melt parameters tipm & rnm must be fractions
     if ( Snow.tipm < 0.0 ||
@@ -468,7 +506,7 @@ void climate_validate()
     else  pa = 29.9 - 1.02*z + 0.0032*pow(z, 2.4); // atmos. pressure
     Temp.gamma = 0.000359 * pa;
 
-    // --- convert units of monthly temperature & evap adjustments             //(5.1.007)
+    // --- convert units of monthly temperature & evap adjustments
     for (i = 0; i < 12; i++)
     {
         if (UnitSystem == SI) Adjust.temp[i] *= 9.0/5.0;
@@ -545,8 +583,6 @@ void climate_openFile()
 
 //=============================================================================
 
-////  This function was re-written for release 5.1.008.  ////                  //(5.1.008)
-
 void climate_initState()
 //
 //  Input:   none
@@ -577,7 +613,6 @@ void climate_initState()
         setNextEvapDate(NextEvapDate); 
     }
 
-////  Following section added to release 5.1.010.  ////                        //(5.1.010)
     // --- initialize variables for temperature evaporation
     if ( Evap.type == TEMPERATURE_EVAP )
     {
@@ -587,7 +622,6 @@ void climate_initState()
         Tma.tAve = 0.0;
         Tma.tRng = 0.0;
     }
-////
 }
 
 //=============================================================================
@@ -603,14 +637,12 @@ void climate_setState(DateTime theDate)
     if ( Temp.dataSource != NO_TEMP ) setTemp(theDate);
     setEvap(theDate);
     setWind(theDate);
-    Adjust.rainFactor = Adjust.rain[datetime_monthOfYear(theDate)-1];          //(5.1.007)
-    Adjust.hydconFactor = Adjust.hydcon[datetime_monthOfYear(theDate)-1];      //(5.1.008)
-    setNextEvapDate(theDate);                                                  //(5.1.008)
+    Adjust.rainFactor = Adjust.rain[datetime_monthOfYear(theDate)-1];
+    Adjust.hydconFactor = Adjust.hydcon[datetime_monthOfYear(theDate)-1];
+    setNextEvapDate(theDate);
 }
 
 //=============================================================================
-
-////  New function added to release 5.1.008.  ////                             //(5.1.008)
 
 DateTime climate_getNextEvapDate()
 //
@@ -623,8 +655,6 @@ DateTime climate_getNextEvapDate()
 }
 
 //=============================================================================
-
-////  Modified from what was previously named climate_getNextEvap.  ////       //(5.1.008)
 
 void setNextEvapDate(DateTime theDate)
 //
@@ -746,14 +776,14 @@ void setTemp(DateTime theDate)
 {
     int      j;                        // snow data object index
     int      k;                        // time series index
-    int      mon;                      // month of year                        //(5.1.007)
+    int      mon;                      // month of year 
     int      day;                      // day of year
     DateTime theDay;                   // calendar day
     double   hour;                     // hour of day
     double   tmp;                      // temporary temperature
 
     // --- see if a new day has started
-    mon = datetime_monthOfYear(theDate);                                       //(5.1.007)
+    mon = datetime_monthOfYear(theDate);
     theDay = floor(theDate);
     if ( theDay > LastDay )
     {
@@ -761,8 +791,8 @@ void setTemp(DateTime theDate)
         day = datetime_dayOfYear(theDate);
         if ( Temp.dataSource == FILE_TEMP )
         {
-            Tmin = FileValue[TMIN] + Adjust.temp[mon-1];                       //(5.1.007)
-            Tmax = FileValue[TMAX] + Adjust.temp[mon-1];                       //(5.1.007)
+            Tmin = FileValue[TMIN] + Adjust.temp[mon-1];
+            Tmax = FileValue[TMAX] + Adjust.temp[mon-1];
             if ( Tmin > Tmax )
             {
                 tmp = Tmin;
@@ -772,8 +802,8 @@ void setTemp(DateTime theDate)
             updateTempTimes(day);
             if ( Evap.type == TEMPERATURE_EVAP )
             {
-                updateTempMoveAve(Tmin, Tmax);                                 //(5.1.010)
-                FileValue[EVAP] = getTempEvap(day, Tma.tAve, Tma.tRng);        //(5.1.010)
+                updateTempMoveAve(Tmin, Tmax); 
+                FileValue[EVAP] = getTempEvap(day, Tma.tAve, Tma.tRng);
             }
         }
 
@@ -816,8 +846,8 @@ void setTemp(DateTime theDate)
                 Temp.ta = (9./5.) * Temp.ta + 32.0;
             }
 
-            // --- apply climate change adjustment factor                      //(5.1.007)
-            Temp.ta += Adjust.temp[mon-1];                                     //(5.1.007)
+            // --- apply climate change adjustment factor 
+            Temp.ta += Adjust.temp[mon-1];
         }
     }
 
@@ -835,7 +865,7 @@ void setEvap(DateTime theDate)
 //
 {
     int k;
-    int mon = datetime_monthOfYear(theDate);                                   //(5.1.007)
+    int mon = datetime_monthOfYear(theDate);
 
     switch ( Evap.type )
     {
@@ -864,15 +894,15 @@ void setEvap(DateTime theDate)
       default: Evap.rate = 0.0;
     }
 
-    // --- apply climate change adjustment                                     //(5.1.007)
-    Evap.rate += Adjust.evap[mon-1];                                           //(5.1.007)
+    // --- apply climate change adjustment
+    Evap.rate += Adjust.evap[mon-1];
 
     // --- set soil recovery factor
     Evap.recoveryFactor = 1.0;
     k = Evap.recoveryPattern;
     if ( k >= 0 && Pattern[k].type == MONTHLY_PATTERN )
     {
-        Evap.recoveryFactor = Pattern[k].factor[mon-1];                        //(5.1.007)
+        Evap.recoveryFactor = Pattern[k].factor[mon-1];
     }
 }
 
@@ -935,8 +965,6 @@ void updateTempTimes(int day)
 }
 
 //=============================================================================
-
-////  This function was modified for release 5.1.010.  ////                    //(5.1.010)
 
 double getTempEvap(int day, double tave, double trng)
 //
@@ -1004,8 +1032,8 @@ int  getFileFormat()
     n = sscanf(line, "%s %d %d %d %s", staID, &y, &m, &d, s);
     if ( n == 5 ) return USER_PREPARED;
 
-    // --- check for GHCND format                                              //(5.1.007)
-    if ( isGhcndFormat(line) ) return GHCND;                                   //(5.1.007)
+    // --- check for GHCND format
+    if ( isGhcndFormat(line) ) return GHCND;
 
     return UNKNOWN_FORMAT;
 }
@@ -1033,7 +1061,7 @@ void readFileLine(int *y, int *m)
     case  USER_PREPARED: readUserFileLine(y, m);   break;
     case  TD3200:        readTD3200FileLine(y,m);  break;
     case  DLY0204:       readDLY0204FileLine(y,m); break;
-    case  GHCND:         readGhcndFileLine(y,m);   break;                      //(5.1.007)
+    case  GHCND:         readGhcndFileLine(y,m);   break; 
     }
 }
 
@@ -1154,7 +1182,7 @@ void readFileValues()
         case  USER_PREPARED: parseUserFileLine();   break;
         case  TD3200:        parseTD3200FileLine();  break;
         case  DLY0204:       parseDLY0204FileLine(); break;
-        case  GHCND:         parseGhcndFileLine();   break;                    //(5.1.007)
+        case  GHCND:         parseGhcndFileLine();   break; 
         }
         strcpy(FileLine, "");
     }
@@ -1364,8 +1392,6 @@ void parseDLY0204FileLine()
 
 //=============================================================================
 
-////  This function was added to release 5.1.007.  ////                        //(5.1.007)
-
 int isGhcndFormat(char* line)
 //
 //  Input:   line = first line of text from a climate file
@@ -1410,8 +1436,6 @@ int isGhcndFormat(char* line)
 
 //=============================================================================
 
-////  This function was added to release 5.1.007.  ////                        //(5.1.007)
-
 void readGhcndFileLine(int* y, int* m)
 //
 //  Input:   none
@@ -1429,8 +1453,6 @@ void readGhcndFileLine(int* y, int* m)
 }
 
 //=============================================================================
-
-////  This function was added to release 5.1.007.  ////                        //(5.1.007)
 
 void parseGhcndFileLine()
 //
@@ -1498,8 +1520,6 @@ void parseGhcndFileLine()
 }
 
 //=============================================================================
-
-////  New function added to release 5.1.010.  ////                             //(5.1.010)
 
 void updateTempMoveAve(double tmin, double tmax)
 //

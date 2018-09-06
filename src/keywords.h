@@ -5,12 +5,16 @@
 //   Version: 5.1
 //   Date:    03/19/14   (Build 5.1.000)
 //            03/19/15   (Build 5.1.008)
+//            05/10/18   (Build 5.1.013)
 //   Author:  L. Rossman
 //
 //   Exportable keyword dictionary
 //
 //   Build 5.1.008:
 //   - Keyword arrays listed in alphabetical order.
+//
+//   Build 5.1.013:
+//   - New keyword array defined for surcharge method.
 //-----------------------------------------------------------------------------
 
 extern char* BuildupTypeWords[];
@@ -51,6 +55,7 @@ extern char* RouteModelWords[];
 extern char* RuleKeyWords[];
 extern char* SectWords[];
 extern char* SnowmeltWords[];
+extern char* SurchargeWords[];                                                 //(5.1.013)
 extern char* TempKeyWords[];
 extern char* TransectKeyWords[];
 extern char* TreatTypeWords[];

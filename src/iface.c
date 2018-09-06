@@ -17,13 +17,8 @@
 //-----------------------------------------------------------------------------
 //  Imported variables
 //-----------------------------------------------------------------------------
-#ifdef __cplusplus
-extern const double Qcf[];             // flow units conversion factors
-                                       // (see swmm5.c)
-#else
 extern double Qcf[];                   // flow units conversion factors
                                        // (see swmm5.c)
-#endif 
 
 //-----------------------------------------------------------------------------                  
 //  Shared variables

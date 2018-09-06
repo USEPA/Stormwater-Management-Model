@@ -24,7 +24,7 @@
 #include <math.h>
 #include "headers.h"
 
-enum RoadSurface {PAVED = 1, GRAVEL};
+enum RoadSurface {PAVED = 1, GRAVEL = 2};
 
 //-----------------------------------------------------------------------------
 //  Constants
@@ -43,7 +43,7 @@ static const double Cr_Low_Paved[4][2] = {
 static const int N_Cr_Low_Gravel = 8;
 static const double Cr_Low_Gravel[8][2] = {
     {0.0, 2.5}, {0.5, 2.7},  {1.0, 2.8}, {1.5, 2.9}, {2.0, 2.98},
-    {2.5, 3.02}, {3.0, 3.03}, {4.0, 3.05} };                                   //(5.1.012)
+    {2.5, 3.02}, {3.0, 3.03}, {4.0, 3.05} };
 
 // Discharge Coefficients for (head / road width) > 0.15
 static const int N_Cr_High_Paved = 2;
