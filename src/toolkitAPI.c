@@ -57,7 +57,7 @@ int DLLEXPORT swmm_project_findObject(int type, char *id, int *index)
 	int idx = project_findObject(type, id);
     
 	if (idx == -1) {
-        *index    = NULL;
+        index    = NULL;
         errorcode = ERR_API_OBJECT_INDEX; 
 	} else
         *index = idx;
