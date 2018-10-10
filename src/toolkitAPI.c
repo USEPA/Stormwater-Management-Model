@@ -323,6 +323,7 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
 // Purpose: Gets ID for any object
 {
     int errcode = 0;
+    TLidProc *lidProc = NULL;
     //Provide Empty Character Array
     strcpy(id,"");
 
@@ -370,8 +371,13 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
                 strcpy(id,Snowmelt[index].ID); break;
             //case SM_SHAPE:
                 //strcpy(id,Shape[index].ID); break;
-            //case SM_LID:
-                //strcpy(id,LidProcs[index].ID); break;
+            case SM_LID:
+                lidProc = lid_getLidProc(index);
+                if (lidProc != NULL) 
+                {
+                    strcpy(id, lidProc->ID);
+                }
+                break;
             default: errcode = ERR_API_OUTBOUNDS; break;
         }
    }
@@ -1175,7 +1181,8 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             case SM_THICKNESS:
                 *value = lidProc->storage.thickness * UCF(RAINDEPTH); break;
             case SM_VOIDFRAC:
-                *value = pow(pow(lidProc->storage.voidFrac, -1) - 1, -1); break;
+                *value = lidProc->storage.voidFrac / (1 - lidProc->storage.voidFrac);
+                break;
             case SM_KSAT:
                 *value = lidProc->storage.kSat * UCF(RAINFALL); break;
             case SM_CLOGFACTOR:
@@ -1192,7 +1199,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             case SM_THICKNESS:
                 *value = lidProc->pavement.thickness * UCF(RAINDEPTH); break;
             case SM_VOIDFRAC:
-                *value = pow(pow(lidProc->pavement.voidFrac, -1) - 1, -1); break;
+                *value = lidProc->pavement.voidFrac /(1 - lidProc->pavement.voidFrac); break;
             case SM_IMPERVFRAC:
                 *value = lidProc->pavement.impervFrac; break;
             case SM_KSAT:
@@ -2001,11 +2008,20 @@ int DLLEXPORT swmm_getLidGResult(int index, int type, double *result)
     int errcode = 0;
     TLidGroup lidGroup;
 
-    // Check if object index is within bounds
-    if (index < 0 || index >= Nobjects[SUBCATCH])
-    {
+	// Check if object index is within bounds
+    if (index < 0 || index >= Nobjects[SUBCATCH]) {
         errcode = ERR_API_OBJECT_INDEX;
     }
+    // Check if Open
+    else if (swmm_IsOpenFlag() == FALSE) 
+	{
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+	// Check if model is not running
+	else if (swmm_IsStartedFlag() == FALSE)
+	{
+        errcode = ERR_API_SIM_NRUNNING;
+	}
     else
     {
         lidGroup = lid_getLidGroup(index);
