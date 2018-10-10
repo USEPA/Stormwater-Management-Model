@@ -1922,18 +1922,21 @@ int lid_getLidUnitCount(int index)
 // Purpose: count number of lid units for subcatchment
 {
     int unitCount = 0;
-    TLidList* lidList;
+    TLidList* lidList = NULL;
     TLidGroup lidGroup;
 
     lidGroup = LidGroups[index];
-    lidList = lidGroup->lidList;
     
-    while (lidList)
-    {
-        lidList = lidList->nextLidUnit;
-        unitCount += 1;
+	if (lidGroup)
+	{
+        lidList = lidGroup->lidList;
+		while (lidList)
+		{
+			lidList = lidList->nextLidUnit;
+			unitCount += 1;
+		}
     }
-    
+
     return unitCount;
 }
 
