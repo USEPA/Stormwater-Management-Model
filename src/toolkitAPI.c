@@ -373,11 +373,11 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
                 //strcpy(id,Shape[index].ID); break;
             case SM_LID:
                 lidProc = lid_getLidProc(index);
-				if (lidProc != NULL) 
-				{
+                if (lidProc != NULL) 
+                {
                     strcpy(id, lidProc->ID);
                 }
-				break;
+                break;
             default: errcode = ERR_API_OUTBOUNDS; break;
         }
    }
