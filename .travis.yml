@@ -1,5 +1,5 @@
 language: 
-  - python
+  #- python
   - c
 
 os:
