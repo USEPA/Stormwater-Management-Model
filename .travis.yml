@@ -1,4 +1,14 @@
-language: python
+language: 
+  - python
+  - c
+
+os:
+  - linux
+  - osx
+  
+compiler:
+  - gcc
+  - clang
 
 env: 
   global: 
@@ -7,9 +17,15 @@ env:
     - TEST_HOME=nrtestsuite
 
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y libboost-test-dev
-  - sudo apt-get install -y swig 
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
+    brew update ;
+    brew install libomp ;
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+    sudo apt-get -qq update ;
+    sudo apt-get install -y libboost-test-dev ;
+    sudo apt-get install -y swig ;
+    fi
 
 #install:
 
