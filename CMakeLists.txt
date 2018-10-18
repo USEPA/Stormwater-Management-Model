@@ -31,18 +31,34 @@ endif(MSVC)
 
 
 # Set compiler flags when building on UNIX. 
-if(UNIX)
-    set(CMAKE_C_FLAGS "-fopenmp")
-    set(CMAKE_CXX_FLAGS "-std=c++11 -fopenmp -Wno-write-strings")
+if(UNIX AND NOT APPLE)
+	set(CMAKE_C_FLAGS "-fopenmp")
+	set(CMAKE_CXX_FLAGS "-std=c++11 -fopenmp -Wno-write-strings")
     # add_definitions(-std=c99)
-endif(UNIX)
-
+endif(UNIX AND NOT APPLE)
 
 # Set compiler flags when building on Apple 
+# adapted from https://github.com/CLIUtils/cmake/blob/master/PatchOpenMPApple.cmake
 if(APPLE)
-    set(CMAKE_INSTALL_NAME_DIR @executable_path)
-    set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+	find_program(BREW NAMES brew)
+    if(BREW)
+    	execute_process(COMMAND ${BREW} ls libomp RESULT_VARIABLE BREW_RESULT_CODE OUTPUT_QUIET ERROR_QUIET)
+    	if(BREW_RESULT_CODE)
+    		message(STATUS "This program supports OpenMP on Mac through Brew. Please run \"brew install libomp\"")
+		else()
+    		execute_process(COMMAND ${BREW} --prefix libomp OUTPUT_VARIABLE BREW_LIBOMP_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
+       	 	set(OpenMP_C_FLAGS "-Ofast -Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
+        	set(OpenMP_C_LIB_NAMES "omp")
+			set(OpenMP_CXX_FLAGS "-Ofast -Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
+        	set(OpenMP_CXX_LIB_NAMES "omp")
+        	set(OpenMP_omp_LIBRARY "${BREW_LIBOMP_PREFIX}/lib/libomp.dylib")
+        	include_directories("${BREW_LIBOMP_PREFIX}/include")
+		    link_directories("${BREW_LIBOMP_PREFIX}/lib/")
+        	message(STATUS "Using Homebrew libomp from ${BREW_LIBOMP_PREFIX}")
+		endif()
+    else()
+    	message(STATUS "This program supports OpenMP on Mac through Homebrew, installing Homebrew recommmended https://brew.sh")
+    endif()   
 endif(APPLE)
 
 
