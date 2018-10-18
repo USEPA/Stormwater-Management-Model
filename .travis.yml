@@ -18,8 +18,7 @@ env:
     - TEST_HOME=nrtestsuite
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
-    #brew update ;
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     brew install libomp ;
     fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
