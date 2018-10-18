@@ -141,6 +141,25 @@ typedef struct
     double         finalVol;      // final stored volume (ft)
 }  TWaterBalance;
 
+// 
+typedef struct
+{
+    double         evap;           // evaporation rate (ft/s)
+    double         maxNativeInfil; // native soil infil. rate limit (ft/s)
+    double         surfaceInflow;  // percip. + runon to LID unit (ft/s)
+    double         surfaceInfil;   // infil. rate from surface layer (ft/s)
+    double         surfaceEvap;    // evap. rate from surface layer (ft/s)
+    double         surfaceOutflow; // outflow from surface layer (ft/s)
+    double         paveEvap;       // evap. from pavement layer (ft/s)
+    double         pavePerc;       // percolation from pavement layer (ft/s)
+    double         soilEvap;       // evap. from soil layer (ft/s)
+    double         soilPerc;       // percolation from soil layer (ft/s)
+    double         storageInflow;  // inflow rate to storage layer (ft/s)
+    double         storageExfil;   // exfil. rate from storage layer (ft/s)
+    double         storageEvap;    // evap. rate from storage layer (ft/s)
+    double         storageDrain;   // underdrain flow rate layer (ft/s)
+} TWaterRate;
+
 // LID Report File
 typedef struct
 {
@@ -177,6 +196,7 @@ typedef struct
     double   oldDrainFlow;   // previous drain flow (cfs)                      //(5.1.008)
     double   newDrainFlow;   // current drain flow (cfs)                       //(5.1.008)
     TWaterBalance  waterBalance;     // water balance quantites
+    TWaterRate     waterRate;       // water rate within lid layers
 }  TLidUnit;
 
 // LID List - list of LID units contained in an LID group
@@ -238,12 +258,11 @@ void        lid_validateLidGroup(int index);
 //-----------------------------------------------------------------------------
 
 void     lidproc_initWaterBalance(TLidUnit *lidUnit, double initVol);
-
+void     lidproc_initWaterRate(TLidUnit *lidUnit);
 double   lidproc_getOutflow(TLidUnit* lidUnit, TLidProc* lidProc,
          double inflow, double evap, double infil, double maxInfil,            //(5.1.008)
          double tStep, double* lidEvap, double* lidInfil, double* lidDrain);   //(5.1.008)
 
 void     lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall,            //(5.1.011)
          double ucfRainDepth);
-
 #endif

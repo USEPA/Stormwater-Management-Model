@@ -136,9 +136,9 @@ static double     Xold[MAX_LAYERS];  // previous moisture level in LID layers  /
 //  External Functions (declared in lid.h)
 //-----------------------------------------------------------------------------
 // lidproc_initWaterBalance  (called by lid_initState)
+// lidproc_initWaterRate     (called by lid_initState)
 // lidproc_getOutflow        (called by evalLidUnit in lid.c)
 // lidproc_saveResults       (called by evalLidUnit in lid.c)
-
 //-----------------------------------------------------------------------------
 // Local Functions
 //-----------------------------------------------------------------------------
@@ -165,6 +165,12 @@ static void   updateWaterBalance(TLidUnit *lidUnit, double inflow,
                                  double evap, double infil, double surfFlow,
                                  double drainFlow, double storage);
 
+static void updateWaterRate(TLidUnit *lidUnit, double evap, double maxNativeInfil,
+                            double surfaceInflow, double surfInfil, double surfaceEvap, 
+                            double surfaceOutflow, double paveEvap, double pavePerc, 
+                            double soilEvap, double soilPerc, double storageInflow, 
+                            double storageExfil, double storageEvap, double storageDrain);
+
 static int    modpuls_solve(int n, double* x, double* xOld, double* xPrev,
                             double* xMin, double* xMax, double* xTol,
                             double* qOld, double* q, double dt, double omega,  //(5.1.007)
@@ -190,6 +196,29 @@ void lidproc_initWaterBalance(TLidUnit *lidUnit, double initVol)
     lidUnit->waterBalance.finalVol = initVol;                                  //(5.1.008)
 }
 
+void lidproc_initWaterRate(TLidUnit* lidUnit)
+//
+//  Purpose: initializes the water balance components of a LID unit.
+//  Input:   lidUnit = a particular LID unit
+//           initVol = initial water volume stored in the unit (ft)
+//  Output:  none
+//
+{
+    lidUnit->waterRate.evap = 0.0;              
+    lidUnit->waterRate.maxNativeInfil = 0.0;
+    lidUnit->waterRate.surfaceInflow = 0.0;
+    lidUnit->waterRate.surfaceInfil = 0.0;        
+    lidUnit->waterRate.surfaceEvap = 0.0;       
+    lidUnit->waterRate.surfaceOutflow = 0.0;    
+    lidUnit->waterRate.paveEvap = 0.0;          
+    lidUnit->waterRate.pavePerc = 0.0;          
+    lidUnit->waterRate.soilEvap = 0.0;          
+    lidUnit->waterRate.soilPerc = 0.0;          
+    lidUnit->waterRate.storageInflow = 0.0;     
+    lidUnit->waterRate.storageExfil = 0.0;      
+    lidUnit->waterRate.storageEvap = 0.0;       
+    lidUnit->waterRate.storageDrain = 0.0;
+}
 //=============================================================================
 
 ////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
@@ -380,6 +409,12 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
     //... update mass balance totals
     updateWaterBalance(theLidUnit, SurfaceInflow, totalEvap, StorageExfil,
                        SurfaceOutflow, StorageDrain, totalVolume);
+    
+    //... update water rate
+    updateWaterRate(theLidUnit, EvapRate, MaxNativeInfil, SurfaceInflow, 
+                    SurfaceInfil, SurfaceEvap, SurfaceOutflow, PaveEvap, 
+                    PavePerc, SoilEvap, SoilPerc, StorageInflow, StorageExfil,
+                    StorageEvap, StorageDrain);
 
     //... check if dry-weather conditions hold
     if ( SurfaceInflow  < MINFLOW &&
@@ -1498,6 +1533,7 @@ void updateWaterBalance(TLidUnit *lidUnit, double inflow, double evap,
 //           surfFlow  = surface runoff from the unit (ft/s)
 //           drainFlow = underdrain flow from the unit
 //           storage   = volume of water stored in the unit (ft)
+//           tstep     = current time step (s)
 //  Output:  none
 //
 {
@@ -1509,6 +1545,46 @@ void updateWaterBalance(TLidUnit *lidUnit, double inflow, double evap,
     lidUnit->waterBalance.finalVol = storage;
 }
 
+void updateWaterRate(TLidUnit *lidUnit, double evap, double maxNativeInfil,
+    double surfaceInflow, double surfaceInfil, double surfaceEvap, double surfaceOutflow,
+    double paveEvap, double pavePerc, double soilEvap, double soilPerc,
+    double storageInflow, double storageExfil, double storageEvap, double storageDrain)
+    //
+    //  Purpose: updates components of the water rate for a LID unit
+    //           over the current time step
+    //  Input:   lidUnit   = a particular LID unit
+    //           evap              = evaporation rate (ft/s)
+    //           maxNativeInfil    = native soil infil. rate limit (ft/s)   
+    //           surfaceInflow     = precip. + runon to LID unit (ft/s)
+    //           surfaceInfil      = infil. rate from surface layer (ft/s)
+    //           surfaceEvap       = evap. rate from surface layer (ft/s
+    //           surfaceOutflow    = outflow from surface layer (ft/s)
+    //           paveEvap          = evap. from pavement layer (ft/s)      
+    //           pavePerc          = percolation from pavement layer (ft/s)
+    //           soilEvap          = evap. from soil layer (ft/s)
+    //           soilPerc          = percolation from soil layer (ft/s)
+    //           storageInflow     = inflow rate to storage layer (ft/s)
+    //           storageExfil      = exfil. rate from storage layer (ft/s)
+    //           storageEvap       = evap.rate from storage layer (ft/s)
+    //           storageDrain      = underdrain flow rate layer (ft/s)
+    //  Output:  none
+    //
+{
+    lidUnit->waterRate.evap = evap;
+    lidUnit->waterRate.maxNativeInfil = maxNativeInfil;
+    lidUnit->waterRate.surfaceInflow = surfaceInflow;
+    lidUnit->waterRate.surfaceInfil = surfaceInfil;
+    lidUnit->waterRate.surfaceEvap = surfaceEvap;
+    lidUnit->waterRate.surfaceOutflow = surfaceOutflow;
+    lidUnit->waterRate.paveEvap = paveEvap;
+    lidUnit->waterRate.pavePerc = pavePerc;
+    lidUnit->waterRate.soilEvap = soilEvap;
+    lidUnit->waterRate.soilPerc = soilPerc;
+    lidUnit->waterRate.storageInflow = storageInflow;
+    lidUnit->waterRate.storageExfil = storageExfil;
+    lidUnit->waterRate.storageEvap = storageEvap;
+    lidUnit->waterRate.storageDrain = storageDrain;
+}
 //=============================================================================
 
 int modpuls_solve(int n, double* x, double* xOld, double* xPrev,

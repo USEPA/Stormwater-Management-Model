@@ -2051,6 +2051,9 @@ int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, int type, double *resu
 {
     int errcode = 0;
     TLidUnit* lidUnit;
+    double    Tstep = 0;
+
+
 
     // Check if object index is within bounds
     if (index < 0 || index >= Nobjects[SUBCATCH])
@@ -2094,17 +2097,61 @@ int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, int type, double *resu
                     *result = lidUnit->paveDepth * UCF(RAINDEPTH);
                     break;
                 case SM_SOILMOIST:
-                    *result = lidUnit->soilMoisture; break;
+                    *result = lidUnit->soilMoisture; 
+					break;
                 case SM_STORDEPTH:
                     *result = lidUnit->storageDepth * UCF(RAINDEPTH);
                     break;
                 case SM_DRYTIME:
-                    *result = lidUnit->dryTime; break;
+                    *result = lidUnit->dryTime; 
+					break;
                 case SM_OLDDRAINFLOW:
                     *result = lidUnit->oldDrainFlow * UCF(FLOW);
                     break;
                 case SM_NEWDRAINFLOW:
                     *result = lidUnit->newDrainFlow * UCF(FLOW);
+                    break;
+                case SM_EVAPRATE:
+                    *result = lidUnit->waterRate.evap * UCF(RAINFALL);
+                    break;
+                case SM_NATIVEINFIL:
+                    *result = lidUnit->waterRate.maxNativeInfil * UCF(RAINFALL);
+                    break;
+                case SM_SURFINFLOW:
+                    *result = lidUnit->waterRate.surfaceInflow * UCF(RAINFALL);
+                    break;
+                case SM_SURFINFIL:
+                    *result = lidUnit->waterRate.surfaceInfil * UCF(RAINFALL);
+                    break;
+                case SM_SURFEVAP:
+                    *result = lidUnit->waterRate.surfaceEvap * UCF(RAINFALL);
+                    break;
+                case SM_SURFOUTFLOW:
+                    *result = lidUnit->waterRate.surfaceOutflow * UCF(RAINFALL);
+                    break;
+                case SM_PAVEEVAP:
+                    *result = lidUnit->waterRate.paveEvap * UCF(RAINFALL);
+                    break;
+                case SM_PAVEPERC:
+                    *result = lidUnit->waterRate.pavePerc * UCF(RAINFALL);
+                    break;
+                case SM_SOILEVAP:
+                    *result = lidUnit->waterRate.soilEvap * UCF(RAINFALL);
+                    break;
+                case SM_SOILPERC:
+                    *result = lidUnit->waterRate.soilPerc * UCF(RAINFALL);
+                    break;
+                case SM_STORAGEINFLOW:
+                    *result = lidUnit->waterRate.storageInflow * UCF(RAINFALL);
+                    break;
+                case SM_STORAGEEXFIL:
+                    *result = lidUnit->waterRate.storageExfil * UCF(RAINFALL);
+                    break;
+                case SM_STORAGEEVAP:
+                    *result = lidUnit->waterRate.storageEvap * UCF(RAINFALL);
+                    break;
+                case SM_STORAGEDRAIN:
+                    *result = lidUnit->waterRate.storageDrain * UCF(RAINFALL);
                     break;
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;

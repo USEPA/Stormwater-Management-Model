@@ -247,6 +247,20 @@ typedef enum {
     SM_NEWDRAINFLOW = 13, /**< Current Drain Flow (unit and group) */
     SM_PERVAREA     = 14, /**< Amount of Pervious Area (group) */
     SM_FLOWTOPERV   = 15, /**< Total Flow Sent to Pervious Area */
+    SM_EVAPRATE     = 16, /**< Evaporate Rate */
+    SM_NATIVEINFIL  = 17, /**< Native soil infil. rate limit */
+    SM_SURFINFLOW   = 18, /**< Precip. + runon to LID unit */
+    SM_SURFINFIL    = 19, /**< Infil. rate from surface layer */
+    SM_SURFEVAP     = 20, /**< Evaporate rate from surface layer */
+    SM_SURFOUTFLOW  = 21, /**< Outflow from surface layer */
+    SM_PAVEEVAP     = 22, /**< Evaporation from pavement layer */
+    SM_PAVEPERC     = 23, /**< Percolation from pavement layer */
+    SM_SOILEVAP     = 24, /**< Evaporation from soil layer */
+    SM_SOILPERC     = 25, /**< Percolation from soil layer */
+    SM_STORAGEINFLOW= 26, /**< Inflow rate to storage layer */
+    SM_STORAGEEXFIL = 27, /**< Exfilration rate from storage layer */
+    SM_STORAGEEVAP  = 28, /**< Evaporation from storage layer */
+    SM_STORAGEDRAIN = 29, /**< Underdrain flow rate layer */
 } SM_LidResult;
 
 // --- Define the SWMM toolkit structures

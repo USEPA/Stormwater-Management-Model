@@ -174,12 +174,12 @@ extern char       HasWetLids;          // TRUE if any LIDs are wet             /
 //  lid_writeSummary         called by inputrpt_writeInput
 //  lid_writeWaterBalance    called by statsrpt_writeReport
 
-//  lid_getLidUnitCount      called by LID API toolkit
-//  lid_getLidUnit           called by LID API toolkit
-//  lid_getLidProc           called by LID API toolkit
-//  lid_getLidGroup          called by LID API toolkit
-//  lid_validateLidProc      called by LID API toolkit
-//  lid_validateLidGroup     called by LID API toolkit
+//  lid_getLidUnitCount      called by LID API toolkit in toolkitAPI.c
+//  lid_getLidUnit           called by LID API toolkit in toolkitAPI.c
+//  lid_getLidProc           called by LID API toolkit in toolkitAPI.c
+//  lid_getLidGroup          called by LID API toolkit in toolkitAPI.c
+//  lid_validateLidProc      called by LID API toolkit in toolkitAPI.c
+//  lid_validateLidGroup     called by LID API toolkit in toolkitAPI.c
 //-----------------------------------------------------------------------------
 // Local Functions
 //-----------------------------------------------------------------------------
@@ -1197,6 +1197,8 @@ void lid_initState()
 
             //... initialize water balance totals
             lidproc_initWaterBalance(lidUnit, initVol);
+            //... initialize water rate 
+			lidproc_initWaterRate(lidUnit);
 
             //... initialize report file for the LID
             if ( lidUnit->rptFile )
