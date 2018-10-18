@@ -1,5 +1,5 @@
 language: 
-  #- python
+  #- python Python builds are not available on the macOS environment. s. https://docs.travis-ci.com/user/languages/python/
   - c
 
 os:
@@ -38,8 +38,8 @@ before_script:
 script:
   - cmake --build .
   # run unit tests
-  #- cd tests
-  #- ctest
+  - cd tests
+  - ctest
   #- cd $SWMM_HOME
   ## install dependencies for nrtest
   #- pip install --src build/packages -r tools/requirements.txt
