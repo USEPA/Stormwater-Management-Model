@@ -6,9 +6,10 @@ os:
   #- linux
   - osx
   
-compiler:
-  - gcc
-  - clang
+#compiler:
+#  - gcc
+#  - clang
+# On OS X, gcc is an alias for clang s. https://docs.travis-ci.com/user/languages/c/#gcc-on-os-x
 
 env: 
   global: 
