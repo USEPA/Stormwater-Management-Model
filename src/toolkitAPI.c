@@ -370,8 +370,8 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
                 strcpy(id,Snowmelt[index].ID); break;
             //case SM_SHAPE:
                 //strcpy(id,Shape[index].ID); break;
-            //case SM_LID:
-                //strcpy(id,LidProcs[index].ID); break;
+            case SM_LID:
+                strcpy(id,LidProcs[index].ID); break;
             default: errcode = ERR_API_OUTBOUNDS; break;
         }
    }
