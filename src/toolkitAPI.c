@@ -323,6 +323,7 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
 // Purpose: Gets ID for any object
 {
     int errcode = 0;
+	TLidProc*  lidProc;
     //Provide Empty Character Array
     strcpy(id,"");
 
@@ -371,7 +372,8 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
             //case SM_SHAPE:
                 //strcpy(id,Shape[index].ID); break;
             case SM_LID:
-                strcpy(id,LidProcs[index].ID); break;
+			    lidProc = lid_getLidProc(index);
+                strcpy(id,lidProc->ID); break;
             default: errcode = ERR_API_OUTBOUNDS; break;
         }
    }
