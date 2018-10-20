@@ -1,11 +1,11 @@
 /** @file toolkitAPI.h
  @see http://github.com/openwateranalytics/stormwater-management-model
- 
+
  toolkitAPI.h
  @brief Exportable Functions for Toolkit API.
  @date 08/30/2016 (First Contribution)
  @authors B. McDonnell (EmNet LLC), OpenWaterAnalytics members: see <a href="https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/AUTHORS">AUTHORS</a>.
- 
+
 
 */
 #ifndef TOOLKITAPI_H
@@ -77,7 +77,7 @@ typedef enum {
 typedef enum {
     SM_SYSTEMUNIT   = 0, /**< System Units */
     SM_FLOWUNIT     = 1, /**< Flow Units */
-} SM_Units; 
+} SM_Units;
 
 /// Simulation Options
 typedef enum {
@@ -185,7 +185,6 @@ typedef enum {
     SM_SNOWFALL      = 2   /**< Snowfall Rate */
 } SM_GagePrecip;
 
-<<<<<<< HEAD
 /// Lid control layer codes
 typedef enum {
     SM_SURFACE      = 0,  /**< Lid Surface Layer */
@@ -250,7 +249,7 @@ typedef enum {
     SM_SOILMOIST    = 9,  /**< Moisture Content of Biocell Soil Layer */
     SM_STORDEPTH    = 10, /**< Depth of Water in Storage Layer */
     SM_DRYTIME      = 11, /**< Time Since Last Rainfall */
-    SM_OLDDRAINFLOW = 12, /**< Previous Drain Flow (unit and group) */ 
+    SM_OLDDRAINFLOW = 12, /**< Previous Drain Flow (unit and group) */
     SM_NEWDRAINFLOW = 13, /**< Current Drain Flow (unit and group) */
     SM_PERVAREA     = 14, /**< Amount of Pervious Area (group) */
     SM_FLOWTOPERV   = 15, /**< Total Flow Sent to Pervious Area */
@@ -259,42 +258,6 @@ typedef enum {
 // --- Define the SWMM toolkit structures
 
 /// Node stats structure
-=======
-/** @struct SM_NodeStats
- *  @brief Node Statatistics 
- *
- *  @var SM_NodeStats::avgDepth
- *    average node depth (level)
- *  @var SM_NodeStats::maxDepth
- *    max node depth (level) (from routing step)
- *  @var SM_NodeStats::maxDepthDate
- *    date of maximum depth
- *  @var SM_NodeStats::maxRptDepth
- *    max node depth (level) (from reporting step)
- *  @var SM_NodeStats::volFlooded
- *    total volume flooded (volume)
- *  @var SM_NodeStats::timeFlooded
- *    total time flooded
- *  @var SM_NodeStats::timeSurcharged
- *    total time surcharged
- *  @var SM_NodeStats::timeCourantCritical
- *    total time courant critical
- *  @var SM_NodeStats::totLatFlow
- *    total lateral inflow (volume)
- *  @var SM_NodeStats::maxLatFlow
- *    maximum lateral inflow (flowrate)
- *  @var SM_NodeStats::maxInflow
- *    maximum total inflow (flowrate)
- *  @var SM_NodeStats::maxOverflow
- *    maximum flooding (flowrate)
- *  @var SM_NodeStats::maxPondedVol
- *    maximum ponded volume (volume)
- *  @var SM_NodeStats::maxInflowDate
- *    date of maximum inflow
- *  @var SM_NodeStats::maxOverflowDate
- *    date of maximum overflow
- */
->>>>>>> develop
 typedef struct
 {
    double        avgDepth;
@@ -315,7 +278,7 @@ typedef struct
 }  SM_NodeStats;
 
 /** @struct SM_StorageStats
- *  @brief Storage Statatistics 
+ *  @brief Storage Statatistics
  *
  *  @var SM_StorageStats::initVol
  *    initial volume (volume)
@@ -344,7 +307,7 @@ typedef struct
 }  SM_StorageStats;
 
 /** @struct SM_OutfallStats
- *  @brief Outfall Statatistics 
+ *  @brief Outfall Statatistics
  *
  *  @var SM_OutfallStats::avgFlow
  *    average flow (flowrate)
@@ -359,12 +322,12 @@ typedef struct
 {
    double       avgFlow;
    double       maxFlow;
-   double*      totalLoad;   
+   double*      totalLoad;
    int          totalPeriods;
 }  SM_OutfallStats;
 
 /** @struct SM_LinkStats
- *  @brief Link Statatistics 
+ *  @brief Link Statatistics
  *
  * @var SM_LinkStats::maxFlow
  *   maximum flow (flowrate) (from routing step)
@@ -426,7 +389,7 @@ typedef struct
 }  SM_LinkStats;
 
 /** @struct SM_PumpStats
- *  @brief Pump Statistics 
+ *  @brief Pump Statistics
  *
  * @var SM_PumpStats::utilized
  *   time utilized
@@ -464,7 +427,7 @@ typedef struct
 }  SM_PumpStats;
 
 /** @struct SM_SubcatchStats
- *  @brief Subcatchment Statistics 
+ *  @brief Subcatchment Statistics
  *
  * @var SM_SubcatchStats::precip
  *   total precipication (length)
@@ -490,34 +453,34 @@ typedef struct
 }  SM_SubcatchStats;
 
 /** @struct SM_RoutingTotals
- *  @brief System Flow Routing Statistics 
+ *  @brief System Flow Routing Statistics
  *
  * @var SM_RoutingTotals::dwInflow
  *   dry weather inflow
  * @var SM_RoutingTotals::wwInflow
- *   wet weather inflow   
+ *   wet weather inflow
  * @var SM_RoutingTotals::gwInflow
- *   groundwater inflow   
+ *   groundwater inflow
  * @var SM_RoutingTotals::iiInflow
- *   RDII inflow   
+ *   RDII inflow
  * @var SM_RoutingTotals::exInflow
- *   direct inflow   
+ *   direct inflow
  * @var SM_RoutingTotals::flooding
- *   internal flooding   
+ *   internal flooding
  * @var SM_RoutingTotals::outflow
- *   external outflow   
+ *   external outflow
  * @var SM_RoutingTotals::evapLoss
- *   evaporation loss   
+ *   evaporation loss
  * @var SM_RoutingTotals::seepLoss
- *   seepage loss   
+ *   seepage loss
  * @var SM_RoutingTotals::reacted
- *   reaction losses   
+ *   reaction losses
  * @var SM_RoutingTotals::initStorage
- *   initial storage volume   
+ *   initial storage volume
  * @var SM_RoutingTotals::finalStorage
- *   final storage volume   
+ *   final storage volume
  * @var SM_RoutingTotals::pctError
- *   continuity error   
+ *   continuity error
  */
 typedef struct
 {
@@ -540,7 +503,7 @@ typedef struct
 
 
 /** @struct SM_RunoffTotals
- *  @brief System Runoff Statistics 
+ *  @brief System Runoff Statistics
  *
  * @var SM_RunoffTotals::rainfall
  *   rainfall total (depth)
@@ -643,8 +606,8 @@ int DLLEXPORT swmm_getObjectIndex(int type, char *id, int *errcode);
 /**
  @brief Get the type of node with specified index.
  @param index The index of a node
- @param[out] Ntype The type code for the node (@ref SM_NodeType). 
- id must be pre-allocated by the caller. 
+ @param[out] Ntype The type code for the node (@ref SM_NodeType).
+ id must be pre-allocated by the caller.
  @return Error code
 */
 int DLLEXPORT swmm_getNodeType(int index, int *Ntype);
@@ -658,7 +621,7 @@ int DLLEXPORT swmm_getNodeType(int index, int *Ntype);
 int DLLEXPORT swmm_getLinkType(int index, int *Ltype);
 
 /**
- @brief Get the link Connection Node Indeces. If the conduit has a 
+ @brief Get the link Connection Node Indeces. If the conduit has a
  negative slope, the dynamic wave solver will automatically
  reverse the nodes. To check the direction, call @ref swmm_getLinkDirection().
  @param index The index of a link
@@ -697,7 +660,7 @@ int DLLEXPORT swmm_getLidUCount(int index, int *value);
 /**
  @brief Get a property value for a specified lid unit on a specified subcatchment
  @param index The index of a subcatchment
- @param lidIndex The index of specified lid unit 
+ @param lidIndex The index of specified lid unit
  @param Param The property type code (See @ref SM_LidUProperty)
  @param[out] value The value of the lid unit's property
  @return Error code
@@ -707,7 +670,7 @@ int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int Param, double *valu
 /**
  @brief Set a property value for a specified lid unit on a specified subcatchment
  @param index The index of a subcatchment
- @param lidIndex The index of specified lid unit 
+ @param lidIndex The index of specified lid unit
  @param Param The property type code (See @ref SM_LidUProperty)
  @param value The new value of the lid unit's property
  @return Error code
@@ -717,7 +680,7 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
 /**
  @brief Get the lid option for a specified lid unit on a specified subcatchment
  @param index The index of a subcatchment
- @param lidIndex The index of specified lid unit 
+ @param lidIndex The index of specified lid unit
  @param Param The lid option type code (See @ref SM_LidUOptions)
  @param[out] value The value of the option for the lid unit
  @return Error code
@@ -727,7 +690,7 @@ int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int Param, int *value)
 /**
  @brief Set the lid option for a specified lid unit on a specified subcatchment
  @param index The index of a subcatchment
- @param lidIndex The index of specified lid unit 
+ @param lidIndex The index of specified lid unit
  @param Param The lid option type code (See @ref SM_LidUOptions)
  @param value The new value of the option for the lid unit
  @return Error code
@@ -737,7 +700,7 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int Param, int value);
 /**
  @brief Get the lid control surface immediate overflow condition
  @param lidControlIndex The index of specified lid control
- @param[out] condition The value of surface immediate overflow condition  
+ @param[out] condition The value of surface immediate overflow condition
  @return Error code
 */
 int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, char *condition);
@@ -745,7 +708,7 @@ int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, char *condition);
 /**
  @brief Set the lid control's surface immediate overflow condition
  @param lidControlIndex The index of specified lid control
- @param condition The new value for the surface immediate overflow condition  
+ @param condition The new value for the surface immediate overflow condition
  @return Error code
 */
 int DLLEXPORT swmm_setLidCOverflow(int lidControlIndex, char condition);
@@ -773,7 +736,7 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
 /**
  @brief Get the lid unit water balance simulated value at current time
  @param index The index of a subcatchment
- @param lidIndex The index of specified lid unit 
+ @param lidIndex The index of specified lid unit
  @param layerIndex The index of specified lid layer (See @ref SM_LidLayer)
  @param Param The result type code (See @ref SM_LidResult)
  @param[out] result The result for the specified lid unit
@@ -793,7 +756,7 @@ int DLLEXPORT swmm_getLidGResult(int index, int type, double *result);
 /**
  @brief Get the lid unit of a specified subcatchment result at current time
  @param index The index of a subcatchment
- @param lidIndex The index of specified lid unit 
+ @param lidIndex The index of specified lid unit
  @param type The result type code (See @ref SM_LidResult)
  @param[out] result The result for the specified lid unit
  @return Error code
@@ -873,7 +836,7 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month,
  @brief Set simulation datetime information.
  @param timetype The property type code (See @ref SM_TimePropety)
  @param[out] dtimestr The current datetime. dtimestr must be pre-allocated by
- the caller.  This will copy 19 characters. 
+ the caller.  This will copy 19 characters.
  @return Error code
 */
 int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr);
@@ -881,7 +844,7 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr);
 /**
  @brief Get the simulation current datetime as a string.
  @param[out] dtimestr The current datetime. dtimestr must be pre-allocated by
- the caller.  This will copy 19 characters. 
+ the caller.  This will copy 19 characters.
  @return Error code
 */
 int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr);
@@ -933,7 +896,7 @@ int DLLEXPORT swmm_getGagePrecip(int index, double **GageArray);
 /**
  @brief Get a node statistics.
  @param index The index of a node
- @param[out] nodeStats The Node Stats struct (see @ref SM_NodeStats). 
+ @param[out] nodeStats The Node Stats struct (see @ref SM_NodeStats).
  pre-allocated by the caller.
  @return Error code
 */
@@ -950,7 +913,7 @@ int DLLEXPORT swmm_getNodeTotalInflow(int index, double *value);
 /**
  @brief Get a storage statistics.
  @param index The index of a storage node
- @param[out] storageStats The storage Stats struct (see @ref SM_StorageStats). 
+ @param[out] storageStats The storage Stats struct (see @ref SM_StorageStats).
  pre-allocated by the caller.
  @return Error code
 */
@@ -959,8 +922,8 @@ int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats *storageStats);
 /**
  @brief Get outfall statistics.
  @param index The index of a outfall node
- @param[out] outfallStats The outfall Stats struct (see @ref SM_OutfallStats). 
- pre-allocated by the caller. Caller is also responsible for freeing the 
+ @param[out] outfallStats The outfall Stats struct (see @ref SM_OutfallStats).
+ pre-allocated by the caller. Caller is also responsible for freeing the
  SM_OutfallStats structure using swmm_freeOutfallStats(). This frees any
  pollutants array.
  @return Error code
@@ -978,7 +941,7 @@ void DLLEXPORT swmm_freeOutfallStats(SM_OutfallStats *outfallStats);
 /**
  @brief Get link statistics.
  @param index The index of a link
- @param[out] linkStats The link Stats struct (see @ref SM_LinkStats). 
+ @param[out] linkStats The link Stats struct (see @ref SM_LinkStats).
  pre-allocated by the caller.
  @return Error code
 */
@@ -987,7 +950,7 @@ int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats);
 /**
  @brief Get pump statistics.
  @param index The index of a pump
- @param[out] pumpStats The link Stats struct (see @ref SM_PumpStats). 
+ @param[out] pumpStats The link Stats struct (see @ref SM_PumpStats).
  pre-allocated by the caller.
  @return Error code
 */
@@ -996,8 +959,8 @@ int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
 /**
  @brief Get subcatchment statistics.
  @param index The index of a subcatchment
- @param[out] subcatchStats The link Stats struct (see @ref SM_SubcatchStats). 
- pre-allocated by the caller. Caller is also responsible for freeing the 
+ @param[out] subcatchStats The link Stats struct (see @ref SM_SubcatchStats).
+ pre-allocated by the caller. Caller is also responsible for freeing the
  SM_SubcatchStats structure using swmm_freeSubcatchStats(). This frees any
  pollutants array.
  @return Error code
@@ -1006,7 +969,7 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats);
 
 /**
  @brief Get system routing statistics.
- @param[out] routingTot The system Routing Stats struct (see @ref SM_RoutingTotals). 
+ @param[out] routingTot The system Routing Stats struct (see @ref SM_RoutingTotals).
  pre-allocated by the caller.
  @return Error code
 */
@@ -1014,7 +977,7 @@ int DLLEXPORT swmm_getSystemRoutingStats(SM_RoutingTotals *routingTot);
 
 /**
  @brief Get system runoff statistics.
- @param[out] runoffTot The system Runoff Stats struct (see @ref SM_RunoffTotals). 
+ @param[out] runoffTot The system Runoff Stats struct (see @ref SM_RunoffTotals).
  pre-allocated by the caller.
  @return Error code
 */
@@ -1023,26 +986,26 @@ int DLLEXPORT swmm_getSystemRunoffStats(SM_RunoffTotals *runoffTot);
 /**
  @brief Set a link setting (pump, orifice, or weir). Setting for an orifice
  and a weir should be [0, 1]. A setting for a pump can range from [0, inf).
- However, if a pump is set to 1, it will pump at its maximum curve setting. 
- @param index The link index. 
- @param setting The new setting for the link. 
+ However, if a pump is set to 1, it will pump at its maximum curve setting.
+ @param index The link index.
+ @param setting The new setting for the link.
  @return Error code
 */
 int DLLEXPORT swmm_setLinkSetting(int index, double setting);
 
 /**
- @brief Set an inflow rate to a node. The inflow rate is held constant 
- until the caller changes it. 
- @param index The node index. 
- @param flowrate The new node inflow rate. 
+ @brief Set an inflow rate to a node. The inflow rate is held constant
+ until the caller changes it.
+ @param index The node index.
+ @param flowrate The new node inflow rate.
  @return Error code
 */
 int DLLEXPORT swmm_setNodeInflow(int index, double flowrate);
 
 /**
  @brief Set outfall stage.
- @param index The outfall node index. 
- @param stage The outfall node stage (head). 
+ @param index The outfall node index.
+ @param stage The outfall node stage (head).
  @return Error code
 */
 int DLLEXPORT swmm_setOutfallStage(int index, double stage);
