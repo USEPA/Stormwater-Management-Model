@@ -95,6 +95,7 @@ static  char *RunoffRoutingWords[] = { w_OUTLET,  w_IMPERV, w_PERV, NULL};
 //  subcatch_getFracPerv       (called from gwater_initState)
 //  subcatch_getStorage        (called from massbal_getRunoffError)
 //  subcatch_getDepth          (called from findPondedLoads in surfqual.c)
+//  subcatch_getBuildup        (called from surfqual_getWashoff)
 
 //  subcatch_getWtdOutflow     (called from addWetWeatherInflows in routing.c)
 //  subcatch_getResults        (called from output_saveSubcatchResults)
