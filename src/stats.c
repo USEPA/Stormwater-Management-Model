@@ -99,7 +99,7 @@ int  stats_open()
 //  Purpose: opens the simulation statistics system.
 //
 {
-    int j, k, p;
+    int j, k;
 
     // --- set all pointers to NULL
     NodeStats = NULL;
@@ -127,20 +127,6 @@ int  stats_open()
             SubcatchStats[j].infil   = 0.0;
             SubcatchStats[j].runoff  = 0.0;
             SubcatchStats[j].maxFlow = 0.0;
-
-            if ( Nobjects[POLLUT] > 0 )
-            {
-                SubcatchStats[j].surfaceBuildup =
-                    (double *) calloc(Nobjects[POLLUT], sizeof(double));
-                if ( !SubcatchStats[j].surfaceBuildup )
-                {
-                    report_writeErrorMsg(ERR_MEMORY, "");
-                    return ErrorCode;
-                }
-                for ( p = 0; p < Nobjects[POLLUT]; p++ )
-                    SubcatchStats[j].surfaceBuildup[p] = 0.0;
-            }
-            else SubcatchStats[j].surfaceBuildup = NULL;
         }
 
 ////  Added to release 5.1.008.  ////                                          //(5.1.008)
@@ -309,12 +295,7 @@ void  stats_close()
 {
     int j;
 
-    if ( SubcatchStats)
-    {
-        for ( j=0; j<Nobjects[SUBCATCH]; j++ )
-            FREE(SubcatchStats[j].surfaceBuildup);
-        FREE(SubcatchStats);
-    }
+    FREE(SubcatchStats);
     FREE(NodeStats);
     FREE(LinkStats);
     FREE(StorageStats); 
@@ -363,24 +344,18 @@ void   stats_updateSubcatchStats(int j, double rainVol, double runonVol,
 //           runoffVol = runoff volume (ft3)
 //           runoff    = runoff rate (cfs)
 //  Output:  none
-//  Purpose: updates totals of runoff components and the surface buildup
-//           of pollutants for a specific subcatchment.
+//  Purpose: updates totals of runoff components for a specific subcatchment.
 //
 {
     int p;
-    
+
     SubcatchStats[j].precip += rainVol;
     SubcatchStats[j].runon  += runonVol;
     SubcatchStats[j].evap   += evapVol;
     SubcatchStats[j].infil  += infilVol;
     SubcatchStats[j].runoff += runoffVol;
     SubcatchStats[j].maxFlow = MAX(SubcatchStats[j].maxFlow, runoff);
-    
-    for ( p = 0; p < Nobjects[POLLUT]; p++ )
-    {
-        SubcatchStats[j].surfaceBuildup[p] = subcatch_getBuildup( j, p );
-    }
-        
+
 }
 
 //=============================================================================
@@ -1050,7 +1025,6 @@ int stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats)
 //
 {
 	int errorcode = 0;
-    int p;
 
 	// Check if Open
 	if (swmm_IsOpenFlag() == FALSE)
@@ -1070,28 +1044,10 @@ int stats_getSubcatchStat(int index, TSubcatchStats *subcatchStats)
 		errorcode = ERR_API_OBJECT_INDEX;
 	}
 
+    // Copy Structure
 	else
 	{
-		// Copy Structure
 		memcpy(subcatchStats, &SubcatchStats[index], sizeof(TSubcatchStats));
-        
-        // Perform Deep Copy of Pollutant Buildup Results
-        if (Nobjects[POLLUT] > 0)
-        {
-            subcatchStats->surfaceBuildup =
-                (double *)calloc(Nobjects[POLLUT], sizeof(double));
-            if (!subcatchStats->surfaceBuildup)
-            {
-                errorcode = ERR_MEMORY;
-            }
-            if (errorcode == 0)
-            {
-                for (p = 0; p < Nobjects[POLLUT]; p++)
-                    subcatchStats->surfaceBuildup[p] = SubcatchStats[index].surfaceBuildup[p];
-            }
-        }
-        else subcatchStats->surfaceBuildup = NULL;
 	}
 	return errorcode;
 }
-

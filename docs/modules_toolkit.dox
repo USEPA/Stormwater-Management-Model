@@ -17,7 +17,6 @@
 @fn int swmm_getLinkStats (int index, SM_LinkStats *linkStats)
 @fn int swmm_getPumpStats (int index, SM_PumpStats *pumpStats)
 @fn int swmm_getSubcatchStats (int index, SM_SubcatchStats *subcatchStats)
-@fn int swmm_freeSubcatchStats (SM_SubcatchStats *subcatchStats)
 @fn int swmm_getSystemRoutingStats (SM_RoutingTotals *routingTot)
 @fn int swmm_getSystemRunoffStats (SM_RunoffTotals *runoffTot)
 @fn int swmm_setLinkSetting (int index, double setting)

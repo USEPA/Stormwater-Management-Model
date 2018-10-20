@@ -37,8 +37,12 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     int intVal=0;
     double val;
     double input_val = 0;
+<<<<<<< HEAD
     double *precip_array;
     char chrVal = '0';
+=======
+    double *result_array;
+>>>>>>> develop
     std::string id = std::string("test");
 
     //Project
@@ -46,7 +50,7 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
     //Gage
-    error = swmm_getGagePrecip(0, &precip_array);
+    error = swmm_getGagePrecip(0, &result_array);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
     error = swmm_setGagePrecip(0, input_val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
@@ -81,6 +85,7 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     error = swmm_setLinkSetting(0, input_val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
+<<<<<<< HEAD
     // Lid Unit
     error = swmm_getLidUCount(1, &intVal);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
@@ -104,6 +109,12 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
     }
+=======
+    //Pollutant
+    error = swmm_getSubcatchPollut(0, 0, &result_array);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+}
+>>>>>>> develop
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -148,11 +159,15 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
     int intVal;
     double val;
     double input_val = 0;
+<<<<<<< HEAD
     double *precip_array;
     char chrVal = '0';
+=======
+    double *result_array;
+>>>>>>> develop
 
     //Gage
-    error = swmm_getGagePrecip(100, &precip_array);
+    error = swmm_getGagePrecip(100, &result_array);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
     //Subcatchment
@@ -175,6 +190,7 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
     error = swmm_setLinkParam(100, 0, 1);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
+<<<<<<< HEAD
     // Lid Unit
     error = swmm_getLidUCount(100, &intVal);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
@@ -225,6 +241,10 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
     error = swmm_setLidCParam(100, 0, 0, val);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
     error = swmm_getLidGResult(100, 0, &val);
+=======
+    //Pollutant
+    error = swmm_getSubcatchPollut(100, 0, &result_array);
+>>>>>>> develop
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 }
 
@@ -1165,12 +1185,11 @@ BOOST_FIXTURE_TEST_CASE(get_results_after_sim, FixtureBeforeEnd){
     error = swmm_getSubcatchStats(subc_ind, &subc_stats);
     BOOST_CHECK_EQUAL(error, ERR_NONE);
     BOOST_CHECK_SMALL(subc_stats.runon - 0.0, 0.0001);
-    BOOST_CHECK_SMALL(subc_stats.infil - 1.1594, 0.0001);
-    BOOST_CHECK_SMALL(subc_stats.runoff - 1.4815, 0.0001);
+    BOOST_CHECK_SMALL(subc_stats.infil - 42088, 1.0);
+    BOOST_CHECK_SMALL(subc_stats.runoff - 53781, 1.0);
     BOOST_CHECK_SMALL(subc_stats.maxFlow - 4.6561, 0.0001);
     BOOST_CHECK_SMALL(subc_stats.precip - 2.65, 0.0001);
     BOOST_CHECK_SMALL(subc_stats.evap - 0.0, 0.0001);
-    swmm_freeSubcatchStats(&subc_stats);
 
 }
 BOOST_AUTO_TEST_SUITE_END()

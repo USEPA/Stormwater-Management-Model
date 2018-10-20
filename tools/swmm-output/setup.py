@@ -26,7 +26,7 @@ setup(
             define_macros = [('swmm_output_EXPORTS', None)], 
             include_dirs = ['include'],
             sources = ['src/swmm_output.i', 'src/swmm_output.c', 'src/errormanager.c'],
-            swig_opts=['-modern'],
+            swig_opts=['-py3'],
             language='C'
         )
     ],

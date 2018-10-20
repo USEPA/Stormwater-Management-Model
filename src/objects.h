@@ -403,7 +403,9 @@ typedef struct
    double*       oldQual;         // previous runoff quality (mass/L)
    double*       newQual;         // current runoff quality (mass/L)
    double*       pondedQual;      // ponded surface water quality (mass)
+   double*       concPonded;      // ponded surface water quality concentration (mass/L)
    double*       totalLoad;       // total washoff load (lbs or kg)
+   double*       surfaceBuildup;  // surface buildup (mass)
 }  TSubcatch;
 
 
@@ -969,7 +971,6 @@ typedef struct
     double       infil;
     double       runoff;
     double       maxFlow;
-    double*      surfaceBuildup;
 }  TSubcatchStats;
 
 
