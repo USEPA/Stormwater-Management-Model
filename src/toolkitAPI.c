@@ -323,7 +323,7 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
 // Purpose: Gets ID for any object
 {
     int errcode = 0;
-	TLidProc*  lidProc;
+    TLidProc*  lidProc;
     //Provide Empty Character Array
     strcpy(id,"");
 
@@ -372,8 +372,12 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
             //case SM_SHAPE:
                 //strcpy(id,Shape[index].ID); break;
             case SM_LID:
-			    lidProc = lid_getLidProc(index);
-                strcpy(id,lidProc->ID); break;
+                lidProc = lid_getLidProc(index);
+                if (lidProc != NULL)
+                {
+                    strcpy(id,lidProc->ID); 
+                }
+                break;
             default: errcode = ERR_API_OUTBOUNDS; break;
         }
    }
@@ -1092,11 +1096,13 @@ int DLLEXPORT swmm_setLidCOverflow(int lidControlIndex, char condition)
     }
     else
     {
-        //lidProc = lid_getLidProc(lidControlIndex);
-        //lidProc->surface.canOverflow = condition;
-        
-        //re-validate lid control
-        lid_validateLidProc(lidControlIndex);
+        lidProc = lid_getLidProc(lidControlIndex);
+        if (lidProc != NULL)
+        {
+            lidProc->surface.canOverflow = condition;
+            //re-validate lid control
+            lid_validateLidProc(lidControlIndex);
+        }
     }
 
     return(errcode);
@@ -1137,7 +1143,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             case SM_THICKNESS:
                 *value = lidProc->surface.thickness * UCF(RAINDEPTH); break;
             case SM_VOIDFRAC:
-                *value = lidProc->surface.voidFrac; break;
+                *value = 1 - lidProc->surface.voidFrac; break;
             case SM_ROUGHNESS:
                 *value = lidProc->surface.roughness; break;
             case SM_SURFSLOPE:
@@ -1177,7 +1183,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             case SM_THICKNESS:
                 *value = lidProc->storage.thickness * UCF(RAINDEPTH); break;
             case SM_VOIDFRAC:
-                *value = pow(pow(lidProc->storage.voidFrac, -1) - 1, -1); break;
+                *value = lidProc->storage.voidFrac / (1 - lidProc->storage.voidFrac); break;
             case SM_KSAT:
                 *value = lidProc->storage.kSat * UCF(RAINFALL); break;
             case SM_CLOGFACTOR:
@@ -1194,7 +1200,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             case SM_THICKNESS:
                 *value = lidProc->pavement.thickness * UCF(RAINDEPTH); break;
             case SM_VOIDFRAC:
-                *value = pow(pow(lidProc->pavement.voidFrac, -1) - 1, -1); break;
+                *value = lidProc->pavement.voidFrac / ( 1 - lidProc->pavement.voidFrac); break;
             case SM_IMPERVFRAC:
                 *value = lidProc->pavement.impervFrac; break;
             case SM_KSAT:
