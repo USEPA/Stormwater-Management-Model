@@ -271,13 +271,134 @@ BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose) {
 // Testing for Project Settings after Open
 BOOST_FIXTURE_TEST_CASE(project_info, FixtureOpenClose){
 
-    int error, index;
+    int error, index, year, month, day, hour, minute, second;
     char id[] = "14";
 
     //Project
     error = swmm_getObjectIndex(SM_NODE, id, &index);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_EQUAL(index, 3);
+
+    //Simulation times
+
+    error = swmm_getSimulationDateTime(SM_STARTDATE,
+                                       &year,
+                                       &month,
+                                       &day,
+                                       &hour,
+                                       &minute,
+                                       &second
+                                     );
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(year, 1998);
+    BOOST_CHECK_EQUAL(month, 1);
+    BOOST_CHECK_EQUAL(day, 1);
+    BOOST_CHECK_EQUAL(hour, 0);
+    BOOST_CHECK_EQUAL(minute, 0);
+    BOOST_CHECK_EQUAL(second, 0);
+
+    error = swmm_getSimulationDateTime(SM_ENDDATE,
+                                       &year,
+                                       &month,
+                                       &day,
+                                       &hour,
+                                       &minute,
+                                       &second
+                                     );
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(year, 1998);
+    BOOST_CHECK_EQUAL(month, 1);
+    BOOST_CHECK_EQUAL(day, 2);
+    BOOST_CHECK_EQUAL(hour, 12);
+    BOOST_CHECK_EQUAL(minute, 0);
+    BOOST_CHECK_EQUAL(second, 0);
+
+    error = swmm_getSimulationDateTime(SM_REPORTDATE,
+                                       &year,
+                                       &month,
+                                       &day,
+                                       &hour,
+                                       &minute,
+                                       &second
+                                     );
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(year, 1998);
+    BOOST_CHECK_EQUAL(month, 1);
+    BOOST_CHECK_EQUAL(day, 1);
+    BOOST_CHECK_EQUAL(hour, 0);
+    BOOST_CHECK_EQUAL(minute, 0);
+    BOOST_CHECK_EQUAL(second, 0);
+
+    // Adjust start time
+    year = 1997;
+    month = 2;
+    day = 2;
+    hour = 1;
+    minute = 1;
+    second = 15;
+
+    swmm_setSimulationDateTime(SM_STARTDATE, year, month,
+                               day, hour, minute, second);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    error = swmm_getSimulationDateTime(SM_STARTDATE,
+                                       &year,
+                                       &month,
+                                       &day,
+                                       &hour,
+                                       &minute,
+                                       &second
+                                     );
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(year, 1997);
+    BOOST_CHECK_EQUAL(month, 2);
+    BOOST_CHECK_EQUAL(day, 2);
+    BOOST_CHECK_EQUAL(hour, 1);
+    BOOST_CHECK_EQUAL(minute, 1);
+    BOOST_CHECK_EQUAL(second, 15);
+
+    swmm_setSimulationDateTime(SM_REPORTDATE, year, month,
+                               day, hour, minute, second);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    error = swmm_getSimulationDateTime(SM_REPORTDATE,
+                                       &year,
+                                       &month,
+                                       &day,
+                                       &hour,
+                                       &minute,
+                                       &second
+                                     );
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(year, 1997);
+    BOOST_CHECK_EQUAL(month, 2);
+    BOOST_CHECK_EQUAL(day, 2);
+    BOOST_CHECK_EQUAL(hour, 1);
+    BOOST_CHECK_EQUAL(minute, 1);
+    BOOST_CHECK_EQUAL(second, 15);
+
+    year += 1;
+
+    swmm_setSimulationDateTime(SM_ENDDATE, year, month,
+                               day, hour, minute, second);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    error = swmm_getSimulationDateTime(SM_ENDDATE,
+                                       &year,
+                                       &month,
+                                       &day,
+                                       &hour,
+                                       &minute,
+                                       &second
+                                     );
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(year, 1998);
+    BOOST_CHECK_EQUAL(month, 2);
+    BOOST_CHECK_EQUAL(day, 2);
+    BOOST_CHECK_EQUAL(hour, 1);
+    BOOST_CHECK_EQUAL(minute, 1);
+    BOOST_CHECK_EQUAL(second, 15);
+
 }
 
 

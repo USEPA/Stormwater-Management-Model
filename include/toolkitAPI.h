@@ -278,6 +278,41 @@ typedef enum {
 // --- Define the SWMM toolkit structures
 
 /// Node stats structure
+/** @struct SM_NodeStats
+ *  @brief Node Statatistics
+ *
+ *  @var SM_NodeStats::avgDepth
+ *    average node depth (level)
+ *  @var SM_NodeStats::maxDepth
+ *    max node depth (level) (from routing step)
+ *  @var SM_NodeStats::maxDepthDate
+ *    date of maximum depth
+ *  @var SM_NodeStats::maxRptDepth
+ *    max node depth (level) (from reporting step)
+ *  @var SM_NodeStats::volFlooded
+ *    total volume flooded (volume)
+ *  @var SM_NodeStats::timeFlooded
+ *    total time flooded
+ *  @var SM_NodeStats::timeSurcharged
+ *    total time surcharged
+ *  @var SM_NodeStats::timeCourantCritical
+ *    total time courant critical
+ *  @var SM_NodeStats::totLatFlow
+ *    total lateral inflow (volume)
+ *  @var SM_NodeStats::maxLatFlow
+ *    maximum lateral inflow (flowrate)
+ *  @var SM_NodeStats::maxInflow
+ *    maximum total inflow (flowrate)
+ *  @var SM_NodeStats::maxOverflow
+ *    maximum flooding (flowrate)
+ *  @var SM_NodeStats::maxPondedVol
+ *    maximum ponded volume (volume)
+ *  @var SM_NodeStats::maxInflowDate
+ *    date of maximum inflow
+ *  @var SM_NodeStats::maxOverflowDate
+ *    date of maximum overflow
+ */
+
 typedef struct
 {
    double        avgDepth;
@@ -864,19 +899,30 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month,
 /**
  @brief Set simulation datetime information.
  @param timetype The property type code (See @ref SM_TimePropety)
- @param[out] dtimestr The current datetime. dtimestr must be pre-allocated by
- the caller.  This will copy 19 characters.
+ @param year The year
+ @param month The month
+ @param day The day
+ @param hour The hour
+ @param minute The minute
+ @param second The seconds
  @return Error code
 */
-int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr);
+int DLLEXPORT swmm_setSimulationDateTime(int timetype, int year, int month,
+                                         int day, int hour, int minute,
+                                         int second);
 
 /**
- @brief Get the simulation current datetime as a string.
- @param[out] dtimestr The current datetime. dtimestr must be pre-allocated by
- the caller.  This will copy 19 characters.
+ @brief Get the current simulation datetime information.
+ @param[out] year The year
+ @param[out] month The month
+ @param[out] day The day
+ @param[out] hour The hour
+ @param[out] minute The minute
+ @param[out] second The seconds
  @return Error code
 */
-int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr);
+int DLLEXPORT swmm_getCurrentDateTime(int *year, int *month, int *day,
+                                      int *hour, int *minute, int *second);
 
 /**
  @brief Get a result value for specified node.
