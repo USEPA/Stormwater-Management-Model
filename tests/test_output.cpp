@@ -63,39 +63,39 @@ boost::test_tools::predicate_result check_string(std::string test, std::string r
         return false;
 }
 
-BOOST_AUTO_TEST_SUITE (test_output_auto)
+// BOOST_AUTO_TEST_SUITE (test_output_auto)
 
-BOOST_AUTO_TEST_CASE(InitTest) {
-    SMO_Handle p_handle = NULL;
+// BOOST_AUTO_TEST_CASE(InitTest) {
+//     SMO_Handle p_handle = NULL;
 
-    int error = SMO_init(&p_handle);
-    BOOST_REQUIRE(error == 0);
-    BOOST_CHECK(p_handle != NULL);
+//     int error = SMO_init(&p_handle);
+//     BOOST_REQUIRE(error == 0);
+//     BOOST_CHECK(p_handle != NULL);
 
-    SMO_close(&p_handle);
-}
+//     SMO_close(&p_handle);
+// }
 
-BOOST_AUTO_TEST_CASE(CloseTest) {
-    SMO_Handle p_handle = NULL;
-    SMO_init(&p_handle);
+// BOOST_AUTO_TEST_CASE(CloseTest) {
+//     SMO_Handle p_handle = NULL;
+//     SMO_init(&p_handle);
 
-    int error = SMO_close(&p_handle);
-    BOOST_REQUIRE(error == 0);
-    BOOST_CHECK(p_handle == NULL);
-}
+//     int error = SMO_close(&p_handle);
+//     BOOST_REQUIRE(error == 0);
+//     BOOST_CHECK(p_handle == NULL);
+// }
 
-BOOST_AUTO_TEST_CASE(InitOpenCloseTest) {
-    std::string path = std::string(DATA_PATH);
-    SMO_Handle p_handle = NULL;
-    SMO_init(&p_handle);
+// BOOST_AUTO_TEST_CASE(InitOpenCloseTest) {
+//     std::string path = std::string(DATA_PATH);
+//     SMO_Handle p_handle = NULL;
+//     SMO_init(&p_handle);
 
-    int error = SMO_open(p_handle, path.c_str());
-    BOOST_REQUIRE(error == 0);
+//     int error = SMO_open(p_handle, path.c_str());
+//     BOOST_REQUIRE(error == 0);
 
-    SMO_close(&p_handle);
-}
+//     SMO_close(&p_handle);
+// }
 
-BOOST_AUTO_TEST_SUITE_END()
+// BOOST_AUTO_TEST_SUITE_END()
 
 struct Fixture{
     Fixture() {
@@ -123,87 +123,87 @@ struct Fixture{
 
 BOOST_AUTO_TEST_SUITE(test_output_fixture)
 
-BOOST_FIXTURE_TEST_CASE(test_getVersion, Fixture) {
-    int version;
+// BOOST_FIXTURE_TEST_CASE(test_getVersion, Fixture) {
+//     int version;
 
-    error = SMO_getVersion(p_handle, &version);
-    BOOST_REQUIRE(error == 0);
+//     error = SMO_getVersion(p_handle, &version);
+//     BOOST_REQUIRE(error == 0);
 
-    BOOST_CHECK_EQUAL(51000, version);
-}
+//     BOOST_CHECK_EQUAL(51000, version);
+// }
 
-BOOST_FIXTURE_TEST_CASE(test_getProjectSize, Fixture) {
-    int* i_array = NULL;
+// BOOST_FIXTURE_TEST_CASE(test_getProjectSize, Fixture) {
+//     int* i_array = NULL;
 
-    error = SMO_getProjectSize(p_handle, &i_array, &array_dim);
-    BOOST_REQUIRE(error == 0);
+//     error = SMO_getProjectSize(p_handle, &i_array, &array_dim);
+//     BOOST_REQUIRE(error == 0);
 
-    std::vector<int> test;
-    test.assign(i_array, i_array + array_dim);
+//     std::vector<int> test;
+//     test.assign(i_array, i_array + array_dim);
     
-    // subcatchs, nodes, links, pollutants
-    const int ref_dim = 4;
-    int ref_array[ref_dim] = {8,14,13,2};
+//     // subcatchs, nodes, links, pollutants
+//     const int ref_dim = 4;
+//     int ref_array[ref_dim] = {8,14,13,2};
     
-    std::vector<int> ref;
-    ref.assign(ref_array, ref_array + ref_dim);
+//     std::vector<int> ref;
+//     ref.assign(ref_array, ref_array + ref_dim);
     
-    BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(), test.end());
+//     BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(), test.end());
 
-    SMO_free((void**)&i_array);
-}
+//     SMO_free((void**)&i_array);
+// }
 
-BOOST_FIXTURE_TEST_CASE(test_getFlowUnits, Fixture) {
-    int units = -1;
+// BOOST_FIXTURE_TEST_CASE(test_getFlowUnits, Fixture) {
+//     int units = -1;
 
-    error = SMO_getFlowUnits(p_handle, &units);
-    BOOST_REQUIRE(error == 0);
-    BOOST_CHECK_EQUAL(0, units);
-}
+//     error = SMO_getFlowUnits(p_handle, &units);
+//     BOOST_REQUIRE(error == 0);
+//     BOOST_CHECK_EQUAL(0, units);
+// }
 
-BOOST_FIXTURE_TEST_CASE(test_getPollutantUnits, Fixture) {
-    int* i_array = NULL;
+// BOOST_FIXTURE_TEST_CASE(test_getPollutantUnits, Fixture) {
+//     int* i_array = NULL;
 
-    error = SMO_getPollutantUnits(p_handle, &i_array, &array_dim);
-    BOOST_REQUIRE(error == 0);
+//     error = SMO_getPollutantUnits(p_handle, &i_array, &array_dim);
+//     BOOST_REQUIRE(error == 0);
 
-    std::vector<int> test;
-    test.assign(i_array, i_array + array_dim);
+//     std::vector<int> test;
+//     test.assign(i_array, i_array + array_dim);
 
-    const int ref_dim = 2;
-    int ref_array[ref_dim] = {0, 1};
+//     const int ref_dim = 2;
+//     int ref_array[ref_dim] = {0, 1};
     
-    std::vector<int> ref;
-    ref.assign(ref_array, ref_array + ref_dim);
+//     std::vector<int> ref;
+//     ref.assign(ref_array, ref_array + ref_dim);
 
-    BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(), test.end());
+//     BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(), test.end());
 
-    SMO_free((void**)&i_array);
-    BOOST_CHECK(i_array == NULL);
-}
+//     SMO_free((void**)&i_array);
+//     BOOST_CHECK(i_array == NULL);
+// }
 
-BOOST_FIXTURE_TEST_CASE(test_getStartDate, Fixture) {
-    double date = -1;
+// BOOST_FIXTURE_TEST_CASE(test_getStartDate, Fixture) {
+//     double date = -1;
 
-    error = SMO_getStartDate(p_handle, &date);
-    BOOST_REQUIRE(error == 0);
+//     error = SMO_getStartDate(p_handle, &date);
+//     BOOST_REQUIRE(error == 0);
 
-    BOOST_CHECK_EQUAL(35796., date);
-}
+//     BOOST_CHECK_EQUAL(35796., date);
+// }
 
-BOOST_FIXTURE_TEST_CASE(test_getTimes, Fixture) {
-    int time = -1;
+// BOOST_FIXTURE_TEST_CASE(test_getTimes, Fixture) {
+//     int time = -1;
 
-    error = SMO_getTimes(p_handle, SMO_reportStep, &time);
-    BOOST_REQUIRE(error == 0);
+//     error = SMO_getTimes(p_handle, SMO_reportStep, &time);
+//     BOOST_REQUIRE(error == 0);
 
-    BOOST_CHECK_EQUAL(3600, time);
+//     BOOST_CHECK_EQUAL(3600, time);
 
-    error = SMO_getTimes(p_handle, SMO_numPeriods, &time);
-    BOOST_REQUIRE(error == 0);
+//     error = SMO_getTimes(p_handle, SMO_numPeriods, &time);
+//     BOOST_REQUIRE(error == 0);
 
-    BOOST_CHECK_EQUAL(36, time);
-}
+//     BOOST_CHECK_EQUAL(36, time);
+// }
 
 BOOST_FIXTURE_TEST_CASE(test_getElementName, Fixture) {
     char* c_array = NULL;
@@ -219,130 +219,130 @@ BOOST_FIXTURE_TEST_CASE(test_getElementName, Fixture) {
     SMO_free((void**)&c_array);
 }
 
-BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
+// BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
 
-    error = SMO_getSubcatchSeries(p_handle, 1, SMO_runoff_rate, 0, 10, &array, &array_dim);
-    BOOST_REQUIRE(error == 0);
+//     error = SMO_getSubcatchSeries(p_handle, 1, SMO_runoff_rate, 0, 10, &array, &array_dim);
+//     BOOST_REQUIRE(error == 0);
 
-    const int ref_dim = 10;
-    float ref_array[ref_dim] = {0.0f,
-                                1.2438242f,
-                                2.5639679f,
-                                4.524055f,
-                                2.5115132f,
-                                0.69808137f,
-                                0.040894926f,
-                                0.011605669f,
-                                0.00509294f,
-                                0.0027438672f};
-    std::vector<float> ref_vec;
-    ref_vec.assign(ref_array, ref_array + 10);
+//     const int ref_dim = 10;
+//     float ref_array[ref_dim] = {0.0f,
+//                                 1.2438242f,
+//                                 2.5639679f,
+//                                 4.524055f,
+//                                 2.5115132f,
+//                                 0.69808137f,
+//                                 0.040894926f,
+//                                 0.011605669f,
+//                                 0.00509294f,
+//                                 0.0027438672f};
+//     std::vector<float> ref_vec;
+//     ref_vec.assign(ref_array, ref_array + 10);
 
 
-    std::vector<float> test_vec;
-    test_vec.assign(array, array + array_dim);
+//     std::vector<float> test_vec;
+//     test_vec.assign(array, array + array_dim);
 
-    BOOST_CHECK(check_cdd(test_vec, ref_vec, 3));
-}
+//     BOOST_CHECK(check_cdd(test_vec, ref_vec, 3));
+// }
 
-BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
+// BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
     
-    error = SMO_getSubcatchResult(p_handle, 1, 1, &array, &array_dim);
-    BOOST_REQUIRE(error == 0);
+//     error = SMO_getSubcatchResult(p_handle, 1, 1, &array, &array_dim);
+//     BOOST_REQUIRE(error == 0);
     
-    const int ref_dim = 10;
-    float ref_array[ref_dim] = {0.5f,
-                                0.0f,
-                                0.0f,
-                                0.125f,
-                                1.2438242f,
-                                0.0f,
-                                0.0f,
-                                0.0f,
-                                33.481991f,
-                                6.6963983f};
-    std::vector<float> ref_vec;
-    ref_vec.assign(ref_array, ref_array + ref_dim);
+//     const int ref_dim = 10;
+//     float ref_array[ref_dim] = {0.5f,
+//                                 0.0f,
+//                                 0.0f,
+//                                 0.125f,
+//                                 1.2438242f,
+//                                 0.0f,
+//                                 0.0f,
+//                                 0.0f,
+//                                 33.481991f,
+//                                 6.6963983f};
+//     std::vector<float> ref_vec;
+//     ref_vec.assign(ref_array, ref_array + ref_dim);
 
-    std::vector<float> test_vec;
-    test_vec.assign(array, array + array_dim);
+//     std::vector<float> test_vec;
+//     test_vec.assign(array, array + array_dim);
 
-    BOOST_CHECK(check_cdd(test_vec, ref_vec, 3));
-}
+//     BOOST_CHECK(check_cdd(test_vec, ref_vec, 3));
+// }
 
-BOOST_FIXTURE_TEST_CASE(test_getNodeResult, Fixture) {
+// BOOST_FIXTURE_TEST_CASE(test_getNodeResult, Fixture) {
 
-    error = SMO_getNodeResult(p_handle, 2, 2, &array, &array_dim);
-    BOOST_REQUIRE(error == 0);
+//     error = SMO_getNodeResult(p_handle, 2, 2, &array, &array_dim);
+//     BOOST_REQUIRE(error == 0);
     
-    const int ref_dim = 8;
-    float ref_array[ref_dim] = {0.296234f,
-                                995.296204f,
-                                0.0f,
-                                1.302650f,
-                                1.302650f,
-                                0.0f,
-                                15.361463f,
-                                3.072293f};
-    std::vector<float> ref_vec;
-    ref_vec.assign(ref_array, ref_array + ref_dim);
+//     const int ref_dim = 8;
+//     float ref_array[ref_dim] = {0.296234f,
+//                                 995.296204f,
+//                                 0.0f,
+//                                 1.302650f,
+//                                 1.302650f,
+//                                 0.0f,
+//                                 15.361463f,
+//                                 3.072293f};
+//     std::vector<float> ref_vec;
+//     ref_vec.assign(ref_array, ref_array + ref_dim);
 
-    std::vector<float> test_vec;
-    test_vec.assign(array, array + array_dim);
+//     std::vector<float> test_vec;
+//     test_vec.assign(array, array + array_dim);
 
-    BOOST_CHECK(check_cdd(test_vec, ref_vec, 3));
-}
+//     BOOST_CHECK(check_cdd(test_vec, ref_vec, 3));
+// }
 
-BOOST_FIXTURE_TEST_CASE(test_getLinkResult, Fixture) {
+// BOOST_FIXTURE_TEST_CASE(test_getLinkResult, Fixture) {
 
-    error = SMO_getLinkResult(p_handle, 3, 3, &array, &array_dim);
-    BOOST_REQUIRE(error == 0);
+//     error = SMO_getLinkResult(p_handle, 3, 3, &array, &array_dim);
+//     BOOST_REQUIRE(error == 0);
 
     
-    const int ref_dim = 7;
-    float ref_array[ref_dim] = {4.631762f,
-                                1.0f,
-                                5.8973422f,
-                                314.15927f,
-                                1.0f,
-                                19.070757f,
-                                3.8141515f};
-    std::vector<float> ref_vec;
-    ref_vec.assign(ref_array, ref_array + ref_dim);
+//     const int ref_dim = 7;
+//     float ref_array[ref_dim] = {4.631762f,
+//                                 1.0f,
+//                                 5.8973422f,
+//                                 314.15927f,
+//                                 1.0f,
+//                                 19.070757f,
+//                                 3.8141515f};
+//     std::vector<float> ref_vec;
+//     ref_vec.assign(ref_array, ref_array + ref_dim);
 
-    std::vector<float> test_vec;
-    test_vec.assign(array, array + array_dim);
+//     std::vector<float> test_vec;
+//     test_vec.assign(array, array + array_dim);
 
-    BOOST_CHECK(check_cdd(test_vec, ref_vec, 3));
-}
+//     BOOST_CHECK(check_cdd(test_vec, ref_vec, 3));
+// }
 
-BOOST_FIXTURE_TEST_CASE(test_getSystemResult, Fixture) {
+// BOOST_FIXTURE_TEST_CASE(test_getSystemResult, Fixture) {
     
-    error = SMO_getSystemResult(p_handle, 4, 4, &array, &array_dim);
-    BOOST_REQUIRE(error == 0);
+//     error = SMO_getSystemResult(p_handle, 4, 4, &array, &array_dim);
+//     BOOST_REQUIRE(error == 0);
 
-    const int ref_dim = 14;
-    float ref_array[ref_dim] = {70.0f,
-                                0.1f,
-                                0.0f,
-                                0.19042271f,
-                                14.172027f,
-                                0.0f,
-                                0.0f,
-                                0.0f,
-                                0.0f,
-                                14.172027f,
-                                0.55517411f,
-                                13.622702f,
-                                2913.0793f,
-                                0.0f};
-    std::vector<float> ref_vec;
-    ref_vec.assign(ref_array, ref_array + ref_dim);
+//     const int ref_dim = 14;
+//     float ref_array[ref_dim] = {70.0f,
+//                                 0.1f,
+//                                 0.0f,
+//                                 0.19042271f,
+//                                 14.172027f,
+//                                 0.0f,
+//                                 0.0f,
+//                                 0.0f,
+//                                 0.0f,
+//                                 14.172027f,
+//                                 0.55517411f,
+//                                 13.622702f,
+//                                 2913.0793f,
+//                                 0.0f};
+//     std::vector<float> ref_vec;
+//     ref_vec.assign(ref_array, ref_array + ref_dim);
 
-    std::vector<float> test_vec;
-    test_vec.assign(array, array + array_dim);
+//     std::vector<float> test_vec;
+//     test_vec.assign(array, array + array_dim);
 
-    BOOST_CHECK(check_cdd(test_vec, ref_vec, 3));
-}
+//     BOOST_CHECK(check_cdd(test_vec, ref_vec, 3));
+// }
 
 BOOST_AUTO_TEST_SUITE_END()
