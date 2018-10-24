@@ -239,7 +239,7 @@ void report_writeLogo()
 	sprintf(Msg, \
 		"\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build %s)", SEMVERSION);
 
-    fprintf(Frpt.file, Msg);
+    fprintf(Frpt.file, "%s", Msg);
     fprintf(Frpt.file, FMT09);
     fprintf(Frpt.file, FMT10);
     time(&SysTime);                    // Save starting wall clock time
