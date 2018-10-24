@@ -10,6 +10,7 @@
 //   to be run with swmm5.dll.
 
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include "swmm5.h"
 

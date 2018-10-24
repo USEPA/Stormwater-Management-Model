@@ -7,7 +7,10 @@ project(SWMM)
 # Adds a subdirectory to the build. Paths are relative to the directory 
 # containing root CMakeLists.txt file. 
 add_subdirectory(tools/swmm-output)
-add_subdirectory(tests)
+
+IF (BUILD_TESTS)
+    add_subdirectory(tests)
+ENDIF (BUILD_TESTS)
 
 
 # Sets for output directory for executables and libraries. 

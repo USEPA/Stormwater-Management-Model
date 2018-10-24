@@ -10,10 +10,11 @@
 */
 #define _CRT_SECURE_NO_DEPRECATE
 
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <string.h>
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+ 
 #include "headers.h"
 #include "swmm5.h"                     // declaration of exportable functions
 #include "toolkitAPI.h"
