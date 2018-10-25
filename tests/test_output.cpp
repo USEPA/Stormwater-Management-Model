@@ -44,14 +44,14 @@ boost::test_tools::predicate_result check_cdd(std::vector<float>& test,
              
              if (*test_it != *ref_it) {
                 // Compute log absolute error
-                tmp = abs(*test_it - *ref_it));
+                tmp = abs(*test_it - *ref_it);
                 if (tmp < 1.0e-7)
                     tmp = 1.0e-7;
 
                 else if (tmp > 2.0)
                     tmp = 1.0;
 
-                tmp = - log10f(tmp)
+                tmp = - log10f(tmp);
                 if (tmp < 0.0)
                     tmp = 0.0;
 
