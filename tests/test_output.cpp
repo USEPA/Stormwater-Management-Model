@@ -32,7 +32,7 @@ using namespace std;
 boost::test_tools::predicate_result check_cdd(std::vector<float>& test, 
     std::vector<float>& ref, long cdd_tol)
 {
-    float tmp, min_cdd = 10.0;
+    float tmp, min_cdd = 10.0f;
     
     // TODO: What is the vectors aren't the same length? 
 
@@ -46,14 +46,14 @@ boost::test_tools::predicate_result check_cdd(std::vector<float>& test,
                 // Compute log absolute error
                 tmp = abs(*test_it - *ref_it);
                 if (tmp < 1.0e-7)
-                    tmp = 1.0e-7;
+                    tmp = 1.0e-7f;
 
                 else if (tmp > 2.0)
-                    tmp = 1.0;
+                    tmp = 1.0f;
 
                 tmp = - log10f(tmp);
                 if (tmp < 0.0)
-                    tmp = 0.0;
+                    tmp = 0.0f;
 
                 if (tmp < min_cdd)
                     min_cdd = tmp;

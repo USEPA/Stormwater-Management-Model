@@ -1,12 +1,14 @@
 /** @file toolkitAPI.h
  @see http://github.com/openwateranalytics/stormwater-management-model
- 
+ 
+
  toolkitAPI.h
  @brief Exportable Functions for Toolkit API.
  @date 08/30/2016 (First Contribution)
  @authors B. McDonnell (EmNet LLC), OpenWaterAnalytics members: see <a
  href="https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/AUTHORS">AUTHORS</a>.
- 
+ 
+
 
 */
 #ifndef TOOLKITAPI_H
@@ -557,13 +559,13 @@ int DLLEXPORT swmm_countObjects(int type, int *count);
 int DLLEXPORT swmm_getObjectId(int type, int index, char *id);
 
 /**
- @brief Gets Object ID Index
+ @brief Gets Object Index
  @param type Option code (see @ref SM_ObjectType)
- @param[out] id of the Object
- @param[out] errcode Error Code
- @return Object Injdex
+ @param[in] id of the Object
+ @param[out] index of the Object
+ @return errcode Error Code
  */
-int DLLEXPORT swmm_getObjectIndex(int type, char *id, int *errcode);
+int DLLEXPORT swmm_getObjectIndex(SM_ObjectType type, char *id, int *index);
 
 /**
  @brief Get the type of node with specified index.

@@ -307,27 +307,23 @@ int DLLEXPORT  swmm_countObjects(int type, int *count)
     return (0);
 }
 
-int DLLEXPORT swmm_getObjectIndex(int type, char *id, int *errcode)
+int DLLEXPORT swmm_getObjectIndex(SM_ObjectType type, char *id, int *index)
 ///
 /// Input:   type = object type (Based on SM_ObjectType enum)
 ///          char* = ID name
-/// Output:  errorcode = pointer to error code
-/// Return:  Object Index
+/// Output:  object index 
+/// Return:  error
 /// Purpose: Gets object id index
 {
-    int index;
-    *errcode = 0;
+    int error = 0;
 
     // Check if Open
-    if(swmm_IsOpenFlag() == FALSE)
-    {
-        *errcode = ERR_API_INPUTNOTOPEN;
-    }
+    if(swmm_IsOpenFlag() == TRUE)
+        *index = project_findObject(type, id);
     else
-    {
-        index = project_findObject(type, id);
-    }
-    return (index);
+        error = ERR_API_INPUTNOTOPEN;
+
+    return error;
 }
 
 int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
@@ -757,7 +753,7 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
             case SM_AREA:
                 Subcatch[index].area = value / UCF(LANDAREA); break;
             case SM_FRACIMPERV:
-                Subcatch[index].fracImperv; break;
+                break; //Subcatch[index].fracImperv; break;
                 // Cannot Open Function just yet.  Need
                 // to adjust some internal functions to 
                 // ensure parameters are recalculated
