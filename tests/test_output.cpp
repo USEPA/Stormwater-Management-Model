@@ -16,7 +16,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <string>
+#include <string.h>
 #include <math.h>
 
 #include "swmm_output.h"
@@ -32,7 +32,7 @@ using namespace std;
 boost::test_tools::predicate_result check_cdd(std::vector<float>& test, 
     std::vector<float>& ref, long cdd_tol)
 {
-    float tmp, min_cdd = 100.0;
+    float tmp, min_cdd = 10.0;
     
     // TODO: What is the vectors aren't the same length? 
 
@@ -43,8 +43,20 @@ boost::test_tools::predicate_result check_cdd(std::vector<float>& test,
         for (ref_it = ref.begin(); ref_it < ref.end(); ++ref_it) {
              
              if (*test_it != *ref_it) {
-                tmp = - log10f(abs(*test_it - *ref_it));
-                if (tmp < min_cdd) min_cdd = tmp;
+                // Compute log absolute error
+                tmp = abs(*test_it - *ref_it));
+                if (tmp < 1.0e-7)
+                    tmp = 1.0e-7;
+
+                else if (tmp > 2.0)
+                    tmp = 1.0;
+
+                tmp = - log10f(tmp)
+                if (tmp < 0.0)
+                    tmp = 0.0;
+
+                if (tmp < min_cdd)
+                    min_cdd = tmp;
             }
         }
     }
