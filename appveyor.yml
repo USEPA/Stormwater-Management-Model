@@ -64,10 +64,7 @@ test_script:
 after_test: 
   # zip up the SUT benchmarks 
   - 7z a benchmarks.zip %TEST_HOME%\benchmark\swmm-%APPVEYOR_REPO_COMMIT%\
-
-artifacts:
-  - path: benchmarks.zip
-    name: benchmarks
+  - Push-AppveyorArtifact benchmarks.zip -FileName benchmarks
 
 #cache:
 #  - C:\ProgramData\chocolatey\bin -> appveyor.yml
