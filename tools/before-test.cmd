@@ -24,8 +24,8 @@ setlocal
 set SCRIPT_HOME=%~dp0
 set TEST_HOME=%~1
 
-set EXAMPLES_VER=1.0.1
-set BENCHMARK_VER=5113
+set EXAMPLES_VER=1.0.1-dev.5
+set BENCHMARK_VER=520dev5
 
 set TESTFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/archive/v%EXAMPLES_VER%.zip
 set BENCHFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/download/v%EXAMPLES_VER%/swmm-benchmark-%BENCHMARK_VER%.zip

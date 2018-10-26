@@ -24,7 +24,7 @@ set TESTS=tests\examples tests\extran tests\routing tests\user
 set TEST_OUTPUT_PATH=benchmark\swmm-%3
 
 set NRTEST_COMPARE_CMD=python %NRTEST_SCRIPT_PATH%\nrtest compare
-set REF_OUTPUT_PATH=benchmark\swmm-5113
+set REF_OUTPUT_PATH=benchmark\swmm-520dev5
 set RTOL_VALUE=0.01
 set ATOL_VALUE=0.00
 
