@@ -37,7 +37,7 @@ boost::test_tools::predicate_result check_cdd(std::vector<double>& test,
 {
     double tmp, min_cdd = 10.0;
     
-    // TODO: What is the vectors aren't the same length? 
+    // TODO: What if the vectors aren't the same length? 
 
     std::vector<double>::iterator test_it;
     std::vector<double>::iterator ref_it;
@@ -667,33 +667,34 @@ BOOST_FIXTURE_TEST_CASE(get_result_during_sim, FixtureBeforeStep){
 // Testing Results Getters (Before End Simulation)
 // BOOST_FIXTURE_TEST_CASE(get_results_after_sim, FixtureBeforeEnd){
 //     int error;
-//     int rg_ind, subc_ind, nde_ind, lnk_ind;
+//     int subc_ind; //rg_ind, nde_ind, lnk_ind;
     
-    
-//     std::string rgid = std::string("RG1");
-//     std::string subid = std::string("1");
-//     std::string ndeid = std::string("19");
-//     std::string lnkid = std::string("14");
+//     //char rgid[]  = "RG1";
+//     char subid[] = "1";
+//     //char ndeid[] = "19";
+//     //char lnkid[] = "14";
 
-//     rg_ind = swmm_getObjectIndex(SM_GAGE, (char *)rgid.c_str(), &error);
+//     //error = swmm_getObjectIndex(SM_GAGE, rgid, &rg_ind);
+//     //BOOST_REQUIRE(error == ERR_NONE);
+//     error = swmm_getObjectIndex(SM_SUBCATCH, subid, &subc_ind);
 //     BOOST_REQUIRE(error == ERR_NONE);
-//     subc_ind = swmm_getObjectIndex(SM_SUBCATCH, (char *)subid.c_str(), &error);
-//     BOOST_REQUIRE(error == ERR_NONE);
-//     nde_ind = swmm_getObjectIndex(SM_NODE, (char *)ndeid.c_str(), &error);
-//     BOOST_REQUIRE(error == ERR_NONE);
-//     lnk_ind = swmm_getObjectIndex(SM_LINK, (char *)lnkid.c_str(), &error);
-//     BOOST_REQUIRE(error == ERR_NONE);
+//     //error = swmm_getObjectIndex(SM_NODE, ndeid, &nde_ind);
+//     //BOOST_REQUIRE(error == ERR_NONE);
+//     //error = swmm_getObjectIndex(SM_LINK, lnkid, &lnk_ind);
+//     //BOOST_REQUIRE(error == ERR_NONE);
 
 //     // Subcatchment
-//     SM_SubcatchStats subc_stats;
-//     error = swmm_getSubcatchStats(subc_ind, &subc_stats);
+//     TSubcatchStats *subc_stats = (TSubcatchStats *)calloc(1, sizeof(TSubcatchStats));
+//     error = swmm_getSubcatchStats(subc_ind, subc_stats);
 //     BOOST_CHECK_EQUAL(error, ERR_NONE);
-//     BOOST_CHECK_SMALL(subc_stats.runon - 0.0, 0.0001);
-//     BOOST_CHECK_SMALL(subc_stats.infil - 42088, 1.0);
-//     BOOST_CHECK_SMALL(subc_stats.runoff - 53781, 1.0);
-//     BOOST_CHECK_SMALL(subc_stats.maxFlow - 4.6561, 0.0001);
-//     BOOST_CHECK_SMALL(subc_stats.precip - 2.65, 0.0001);
-//     BOOST_CHECK_SMALL(subc_stats.evap - 0.0, 0.0001);
+//     // BOOST_CHECK_SMALL(subc_stats.runon - 0.0, 0.0001);
+//     // BOOST_CHECK_SMALL(subc_stats.infil - 42088, 1.0);
+//     // BOOST_CHECK_SMALL(subc_stats.runoff - 53781, 1.0);
+//     // BOOST_CHECK_SMALL(subc_stats.maxFlow - 4.6561, 0.0001);
+//     // BOOST_CHECK_SMALL(subc_stats.precip - 2.65, 0.0001);
+//     // BOOST_CHECK_SMALL(subc_stats.evap - 0.0, 0.0001);
+
+//     free(subc_stats);
 
 // }
 BOOST_AUTO_TEST_SUITE_END()
