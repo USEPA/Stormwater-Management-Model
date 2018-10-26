@@ -984,9 +984,9 @@ void clearElementNames(data_t* p_data)
 
         for(i = 0; i < n; i++)
             free(p_data->elementNames[i].IDname);
-    }
 
-    free(p_data->elementNames);
+        free(p_data->elementNames);
+    }
 }
 
 double getTimeValue(data_t* p_data, int timeIndex)
