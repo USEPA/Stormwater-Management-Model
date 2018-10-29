@@ -669,12 +669,12 @@ BOOST_FIXTURE_TEST_CASE(get_results_after_sim, FixtureBeforeEnd){
     char subid[] = "1";
 
     // Subcatchment
-    SM_SubcatchStats *subc_stats = (SM_SubcatchStats *)calloc(1, sizeof(SM_SubcatchStats));
+    SM_SubcatchStats *subc_stats = NULL;
 
     error = swmm_getObjectIndex(SM_SUBCATCH, subid, &subc_ind);
     BOOST_REQUIRE(error == ERR_NONE);
 
-    error = swmm_getSubcatchStats(subc_ind, subc_stats);
+    error = swmm_getSubcatchStats(subc_ind, &subc_stats);
     BOOST_CHECK_EQUAL(error, ERR_NONE);
 
     BOOST_CHECK_SMALL(subc_stats->runon - 0.0, 0.0001);
@@ -684,7 +684,7 @@ BOOST_FIXTURE_TEST_CASE(get_results_after_sim, FixtureBeforeEnd){
     BOOST_CHECK_SMALL(subc_stats->precip - 2.65, 0.0001);
     BOOST_CHECK_SMALL(subc_stats->evap - 0.0, 0.0001);
 
-    free(subc_stats);
+    freeArray((void**)&subc_stats);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

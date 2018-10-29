@@ -1,11 +1,11 @@
 /** @file toolkitAPI.c
  @see http://github.com/openwateranalytics/stormwater-management-model
- 
+
  toolkitAPI.c
  @brief Exportable Functions for Toolkit API.
  @date 08/30/2016 (First Contribution)
  @authors B. McDonnell (EmNet LLC), OpenWaterAnalytics members: see <a href="https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/AUTHORS">AUTHORS</a>.
- 
+
 
 */
 #define _CRT_SECURE_NO_DEPRECATE
@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
- 
+
 #include "headers.h"
 #include "swmm5.h"                     // declaration of exportable functions
 #include "toolkitAPI.h"
@@ -31,7 +31,7 @@ int  stats_getStorageStat(int index, SM_StorageStats *storageStats);
 int  stats_getOutfallStat(int index, SM_OutfallStats *outfallStats);
 int  stats_getLinkStat(int index, SM_LinkStats *linkStats);
 int  stats_getPumpStat(int index, SM_PumpStats *pumpStats);
-int  stats_getSubcatchStat(int index, SM_SubcatchStats *subcatchStats);
+TSubcatchStats *stats_getSubcatchStat(int index);
 
 // Utilty Function Declarations
 double* newDoubleArray(int n);
@@ -56,10 +56,10 @@ int DLLEXPORT swmm_project_findObject(int type, char *id, int *index)
     int errorcode = 0;
 
 	int idx = project_findObject(type, id);
-    
+
 	if (idx == -1) {
         index    = NULL;
-        errorcode = ERR_API_OBJECT_INDEX; 
+        errorcode = ERR_API_OBJECT_INDEX;
 	} else
         *index = idx;
 
@@ -311,7 +311,7 @@ int DLLEXPORT swmm_getObjectIndex(SM_ObjectType type, char *id, int *index)
 ///
 /// Input:   type = object type (Based on SM_ObjectType enum)
 ///          char* = ID name
-/// Output:  object index 
+/// Output:  object index
 /// Return:  error
 /// Purpose: Gets object id index
 {
@@ -755,7 +755,7 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
             case SM_FRACIMPERV:
                 break; //Subcatch[index].fracImperv; break;
                 // Cannot Open Function just yet.  Need
-                // to adjust some internal functions to 
+                // to adjust some internal functions to
                 // ensure parameters are recalculated
                 // = MIN(value, 100.0) / 100.0; break;
             case SM_SLOPE:
@@ -1016,7 +1016,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
     {
         errcode = ERR_MEMORY;
     }
-    
+
     else
     {
         switch (type)
@@ -1048,7 +1048,7 @@ int DLLEXPORT swmm_getGagePrecip(int index, double **GageArray)
 /// Input:   index = Index of desired ID
 /// Output:  GageArray pointer (three elements)
 /// Return:  API Error
-/// Purpose: Gets the precipitation value in the gage. 
+/// Purpose: Gets the precipitation value in the gage.
 {
     int errcode = 0;
     double rainfall = 0;
@@ -1283,31 +1283,53 @@ int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats)
 }
 
 
-int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats)
+int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats **subcatchStats)
 ///
 /// Output:  Subcatchment Stats Structure (SM_SubcatchStats)
 /// Return:  API Error
 /// Purpose: Gets Subcatchment Stats and Converts Units
 {
-    int errorcode = stats_getSubcatchStat(index, subcatchStats);
+  int errorcode = 0;
+  TSubcatchStats *tmp = (TSubcatchStats *)calloc(1, sizeof(TSubcatchStats));
 
-    if (errorcode == 0)
-    {
-        double a = Subcatch[index].area;
+  // Check if Open
+  if (swmm_IsOpenFlag() == FALSE)
+  {
+    errorcode = ERR_API_INPUTNOTOPEN;
+  }
 
-        // Cumulative Runon Volume
-        subcatchStats->runon *= UCF(VOLUME);
-        // Cumulative Infiltration Volume
-        subcatchStats->infil *= UCF(VOLUME);
-        // Cumulative Runoff Volume
-        subcatchStats->runoff *= UCF(VOLUME);
-        // Maximum Runoff Rate
-        subcatchStats->maxFlow *= UCF(FLOW);
-        // Cumulative Rainfall Depth
-        subcatchStats->precip *= (UCF(RAINDEPTH) / a);
-        // Cumulative Evaporation Volume
-        subcatchStats->evap *= UCF(VOLUME);
-    }
+  // Check if Simulation is Running
+  else if (swmm_IsStartedFlag() == FALSE)
+  {
+    errorcode = ERR_API_SIM_NRUNNING;
+  }
+
+  // Check if object index is within bounds
+  else if (index < 0 || index >= Nobjects[SUBCATCH])
+  {
+    errorcode = ERR_API_OBJECT_INDEX;
+  }
+    // Copy Structure
+  else
+  {
+    memcpy(tmp, stats_getSubcatchStat(index), sizeof(TSubcatchStats));
+    *subcatchStats = (SM_SubcatchStats *)tmp;
+
+    double a = Subcatch[index].area;
+
+    // Cumulative Runon Volume
+    (*subcatchStats)->runon *= UCF(VOLUME);
+    // Cumulative Infiltration Volume
+    (*subcatchStats)->infil *= UCF(VOLUME);
+    // Cumulative Runoff Volume
+    (*subcatchStats)->runoff *= UCF(VOLUME);
+    // Maximum Runoff Rate
+    (*subcatchStats)->maxFlow *= UCF(FLOW);
+    // Cumulative Rainfall Depth
+    (*subcatchStats)->precip *= (UCF(RAINDEPTH) / a);
+    // Cumulative Evaporation Volume
+    (*subcatchStats)->evap *= UCF(VOLUME);
+  }
 
     return (errorcode);
 }

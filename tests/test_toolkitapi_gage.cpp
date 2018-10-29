@@ -91,16 +91,16 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
 
 
     // Final Checks from Subcatchment Stats Totalizers
-    SM_SubcatchStats *subc_stats = (SM_SubcatchStats *)calloc(1, sizeof(SM_SubcatchStats));
+    SM_SubcatchStats *subc_stats = NULL;
 
-    error = swmm_getSubcatchStats(subc_ind, subc_stats);
+    error = swmm_getSubcatchStats(subc_ind, &subc_stats);
     BOOST_CHECK_EQUAL(error, ERR_NONE);
     // 4 in/hr * 6hrs = 24inches
     // Time to call FEMA!
     BOOST_CHECK_SMALL(subc_stats->precip - 24, 0.0001);
 
-    freeArray((void**) &precip_array);
-    free(subc_stats);
+    freeArray((void**)&precip_array);
+    freeArray((void**)&subc_stats);
 
     swmm_end();
 }
