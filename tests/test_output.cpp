@@ -27,21 +27,21 @@
 
 using namespace std;
 
-// Custom test to check the minimum number of correct decimal digits between 
-// the test and the ref vectors.  
-boost::test_tools::predicate_result check_cdd(std::vector<float>& test, 
+// Custom test to check the minimum number of correct decimal digits between
+// the test and the ref vectors.
+boost::test_tools::predicate_result check_cdd(std::vector<float>& test,
     std::vector<float>& ref, long cdd_tol)
 {
     float tmp, min_cdd = 10.0f;
-    
-    // TODO: What is the vectors aren't the same length? 
+
+    // TODO: What is the vectors aren't the same length?
 
     std::vector<float>::iterator test_it;
     std::vector<float>::iterator ref_it;
 
     for (test_it = test.begin(); test_it < test.end(); ++test_it) {
         for (ref_it = ref.begin(); ref_it < ref.end(); ++ref_it) {
-             
+
              if (*test_it != *ref_it) {
                 // Compute log absolute error
                 tmp = abs(*test_it - *ref_it);
@@ -61,10 +61,7 @@ boost::test_tools::predicate_result check_cdd(std::vector<float>& test,
         }
     }
 
-    if (min_cdd == 100.0)
-        return true; 
-    else
-        return floor(min_cdd) <= cdd_tol;
+    return floor(min_cdd) <= cdd_tol;
 }
 
 boost::test_tools::predicate_result check_string(std::string test, std::string ref)
@@ -124,7 +121,7 @@ struct Fixture{
         SMO_free((void**)&array);
         error = SMO_close(&p_handle);
     }
-   
+
     std::string path;
     int error;
     SMO_Handle p_handle;
@@ -152,14 +149,14 @@ BOOST_FIXTURE_TEST_CASE(test_getProjectSize, Fixture) {
 
     std::vector<int> test;
     test.assign(i_array, i_array + array_dim);
-    
+
     // subcatchs, nodes, links, pollutants
     const int ref_dim = 4;
     int ref_array[ref_dim] = {8,14,13,2};
-    
+
     std::vector<int> ref;
     ref.assign(ref_array, ref_array + ref_dim);
-    
+
     BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(), test.end());
 
     SMO_free((void**)&i_array);
@@ -184,7 +181,7 @@ BOOST_FIXTURE_TEST_CASE(test_getPollutantUnits, Fixture) {
 
     const int ref_dim = 2;
     int ref_array[ref_dim] = {0, 1};
-    
+
     std::vector<int> ref;
     ref.assign(ref_array, ref_array + ref_dim);
 
@@ -258,10 +255,10 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
-    
+
     error = SMO_getSubcatchResult(p_handle, 1, 1, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
-    
+
     const int ref_dim = 10;
     float ref_array[ref_dim] = {0.5f,
                                 0.0f,
@@ -286,7 +283,7 @@ BOOST_FIXTURE_TEST_CASE(test_getNodeResult, Fixture) {
 
     error = SMO_getNodeResult(p_handle, 2, 2, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
-    
+
     const int ref_dim = 8;
     float ref_array[ref_dim] = {0.296234f,
                                 995.296204f,
@@ -310,7 +307,7 @@ BOOST_FIXTURE_TEST_CASE(test_getLinkResult, Fixture) {
     error = SMO_getLinkResult(p_handle, 3, 3, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
 
-    
+
     const int ref_dim = 7;
     float ref_array[ref_dim] = {4.631762f,
                                 1.0f,
@@ -329,7 +326,7 @@ BOOST_FIXTURE_TEST_CASE(test_getLinkResult, Fixture) {
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getSystemResult, Fixture) {
-    
+
     error = SMO_getSystemResult(p_handle, 4, 4, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
 

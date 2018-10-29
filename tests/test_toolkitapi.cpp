@@ -6,9 +6,9 @@
  *           EmNet LLC
  *
  *   Unit testing for SWMM-ToolkitAPI using Boost Test.
- 
- 
- 
+
+
+
 * TABLE OF CONTENTS AND STRUCTURE
 
   ->  Numerical Diff Functions
@@ -30,21 +30,21 @@
 
 using namespace std;
 
-// Custom test to check the minimum number of correct decimal digits between 
-// the test and the ref vectors.  
-boost::test_tools::predicate_result check_cdd(std::vector<double>& test, 
+// Custom test to check the minimum number of correct decimal digits between
+// the test and the ref vectors.
+boost::test_tools::predicate_result check_cdd(std::vector<double>& test,
     std::vector<double>& ref, long cdd_tol)
 {
     double tmp, min_cdd = 10.0;
-    
-    // TODO: What if the vectors aren't the same length? 
+
+    // TODO: What if the vectors aren't the same length?
 
     std::vector<double>::iterator test_it;
     std::vector<double>::iterator ref_it;
 
     for (test_it = test.begin(); test_it < test.end(); ++test_it) {
         for (ref_it = ref.begin(); ref_it < ref.end(); ++ref_it) {
-             
+
              if (*test_it != *ref_it) {
                 // Compute log absolute error
                 tmp = abs(*test_it - *ref_it);
@@ -64,10 +64,7 @@ boost::test_tools::predicate_result check_cdd(std::vector<double>& test,
         }
     }
 
-    if (min_cdd == 100.0)
-        return true; 
-    else
-        return floor(min_cdd) <= cdd_tol;
+    return floor(min_cdd) <= cdd_tol;
 }
 
 // Non-Fixuture Unit Tests
@@ -99,7 +96,7 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
 
     error = swmm_setSubcatchParam(0, 0, val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
-    
+
     error = swmm_getSubcatchResult(0, 0, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
@@ -236,7 +233,7 @@ BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose) {
     //Subcatchment
     error = swmm_getSubcatchParam(0, 100, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
-    
+
     error = swmm_setSubcatchParam(0, 100, 1);
     BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
 
@@ -260,7 +257,7 @@ BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose) {
 
 // Testing for Project Settings after Open
 BOOST_FIXTURE_TEST_CASE(project_info, FixtureOpenClose){
-    
+
     int error, index;
     char id[] = "14";
 
@@ -280,16 +277,16 @@ BOOST_FIXTURE_TEST_CASE(getset_subcatch, FixtureOpenClose) {
 
     error = swmm_getObjectIndex(SM_SUBCATCH, id, &subc_ind);
     BOOST_REQUIRE(error == ERR_NONE);
-    
+
 
     // Get/Set Subcatchment SM_WIDTH
     error = swmm_getSubcatchParam(subc_ind, SM_WIDTH, &val);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 500, 0.0001);
-    
+
     error = swmm_setSubcatchParam(subc_ind, SM_WIDTH, 600);
     BOOST_REQUIRE(error == ERR_NONE);
-    
+
     error = swmm_getSubcatchParam(subc_ind, SM_WIDTH, &val);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 600, 0.0001);
@@ -320,7 +317,7 @@ BOOST_FIXTURE_TEST_CASE(getset_subcatch, FixtureOpenClose) {
     // BOOST_REQUIRE(error == ERR_NONE);
     // BOOST_CHECK_SMALL(val - .50, 0.0001);
 
-    
+
     // Get/Set Subcatchment SM_SLOPE
     error = swmm_getSubcatchParam(subc_ind, SM_SLOPE, &val);
     BOOST_REQUIRE(error == ERR_NONE);
@@ -398,7 +395,7 @@ BOOST_FIXTURE_TEST_CASE(getset_node, FixtureOpenClose) {
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 20, 0.0001);
 
-    
+
     // Get/Set Node SM_PONDAREA
     error = swmm_getNodeParam(node_ind, SM_PONDAREA, &val);
     BOOST_REQUIRE(error == ERR_NONE);
@@ -475,7 +472,7 @@ BOOST_FIXTURE_TEST_CASE(getset_link, FixtureOpenClose) {
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(val - 1, 0.0001);
 
-    
+
     // Get/Set Link SM_FLOWLIMIT
     error = swmm_getLinkParam(link_ind, SM_FLOWLIMIT, &val);
     BOOST_REQUIRE(error == ERR_NONE);
@@ -617,11 +614,11 @@ BOOST_FIXTURE_TEST_CASE(get_result_during_sim, FixtureBeforeStep){
     do
     {
         error = swmm_step(&elapsedTime);
-        
+
         if (step_ind == 200) // (Jan 1, 1998 3:20am)
         {
             // Subcatchment
-            for (SM_SubcResult property = SM_SUBCRAIN; property <= SM_SUBCSNOW; 
+            for (SM_SubcResult property = SM_SUBCRAIN; property <= SM_SUBCSNOW;
                 property = SM_SubcResult(property + 1))
             {
                 error = swmm_getSubcatchResult(subc_ind, property, &val);
@@ -634,7 +631,7 @@ BOOST_FIXTURE_TEST_CASE(get_result_during_sim, FixtureBeforeStep){
 
 
             // Node
-            for (SM_NodeResult property = SM_TOTALINFLOW; property <= SM_LATINFLOW; 
+            for (SM_NodeResult property = SM_TOTALINFLOW; property <= SM_LATINFLOW;
                 property = SM_NodeResult(property + 1))
             {
                 error = swmm_getNodeResult(nde_ind, property, &val);
@@ -647,7 +644,7 @@ BOOST_FIXTURE_TEST_CASE(get_result_during_sim, FixtureBeforeStep){
 
 
             // Link
-            for (SM_LinkResult property = SM_LINKFLOW; property <= SM_FROUDE; 
+            for (SM_LinkResult property = SM_LINKFLOW; property <= SM_FROUDE;
                 property = SM_LinkResult(property + 1))
             {
                 error = swmm_getLinkResult(lnk_ind, property, &val);
@@ -668,7 +665,7 @@ BOOST_FIXTURE_TEST_CASE(get_result_during_sim, FixtureBeforeStep){
 // BOOST_FIXTURE_TEST_CASE(get_results_after_sim, FixtureBeforeEnd){
 //     int error;
 //     int subc_ind; //rg_ind, nde_ind, lnk_ind;
-    
+
 //     //char rgid[]  = "RG1";
 //     char subid[] = "1";
 //     //char ndeid[] = "19";
