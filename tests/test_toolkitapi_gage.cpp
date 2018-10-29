@@ -100,7 +100,7 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
     BOOST_CHECK_SMALL(subc_stats->precip - 24, 0.0001);
 
     freeArray((void**) &precip_array);
-    free((void *)subc_stats);
+    free(subc_stats);
 
     swmm_end();
 }
