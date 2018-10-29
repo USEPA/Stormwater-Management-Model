@@ -662,7 +662,7 @@ BOOST_FIXTURE_TEST_CASE(get_result_during_sim, FixtureBeforeStep){
 
 
 // Testing Results Getters (Before End Simulation)
-BOOST_FIXTURE_TEST_CASE(get_results_after_sim, FixtureBeforeEnd){
+BOOST_FIXTURE_TEST_CASE(swmm_getSubcatchStats, FixtureBeforeEnd){
     int error;
     int subc_ind;
 
