@@ -754,7 +754,7 @@ int readDrainData(int j, char* toks[], int ntoks)
     for (i = 0; i < 6; i++) x[i] = 0.0;                                        //(5.1.013)
     for (i = 2; i < 8; i++)                                                    //
     {
-        if ( ntoks > i && ! getDouble(toks[i], &x[i-2])  || x[i-2] < 0.0 )     //(5.1.013)
+        if ( ( ntoks > i && ! getDouble(toks[i], &x[i-2]) )  || x[i-2] < 0.0 ) //(5.1.013)
             return error_setInpError(ERR_NUMBER, toks[i]);
     }
 

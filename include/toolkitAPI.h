@@ -821,7 +821,7 @@ int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
  pollutants array.
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats);
+int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats **subcatchStats);
 
 /**
  @brief Get system routing statistics.
