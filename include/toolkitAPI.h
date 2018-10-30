@@ -904,7 +904,7 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month,
  @param day The day
  @param hour The hour
  @param minute The minute
- @param second The seconds
+ @param second The second
  @return Error code
 */
 int DLLEXPORT swmm_setSimulationDateTime(int timetype, int year, int month,

@@ -108,7 +108,6 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month, in
     return error_getCode(error_code_index);
 }
 
-
 int DLLEXPORT swmm_setSimulationDateTime(int timetype, int year, int month,
                                          int day, int hour, int minute,
                                          int second)
@@ -123,7 +122,7 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, int year, int month,
     DateTime theDate;
     DateTime theTime;
 
-     // Check if Open
+    // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
         error_code_index = ERR_API_INPUTNOTOPEN;
@@ -138,7 +137,7 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, int year, int month,
         theDate = datetime_encodeDate(year, month, day);
         theTime = datetime_encodeTime(hour, minute, second);
 
-         switch(timetype)
+        switch(timetype)
         {
             //StartDateTime (globals.h)
             case SM_STARTDATE:
