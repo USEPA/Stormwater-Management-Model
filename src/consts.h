@@ -5,6 +5,7 @@
 //   Version: 5.1
 //   Date:    03/20/14  (Build 5.1.001)
 //            08/01/16  (Build 5.1.011)
+//            05/10/18  (Build 5.1.013)
 //   Author:  L. Rossman
 //
 //   Various Constants
@@ -18,7 +19,7 @@
 #define   VERSION            52000          // Eventually will be deprecated. 
 #define   SEMVERSION_MAJOR   "5"            // Major Semantic Version
 #define   SEMVERSION_MINOR   "2"            // Minor Semantic Version
-#define   SEMVERSION_PATCH   "0.dev4"      // Patch Semantic Version
+#define   SEMVERSION_PATCH   "0.dev5"      // Patch Semantic Version
 #define   SEMVERSION_LEN     20             // Version String Len
 
 #define   MAGICNUMBER        516114522

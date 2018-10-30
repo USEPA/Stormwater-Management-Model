@@ -14,6 +14,7 @@
 //            08/05/15  (Build 5.1.010)
 //            08/01/16  (Build 5.1.011)
 //            03/14/17  (Build 5.1.012)
+//            05/10/18  (Build 5.1.013)
 //   Author:  L. Rossman
 //
 //   Text strings
@@ -27,7 +28,8 @@
 #define FMT05 "\n"
 #define FMT06 "\n o  Retrieving project data"
 #define FMT07 "\n o  Writing output report"
-
+#define FMT08 \
+  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build 5.1.013)"         //(5.1.013)
 #define FMT09 \
   "\n  --------------------------------------------------------------"
 #define FMT10 "\n"
@@ -37,8 +39,8 @@
 #define FMT14  "\n    Cannot open output file "
 #define FMT15  "\n    Cannot open temporary output file"
 #define FMT16  "\n  ERROR %d detected. Execution halted."
-#define FMT17  "at line %d of input file:"
-#define FMT18  "at line %d of %s] section:"
+#define FMT17  "at line %ld of input file:"                                    //(5.1.013)
+#define FMT18  "at line %ld of %s] section:"                                   //(5.1.013)
 #define FMT19  "\n  Maximum error count exceeded."
 #define FMT20  "\n\n  Analysis begun on:  %s"
 #define FMT20a "  Analysis ended on:  %s"
@@ -54,10 +56,11 @@
 #define WARN07 "WARNING 07: routing time step reduced to the wet weather time step"
 #define WARN08 "WARNING 08: elevation drop exceeds length for Conduit"
 #define WARN09 "WARNING 09: time series interval greater than recording interval for Rain Gage"
-//#define WARN10 "WARNING 10: crest elevation is below downstream invert for regulator Link"
-#define WARN10 \
-"WARNING 10: crest elevation raised to downstream invert for regulator Link"   //(5.1.011)
-#define WARN11 "WARNING 11: non-matching attributes in Control Rule"           //(5.1.009)
+#define WARN10a \
+"WARNING 10: crest elevation is below downstream invert for regulator Link"    //(5.1.013)
+#define WARN10b \
+"WARNING 10: crest elevation raised to downstream invert for regulator Link"   //(5.1.013)
+#define WARN11 "WARNING 11: non-matching attributes in Control Rule"
 
 // Analysis Option Keywords
 #define  w_FLOW_UNITS        "FLOW_UNITS"
@@ -76,6 +79,7 @@
 #define  w_DRY_STEP          "DRY_STEP"
 #define  w_ROUTE_STEP        "ROUTING_STEP"
 #define  w_REPORT_STEP       "REPORT_STEP"
+#define  w_RULE_STEP         "RULE_STEP"                                       //(5.1.013)
 #define  w_ALLOW_PONDING     "ALLOW_PONDING"
 #define  w_INERT_DAMPING     "INERTIAL_DAMPING"
 #define  w_SLOPE_WEIGHTING   "SLOPE_WEIGHTING"
@@ -98,9 +102,10 @@
 #define  w_HEAD_TOL          "HEAD_TOLERANCE"
 #define  w_SYS_FLOW_TOL      "SYS_FLOW_TOL"
 #define  w_LAT_FLOW_TOL      "LAT_FLOW_TOL"
-#define  w_IGNORE_RDII       "IGNORE_RDII"                                     //(5.1.004)
-#define  w_MIN_ROUTE_STEP    "MINIMUM_STEP"                                    //(5.1.008)
-#define  w_NUM_THREADS       "THREADS"                                         //(5.1.008)
+#define  w_IGNORE_RDII       "IGNORE_RDII"
+#define  w_MIN_ROUTE_STEP    "MINIMUM_STEP"
+#define  w_NUM_THREADS       "THREADS"
+#define  w_SURCHARGE_METHOD  "SURCHARGE_METHOD"                                //(5.1.013)
 
 // Flow Units
 #define  w_CFS               "CFS"
@@ -121,11 +126,15 @@
 #define  w_XKINWAVE          "XKINWAVE"
 #define  w_DYNWAVE           "DYNWAVE"
 
+// Surcharge Methods                                                           //(5.1.013)
+#define  w_EXTRAN            "EXTRAN"
+#define  w_SLOT              "SLOT"
+
 // Infiltration Methods
 #define  w_HORTON            "HORTON"
 #define  w_MOD_HORTON        "MODIFIED_HORTON"
 #define  w_GREEN_AMPT        "GREEN_AMPT"
-#define  w_MOD_GREEN_AMPT    "MODIFIED_GREEN_AMPT"                             //(5.1.010)
+#define  w_MOD_GREEN_AMPT    "MODIFIED_GREEN_AMPT"
 #define  w_CURVE_NUMEBR      "CURVE_NUMBER"
 
 // Normal Flow Criteria
@@ -201,7 +210,7 @@
 #define  w_TRANSVERSE        "TRANSVERSE"
 #define  w_SIDEFLOW          "SIDEFLOW"
 #define  w_VNOTCH            "V-NOTCH"
-#define  w_ROADWAY           "ROADWAY"                                         //(5.1.010)
+#define  w_ROADWAY           "ROADWAY"
 
 // Conduit Cross-Section Shapes
 #define  w_DUMMY             "DUMMY"
@@ -308,6 +317,7 @@
 #define  w_FLOWSTATS         "FLOWSTATS"
 #define  w_CONTROLS          "CONTROL"
 #define  w_NODESTATS         "NODESTATS"
+#define  w_AVERAGES          "AVERAGES"                                        //(5.1.013)
 
 // Interface File Types
 #define  w_RAINFALL          "RAINFALL"
@@ -429,7 +439,7 @@
 #define  ws_PROFILE          "[PROFILE"
 #define  ws_LID_CONTROL      "[LID_CONTROL"
 #define  ws_LID_USAGE        "[LID_USAGE"
-#define  ws_GW_FLOW          "[GW_FLOW"     //Deprecated                       //(5.1.007)
-#define  ws_GWF              "[GWF"                                            //(5.1.007)
-#define  ws_ADJUST           "[ADJUSTMENT"                                     //(5.1.007)
-#define  ws_EVENT            "[EVENT"                                          //(5.1.011)
+#define  ws_GW_FLOW          "[GW_FLOW"     //Deprecated
+#define  ws_GWF              "[GWF"
+#define  ws_ADJUST           "[ADJUSTMENT"
+#define  ws_EVENT            "[EVENT"

@@ -503,12 +503,9 @@ double snow_getSnowMelt(int j, double rainfall, double snowfall, double tStep,
             smelt = routeSnowmelt(snowpack, i, smelt, asc, rainfall, tStep);
         }
 
-////  Following section revised for release 5.1.008.  ////                     //(5.1.008)
-////
         // --- find net precip. over entire subcatch area
         netPrecip[i] = smelt + snowpack->imelt[i]     // snow pack melt
                        + rainfall*(1.0 - asc);        // rainfall on non-snow area
-////
 
         // --- add to total snow depth on subcatchment
         snowDepth += snowpack->wsnow[i] * snowpack->fArea[i];
@@ -705,8 +702,8 @@ double meltSnowpack(TSnowpack* snowpack, int i, double rmelt, double asc,
         return 0.0;
     }
 
-    // --- adjust snowmelt for area of snow cover                              //(5.1.008)
-    smelt *= asc;                                                              //(5.1.008)
+    // --- adjust snowmelt for area of snow cover
+    smelt *= asc;
 
     // --- reduce cold content of melting pack
     ccFactor = tStep * Snow.rnm * asc;
@@ -837,7 +834,6 @@ double routeSnowmelt(TSnowpack* snowpack, int i, double smelt, double asc,
 //  Output:  returns rate of liquid snow melt leaving a snow pack (ft/sec)
 //  Purpose: routes snow melt through free water holding capacity of snow pack.
 //
-////  Additional comments added for release 5.1.008.  ////                     //(5.1.008)
 {
     int     k;          // snowmelt parameter set index
     double  vmelt;      // snow melt volume (ft)
@@ -852,7 +848,7 @@ double routeSnowmelt(TSnowpack* snowpack, int i, double smelt, double asc,
 
     // --- add snowmelt volume and any rainfall on snow
     //     covered area of sub-area to snow pack's free water content
-    snowpack->fw[i] += vmelt + rainfall * tStep * asc;                         //(5.1.008) 
+    snowpack->fw[i] += vmelt + rainfall * tStep * asc;
 
     // --- excess free water becomes liquid melt that leaves the pack 
     vmelt = snowpack->fw[i] - Snowmelt[k].fwfrac[i] * snowpack->wsnow[i];

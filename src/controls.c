@@ -65,9 +65,9 @@ enum RuleState    {r_RULE, r_IF, r_AND, r_OR, r_THEN, r_ELSE, r_PRIORITY,
                    r_ERROR};
 enum RuleObject   {r_NODE, r_LINK, r_CONDUIT, r_PUMP, r_ORIFICE, r_WEIR,
 	               r_OUTLET, r_SIMULATION};
-enum RuleAttrib   {r_DEPTH, r_HEAD, r_VOLUME, r_INFLOW, r_FLOW, r_STATUS,      //(5.1.008)
-                   r_SETTING, r_TIMEOPEN, r_TIMECLOSED, r_TIME, r_DATE,        //(5.1.010)
-                   r_CLOCKTIME, r_DAYOFYEAR, r_DAY, r_MONTH};                  //(5.1.011)
+enum RuleAttrib   {r_DEPTH, r_HEAD, r_VOLUME, r_INFLOW, r_FLOW, r_STATUS,
+                   r_SETTING, r_TIMEOPEN, r_TIMECLOSED, r_TIME, r_DATE,
+                   r_CLOCKTIME, r_DAYOFYEAR, r_DAY, r_MONTH};
 enum RuleRelation {EQ, NE, LT, LE, GT, GE};
 enum RuleSetting  {r_CURVE, r_TIMESERIES, r_PID, r_NUMERIC};
 
@@ -75,9 +75,9 @@ static char* ObjectWords[] =
     {"NODE", "LINK", "CONDUIT", "PUMP", "ORIFICE", "WEIR", "OUTLET",
 	 "SIMULATION", NULL};
 static char* AttribWords[] =
-    {"DEPTH", "HEAD", "VOLUME", "INFLOW", "FLOW", "STATUS", "SETTING",         //(5.1.008)
-     "TIMEOPEN", "TIMECLOSED","TIME", "DATE", "CLOCKTIME", "DAYOFYEAR",        //(5.1.011)
-     "DAY", "MONTH", NULL};                                                    //(5.1.011)
+    {"DEPTH", "HEAD", "VOLUME", "INFLOW", "FLOW", "STATUS", "SETTING",
+     "TIMEOPEN", "TIMECLOSED","TIME", "DATE", "CLOCKTIME", "DAYOFYEAR", 
+     "DAY", "MONTH", NULL}; 
 static char* RelOpWords[] = {"=", "<>", "<", "<=", ">", ">=", NULL};
 static char* StatusWords[]  = {"OFF", "ON", NULL};
 static char* ConduitWords[] = {"CLOSED", "OPEN", NULL};
@@ -98,8 +98,8 @@ struct TVariable
 struct  TPremise
 {
     int     type;                 // clause type (IF/AND/OR)
-    struct  TVariable lhsVar;     // left hand side variable                   //(5.1.008)
-    struct  TVariable rhsVar;     // right hand side variable                  //(5.1.008)
+    struct  TVariable lhsVar;     // left hand side variable
+    struct  TVariable rhsVar;     // right hand side variable 
     int     relation;             // relational operator (>, <, =, etc)
     double  value;                // right hand side value
     struct  TPremise *next;       // next premise clause of rule
@@ -149,9 +149,6 @@ double   SetPoint;                     // value of controller setpoint
 DateTime CurrentDate;                  // current date in whole days 
 DateTime CurrentTime;                  // current time of day (decimal)
 
-// Avoid Duplicate symbol error on C++
-//DateTime ElapsedTime;                  // elasped simulation time (decimal days)
-
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
 //-----------------------------------------------------------------------------
@@ -182,7 +179,7 @@ void   deleteRules(void);
 
 int    findExactMatch(char *s, char *keyword[]);
 int    setActionSetting(char* tok[], int nToks, int* curve, int* tseries,
-       int* attrib, double* value);
+       int* attrib, double value[]);
 void   updateActionValue(struct TAction* a, DateTime currentTime, double dt);
 double getPIDSetting(struct TAction* a, double dt);
 
@@ -347,8 +344,6 @@ int controls_evaluate(DateTime currentTime, DateTime elapsedTime, double tStep)
 
 //=============================================================================
 
-//  This function was revised to add support for r.h.s. premise variables. //  //(5.1.008)
-
 int  addPremise(int r, int type, char* tok[], int nToks)
 //
 //  Input:   r = control rule index
@@ -391,9 +386,9 @@ int  addPremise(int r, int type, char* tok[], int nToks)
     if ( findmatch(tok[n], ObjectWords) >= 0 && n + 3 >= nToks )
     {
         err = getPremiseVariable(tok, &n, &v2);
-        if ( err > 0 ) return ERR_RULE;                                        //(5.1.009)
-        if ( v1.attribute != v2.attribute)                                     //(5.1.009)
-            report_writeWarningMsg(WARN11, Rules[r].ID);                       //(5.1.009)
+        if ( err > 0 ) return ERR_RULE;
+        if ( v1.attribute != v2.attribute)
+            report_writeWarningMsg(WARN11, Rules[r].ID);
     }
 
     // --- otherwise get value to which LHS variable is compared to
@@ -480,12 +475,11 @@ int getPremiseVariable(char* tok[], int* k, struct TVariable* v)
     {
       case r_DEPTH:
       case r_HEAD:
-      case r_VOLUME:                                                           //(5.1.008)
+      case r_VOLUME:
       case r_INFLOW: break;
       default: return error_setInpError(ERR_KEYWORD, tok[n]);
     }
 
-////  Added to release 5.1.010.  ////                                          //(5.1.010)
     // --- check for link TIMEOPEN & TIMECLOSED attributes
     else if ( link >= 0  &&
             ( (attrib == r_TIMEOPEN ||
@@ -494,7 +488,6 @@ int getPremiseVariable(char* tok[], int* k, struct TVariable* v)
     {
  
     }
-////
 
     else if ( obj == r_LINK || obj == r_CONDUIT ) switch (attrib)
     {
@@ -522,7 +515,7 @@ int getPremiseVariable(char* tok[], int* k, struct TVariable* v)
       case r_CLOCKTIME:
       case r_DAY:
       case r_MONTH:
-      case r_DAYOFYEAR: break;                                                 //(5.1.011)
+      case r_DAYOFYEAR: break;
       default: return error_setInpError(ERR_KEYWORD, tok[n]);
     }
 
@@ -546,7 +539,7 @@ int getPremiseValue(char* token, int attrib, double* value)
 //           in the premise clause of a control rule.
 //
 {
-    char   strDate[25];                                                        //(5.1.011)
+    char   strDate[25]; 
     switch (attrib)
     {
       case r_STATUS:
@@ -557,8 +550,8 @@ int getPremiseValue(char* token, int attrib, double* value)
 
       case r_TIME:
       case r_CLOCKTIME:
-      case r_TIMEOPEN:                                                         //(5.1.010)
-      case r_TIMECLOSED:                                                       //(5.1.010)
+      case r_TIMEOPEN:
+      case r_TIMECLOSED:
         if ( !datetime_strToTime(token, value) )
             return error_setInpError(ERR_DATETIME, token);
         break;
@@ -582,7 +575,6 @@ int getPremiseValue(char* token, int attrib, double* value)
              return error_setInpError(ERR_DATETIME, token);
         break;
 
-////  This code block added to release 5.1.011.  ////                          //(5.1.011)
       case r_DAYOFYEAR:
         strncpy(strDate, token, 6);
         strcat(strDate, "/1947");
@@ -593,7 +585,6 @@ int getPremiseValue(char* token, int attrib, double* value)
         else if ( !getDouble(token, value) || *value < 1 || *value > 365 )
             return error_setInpError(ERR_DATETIME, token);
         break;
-////////////////////////////////////////////////////
        
       default: if ( !getDouble(token, value) )
           return error_setInpError(ERR_NUMBER, token);
@@ -942,8 +933,8 @@ int executeActionList(DateTime currentTime)
             if ( Link[a1->link].targetSetting != a1->value )
             {
                 Link[a1->link].targetSetting = a1->value;
-                if ( RptFlags.controls && a1->curve < 0                        //(5.1.011)
-                     && a1->tseries < 0 && a1->attribute != r_PID )            //(5.1.011)
+                if ( RptFlags.controls && a1->curve < 0 
+                     && a1->tseries < 0 && a1->attribute != r_PID )
                     report_writeControlAction(currentTime, Link[a1->link].ID,
                                               a1->value, Rules[a1->rule].ID);
                 count++;
@@ -956,8 +947,6 @@ int executeActionList(DateTime currentTime)
 }
 
 //=============================================================================
-
-////  This function was re-written for release 5.1.011.  ////                  //(5.1.011)
 
 int evaluatePremise(struct TPremise* p, double tStep)
 //
@@ -1013,8 +1002,8 @@ double getVariableValue(struct TVariable v)
       case r_MONTH:
         return datetime_monthOfYear(CurrentDate);
 
-      case r_DAYOFYEAR:                                                        //(5.1.011)
-        return datetime_dayOfYear(CurrentDate);                                //(5.1.011)
+      case r_DAYOFYEAR:
+        return datetime_dayOfYear(CurrentDate);
 
       case r_STATUS:
         if ( j < 0 ||
@@ -1040,7 +1029,7 @@ double getVariableValue(struct TVariable v)
         if ( i < 0 ) return MISSING;
         return (Node[i].newDepth + Node[i].invertElev) * UCF(LENGTH);
 
-      case r_VOLUME:                                                           //(5.1.008)
+      case r_VOLUME:
         if ( i < 0 ) return MISSING;
         return (Node[i].newVolume * UCF(VOLUME));
 
@@ -1048,7 +1037,6 @@ double getVariableValue(struct TVariable v)
         if ( i < 0 ) return MISSING;
         else return Node[i].newLatFlow*UCF(FLOW);
 
-////  This section added to release 5.1.010.  ////                             //(5.1.010)
       case r_TIMEOPEN:
           if ( j < 0 ) return MISSING;
           if ( Link[j].setting <= 0.0 ) return MISSING;
@@ -1058,7 +1046,6 @@ double getVariableValue(struct TVariable v)
           if ( j < 0 ) return MISSING;
           if ( Link[j].setting > 0.0 ) return MISSING;
           return CurrentDate + CurrentTime - Link[j].timeLastSet;
-////
 
       default: return MISSING;
     }

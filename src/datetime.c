@@ -231,9 +231,9 @@ void datetime_decodeTime(DateTime time, int* h, int* m, int* s)
 {
     int secs;
     int mins;
-    double fracDay = (time - floor(time)) * SecsPerDay;                        //(5.1.011)
-    secs = (int)(floor(fracDay + 0.5));                                        //(5.1.011)
-    if ( secs >= 86400 ) secs = 86399;                                         //(5.1.011)
+    double fracDay = (time - floor(time)) * SecsPerDay;
+    secs = (int)(floor(fracDay + 0.5));
+    if ( secs >= 86400 ) secs = 86399;
     divMod(secs, 60, &mins, s);
     divMod(mins, 60, h, m);
     if ( *h > 23 ) *h = 0;
@@ -511,8 +511,6 @@ int  datetime_daysPerMonth(int year, int month)
 }
 
 //=============================================================================
-
-////  New function added to release 5.1.011.  ////                             //(5.1.011)
 
 void datetime_getTimeStamp(int fmt, DateTime aDate, int stampSize, char* timeStamp)
 

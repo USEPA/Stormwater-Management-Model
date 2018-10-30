@@ -14,48 +14,10 @@ matrix:
 environment:
   matrix:
     # Python 3.4
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-      GENERATOR: "Visual Studio 10 2010"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR: "Visual Studio 15 2017"
       GROUP: "SUPPORTED"
-      BOOST_ROOT: "C:/Libraries/boost"
-    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-    #  VS_VERSION: "10 2010"
-    #  ARCH: Win64
-    #  GROUP: "EXPERIMENTAL"
-    #  BOOST_ROOT: C:/Libraries/boost_1_58_0
-    #  BOOST_LIBDIR: C:/Libraries/boost_1_58_0/lib64-msvc-10.0
-    # Python 3.5 and 3.6
-    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    #  VS_VERSION: "14 2015"
-    #  ARCH: Win32
-    #  GROUP: "EXPERIMENTAL"
-    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    #  VS_VERSION: "14 2015"
-    #  ARCH: Win64
-    #  GROUP: "EXPERIMENTAL"
-    # Python 2.7
-    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-    #  VS_VERSION: "9 2008"
-    #  ARCH: Win32
-    #  GROUP: "EXPERIMENTAL"
-    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-    #  VS_VERSION: "9 2008"
-    #  ARCH: Win64
-    #  GROUP: "EXPERIMENTAL"
-    # Not used as a python compiler
-    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    #  VS_VERSION: "12 2013"
-    #  arch: Win32
-    #  GROUP: "EXPERIMENTAL"
-    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    #  VS_VERSION: "12 2013"
-    #  ARCH: Win64
-    #  GROUP: "EXPERIMENTAL"
-    # Not used as a python compiler. Swig is not working with these compilers
-    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    #  VS_VERSION: "15 2017"
-    #  ARCH: Win32
-    #  GROUP: "EXPERIMENTAL"
+      BOOST_ROOT: "C:/Libraries/boost_1_67_0"
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       GENERATOR: "Visual Studio 15 2017 Win64"
       GROUP: "EXPERIMENTAL"
@@ -80,6 +42,7 @@ before_build:
   - mkdir %BUILD_HOME%
   - cd %BUILD_HOME%
   - cmake -G "%GENERATOR%" 
+    -DBUILD_TESTS=1
     -DBOOST_ROOT="%BOOST_ROOT%"
     -DBoost_USE_STATIC_LIBS="ON" ..
 
@@ -97,6 +60,11 @@ test_script:
     # Run regression tests
   - cd %SWMM_HOME%
   - tools\run-nrtest.cmd %NRTEST_SCRIPT% %TEST_HOME% %APPVEYOR_REPO_COMMIT%
+
+on_finish: 
+  # zip up the SUT benchmarks 
+  - 7z a benchmarks.zip %TEST_HOME%\benchmark\swmm-%APPVEYOR_REPO_COMMIT%\
+  - appveyor PushArtifact benchmarks.zip -FileName benchmarks
 
 #cache:
 #  - C:\ProgramData\chocolatey\bin -> appveyor.yml

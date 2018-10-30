@@ -6,6 +6,7 @@
 //   Date:    03/20/14  (Build 5.1.001)
 //            08/05/15  (Build 5.1.010)
 //            08/22/16  (Build 5.1.011)
+//            05/10/18  (Build 5.1.013)
 //   Author:  L. Rossman
 //
 //   Places rainfall data from external files into a SWMM rainfall
@@ -44,6 +45,9 @@
 //
 //   Release 5.1.011:
 //   - Can now read decimal rainfall values in newer NWS online format.
+//
+//   Release 5.1.013:
+//   - Variable x properly initialized with float value in readNwsOnlineValue().
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -98,7 +102,7 @@ static void readFile(FILE *f, int fileFormat, int hdrLines, DateTime day1,
             DateTime day2);
 static int  readNWSLine(char *line, int fileFormat, DateTime day1,
             DateTime day2);
-static int  readNwsOnlineValue(char* s, long* v, char* flag);                  //(5.1.011)
+static int  readNwsOnlineValue(char* s, long* v, char* flag);
 static int  readCMCLine(char *line, int fileFormat, DateTime day1,
             DateTime day2);
 static int  readStdLine(char *line, DateTime day1, DateTime day2);
@@ -773,11 +777,11 @@ int readNWSLine(char *line, int fileFormat, DateTime day1, DateTime day2)
     // --- read each recorded rainfall time, value, & codes from line
     while ( k < lineLength )
     {
-		flag1 = 0;
+        flag1 = 0;
         flag2 = 0;
-		v = 99999;
-		hour = 25;
-		minute = 0;
+        v = 99999;
+        hour = 25;
+        minute = 0;
         switch ( fileFormat )
         {
           case NWS_TAPE:
@@ -801,7 +805,7 @@ int readNWSLine(char *line, int fileFormat, DateTime day1, DateTime day2)
           case NWS_ONLINE_60:
           case NWS_ONLINE_15:
               n = sscanf(&line[k], " %2d:%2d", &hour, &minute);
-			  n += readNwsOnlineValue(&line[ValueOffset], &v, &flag1);         //(5.1.011)
+              n += readNwsOnlineValue(&line[ValueOffset], &v, &flag1);
 
               // --- ending hour 0 is really hour 24 of previous day
               if ( hour == 0 )
@@ -855,8 +859,6 @@ int readNWSLine(char *line, int fileFormat, DateTime day1, DateTime day2)
 
 //=============================================================================
 
-////  New function added to release 5.1.011  ////                              //(5.1.011)
-
 int readNwsOnlineValue(char* s, long* v, char* flag)
 //
 //  Input:   s = portion of rainfall record in NWS online format
@@ -867,21 +869,21 @@ int readNwsOnlineValue(char* s, long* v, char* flag)
 //           rainfall record.
 //
 {
-	int    n;
-	float  x = 99.99;
+    int    n;
+    float  x = 99.99f;                                                         //(5.1.013)
 
-	// --- check for newer format of decimal inches
-	if ( strchr(s, '.') )
+    // --- check for newer format of decimal inches
+    if ( strchr(s, '.') )
     {
-		n = sscanf(s, "%f %c", &x, flag);
+        n = sscanf(s, "%f %c", &x, flag);
 
-		// --- convert to integer hundreths of an inch
-		*v = (long)(100.0f * x + 0.5f);
-	}
+        // --- convert to integer hundreths of an inch
+        *v = (long)(100.0f * x + 0.5f);
+    }
 
-	// --- older format of hundreths of an inch
-	else n = sscanf(s, "%ld %c", v, flag);
-	return n;
+    // --- older format of hundreths of an inch
+    else n = sscanf(s, "%ld %c", v, flag);
+    return n;
 }
 
 //=============================================================================
@@ -1017,7 +1019,7 @@ int readStdLine(char *line, DateTime day1, DateTime day2)
     date2 = date1 + datetime_encodeTime(hour, minute, 0);
     if ( date2 <= PreviousDate )
     {
-        report_writeErrorMsg(ERR_RAIN_FILE_SEQUENCE, Gage[GageIndex].fname);   //(5.1.010)
+        report_writeErrorMsg(ERR_RAIN_FILE_SEQUENCE, Gage[GageIndex].fname);
         report_writeLine(line);
         return -1;
     }

@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 #
-#  setup.py 
-# 
+#  setup.py
+#
 #  Author:     Michael E. Tryby
 #              US EPA - ORD/NRMRL
 #
 
 ''' Setup up script for nrtest_swmm package. '''
 
-try: 
+try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
@@ -24,9 +24,9 @@ entry_points = {
 
 setup(
     name='nrtest-swmm',
-    version='0.3.0',
+    version='0.4.0',
     description="SWMM extension for nrtest",
-    
+
     author="Michael E. Tryby",
     author_email='tryby.michael@epa.gov',
     url='https://github.com/USEPA',
@@ -40,5 +40,5 @@ setup(
         'numpy>=1.7.0',
         'swmm_output',
     ],
-    keywords='nrtest_swmm'  
+    keywords='nrtest_swmm'
 )

@@ -9,6 +9,7 @@
 //             04/02/15    (Build 5.1.008)
 //             08/01/16    (Build 5.1.011)
 //             03/14/17    (Build 5.1.012)
+//             05/10/18    (Build 5.1.013)
 //   Author:   L. Rossman (EPA)
 //
 //   Report writing functions.
@@ -33,6 +34,11 @@
 //
 //   Build 5.1.012:
 //   - System time step statistics adjusted for time in steady state.
+//
+//   Build 5.1.013:
+//   - Parsing of AVERAGES report option added to report_readOptions().
+//   - Name of surcharge method reported in report_writeOptions().
+//   - Missing format specifier added to fprintf() in report_writeErrorCode.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -135,6 +141,13 @@ int report_readOptions(char* tok[], int ntoks)
         else                 return error_setInpError(ERR_KEYWORD, tok[1]);
         return 0;
 
+      case 8: // Averages                                                      //(5.1.013)
+        m = findmatch(tok[1], NoYesWords);                                     //
+        if      (m == YES) RptFlags.averages = TRUE;                           //
+        else if (m == NO)  RptFlags.averages = FALSE;                          //
+        else               return error_setInpError(ERR_KEYWORD, tok[1]);      //
+        return 0;                                                              //
+
       default: return error_setInpError(ERR_KEYWORD, tok[1]);
     }
     k = (char)findmatch(tok[1], NoneAllWords);
@@ -226,7 +239,7 @@ void report_writeLogo()
 	sprintf(Msg, \
 		"\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build %s)", SEMVERSION);
 
-    fprintf(Frpt.file, Msg);
+    fprintf(Frpt.file, "%s", Msg);
     fprintf(Frpt.file, FMT09);
     fprintf(Frpt.file, FMT10);
     time(&SysTime);                    // Save starting wall clock time
@@ -242,14 +255,14 @@ void report_writeTitle()
 //
 {
     int i;
-    int lineCount = 0;                                                         //(5.1.011)
+    int lineCount = 0;
     if ( ErrorCode ) return;
     for (i=0; i<MAXTITLE; i++) if ( strlen(Title[i]) > 0 )
     {
         WRITE(Title[i]);
-        lineCount++;                                                           //(5.1.011)
+        lineCount++;
     }
-    if ( lineCount > 0 ) WRITE("");                                            //(5.1.011)
+    if ( lineCount > 0 ) WRITE("");
 }
 
 //=============================================================================
@@ -280,7 +293,7 @@ void report_writeOptions()
         fprintf(Frpt.file, "NO");
     else fprintf(Frpt.file, "YES");
 
-    fprintf(Frpt.file, "\n    RDII ................... ");                     //(5.1.004)
+    fprintf(Frpt.file, "\n    RDII ................... ");
     if ( IgnoreRDII || Nobjects[UNITHYD] == 0 )
         fprintf(Frpt.file, "NO");
     else fprintf(Frpt.file, "YES");
@@ -314,6 +327,11 @@ void report_writeOptions()
     if ( Nobjects[LINK] > 0 )
     fprintf(Frpt.file, "\n  Flow Routing Method ...... %s",
         RouteModelWords[RouteModel]);
+
+    if (RouteModel == DW)                                                      //(5.1.013)
+    fprintf(Frpt.file, "\n  Surcharge Method ......... %s",                    //(5.1.013)
+        SurchargeWords[SurchargeMethod]);                                      //(5.1.013)
+
     datetime_dateToStr(StartDate, str);
     fprintf(Frpt.file, "\n  Starting Date ............ %s", str);
     datetime_timeToStr(StartTime, str);
@@ -341,9 +359,9 @@ void report_writeOptions()
 		if ( CourantFactor > 0.0 ) fprintf(Frpt.file, "YES");
 		else                       fprintf(Frpt.file, "NO");
 		fprintf(Frpt.file, "\n  Maximum Trials ........... %d", MaxTrials);
-        fprintf(Frpt.file, "\n  Number of Threads ........ %d", NumThreads);   //(5.1.008)
+        fprintf(Frpt.file, "\n  Number of Threads ........ %d", NumThreads);
 		fprintf(Frpt.file, "\n  Head Tolerance ........... %.6f ",
-            HeadTol*UCF(LENGTH));                                              //(5.1.008)
+            HeadTol*UCF(LENGTH));
 		if ( UnitSystem == US ) fprintf(Frpt.file, "ft");
 		else                    fprintf(Frpt.file, "m");
 		}
@@ -523,14 +541,12 @@ void report_writeRunoffError(TRunoffTotals* totals, double totalArea)
             totals->rainfall * UCF(LENGTH) * UCF(LANDAREA),
             totals->rainfall / totalArea * UCF(RAINDEPTH));
 
-////  Following code segment added to release 5.1.008.  ////                   //(5.1.008)
     if ( totals->runon > 0.0 )
     {
         fprintf(Frpt.file, "\n  Outfall Runon ............%14.3f%14.3f",
             totals->runon * UCF(LENGTH) * UCF(LANDAREA),
             totals->runon / totalArea * UCF(RAINDEPTH));
     }
-////
 
     fprintf(Frpt.file, "\n  Evaporation Loss .........%14.3f%14.3f",
             totals->evap * UCF(LENGTH) * UCF(LANDAREA),
@@ -544,7 +560,6 @@ void report_writeRunoffError(TRunoffTotals* totals, double totalArea)
             totals->runoff * UCF(LENGTH) * UCF(LANDAREA),
             totals->runoff / totalArea * UCF(RAINDEPTH));
 
-////  Following code segment added to release 5.1.008.  ////                   //(5.1.008)
     if ( totals->drains > 0.0 )
     {
         fprintf(Frpt.file, "\n  LID Drainage .............%14.3f%14.3f",
@@ -562,7 +577,7 @@ void report_writeRunoffError(TRunoffTotals* totals, double totalArea)
             totals->finalSnowCover / totalArea * UCF(RAINDEPTH));
     }
 
-    fprintf(Frpt.file, "\n  Final Storage ............%14.3f%14.3f",           //(5.1.008)
+    fprintf(Frpt.file, "\n  Final Storage ............%14.3f%14.3f",
             totals->finalStorage * UCF(LENGTH) * UCF(LANDAREA),
             totals->finalStorage / totalArea * UCF(RAINDEPTH));
 
@@ -774,13 +789,13 @@ void report_writeFlowError(TRoutingTotals *totals)
     fprintf(Frpt.file, "\n  External Outflow .........%14.3f%14.3f",
             totals->outflow * ucf1, totals->outflow * ucf2);
 
-    fprintf(Frpt.file, "\n  Flooding Loss ............%14.3f%14.3f",           //(5.1.008)
+    fprintf(Frpt.file, "\n  Flooding Loss ............%14.3f%14.3f",
             totals->flooding * ucf1, totals->flooding * ucf2);
 
     fprintf(Frpt.file, "\n  Evaporation Loss .........%14.3f%14.3f",
             totals->evapLoss * ucf1, totals->evapLoss * ucf2);
 
-    fprintf(Frpt.file, "\n  Exfiltration Loss ........%14.3f%14.3f",           //(5.1.007)
+    fprintf(Frpt.file, "\n  Exfiltration Loss ........%14.3f%14.3f",
             totals->seepLoss * ucf1, totals->seepLoss * ucf2);
 
     fprintf(Frpt.file, "\n  Initial Stored Volume ....%14.3f%14.3f",
@@ -817,7 +832,7 @@ void report_writeQualError(TRoutingTotals QualTotals[])
 
 //=============================================================================
 
-void report_QualErrors(int p1, int p2, TRoutingTotals QualTotals[])
+void report_QualErrors(int p1, int p2, TRoutingTotals* QualTotals)
 {
     int   i;
     int   p;
@@ -879,20 +894,17 @@ void report_QualErrors(int p1, int p2, TRoutingTotals QualTotals[])
         fprintf(Frpt.file, "%14.3f", QualTotals[p].outflow);
     }
 
-    fprintf(Frpt.file, "\n  Flooding Loss ............");                      //(5.1.008)
+    fprintf(Frpt.file, "\n  Flooding Loss ............");
     for (p = p1; p <= p2; p++)
     {
         fprintf(Frpt.file, "%14.3f", QualTotals[p].flooding);
     }
 
-////  Following code segment added to release 5.1.008.  ////                   //(5.1.008)
-////
     fprintf(Frpt.file, "\n  Exfiltration Loss ........");
     for (p = p1; p <= p2; p++)
     {
         fprintf(Frpt.file, "%14.3f", QualTotals[p].seepLoss);
     }
-////
 
     fprintf(Frpt.file, "\n  Mass Reacted .............");
     for (p = p1; p <= p2; p++)
@@ -1018,10 +1030,10 @@ void report_writeSysStats(TSysStats* sysStats)
 //
 {
     double x;
-    double eventStepCount = (double)StepCount - sysStats->steadyStateCount;    //(5.1.012)
+    double eventStepCount = (double)StepCount - sysStats->steadyStateCount;
 
     if ( Nobjects[LINK] == 0 || StepCount == 0
-	                     || eventStepCount == 0.0 ) return;                //(5.1.012)   
+	                     || eventStepCount == 0.0 ) return; 
     WRITE("");
     WRITE("*************************");
     WRITE("Routing Time Step Summary");
@@ -1031,19 +1043,19 @@ void report_writeSysStats(TSysStats* sysStats)
         sysStats->minTimeStep);
     fprintf(Frpt.file,
         "\n  Average Time Step           :  %7.2f sec",
-        sysStats->avgTimeStep / eventStepCount);                               //(5.1.012)
+        sysStats->avgTimeStep / eventStepCount);
     fprintf(Frpt.file,
         "\n  Maximum Time Step           :  %7.2f sec",
         sysStats->maxTimeStep);
-    x = (1.0 - sysStats->avgTimeStep * 1000.0 / NewRoutingTime) * 100.0;       //(5.1.012)
+    x = (1.0 - sysStats->avgTimeStep * 1000.0 / NewRoutingTime) * 100.0;
     fprintf(Frpt.file,
         "\n  Percent in Steady State     :  %7.2f", MIN(x, 100.0));
     fprintf(Frpt.file,
         "\n  Average Iterations per Step :  %7.2f",
-        sysStats->avgStepCount / eventStepCount);                              //(5.1.012)
+        sysStats->avgStepCount / eventStepCount);
     fprintf(Frpt.file,
         "\n  Percent Not Converging      :  %7.2f",
-        100.0 * (double)NonConvergeCount / eventStepCount);                    //(5.1.012)
+        100.0 * (double)NonConvergeCount / eventStepCount);
     WRITE("");
 }
 
@@ -1379,13 +1391,11 @@ void report_writeErrorMsg(int code, char* s)
     }
     ErrorCode = code;
 
-////  Following code segment added to release 5.1.011.  ////                   //(5.1.011)
     // --- save message to ErrorMsg if it's not for a line of input data
     if ( ErrorCode <= ERR_INPUT || ErrorCode >= ERR_FILE_NAME )
     {                                                
         sprintf(ErrorMsg, error_getMsg(ErrorCode), s);
     }
-////
 }
 
 //=============================================================================
@@ -1402,7 +1412,7 @@ void report_writeErrorCode()
         if ( (ErrorCode >= ERR_MEMORY && ErrorCode <= ERR_TIMESTEP)
         ||   (ErrorCode >= ERR_FILE_NAME && ErrorCode <= ERR_OUT_FILE)
         ||   (ErrorCode == ERR_SYSTEM) )
-            fprintf(Frpt.file, error_getMsg(ErrorCode));
+            fprintf(Frpt.file, "%s", error_getMsg(ErrorCode));                 //(5.1.013)
     }
 }
 
@@ -1438,7 +1448,7 @@ void report_writeWarningMsg(char* msg, char* id)
 //
 {
     fprintf(Frpt.file, "\n  %s %s", msg, id);
-    Warnings++;                                                                //(5.1.011)
+    Warnings++;
 }
 
 //=============================================================================
