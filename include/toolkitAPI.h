@@ -568,11 +568,20 @@ typedef struct
 void DLLEXPORT swmm_getAPIError(int errcode, char *s);
 
 /**
- @brief Gets Simulation Unit
- @param type Option code (see @ref SM_Units)
- @param[out] value Option value
+ @brief Finds the index of an object given its ID.
+ @param type An object type
+ @param id The object ID
+ @param[out] index The objects index
  @return Error code
- */
+*/
+int DLLEXPORT swmm_project_findObject(int type, char *id, int *index);
+
+/**
+@brief Gets Simulation Unit
+@param type Option code (see @ref SM_Units)
+@param[out] value Option value
+@return Error code
+*/
 int DLLEXPORT swmm_getSimulationUnit(int type, int *value);
 
 /**
@@ -609,13 +618,13 @@ int DLLEXPORT swmm_countObjects(int type, int *count);
 int DLLEXPORT swmm_getObjectId(int type, int index, char *id);
 
 /**
- @brief Gets Object ID Index
+ @brief Gets Object Index
  @param type Option code (see @ref SM_ObjectType)
- @param[out] id of the Object
- @param[out] errcode Error Code
- @return Object Injdex
+ @param[in] id of the Object
+ @param[out] index of the Object
+ @return errcode Error Code
  */
-int DLLEXPORT swmm_getObjectIndex(int type, char *id, int *errcode);
+int DLLEXPORT swmm_getObjectIndex(SM_ObjectType type, char *id, int *index);
 
 /**
  @brief Get the type of node with specified index.
@@ -979,7 +988,7 @@ int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
  pollutants array.
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats);
+int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats **subcatchStats);
 
 /**
  @brief Get system routing statistics.

@@ -1,12 +1,12 @@
 ::
 ::  run_nrtest.cmd - Runs numerical regression test
-::  
+::
 ::  Date Created: 1/12/2018
 ::
 ::  Author: Michael E. Tryby
 ::          US EPA - ORD/NRMRL
 ::
-::  Arguments: 
+::  Arguments:
 ::    1 - nrtest script path
 ::    2 - test suite path
 ::    3 - version/build identifier
@@ -24,7 +24,7 @@ set TESTS=tests\examples tests\extran tests\routing tests\user
 set TEST_OUTPUT_PATH=benchmark\swmm-%3
 
 set NRTEST_COMPARE_CMD=python %NRTEST_SCRIPT_PATH%\nrtest compare
-set REF_OUTPUT_PATH=benchmark\swmm-5112
+set REF_OUTPUT_PATH=benchmark\swmm-520dev5
 set RTOL_VALUE=0.01
 set ATOL_VALUE=0.00
 

@@ -39,7 +39,7 @@ static int  Ntokens;                   // Number of tokens in line of input
 static int  Mobjects[MAX_OBJ_TYPES];   // Working number of objects of each type
 static int  Mnodes[MAX_NODE_TYPES];    // Working number of node objects
 static int  Mlinks[MAX_LINK_TYPES];    // Working number of link objects
-static int  Mevents;                   // Working number of event periods      //(5.1.011)
+static int  Mevents;                   // Working number of event periods
 
 //-----------------------------------------------------------------------------
 //  External Functions (declared in funcs.h)
@@ -58,7 +58,7 @@ static int  readTitle(char* line);
 static int  readControl(char* tok[], int ntoks);
 static int  readNode(int type);
 static int  readLink(int type);
-static int  readEvent(char* tok[], int ntoks);                                 //(5.1.011)
+static int  readEvent(char* tok[], int ntoks);
 
 //=============================================================================
 
@@ -157,7 +157,7 @@ int input_readData()
     for (i = 0; i < MAX_OBJ_TYPES; i++)  Mobjects[i] = 0;
     for (i = 0; i < MAX_NODE_TYPES; i++) Mnodes[i] = 0;
     for (i = 0; i < MAX_LINK_TYPES; i++) Mlinks[i] = 0;
-    Mevents = 0;                                                               //(5.1.011)
+    Mevents = 0;
 
     // --- initialize starting date for all time series
     for ( i = 0; i < Nobjects[TSERIES]; i++ )
@@ -432,7 +432,7 @@ int  addObject(int objType, char* id)
         }
         break;
 
-      case s_EVENT: NumEvents++; break;                                        //(5.1.011)
+      case s_EVENT: NumEvents++; break;
     }
     return errcode;
 }
@@ -465,8 +465,8 @@ int  parseLine(int sect, char *line)
       case s_EVAP:
         return climate_readEvapParams(Tok, Ntokens);
 
-      case s_ADJUST:                                                           //(5.1.007)
-        return climate_readAdjustments(Tok, Ntokens);                          //(5.1.007)
+      case s_ADJUST:
+        return climate_readAdjustments(Tok, Ntokens);
 
       case s_SUBCATCH:
         j = Mobjects[SUBCATCH];
@@ -595,7 +595,7 @@ int  parseLine(int sect, char *line)
         return lid_readGroupParams(Tok, Ntokens);
 
       case s_EVENT:
-        return readEvent(Tok, Ntokens);                                        //(5.1.011)
+        return readEvent(Tok, Ntokens);
 
       default: return 0;
     }
@@ -715,8 +715,6 @@ int readLink(int type)
 }
 
 //=============================================================================
-
-////  This function was added to release 5.1.011.  ////                        //(5.1.011)
 
 int  readEvent(char* tok[], int ntoks)
 {

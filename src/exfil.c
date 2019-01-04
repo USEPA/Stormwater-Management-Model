@@ -119,14 +119,11 @@ void  exfil_initState(int k)
                 alast = a;
             }
 
-////  Following code block added to release 5.1.011  ////                      //(5.1.011)
             // --- convert from user units to internal units
             exfil->btmArea /= UCF(LENGTH) * UCF(LENGTH);
             exfil->bankMaxArea /= UCF(LENGTH) * UCF(LENGTH);
             exfil->bankMinDepth /= UCF(LENGTH);
             exfil->bankMaxDepth /= UCF(LENGTH);
-////////////////////////////////////////////////////////
-
         }
 
         // --- functional storage shape curve
@@ -159,10 +156,10 @@ double exfil_getLoss(TExfil* exfil, double tStep, double depth, double area)
     // --- find infiltration through bottom of unit
     if ( exfil->btmExfil->IMDmax == 0.0 )
     {
-        exfilRate = exfil->btmExfil->Ks * Adjust.hydconFactor;                 //(5.1.008)
+        exfilRate = exfil->btmExfil->Ks * Adjust.hydconFactor;
     }
     else exfilRate = grnampt_getInfil(exfil->btmExfil, tStep, 0.0, depth,
-                                      MOD_GREEN_AMPT);                         //(5.1.010)
+                                      MOD_GREEN_AMPT);
     exfilRate *= exfil->btmArea;
 
     // --- find infiltration through sloped banks
@@ -175,7 +172,7 @@ double exfil_getLoss(TExfil* exfil, double tStep, double depth, double area)
             // --- if infil. rate not a function of depth
             if ( exfil->btmExfil->IMDmax == 0.0 )
             {    
-                exfilRate += area * exfil->btmExfil->Ks * Adjust.hydconFactor; //(5.1.008)
+                exfilRate += area * exfil->btmExfil->Ks * Adjust.hydconFactor;
             }
 
             // --- infil. rate depends on depth above bank
@@ -194,7 +191,7 @@ double exfil_getLoss(TExfil* exfil, double tStep, double depth, double area)
 
                 // --- use Green-Ampt function for bank infiltration
                 exfilRate += area * grnampt_getInfil(exfil->bankExfil,
-                                    tStep, 0.0, depth, MOD_GREEN_AMPT);        //(5.1.010)
+                                    tStep, 0.0, depth, MOD_GREEN_AMPT);
             }
         }
     }
