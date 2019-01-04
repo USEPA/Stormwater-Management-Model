@@ -1904,6 +1904,7 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats **subcatchStats)
 /// Purpose: Gets Subcatchment Stats and Converts Units
 {
   int errorcode = 0;
+  double a;
   TSubcatchStats *tmp = (TSubcatchStats *)calloc(1, sizeof(TSubcatchStats));
 
   // Check if Open
@@ -1929,7 +1930,7 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats **subcatchStats)
     memcpy(tmp, stats_getSubcatchStat(index), sizeof(TSubcatchStats));
     *subcatchStats = (SM_SubcatchStats *)tmp;
 
-    double a = Subcatch[index].area;
+    a = Subcatch[index].area;
 
     // Cumulative Runon Volume
     (*subcatchStats)->runon *= UCF(VOLUME);
