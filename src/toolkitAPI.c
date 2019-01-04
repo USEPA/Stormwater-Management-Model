@@ -814,6 +814,7 @@ int DLLEXPORT swmm_getLidUCount(int index, int *value)
 // Purpose: count number of lid units for subcatchment
 {
     int errcode = 0;
+    
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -829,7 +830,7 @@ int DLLEXPORT swmm_getLidUCount(int index, int *value)
         *value = lid_getLidUnitCount(index);
     }
     
-    return(errcode);
+    return (error_getCode(errcode));
 }
 
 
@@ -2014,17 +2015,13 @@ int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, int layerIndex, dou
             switch (layerIndex)
             {
                 case SM_SURFACE:
-                    *result = lidUnit->oldFluxRates[SM_SURFACE] * UCF(LENGTH);
-                    break;
+                    *result = lidUnit->oldFluxRates[SM_SURFACE] * UCF(LENGTH); break;
                 case SM_SOIL:
-                    *result = lidUnit->oldFluxRates[SM_SOIL] * UCF(LENGTH);
-                    break;
+                    *result = lidUnit->oldFluxRates[SM_SOIL] * UCF(LENGTH); break;
                 case SM_STORAGE:
-                    *result = lidUnit->oldFluxRates[SM_STORAGE] * UCF(LENGTH);
-                    break;
+                    *result = lidUnit->oldFluxRates[SM_STORAGE] * UCF(LENGTH); break;
                 case SM_PAVE:
-                    *result = lidUnit->oldFluxRates[SM_PAVE] * UCF(LENGTH);
-                    break;
+                    *result = lidUnit->oldFluxRates[SM_PAVE] * UCF(LENGTH); break;
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }
@@ -2062,14 +2059,11 @@ int DLLEXPORT swmm_getLidGResult(int index, int type, double *result)
             switch (type)
             {   
                 case SM_PERVAREA:
-                    *result = lidGroup->pervArea * SQR(UCF(LENGTH));
-                    break;
+                    *result = lidGroup->pervArea * SQR(UCF(LENGTH)); break;
                 case SM_FLOWTOPERV:
-                    *result = lidGroup->flowToPerv * UCF(FLOW);
-                    break;
+                    *result = lidGroup->flowToPerv * UCF(FLOW); break;
                 case SM_OLDDRAINFLOW:
-                    *result = lidGroup->oldDrainFlow * UCF(FLOW);
-                    break;
+                    *result = lidGroup->oldDrainFlow * UCF(FLOW); break;
                 case SM_NEWDRAINFLOW:
                     *result = lidGroup->newDrainFlow * UCF(FLOW); break;
                 default:
@@ -2109,89 +2103,61 @@ int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, int type, double *resu
             switch (type)
             {
                 case SM_INFLOW:
-                    *result = lidUnit->waterBalance.inflow * UCF(RAINDEPTH); 
-					break;
+                    *result = lidUnit->waterBalance.inflow * UCF(RAINDEPTH); break;
                 case SM_EVAP:
-                    *result = lidUnit->waterBalance.evap * UCF(RAINDEPTH);
-                    break;
+                    *result = lidUnit->waterBalance.evap * UCF(RAINDEPTH); break;
                 case SM_INFIL:
-                    *result = lidUnit->waterBalance.infil * UCF(RAINDEPTH);
-                    break;
+                    *result = lidUnit->waterBalance.infil * UCF(RAINDEPTH); break;
                 case SM_SURFFLOW:
-                    *result = lidUnit->waterBalance.surfFlow * UCF(RAINDEPTH);
-                    break;
+                    *result = lidUnit->waterBalance.surfFlow * UCF(RAINDEPTH); break;
                 case SM_DRAINFLOW:
-                    *result = lidUnit->waterBalance.drainFlow * UCF(RAINDEPTH);
-                    break;
+                    *result = lidUnit->waterBalance.drainFlow * UCF(RAINDEPTH); break;
                 case SM_INITVOL:
-                    *result = lidUnit->waterBalance.initVol * UCF(RAINDEPTH);
-                    break;
+                    *result = lidUnit->waterBalance.initVol * UCF(RAINDEPTH); break;
                 case SM_FINALVOL:
-                    *result = lidUnit->waterBalance.finalVol * UCF(RAINDEPTH);
-                    break;
+                    *result = lidUnit->waterBalance.finalVol * UCF(RAINDEPTH); break;
                 case SM_SURFDEPTH:
-                    *result = lidUnit->surfaceDepth * UCF(RAINDEPTH);
-                    break;
+                    *result = lidUnit->surfaceDepth * UCF(RAINDEPTH); break;
                 case SM_PAVEDEPTH:
-                    *result = lidUnit->paveDepth * UCF(RAINDEPTH);
-                    break;
+                    *result = lidUnit->paveDepth * UCF(RAINDEPTH); break;
                 case SM_SOILMOIST:
-                    *result = lidUnit->soilMoisture; 
-					break;
+                    *result = lidUnit->soilMoisture; break;
                 case SM_STORDEPTH:
-                    *result = lidUnit->storageDepth * UCF(RAINDEPTH);
-                    break;
+                    *result = lidUnit->storageDepth * UCF(RAINDEPTH); break;
                 case SM_DRYTIME:
-                    *result = lidUnit->dryTime; 
-					break;
+                    *result = lidUnit->dryTime; break;
                 case SM_OLDDRAINFLOW:
-                    *result = lidUnit->oldDrainFlow * UCF(FLOW);
-                    break;
+                    *result = lidUnit->oldDrainFlow * UCF(FLOW); break;
                 case SM_NEWDRAINFLOW:
-                    *result = lidUnit->newDrainFlow * UCF(FLOW);
-                    break;
+                    *result = lidUnit->newDrainFlow * UCF(FLOW); break;
                 case SM_EVAPRATE:
-                    *result = lidUnit->waterRate.evap * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.evap * UCF(RAINFALL); break;
                 case SM_NATIVEINFIL:
-                    *result = lidUnit->waterRate.maxNativeInfil * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.maxNativeInfil * UCF(RAINFALL); break;
                 case SM_SURFINFLOW:
-                    *result = lidUnit->waterRate.surfaceInflow * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.surfaceInflow * UCF(RAINFALL); break;
                 case SM_SURFINFIL:
-                    *result = lidUnit->waterRate.surfaceInfil * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.surfaceInfil * UCF(RAINFALL); break;
                 case SM_SURFEVAP:
-                    *result = lidUnit->waterRate.surfaceEvap * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.surfaceEvap * UCF(RAINFALL); break;
                 case SM_SURFOUTFLOW:
-                    *result = lidUnit->waterRate.surfaceOutflow * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.surfaceOutflow * UCF(RAINFALL); break;
                 case SM_PAVEEVAP:
-                    *result = lidUnit->waterRate.paveEvap * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.paveEvap * UCF(RAINFALL); break;
                 case SM_PAVEPERC:
-                    *result = lidUnit->waterRate.pavePerc * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.pavePerc * UCF(RAINFALL); break;
                 case SM_SOILEVAP:
-                    *result = lidUnit->waterRate.soilEvap * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.soilEvap * UCF(RAINFALL); break;
                 case SM_SOILPERC:
-                    *result = lidUnit->waterRate.soilPerc * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.soilPerc * UCF(RAINFALL); break;
                 case SM_STORAGEINFLOW:
-                    *result = lidUnit->waterRate.storageInflow * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.storageInflow * UCF(RAINFALL); break;
                 case SM_STORAGEEXFIL:
-                    *result = lidUnit->waterRate.storageExfil * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.storageExfil * UCF(RAINFALL); break;
                 case SM_STORAGEEVAP:
-                    *result = lidUnit->waterRate.storageEvap * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.storageEvap * UCF(RAINFALL); break;
                 case SM_STORAGEDRAIN:
-                    *result = lidUnit->waterRate.storageDrain * UCF(RAINFALL);
-                    break;
+                    *result = lidUnit->waterRate.storageDrain * UCF(RAINFALL); break;
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }

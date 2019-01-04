@@ -752,7 +752,7 @@ int readDrainMatData(int j, char* toks[], int ntoks)
 
     //... read numerical parameters
     if ( ntoks < 5 ) return error_setInpError(ERR_ITEMS, "");
-	if ( LidProcs[j].lidType != GREEN_ROOF ) return 0;
+    if ( LidProcs[j].lidType != GREEN_ROOF ) return 0;
     for (i = 2; i < 5; i++)
     {
         if ( ! getDouble(toks[i], &x[i-2]) || x[i-2] < 0.0 )
@@ -1017,12 +1017,12 @@ void validateLidProc(int j)
 
     //... set storage layer parameters of a green roof 
     if ( LidProcs[j].lidType == GREEN_ROOF )
-	{
-		LidProcs[j].storage.thickness = LidProcs[j].drainMat.thickness;
-		LidProcs[j].storage.voidFrac = LidProcs[j].drainMat.voidFrac;
-		LidProcs[j].storage.clogFactor = 0.0;
-		LidProcs[j].storage.kSat = 0.0;
-	}
+    {
+        LidProcs[j].storage.thickness = LidProcs[j].drainMat.thickness;
+        LidProcs[j].storage.voidFrac = LidProcs[j].drainMat.voidFrac;
+        LidProcs[j].storage.clogFactor = 0.0;
+        LidProcs[j].storage.kSat = 0.0;
+    }
 }
 
 //=============================================================================
@@ -1198,7 +1198,7 @@ void lid_initState()
             //... initialize water balance totals
             lidproc_initWaterBalance(lidUnit, initVol);
             //... initialize water rate 
-			lidproc_initWaterRate(lidUnit);
+            lidproc_initWaterRate(lidUnit);
 
             //... initialize report file for the LID
             if ( lidUnit->rptFile )
@@ -1929,14 +1929,14 @@ int lid_getLidUnitCount(int index)
 
     lidGroup = LidGroups[index];
     
-	if (lidGroup)
-	{
+    if (lidGroup)
+    {
         lidList = lidGroup->lidList;
-		while (lidList)
-		{
-			lidList = lidList->nextLidUnit;
-			unitCount += 1;
-		}
+        while (lidList)
+        {
+            lidList = lidList->nextLidUnit;
+            unitCount += 1;
+        }
     }
 
     return unitCount;

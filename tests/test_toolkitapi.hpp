@@ -37,6 +37,35 @@
 #define DATA_PATH_RPT_RTK "swmm_rtk_test.rpt"
 #define DATA_PATH_OUT_RTK "swmm_rtk_test.out"
 
+// NOTE: Test LID Input File
+#define DATA_PATH_INP_LID_BC "lid/w_wo_BC_2Subcatchmentst.inp"
+#define DATA_PATH_RPT_LID_BC "lid/w_wo_BC_2Subcatchments.rpt"
+#define DATA_PATH_OUT_LID_BC "lid/w_wo_BC_2Subcatchments.out"
+
+#define DATA_PATH_INP_LID_GR "lid/w_wo_GR_2Subcatchmentst.inp"
+#define DATA_PATH_RPT_LID_GR "lid/w_wo_GR_2Subcatchments.rpt"
+#define DATA_PATH_OUT_LID_GR "lid/w_wo_GR_2Subcatchments.out"
+
+#define DATA_PATH_INP_LID_IT "lid/w_wo_IT_2Subcatchmentst.inp"
+#define DATA_PATH_RPT_LID_IT "lid/w_wo_IT_2Subcatchments.rpt"
+#define DATA_PATH_OUT_LID_IT "lid/w_wo_IT_2Subcatchments.out"
+
+#define DATA_PATH_INP_LID_PP "lid/w_wo_PP_2Subcatchmentst.inp"
+#define DATA_PATH_RPT_LID_PP "lid/w_wo_PP_2Subcatchments.rpt"
+#define DATA_PATH_OUT_LID_PP "lid/w_wo_PP_2Subcatchments.out"
+
+#define DATA_PATH_INP_LID_RB "lid/w_wo_RB_2Subcatchmentst.inp"
+#define DATA_PATH_RPT_LID_RB "lid/w_wo_RB_2Subcatchments.rpt"
+#define DATA_PATH_OUT_LID_RB "lid/w_wo_RB_2Subcatchments.out"
+
+#define DATA_PATH_INP_LID_RG "lid/w_wo_RG_2Subcatchmentst.inp"
+#define DATA_PATH_RPT_LID_RG "lid/w_wo_RG_2Subcatchments.rpt"
+#define DATA_PATH_OUT_LID_RG "lid/w_wo_RG_2Subcatchments.out"
+
+#define DATA_PATH_INP_LID_RG "lid/w_wo_SWALE_2Subcatchmentst.inp"
+#define DATA_PATH_RPT_LID_RG "lid/w_wo_SWALE_2Subcatchments.rpt"
+#define DATA_PATH_OUT_LID_RG "lid/w_wo_SWALE_2Subcatchments.out"
+
 using namespace std;
 
 // Defining Fixtures
