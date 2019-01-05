@@ -194,14 +194,63 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose_LID) {
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX); 
 }
 
-/*
+
 
 // Testing for invalid parameter key
-BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose) {
+BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose_LID) {
+    int error;
+    int intValue = 0;
+    double dbValue = 0;
+    char chrValue = '0';
+    
+    //Lid Control    
+    error = swmm_getLidCParam(0, 0, 100, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS); 
+    
+    error = swmm_setLidCParam(0, 0, 100, dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS); 
 
+    error = swmm_getLidCParam(0, 100, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS); 
+    
+    error = swmm_setLidCParam(0, 100, 0, dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS); 
+    
+    //Lid Unit
+    error = swmm_getLidUParam(0, 0, 100, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+    
+    error = swmm_setLidUParam(0, 0, 100, dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+    
+    error = swmm_getLidUOption(0, 0, 100, &intValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+    
+    error = swmm_setLidUOption(0, 0, 100, intValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);  
+    
+    error = swmm_getLidUFluxRates(0, 0, 100, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);  
+    
+    error = swmm_getLidUResult(0, 0, 100, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);  
+        
+    //Lid Group
+    error = swmm_getLidGResult(0, 100, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS); 
 }
 
+// Testing for undefined lid usage
+BOOST_FIXTURE_TEST_CASE(undefined_lid_check, FixtureOpenClose_LID) {
+    int error;
+    double dbValue = 0;
 
+    //Lid Group
+    error = swmm_getLidGResult(1, 14, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);  
+}
+
+/*
 // Testing for Project Settings after Open
 BOOST_FIXTURE_TEST_CASE(project_info, FixtureOpenClose){
 

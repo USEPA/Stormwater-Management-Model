@@ -124,3 +124,57 @@ struct FixtureBeforeStep_LID {
         swmm_close();
     }
 };
+
+/* Fixture Before End
+ 1. Opens Model
+ 2. Starts Simulation
+ 3. Runs Simlation
+ * can choose to interact after simulation end
+ 4. Ends simulation
+ 5. Closes Model 
+*/
+struct FixtureBeforeEnd_LID{
+    FixtureBeforeEnd_LID(int lidType) {
+        openSwmmLid(lidType);
+        swmm_start(0);
+
+        int error;
+        double elapsedTime = 0.0;
+        do
+        {
+            error = swmm_step(&elapsedTime);
+        }while (elapsedTime != 0 && !error);
+        BOOST_CHECK_EQUAL(0, error);
+    }
+    ~FixtureBeforeEnd_LID() {
+        swmm_end();
+        swmm_close();
+    }
+};
+
+/* Fixture Before Close
+ 1. Opens Model
+ 2. Starts Simulation
+ 3. Runs Simlation
+ 4. Ends simulation
+ * can choose to interact after simulation end
+ 5. Closes Model 
+*/
+struct FixtureBeforeClose_LID{
+    FixtureBeforeClose_LID(int lidType) {
+        openSwmmLid(lidType);
+        swmm_start(0);
+
+        int error;
+        double elapsedTime = 0.0;
+        do
+        {
+            error = swmm_step(&elapsedTime);
+        }while (elapsedTime != 0 && !error);
+        BOOST_CHECK_EQUAL(0, error);
+        swmm_end();
+    }
+    ~FixtureBeforeClose_LID() {
+        swmm_close();
+    }
+};
