@@ -1,8 +1,8 @@
 // NOTE: Travis installs libboost test version 1.5.4
 //#define BOOST_TEST_DYN_LINK
 
-#define BOOST_TEST_MODULE "lid_toolkitAPI"
-#include "test_lid_toolkitapi.hpp"
+#define BOOST_TEST_MODULE "toolkitAPI_lid"
+#include "test_toolkitapi_lid.hpp"
 
 using namespace std;
 
@@ -50,11 +50,39 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi)
 BOOST_AUTO_TEST_CASE(model_not_open) {
     
     int error;
-    int int_val=0;
+    int intValue = 0;
+    double dbValue = 0;
+    char chrValue = '0';
+    
+    //Lid Control
+    error = swmm_getLidCOverflow(0, &chrValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
+    error = swmm_setLidCOverflow(0, chrValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
+    error = swmm_getLidCParam(0, 0, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
+    error = swmm_setLidCParam(0, 0, 0, dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
     
     //Lid Unit
-    error = swmm_getLidUCount(0, &int_val);
+    error = swmm_getLidUCount(0, &intValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    error = swmm_getLidUParam(0, 0, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    error = swmm_setLidUParam(0, 0, 0, dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    error = swmm_getLidUOption(0, 0, 0, &intValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    error = swmm_setLidUOption(0, 0, 0, intValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);  
+    error = swmm_getLidUFluxRates(0, 0, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);  
+    error = swmm_getLidUResult(0, 0, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);  
+        
+    //Lid Group
+    error = swmm_getLidGResult(0, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);  
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -38,6 +38,10 @@
 #define DATA_PATH_RPT_LID_SWALE "lid/w_wo_SWALE_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_SWALE "lid/w_wo_SWALE_2Subcatchments.out"
 
+#define DATA_PATH_INP "swmm_api_test.inp"
+#define DATA_PATH_RPT "swmm_api_test.rpt"
+#define DATA_PATH_OUT "swmm_api_test.out"
+
 using namespace std;
 
 void openSwmmLid(int lidType){
@@ -68,118 +72,17 @@ void openSwmmLid(int lidType){
     }
 } 
 
-// Defining Fixtures
-
 /* Fixture Open Close
  1. Opens Model
  *. testing interactions
  2. Closes Model 
 */
-struct FixtureOpenClose_LID{
-    FixtureOpenClose(int lidType) {
-        openSwmmLid(lidType);
+struct FixtureOpenClose{
+    int _lidType;
+    
+    FixtureOpenClose(int lidType=0) : _lidType(lidType) {
     }
     ~FixtureOpenClose() {
         swmm_close();
     }
 };
-
-/* Fixture Before Start
- 1. Opens Model
- *. can choose to start simulation 
- 2. Starts Simulation
- 3. Runs Simlation
- 4. Ends simulation
- 5. Closes Model 
-*/
-struct FixtureBeforeStart_LID{
-    FixtureBeforeStart(int lidType) {
-        openSwmmLid(lidType);
-    }
-    ~FixtureBeforeStart() {
-        swmm_start(0);
-        int error;
-        double elapsedTime = 0.0;
-        do
-        {
-            error = swmm_step(&elapsedTime);
-        }while (elapsedTime != 0 && !error);
-        if (!error) swmm_end();
-        if (!error) swmm_report();
-
-        swmm_close();
-    }
-};
-
-/* Fixture Before Step
- 1. Opens Model
- 2. Starts Simulation
- *. can choose iterate over simulation if simulation started, 
-    must call swmm_end() 
- 3. Closes Model 
-*/
-struct FixtureBeforeStep_LID{
-    FixtureBeforeStep(int lidType) {
-        openSwmmLid(lidType);
-        swmm_start(0);
-    }
-    ~FixtureBeforeStep() {
-        swmm_close();
-    }
-};
-
-
-/* Fixture Before End
- 1. Opens Model
- 2. Starts Simulation
- 3. Runs Simlation
- * can choose to interact after simulation end
- 4. Ends simulation
- 5. Closes Model 
-*/
-struct FixtureBeforeEnd_LID{
-    FixtureBeforeEnd(int lidType) {
-        openSwmmLid(lidType);
-        swmm_start(0);
-
-        int error;
-        double elapsedTime = 0.0;
-        do
-        {
-            error = swmm_step(&elapsedTime);
-        }while (elapsedTime != 0 && !error);
-        BOOST_CHECK_EQUAL(0, error);
-    }
-    ~FixtureBeforeEnd() {
-        swmm_end();
-        swmm_close();
-    }
-};
-
-/* Fixture Before Close
- 1. Opens Model
- 2. Starts Simulation
- 3. Runs Simlation
- 4. Ends simulation
- * can choose to interact after simulation end
- 5. Closes Model 
-*/
-struct FixtureBeforeClose_LID{
-    FixtureBeforeClose(int lidType) {
-        openSwmmLid(lidType);
-        swmm_start(0);
-
-        int error;
-        double elapsedTime = 0.0;
-        do
-        {
-            error = swmm_step(&elapsedTime);
-        }while (elapsedTime != 0 && !error);
-        BOOST_CHECK_EQUAL(0, error);
-        swmm_end();
-    }
-    ~FixtureBeforeClose() {
-        swmm_close();
-    }
-};
-
