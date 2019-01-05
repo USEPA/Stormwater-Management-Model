@@ -67,16 +67,115 @@ void openSwmmLid(int lidType){
             break;
     }
 } 
+
 /* Fixture Open Close
  1. Opens Model
  *. testing interactions
  2. Closes Model 
 */
 struct FixtureOpenClose_LID {
-    FixtureOpenClose_LID(int lidType=0) {
-        openSwmmLid(lidType);
+    FixtureOpenClose_LID() {
+        swmm_open((char *)DATA_PATH_INP_LID_BC, (char *)DATA_PATH_RPT_LID_BC, (char *)DATA_PATH_OUT_LID_BC);
     }
     ~FixtureOpenClose_LID() {
+        swmm_close();
+    }
+};
+
+/* Fixture Open Close for BC
+ 1. Opens Model
+ *. testing interactions
+ 2. Closes Model 
+*/
+struct FixtureOpenClose_LID_BC {
+    FixtureOpenClose_LID_BC() {
+        swmm_open((char *)DATA_PATH_INP_LID_BC, (char *)DATA_PATH_RPT_LID_BC, (char *)DATA_PATH_OUT_LID_BC);
+    }
+    ~FixtureOpenClose_LID_BC() {
+        swmm_close();
+    }
+};
+
+/* Fixture Open Close for GR
+ 1. Opens Model
+ *. testing interactions
+ 2. Closes Model 
+*/
+struct FixtureOpenClose_LID_GR {
+    FixtureOpenClose_LID_GR() {
+        swmm_open((char *)DATA_PATH_INP_LID_GR, (char *)DATA_PATH_RPT_LID_GR, (char *)DATA_PATH_OUT_LID_GR);
+    }
+    ~FixtureOpenClose_LID_GR() {
+        swmm_close();
+    }
+};
+
+/* Fixture Open Close for IT
+ 1. Opens Model
+ *. testing interactions
+ 2. Closes Model 
+*/
+struct FixtureOpenClose_LID_IT {
+    FixtureOpenClose_LID_IT() {
+        swmm_open((char *)DATA_PATH_INP_LID_IT, (char *)DATA_PATH_RPT_LID_IT, (char *)DATA_PATH_OUT_LID_IT);
+    }
+    ~FixtureOpenClose_LID_IT() {
+        swmm_close();
+    }
+};
+
+/* Fixture Open Close for PP
+ 1. Opens Model
+ *. testing interactions
+ 2. Closes Model 
+*/
+struct FixtureOpenClose_LID_PP {
+    FixtureOpenClose_LID_PP() {
+        swmm_open((char *)DATA_PATH_INP_LID_PP, (char *)DATA_PATH_RPT_LID_PP, (char *)DATA_PATH_OUT_LID_PP);
+    }
+    ~FixtureOpenClose_LID_PP() {
+        swmm_close();
+    }
+};
+
+/* Fixture Open Close for RB
+ 1. Opens Model
+ *. testing interactions
+ 2. Closes Model 
+*/
+struct FixtureOpenClose_LID_RB {
+    FixtureOpenClose_LID_RB() {
+        swmm_open((char *)DATA_PATH_INP_LID_RB, (char *)DATA_PATH_RPT_LID_RB, (char *)DATA_PATH_OUT_LID_RB);
+    }
+    ~FixtureOpenClose_LID_RB() {
+        swmm_close();
+    }
+};
+
+/* Fixture Open Close for RG
+ 1. Opens Model
+ *. testing interactions
+ 2. Closes Model 
+*/
+struct FixtureOpenClose_LID_RG {
+    FixtureOpenClose_LID_RG() {
+        swmm_open((char *)DATA_PATH_INP_LID_RG, (char *)DATA_PATH_RPT_LID_RG, (char *)DATA_PATH_OUT_LID_RG);
+    }
+    ~FixtureOpenClose_LID_RG() {
+        swmm_close();
+    }
+};
+
+/* Fixture Open Close for SWALE
+ 1. Opens Model
+ *. testing interactions
+ 2. Closes Model 
+*/
+struct FixtureOpenClose_LID_SWALE {
+    FixtureOpenClose_LID_SWALE() {
+        swmm_open((char *)DATA_PATH_INP_LID_SWALE, (char *)DATA_PATH_RPT_LID_SWALE, (char *)DATA_PATH_OUT_LID_SWALE);
+    }
+    ~FixtureOpenClose_LID_SWALE() {
         swmm_close();
     }
 };
@@ -90,8 +189,8 @@ struct FixtureOpenClose_LID {
  5. Closes Model 
 */
 struct FixtureBeforeStart_LID {
-    FixtureBeforeStart_LID(int lidType=0) {
-        openSwmmLid(lidType);
+    FixtureBeforeStart_LID() {
+        swmm_open((char *)DATA_PATH_INP_LID_BC, (char *)DATA_PATH_RPT_LID_BC, (char *)DATA_PATH_OUT_LID_BC);
     }
     ~FixtureBeforeStart_LID() {
         swmm_start(0);
@@ -116,8 +215,8 @@ struct FixtureBeforeStart_LID {
  3. Closes Model 
 */
 struct FixtureBeforeStep_LID {
-    FixtureBeforeStep_LID(int lidType=0){
-        openSwmmLid(lidType);
+    FixtureBeforeStep_LID(){
+        swmm_open((char *)DATA_PATH_INP_LID_BC, (char *)DATA_PATH_RPT_LID_BC, (char *)DATA_PATH_OUT_LID_BC);
         swmm_start(0);
     }
     ~FixtureBeforeStep_LID() {
@@ -134,8 +233,8 @@ struct FixtureBeforeStep_LID {
  5. Closes Model 
 */
 struct FixtureBeforeEnd_LID{
-    FixtureBeforeEnd_LID(int lidType) {
-        openSwmmLid(lidType);
+    FixtureBeforeEnd_LID() {
+        swmm_open((char *)DATA_PATH_INP_LID_BC, (char *)DATA_PATH_RPT_LID_BC, (char *)DATA_PATH_OUT_LID_BC);
         swmm_start(0);
 
         int error;
@@ -161,8 +260,8 @@ struct FixtureBeforeEnd_LID{
  5. Closes Model 
 */
 struct FixtureBeforeClose_LID{
-    FixtureBeforeClose_LID(int lidType) {
-        openSwmmLid(lidType);
+    FixtureBeforeClose_LID() {
+        swmm_open((char *)DATA_PATH_INP_LID_BC, (char *)DATA_PATH_RPT_LID_BC, (char *)DATA_PATH_OUT_LID_BC);
         swmm_start(0);
 
         int error;
