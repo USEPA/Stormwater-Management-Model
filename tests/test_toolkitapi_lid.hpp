@@ -67,7 +67,46 @@ void openSwmmLid(int lidType){
             break;
     }
 } 
+/* Fixture Open Close
+ 1. Opens Model
+ *. testing interactions
+ 2. Closes Model 
+*/
+struct FixtureOpenClose_LID {
+    FixtureOpenClose_LID(int lidType=0) {
+        openSwmmLid(lidType);
+    }
+    ~FixtureOpenClose_LID() {
+        swmm_close();
+    }
+};
 
+/* Fixture Before Start
+ 1. Opens Model
+ *. can choose to start simulation 
+ 2. Starts Simulation
+ 3. Runs Simlation
+ 4. Ends simulation
+ 5. Closes Model 
+*/
+struct FixtureBeforeStart_LID {
+    FixtureBeforeStart_LID(int lidType=0) {
+        openSwmmLid(lidType);
+    }
+    ~FixtureBeforeStart_LID() {
+        swmm_start(0);
+        int error;
+        double elapsedTime = 0.0;
+        do
+        {
+            error = swmm_step(&elapsedTime);
+        }while (elapsedTime != 0 && !error);
+        if (!error) swmm_end();
+        if (!error) swmm_report();
+
+        swmm_close();
+    }
+};
 
 /* Fixture Before Step
  1. Opens Model

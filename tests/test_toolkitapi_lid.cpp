@@ -145,13 +145,56 @@ BOOST_FIXTURE_TEST_CASE(sim_started_check, FixtureBeforeStep_LID) {
     error = swmm_getLidGResult(0, 14, &dbValue);
     BOOST_CHECK_EQUAL(error, ERR_NONE); 
 }
-/*
+
 
 // Testing for invalid object index
-BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
-
+BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose_LID) {
+    int error;
+    int intValue = 0;
+    double dbValue = 0;
+    char chrValue = '0';
+    
+    //Lid Control
+    error = swmm_getLidCOverflow(1, &chrValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX); 
+    
+    error = swmm_setLidCOverflow(1, chrValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX); 
+    
+    error = swmm_getLidCParam(1, 0, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX); 
+    
+    error = swmm_setLidCParam(1, 0, 0, dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX); 
+    
+    //Lid Unit
+    error = swmm_getLidUCount(2, &intValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    
+    error = swmm_getLidUParam(2, 0, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    
+    error = swmm_setLidUParam(2, 0, 0, dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    
+    error = swmm_getLidUOption(2, 0, 0, &intValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+    
+    error = swmm_setLidUOption(2, 0, 0, intValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);  
+    
+    error = swmm_getLidUFluxRates(2, 0, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);  
+    
+    error = swmm_getLidUResult(2, 0, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);  
+        
+    //Lid Group
+    error = swmm_getLidGResult(2, 14, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX); 
 }
 
+/*
 
 // Testing for invalid parameter key
 BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose) {
