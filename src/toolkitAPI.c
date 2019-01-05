@@ -1299,15 +1299,15 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, 
                     case SM_THICKNESS:
                         lidProc->surface.thickness = value / UCF(RAINDEPTH); break;
                     case SM_VOIDFRAC:
-                        lidProc->surface.voidFrac = value; break;
+                        lidProc->surface.voidFrac = 1 - value; break;
                     case SM_ROUGHNESS:
                         lidProc->surface.roughness = value; break;
                     case SM_SURFSLOPE:
                         lidProc->surface.surfSlope = value / 100; break;
                     case SM_SIDESLOPE:
                         lidProc->surface.sideSlope = value; break;
-                    case SM_ALPHA:
-                        lidProc->surface.alpha = value; break;
+                    //case SM_ALPHA:
+                    //    lidProc->surface.alpha = value; break;
                     default:
                         errcode = ERR_API_OUTBOUNDS; break;
                 }
@@ -1411,8 +1411,8 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, 
                         lidProc->drainMat.voidFrac = value; break;
                     case SM_ROUGHNESS:
                         lidProc->drainMat.roughness = value; break;
-                    case SM_ALPHA:
-                        lidProc->drainMat.alpha = value; break;
+                    //case SM_ALPHA:
+                    //    lidProc->drainMat.alpha = value; break;
                     default:
                         errcode = ERR_API_OUTBOUNDS; break;
                 }
