@@ -1,21 +1,3 @@
-/*
- *   fixtures.hpp
- *
- *   Created: 04/16/2018
- *   Author: Bryant E. McDonnell
- *           EmNet LLC
- *
- *   Fixtures for Unit testing for SWMM-ToolkitAPI LID using Boost Test.
- 
- Fixtures are used for building up and breaking down a simulation. 
- They simplify the workflow and help reduce duplicative code.
- 
- 
-* TABLE OF CONTENTS AND STRUCTURE
-
-  ->  Defining the different testing fixtures
- */
- 
 #include <boost/test/included/unit_test.hpp>
  
 #include <stdlib.h>
@@ -28,10 +10,6 @@
 #include "../src/error.h"
 
 // NOTE: Test LID Input File
-#define DATA_PATH_INP_LID "lid/w_wo_all.inp"
-#define DATA_PATH_RPT_LID "lid/w_wo_all.rpt"
-#define DATA_PATH_OUT_LID "lid/w_wo_all.out"
-
 #define DATA_PATH_INP_LID_BC "lid/w_wo_BC_2Subcatchmentst.inp"
 #define DATA_PATH_RPT_LID_BC "lid/w_wo_BC_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_BC "lid/w_wo_BC_2Subcatchments.out"
@@ -56,11 +34,39 @@
 #define DATA_PATH_RPT_LID_RG "lid/w_wo_RG_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_RG "lid/w_wo_RG_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_RG "lid/w_wo_SWALE_2Subcatchmentst.inp"
-#define DATA_PATH_RPT_LID_RG "lid/w_wo_SWALE_2Subcatchments.rpt"
-#define DATA_PATH_OUT_LID_RG "lid/w_wo_SWALE_2Subcatchments.out"
+#define DATA_PATH_INP_LID_SWALE "lid/w_wo_SWALE_2Subcatchmentst.inp"
+#define DATA_PATH_RPT_LID_SWALE "lid/w_wo_SWALE_2Subcatchments.rpt"
+#define DATA_PATH_OUT_LID_SWALE "lid/w_wo_SWALE_2Subcatchments.out"
 
 using namespace std;
+
+void openSwmmLid(int lidType){
+    switch(lidType) {
+        case 0:
+            swmm_open((char *)DATA_PATH_INP_LID_BC, (char *)DATA_PATH_RPT_LID_BC, (char *)DATA_PATH_OUT_LID_BC);
+            break;
+        case 1:
+            swmm_open((char *)DATA_PATH_INP_LID_GR, (char *)DATA_PATH_RPT_LID_GR, (char *)DATA_PATH_OUT_LID_GR);
+            break;
+        case 2:
+            swmm_open((char *)DATA_PATH_INP_LID_IT, (char *)DATA_PATH_RPT_LID_IT, (char *)DATA_PATH_OUT_LID_IT);
+            break;
+        case 3:
+            swmm_open((char *)DATA_PATH_INP_LID_PP, (char *)DATA_PATH_RPT_LID_PP, (char *)DATA_PATH_OUT_LID_PP);
+            break;
+        case 4:
+            swmm_open((char *)DATA_PATH_INP_LID_RB, (char *)DATA_PATH_RPT_LID_RB, (char *)DATA_PATH_OUT_LID_RB);
+            break;
+        case 5:
+            swmm_open((char *)DATA_PATH_INP_LID_RG, (char *)DATA_PATH_RPT_LID_RG, (char *)DATA_PATH_OUT_LID_RG);
+            break;
+        case 6:
+            swmm_open((char *)DATA_PATH_INP_LID_SWALE, (char *)DATA_PATH_RPT_LID_SWALE, (char *)DATA_PATH_OUT_LID_SWALE);
+            break;
+        default:
+            break;
+    }
+} 
 
 // Defining Fixtures
 
@@ -69,9 +75,9 @@ using namespace std;
  *. testing interactions
  2. Closes Model 
 */
-struct FixtureOpenClose{
-    FixtureOpenClose() {
-        swmm_open((char *)DATA_PATH_INP_LID, (char *)DATA_PATH_RPT_LID, (char *)DATA_PATH_OUT_LID);
+struct FixtureOpenClose_LID{
+    FixtureOpenClose(int lidType) {
+        openSwmmLid(lidType);
     }
     ~FixtureOpenClose() {
         swmm_close();
@@ -86,9 +92,9 @@ struct FixtureOpenClose{
  4. Ends simulation
  5. Closes Model 
 */
-struct FixtureBeforeStart{
-    FixtureBeforeStart() {
-        swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
+struct FixtureBeforeStart_LID{
+    FixtureBeforeStart(int lidType) {
+        openSwmmLid(lidType);
     }
     ~FixtureBeforeStart() {
         swmm_start(0);
@@ -112,9 +118,9 @@ struct FixtureBeforeStart{
     must call swmm_end() 
  3. Closes Model 
 */
-struct FixtureBeforeStep{
-    FixtureBeforeStep() {
-        swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
+struct FixtureBeforeStep_LID{
+    FixtureBeforeStep(int lidType) {
+        openSwmmLid(lidType);
         swmm_start(0);
     }
     ~FixtureBeforeStep() {
@@ -122,22 +128,6 @@ struct FixtureBeforeStep{
     }
 };
 
-/* Fixture Before Step
- 1. Opens Model
- 2. Starts Simulation
- *. can choose iterate over simulation if simulation started, 
-    must call swmm_end() 
- 3. Closes Model 
-*/
-struct FixtureBeforeStep_RTK{
-    FixtureBeforeStep_RTK() {
-        swmm_open((char *)DATA_PATH_INP_RTK, (char *)DATA_PATH_RPT_RTK, (char *)DATA_PATH_OUT_RTK);
-        swmm_start(0);
-    }
-    ~FixtureBeforeStep_RTK() {
-        swmm_close();
-    }
-};
 
 /* Fixture Before End
  1. Opens Model
@@ -147,9 +137,9 @@ struct FixtureBeforeStep_RTK{
  4. Ends simulation
  5. Closes Model 
 */
-struct FixtureBeforeEnd{
-    FixtureBeforeEnd() {
-        swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
+struct FixtureBeforeEnd_LID{
+    FixtureBeforeEnd(int lidType) {
+        openSwmmLid(lidType);
         swmm_start(0);
 
         int error;
@@ -174,9 +164,9 @@ struct FixtureBeforeEnd{
  * can choose to interact after simulation end
  5. Closes Model 
 */
-struct FixtureBeforeClose{
-    FixtureBeforeClose() {
-        swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
+struct FixtureBeforeClose_LID{
+    FixtureBeforeClose(int lidType) {
+        openSwmmLid(lidType);
         swmm_start(0);
 
         int error;
