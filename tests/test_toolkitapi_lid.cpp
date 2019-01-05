@@ -250,13 +250,19 @@ BOOST_FIXTURE_TEST_CASE(undefined_lid_check, FixtureOpenClose_LID) {
     BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);  
 }
 
-/*
 // Testing for Project Settings after Open
-BOOST_FIXTURE_TEST_CASE(project_info, FixtureOpenClose){
+BOOST_FIXTURE_TEST_CASE(project_lid_info, FixtureOpenClose_LID){
 
+    int error, index;
+    string id = string("BC");
+
+    //Project
+    index = swmm_getObjectIndex(SM_LID, (char *)id.c_str(), &error);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(index, 0);
 }
 
-
+/*
 // Testing for subcatchment get/set
 BOOST_FIXTURE_TEST_CASE(getset_subcatch, FixtureOpenClose) {
 
