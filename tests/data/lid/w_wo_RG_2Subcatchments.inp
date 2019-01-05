@@ -42,7 +42,7 @@ THREADS              1
 
 [FILES]
 ;;Interfacing Files
-SAVE Outflows/Calibration "D:\SWMMandSoftware\SWMM5.013_June2018\EPASWMM5.1.013\Swmm5.1.013UpdateTests\OWA_EXAMPLES\Example5.txt"
+SAVE Outflows/Calibration "Example5.txt"
 
 [EVAPORATION]
 ;;Data Source    Parameters

@@ -82,7 +82,7 @@ BC               DRAIN      0          0.5        6          6          0       
 [LID_USAGE]
 ;;Subcatchment   LID Process      Number  Area       Width      InitSat    FromImp    ToPerv     RptFile                  DrainTo          FromPerv  
 ;;-------------- ---------------- ------- ---------- ---------- ---------- ---------- ---------- ------------------------ ---------------- ----------
-wRG              BC               100     50         10         0          25         1          "D:\SWMMandSoftware\SWMM5.013_June2018\EPASWMM5.1.013\Swmm5.1.013UpdateTests\LID\feng.txt" *                0               
+wRG              BC               100     50         10         0          25         1          "feng.txt" *                0               
 
 [OUTFALLS]
 ;;Name           Elevation  Type       Stage Data       Gated    Route To        
