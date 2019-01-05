@@ -844,11 +844,11 @@ int DLLEXPORT swmm_getLidUCount(int index, int *value)
         *value = lid_getLidUnitCount(index);
     }
     
-    return (error_getCode(errcode));
+    return (errcode);
 }
 
 
-int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int Param, double *value)
+int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int param, double *value)
 //
 // Input:   index = Index of desired subcatchment 
 //          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
@@ -877,7 +877,7 @@ int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int Param, double *valu
         // There are no Lid Units defined for the subcatchments
         if(lidUnit)
         {
-            switch(Param)
+            switch(param)
             {
                 case SM_UNITAREA:
                     *value = lidUnit->area * SQR(UCF(LENGTH)); break;
@@ -953,7 +953,7 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
 }
 
 
-int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int Param, int *value)
+int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int param, int *value)
 //
 // Input:   index = Index of desired subcatchment 
 //          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
@@ -982,7 +982,7 @@ int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int Param, int *value)
         // There are no Lid Units defined for the subcatchments
         if(lidUnit)
         {
-            switch(Param)
+            switch(param)
             {
                 case SM_INDEX:
                     *value = lidUnit->lidIndex; break;
@@ -1004,7 +1004,7 @@ int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int Param, int *value)
 }
 
 
-int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int Param, int value)
+int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int param, int value)
 //
 // Input:   index = Index of desired subcatchment 
 //          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
@@ -1033,7 +1033,7 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int Param, int value)
         // There are no Lid Units defined for the subcatchments
         if(lidUnit)
         {
-            switch(Param)
+            switch(param)
             {
                 case SM_INDEX:
                     lidUnit->lidIndex = value; break;
@@ -1122,7 +1122,7 @@ int DLLEXPORT swmm_setLidCOverflow(int lidControlIndex, char condition)
 }
 
 
-int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, double *value)
+int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int param, double *value)
 //
 // Input:   lidControlIndex = Index of desired lid control
 //          layerIndex = Index of desired lid control layer (Based on enum SM_LidLayers)
@@ -1151,7 +1151,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
         switch(layerIndex)
         {
         case SM_SURFACE:
-            switch(Param)
+            switch(param)
             {
             case SM_THICKNESS:
                 *value = lidProc->surface.thickness * UCF(RAINDEPTH); break;
@@ -1170,7 +1170,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             }
             break;
         case SM_SOIL:
-            switch(Param)
+            switch(param)
             {
             case SM_THICKNESS:
                 *value = lidProc->soil.thickness * UCF(RAINDEPTH); break;
@@ -1191,7 +1191,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             }
             break;
         case SM_STOR:
-            switch(Param)
+            switch(param)
             {
             case SM_THICKNESS:
                 *value = lidProc->storage.thickness * UCF(RAINDEPTH); break;
@@ -1208,7 +1208,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             }
             break;
         case SM_PAVE:
-            switch(Param)
+            switch(param)
             {
             case SM_THICKNESS:
                 *value = lidProc->pavement.thickness * UCF(RAINDEPTH); break;
@@ -1228,7 +1228,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             }
             break;
         case SM_DRAIN:
-            switch(Param)
+            switch(param)
             {
             case SM_COEFF:
                 *value = lidProc->drain.coeff; break;
@@ -1243,7 +1243,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
             }
             break;
         case SM_DRAINMAT:
-            switch(Param)
+            switch(param)
             {
             case SM_THICKNESS:
                 *value = lidProc->drainMat.thickness * UCF(RAINDEPTH); break;
@@ -1265,7 +1265,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
 }
 
 
-int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, double value)
+int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, double value)
 //
 // Input:   lidControlIndex = Index of desired lid control
 //          layerIndex = Index of desired lid control layer (Based on enum SM_LidLayers)
@@ -1294,7 +1294,7 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
         switch(layerIndex)
         {
             case SM_SURFACE:
-                switch(Param)
+                switch(param)
                 {
                     case SM_THICKNESS:
                         lidProc->surface.thickness = value / UCF(RAINDEPTH); break;
@@ -1313,7 +1313,7 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
                 }
                 break;
             case SM_SOIL:
-                switch(Param)
+                switch(param)
                 {
                     case SM_THICKNESS:
                         lidProc->soil.thickness = value / UCF(RAINDEPTH); break;
@@ -1334,7 +1334,7 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
                 }
                 break;
             case SM_STOR:
-                switch(Param)
+                switch(param)
                 {
                     case SM_THICKNESS:
                         lidProc->storage.clogFactor /= lidProc->storage.thickness;
@@ -1358,7 +1358,7 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
                 }
                 break;
             case SM_PAVE:
-                switch(Param)
+                switch(param)
                 {
                     case SM_THICKNESS:
                         lidProc->pavement.clogFactor /= lidProc->pavement.thickness; 
@@ -1388,7 +1388,7 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
                 }
                 break;
             case SM_DRAIN:
-                switch(Param)
+                switch(param)
                 {
                     case SM_COEFF:
                         lidProc->drain.coeff = value; break;
@@ -1403,7 +1403,7 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
                 }
                 break;
             case SM_DRAINMAT:
-                switch(Param)
+                switch(param)
                 {
                     case SM_THICKNESS:
                         lidProc->drainMat.thickness = value / UCF(RAINDEPTH); break;
@@ -2037,8 +2037,13 @@ int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, int layerIndex, dou
     int errcode = 0;
     TLidUnit* lidUnit;
 
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
     // Check if object index is within bounds
-    if (index < 0 || index >= Nobjects[SUBCATCH])
+    else if (index < 0 || index >= Nobjects[SUBCATCH])
     {
         errcode = ERR_API_OBJECT_INDEX;
     }
@@ -2078,8 +2083,13 @@ int DLLEXPORT swmm_getLidGResult(int index, int type, double *result)
     int errcode = 0;
     TLidGroup lidGroup;
 
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
     // Check if object index is within bounds
-    if (index < 0 || index >= Nobjects[SUBCATCH])
+    else if (index < 0 || index >= Nobjects[SUBCATCH])
     {
         errcode = ERR_API_OBJECT_INDEX;
     }
@@ -2123,10 +2133,13 @@ int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, int type, double *resu
     TLidUnit* lidUnit;
     double    Tstep = 0;
 
-
-
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
     // Check if object index is within bounds
-    if (index < 0 || index >= Nobjects[SUBCATCH])
+    else if (index < 0 || index >= Nobjects[SUBCATCH])
     {
         errcode = ERR_API_OBJECT_INDEX;
     }
