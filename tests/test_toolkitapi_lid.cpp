@@ -57,26 +57,35 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     //Lid Control
     error = swmm_getLidCOverflow(0, &chrValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
+    
     error = swmm_setLidCOverflow(0, chrValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
+    
     error = swmm_getLidCParam(0, 0, 0, &dbValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
+    
     error = swmm_setLidCParam(0, 0, 0, dbValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
     
     //Lid Unit
     error = swmm_getLidUCount(0, &intValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    
     error = swmm_getLidUParam(0, 0, 0, &dbValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    
     error = swmm_setLidUParam(0, 0, 0, dbValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    
     error = swmm_getLidUOption(0, 0, 0, &intValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+    
     error = swmm_setLidUOption(0, 0, 0, intValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);  
+    
     error = swmm_getLidUFluxRates(0, 0, 0, &dbValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);  
+    
     error = swmm_getLidUResult(0, 0, 0, &dbValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);  
         
@@ -86,15 +95,57 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-/*
+
 
 BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
 
 // Testing for Simulation Started Error
-BOOST_FIXTURE_TEST_CASE(sim_started_check, FixtureBeforeStep) {
-
+BOOST_FIXTURE_TEST_CASE(sim_started_check, FixtureBeforeStep_LID) {
+    int error;
+    int intValue = 0;
+    double dbValue = 0;
+    char chrValue = '0';
+    
+    //Lid Control
+    error = swmm_getLidCOverflow(0, &chrValue);
+    BOOST_CHECK_EQUAL(error, ERR_NONE); 
+    
+    error = swmm_setLidCOverflow(0, chrValue);
+    BOOST_CHECK_EQUAL(error, ERR_NONE); 
+    
+    error = swmm_getLidCParam(0, 0, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_NONE); 
+    
+    error = swmm_setLidCParam(0, 0, 0, dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_NONE); 
+    
+    //Lid Unit
+    error = swmm_getLidUCount(0, &intValue);
+    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    
+    error = swmm_getLidUParam(0, 0, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    
+    error = swmm_setLidUParam(0, 0, 0, dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    
+    error = swmm_getLidUOption(0, 0, 0, &intValue);
+    BOOST_CHECK_EQUAL(error, ERR_NONE);
+    
+    error = swmm_setLidUOption(0, 0, 0, intValue);
+    BOOST_CHECK_EQUAL(error, ERR_NONE);  
+    
+    error = swmm_getLidUFluxRates(0, 0, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_NONE);  
+    
+    error = swmm_getLidUResult(0, 0, 0, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_NONE);  
+        
+    //Lid Group
+    error = swmm_getLidGResult(0, 14, &dbValue);
+    BOOST_CHECK_EQUAL(error, ERR_NONE); 
 }
-
+/*
 
 // Testing for invalid object index
 BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
@@ -148,6 +199,5 @@ BOOST_FIXTURE_TEST_CASE(get_result_during_sim, FixtureBeforeStep){
 BOOST_FIXTURE_TEST_CASE(get_results_after_sim, FixtureBeforeEnd){
 
 }
-
-BOOST_AUTO_TEST_SUITE_END()
 */
+BOOST_AUTO_TEST_SUITE_END()

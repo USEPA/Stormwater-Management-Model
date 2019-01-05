@@ -10,37 +10,33 @@
 #include "../src/error.h"
 
 // NOTE: Test LID Input File
-#define DATA_PATH_INP_LID_BC "lid/w_wo_BC_2Subcatchmentst.inp"
+#define DATA_PATH_INP_LID_BC "lid/w_wo_BC_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_BC "lid/w_wo_BC_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_BC "lid/w_wo_BC_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_GR "lid/w_wo_GR_2Subcatchmentst.inp"
+#define DATA_PATH_INP_LID_GR "lid/w_wo_GR_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_GR "lid/w_wo_GR_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_GR "lid/w_wo_GR_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_IT "lid/w_wo_IT_2Subcatchmentst.inp"
+#define DATA_PATH_INP_LID_IT "lid/w_wo_IT_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_IT "lid/w_wo_IT_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_IT "lid/w_wo_IT_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_PP "lid/w_wo_PP_2Subcatchmentst.inp"
+#define DATA_PATH_INP_LID_PP "lid/w_wo_PP_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_PP "lid/w_wo_PP_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_PP "lid/w_wo_PP_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_RB "lid/w_wo_RB_2Subcatchmentst.inp"
+#define DATA_PATH_INP_LID_RB "lid/w_wo_RB_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_RB "lid/w_wo_RB_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_RB "lid/w_wo_RB_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_RG "lid/w_wo_RG_2Subcatchmentst.inp"
+#define DATA_PATH_INP_LID_RG "lid/w_wo_RG_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_RG "lid/w_wo_RG_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_RG "lid/w_wo_RG_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_SWALE "lid/w_wo_SWALE_2Subcatchmentst.inp"
+#define DATA_PATH_INP_LID_SWALE "lid/w_wo_SWALE_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_SWALE "lid/w_wo_SWALE_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_SWALE "lid/w_wo_SWALE_2Subcatchments.out"
-
-#define DATA_PATH_INP "swmm_api_test.inp"
-#define DATA_PATH_RPT "swmm_api_test.rpt"
-#define DATA_PATH_OUT "swmm_api_test.out"
 
 using namespace std;
 
@@ -72,17 +68,20 @@ void openSwmmLid(int lidType){
     }
 } 
 
-/* Fixture Open Close
+
+/* Fixture Before Step
  1. Opens Model
- *. testing interactions
- 2. Closes Model 
+ 2. Starts Simulation
+ *. can choose iterate over simulation if simulation started, 
+    must call swmm_end() 
+ 3. Closes Model 
 */
-struct FixtureOpenClose{
-    int _lidType;
-    
-    FixtureOpenClose(int lidType=0) : _lidType(lidType) {
+struct FixtureBeforeStep_LID {
+    FixtureBeforeStep_LID(int lidType=0){
+        openSwmmLid(lidType);
+        swmm_start(0);
     }
-    ~FixtureOpenClose() {
+    ~FixtureBeforeStep_LID() {
         swmm_close();
     }
 };
