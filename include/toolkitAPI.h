@@ -214,7 +214,10 @@ typedef enum {
     SM_COEFF        = 14, /**< Underdrain Flow Coefficient */
     SM_EXPON        = 15, /**< Underdrain Head Exponent */
     SM_OFFSET       = 16, /**< Offset Height of Underdrain */
-    SM_DELAY        = 17, /** Rain Barrel Drain Delay Time */
+    SM_DELAY        = 17, /**< Rain Barrel Drain Delay Time */
+    SM_HOPEN        = 18, /**< Head When Drain Opens */
+    SM_HCLOSE       = 19, /**< Head When Drain Closes */
+    SM_QCURVE       = 20, /**< Curve Controlling FLow Rate (Optional) */
 } SM_LidLayerProperty;
 
 /// Lid unit property codes

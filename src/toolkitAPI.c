@@ -1238,6 +1238,10 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int param, 
                 *value = lidProc->drain.offset * UCF(RAINDEPTH); break;
             case SM_DELAY:
                 *value = lidProc->drain.delay / 3600; break;
+            case SM_HOPEN:
+                *value = lidProc->drain.hOpen * UCF(RAINDEPTH); break;
+            case SM_HCLOSE:
+                *value = lidProc->drain.hClose * UCF(RAINDEPTH); break;
             default:
                 errcode = ERR_API_OUTBOUNDS; break;
             }
@@ -1398,6 +1402,10 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, 
                         lidProc->drain.offset = value / UCF(RAINDEPTH); break;
                     case SM_DELAY:
                         lidProc->drain.delay = value * 3600; break;
+                    case SM_HOPEN:
+                        lidProc->drain.hOpen = value / UCF(RAINDEPTH); break;
+                    case SM_HCLOSE:
+                        lidProc->drain.hClose = value / UCF(RAINDEPTH); break;
                     default:
                         errcode = ERR_API_OUTBOUNDS; break;
                 }
