@@ -217,608 +217,951 @@ BOOST_FIXTURE_TEST_CASE(undefined_lid_check, FixtureOpenClose_LID) {
 
 // Testing for Project Settings after Open
 BOOST_FIXTURE_TEST_CASE(project_lid_info, FixtureOpenClose_LID){
-    int error, index;
+    int error, index, subIndex, intVal;
+
     string id = string("BC");
+    string subcatch = string("wBC");
+
+    subIndex = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
+    BOOST_REQUIRE(error == ERR_NONE);
 
     //Project
     index = swmm_getObjectIndex(SM_LID, (char *)id.c_str(), &error);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_EQUAL(index, 0);
+
+    error = swmm_getLidUCount(subIndex, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
 }
 
 // Testing for Lid Control Bio Cell parameters get/set
 BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_BC, FixtureOpenClose_LID_BC) {
-    int error, bioCellInd, subcatchInd;
+    int error, lidIndex, subIndex;
     double dbVal = 0;
     char charVal = '0';
 
     string bioCell = string("BC");
     string subcatch = string("wBC");
 
-    bioCellInd = swmm_getObjectIndex(SM_LID, (char *)bioCell.c_str(), &error);
+    lidIndex = swmm_getObjectIndex(SM_LID, (char *)bioCell.c_str(), &error);
     BOOST_REQUIRE(error == ERR_NONE);
 
-    subcatchInd = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
+    subIndex = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
     BOOST_REQUIRE(error == ERR_NONE);
 
-    // SURFACE LAYER CHECK
-    error = swmm_getLidCParam(bioCellInd, SM_SURFACE, SM_THICKNESS, &dbVal);
+    // Surface layer get/set check
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_SURFACE, SM_THICKNESS, 100);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, 100);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_SURFACE, SM_THICKNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_SURFACE, SM_VOIDFRAC, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.25, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_SURFACE, SM_VOIDFRAC, 0.9);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, 0.9);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_SURFACE, SM_VOIDFRAC, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.9, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_SURFACE, SM_ROUGHNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.1, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_SURFACE, SM_ROUGHNESS, 0.2);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, 0.2);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_SURFACE, SM_ROUGHNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.2, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_SURFACE, SM_SURFSLOPE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 1, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_SURFACE, SM_SURFSLOPE, 2);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, 2);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_SURFACE, SM_SURFSLOPE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 2, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_SURFACE, SM_ALPHA, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ALPHA, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 1.05359, 0.0001);
 
     // Soil layer get/set
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_THICKNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 12, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_SOIL, SM_THICKNESS, 100);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_THICKNESS, 100);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_THICKNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_POROSITY, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_POROSITY, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.5, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_SOIL, SM_POROSITY, 0.3);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_POROSITY, 0.3);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_POROSITY, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_POROSITY, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.3, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_FIELDCAP, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_FIELDCAP, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.2, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_SOIL, SM_FIELDCAP, 0.3);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_FIELDCAP, 0.3);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_FIELDCAP, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_FIELDCAP, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.3, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_WILTPOINT, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_WILTPOINT, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.1, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_SOIL, SM_WILTPOINT, 0.3);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_WILTPOINT, 0.3);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_WILTPOINT, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_WILTPOINT, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.3, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_KSAT, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_KSAT, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.5, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_SOIL, SM_KSAT, 0.1);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_KSAT, 0.1);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_KSAT, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_KSAT, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.1, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_KSLOPE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_KSLOPE, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 10, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_SOIL, SM_KSLOPE, 20);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_KSLOPE, 20);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_KSLOPE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_KSLOPE, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 20, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_SUCTION, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_SUCTION, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 3.5, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_SOIL, SM_SUCTION, 7);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_SUCTION, 7);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_SOIL, SM_SUCTION, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_SUCTION, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
 
     // Storage layer get/set check
-    error = swmm_getLidCParam(bioCellInd, SM_STOR, SM_THICKNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 12, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_STOR, SM_THICKNESS, 100);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_THICKNESS, 100);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_STOR, SM_THICKNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_STOR, SM_VOIDFRAC, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_VOIDFRAC, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_STOR, SM_VOIDFRAC, 0.15);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_VOIDFRAC, 0.15);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_STOR, SM_VOIDFRAC, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_VOIDFRAC, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.15, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_STOR, SM_KSAT, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_KSAT, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.5, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_STOR, SM_KSAT, 0.75);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_KSAT, 0.75);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_STOR, SM_KSAT, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_KSAT, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_STOR, SM_CLOGFACTOR, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_CLOGFACTOR, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_STOR, SM_CLOGFACTOR, 0.75);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_CLOGFACTOR, 0.75);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_STOR, SM_CLOGFACTOR, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_CLOGFACTOR, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
 
     // Drain layer get/set
-    error = swmm_getLidCParam(bioCellInd, SM_DRAIN, SM_COEFF, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_COEFF, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_DRAIN, SM_COEFF, 1.0);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_COEFF, 1.0);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_DRAIN, SM_COEFF, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_COEFF, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 1.0, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_DRAIN, SM_EXPON, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_EXPON, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.5, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_DRAIN, SM_EXPON, 2);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_EXPON, 2);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_DRAIN, SM_EXPON, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_EXPON, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 2, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_DRAIN, SM_OFFSET, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_OFFSET, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_DRAIN, SM_OFFSET, 20);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_OFFSET, 20);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_DRAIN, SM_OFFSET, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_OFFSET, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 20, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_DRAIN, SM_DELAY, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_DELAY, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_DRAIN, SM_DELAY, 7);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_DELAY, 7);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_DRAIN, SM_DELAY, &dbVal);
-    BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
-
-    error = swmm_getLidCParam(bioCellInd, SM_DRAIN, SM_HOPEN, &dbVal);
-    BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_DRAIN, SM_HOPEN, 7);
-    BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_DRAIN, SM_HOPEN, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_DELAY, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
 
-    error = swmm_getLidCParam(bioCellInd, SM_DRAIN, SM_HCLOSE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HOPEN, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
-    error = swmm_setLidCParam(bioCellInd, SM_DRAIN, SM_HCLOSE, 7);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_HOPEN, 7);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(bioCellInd, SM_DRAIN, SM_HCLOSE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HOPEN, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HCLOSE, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_HCLOSE, 7);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HCLOSE, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
 
     // Check for immediate overflow option
-    error = swmm_getLidCOverflow(bioCellInd, &charVal);
+    error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == FALSE);
-    error = swmm_setLidCParam(bioCellInd, SM_SURFACE, SM_ROUGHNESS, 0);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, 0);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCOverflow(bioCellInd, &charVal);
+    error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == TRUE);
 }
 
 // Testing for Lid Control Green Roof parameters get/set
 BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_GR, FixtureOpenClose_LID_GR) {
-    int error, greenRoofInd, subcatchInd;
+    int error, lidIndex, subIndex;
     double dbVal = 0;
     char charVal = '0';
 
     string greenRoof = string("GR");
     string subcatch = string("wGR");
     
-    greenRoofInd = swmm_getObjectIndex(SM_LID, (char *)greenRoof.c_str(), &error);
+    lidIndex = swmm_getObjectIndex(SM_LID, (char *)greenRoof.c_str(), &error);
     BOOST_REQUIRE(error == ERR_NONE);
  
-    subcatchInd = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
+    subIndex = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
     BOOST_REQUIRE(error == ERR_NONE);
     
-    // SURFACE LAYER CHECK
-    error = swmm_getLidCParam(greenRoofInd, SM_SURFACE, SM_THICKNESS, &dbVal);
+    // Surface layer get/set check
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_SURFACE, SM_THICKNESS, 100);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, 100);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_SURFACE, SM_THICKNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
     
-    error = swmm_getLidCParam(greenRoofInd, SM_SURFACE, SM_VOIDFRAC, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.25, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_SURFACE, SM_VOIDFRAC, 0.9);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, 0.9);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_SURFACE, SM_VOIDFRAC, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.9, 0.0001);
     
-    error = swmm_getLidCParam(greenRoofInd, SM_SURFACE, SM_ROUGHNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.1, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_SURFACE, SM_ROUGHNESS, 0.2);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, 0.2);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_SURFACE, SM_ROUGHNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.2, 0.0001);
 
-    error = swmm_getLidCParam(greenRoofInd, SM_SURFACE, SM_SURFSLOPE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 1, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_SURFACE, SM_SURFSLOPE, 2);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, 2);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_SURFACE, SM_SURFSLOPE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 2, 0.0001);
     
-    error = swmm_getLidCParam(greenRoofInd, SM_SURFACE, SM_ALPHA, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ALPHA, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 1.05359, 0.0001);
     
     // Soil layer get/set
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_THICKNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 12, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_SOIL, SM_THICKNESS, 100);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_THICKNESS, 100);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_THICKNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
 
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_POROSITY, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_POROSITY, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.5, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_SOIL, SM_POROSITY, 0.3);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_POROSITY, 0.3);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_POROSITY, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_POROSITY, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.3, 0.0001);
 
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_FIELDCAP, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_FIELDCAP, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.2, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_SOIL, SM_FIELDCAP, 0.3);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_FIELDCAP, 0.3);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_FIELDCAP, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_FIELDCAP, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.3, 0.0001);
 
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_WILTPOINT, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_WILTPOINT, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.1, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_SOIL, SM_WILTPOINT, 0.3);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_WILTPOINT, 0.3);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_WILTPOINT, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_WILTPOINT, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.3, 0.0001);
 
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_KSAT, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_KSAT, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.5, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_SOIL, SM_KSAT, 0.1);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_KSAT, 0.1);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_KSAT, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_KSAT, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.1, 0.0001);
 
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_KSLOPE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_KSLOPE, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 10, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_SOIL, SM_KSLOPE, 20);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_KSLOPE, 20);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_KSLOPE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_KSLOPE, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 20, 0.0001);
 
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_SUCTION, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_SUCTION, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 3.5, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_SOIL, SM_SUCTION, 7);
+    error = swmm_setLidCParam(lidIndex, SM_SOIL, SM_SUCTION, 7);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_SOIL, SM_SUCTION, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SOIL, SM_SUCTION, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
 
     // Drainmat layer get/set
-    error = swmm_getLidCParam(greenRoofInd, SM_DRAINMAT, SM_THICKNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAINMAT, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 3, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_DRAINMAT, SM_THICKNESS, 11);
+    error = swmm_setLidCParam(lidIndex, SM_DRAINMAT, SM_THICKNESS, 11);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_DRAINMAT, SM_THICKNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAINMAT, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 11, 0.0001);
 
-    error = swmm_getLidCParam(greenRoofInd, SM_DRAINMAT, SM_VOIDFRAC, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAINMAT, SM_VOIDFRAC, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.5, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_DRAINMAT, SM_VOIDFRAC, 0.1);
+    error = swmm_setLidCParam(lidIndex, SM_DRAINMAT, SM_VOIDFRAC, 0.1);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_DRAINMAT, SM_VOIDFRAC, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAINMAT, SM_VOIDFRAC, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.1, 0.0001);
 
-    error = swmm_getLidCParam(greenRoofInd, SM_DRAINMAT, SM_ROUGHNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAINMAT, SM_ROUGHNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.1, 0.0001);
-    error = swmm_setLidCParam(greenRoofInd, SM_DRAINMAT, SM_ROUGHNESS, 0.2);
+    error = swmm_setLidCParam(lidIndex, SM_DRAINMAT, SM_ROUGHNESS, 0.2);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(greenRoofInd, SM_DRAINMAT, SM_ROUGHNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAINMAT, SM_ROUGHNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.2, 0.0001);
 
-    error = swmm_getLidCParam(greenRoofInd, SM_DRAINMAT, SM_ALPHA, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAINMAT, SM_ALPHA, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 1.05359 - 0, 0.0001);
 
     // Check for immediate overflow option
-    error = swmm_getLidCOverflow(greenRoofInd, &charVal);
+    error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == FALSE);
-    error = swmm_setLidCParam(greenRoofInd, SM_SURFACE, SM_ROUGHNESS, 0);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, 0);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCOverflow(greenRoofInd, &charVal);
+    error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == TRUE);
 }
 
 // Testing for Lid Control Infiltration Trench parameters get/set
 BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_IT, FixtureOpenClose_LID_IT) {
-    int error, infilTrenchInd, subcatchInd;
+    int error, lidIndex, subIndex;
     double dbVal = 0;
     char charVal = '0';
 
     string infilTrench = string("IT");
     string subcatch = string("wIT");
 
-    infilTrenchInd = swmm_getObjectIndex(SM_LID, (char *)infilTrench.c_str(), &error);
+    lidIndex = swmm_getObjectIndex(SM_LID, (char *)infilTrench.c_str(), &error);
     BOOST_REQUIRE(error == ERR_NONE);
 
-    subcatchInd = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
+    subIndex = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
     BOOST_REQUIRE(error == ERR_NONE);
 
-    // SURFACE LAYER CHECK
-    error = swmm_getLidCParam(infilTrenchInd, SM_SURFACE, SM_THICKNESS, &dbVal);
+    // Surface layer get/set check
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_SURFACE, SM_THICKNESS, 100);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, 100);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_SURFACE, SM_THICKNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
 
-    error = swmm_getLidCParam(infilTrenchInd, SM_SURFACE, SM_VOIDFRAC, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.25, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_SURFACE, SM_VOIDFRAC, 0.9);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, 0.9);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_SURFACE, SM_VOIDFRAC, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.9, 0.0001);
 
-    error = swmm_getLidCParam(infilTrenchInd, SM_SURFACE, SM_ROUGHNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.1, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_SURFACE, SM_ROUGHNESS, 0.2);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, 0.2);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_SURFACE, SM_ROUGHNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.2, 0.0001);
 
-    error = swmm_getLidCParam(infilTrenchInd, SM_SURFACE, SM_SURFSLOPE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 1, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_SURFACE, SM_SURFSLOPE, 2);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, 2);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_SURFACE, SM_SURFSLOPE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 2, 0.0001);
 
-    error = swmm_getLidCParam(infilTrenchInd, SM_SURFACE, SM_ALPHA, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ALPHA, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 1.05359, 0.0001);
 
     // Storage layer get/set check
-    error = swmm_getLidCParam(infilTrenchInd, SM_STOR, SM_THICKNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 12, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_STOR, SM_THICKNESS, 100);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_THICKNESS, 100);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_STOR, SM_THICKNESS, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
 
-    error = swmm_getLidCParam(infilTrenchInd, SM_STOR, SM_VOIDFRAC, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_VOIDFRAC, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_STOR, SM_VOIDFRAC, 0.15);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_VOIDFRAC, 0.15);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_STOR, SM_VOIDFRAC, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_VOIDFRAC, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.15, 0.0001);
 
-    error = swmm_getLidCParam(infilTrenchInd, SM_STOR, SM_KSAT, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_KSAT, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.5, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_STOR, SM_KSAT, 0.75);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_KSAT, 0.75);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_STOR, SM_KSAT, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_KSAT, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
 
-    error = swmm_getLidCParam(infilTrenchInd, SM_STOR, SM_CLOGFACTOR, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_CLOGFACTOR, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_STOR, SM_CLOGFACTOR, 0.75);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_CLOGFACTOR, 0.75);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_STOR, SM_CLOGFACTOR, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_CLOGFACTOR, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
 
     // Drain layer get/set
-    error = swmm_getLidCParam(infilTrenchInd, SM_DRAIN, SM_COEFF, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_COEFF, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_DRAIN, SM_COEFF, 1.0);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_COEFF, 1.0);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_DRAIN, SM_COEFF, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_COEFF, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 1.0, 0.0001);
 
-    error = swmm_getLidCParam(infilTrenchInd, SM_DRAIN, SM_EXPON, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_EXPON, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0.5, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_DRAIN, SM_EXPON, 2);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_EXPON, 2);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_DRAIN, SM_EXPON, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_EXPON, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 2, 0.0001);
 
-    error = swmm_getLidCParam(infilTrenchInd, SM_DRAIN, SM_OFFSET, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_OFFSET, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_DRAIN, SM_OFFSET, 20);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_OFFSET, 20);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_DRAIN, SM_OFFSET, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_OFFSET, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 20, 0.0001);
 
-    error = swmm_getLidCParam(infilTrenchInd, SM_DRAIN, SM_DELAY, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_DELAY, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_DRAIN, SM_DELAY, 7);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_DELAY, 7);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_DRAIN, SM_DELAY, &dbVal);
-    BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
-
-    error = swmm_getLidCParam(infilTrenchInd, SM_DRAIN, SM_HOPEN, &dbVal);
-    BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_DRAIN, SM_HOPEN, 7);
-    BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_DRAIN, SM_HOPEN, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_DELAY, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
 
-    error = swmm_getLidCParam(infilTrenchInd, SM_DRAIN, SM_HCLOSE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HOPEN, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
-    error = swmm_setLidCParam(infilTrenchInd, SM_DRAIN, SM_HCLOSE, 7);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_HOPEN, 7);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(infilTrenchInd, SM_DRAIN, SM_HCLOSE, &dbVal);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HOPEN, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HCLOSE, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_HCLOSE, 7);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HCLOSE, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
 
     // Check for immediate overflow option
-    error = swmm_getLidCOverflow(infilTrenchInd, &charVal);
+    error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == FALSE);
-    error = swmm_setLidCParam(infilTrenchInd, SM_SURFACE, SM_ROUGHNESS, 0);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, 0);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCOverflow(infilTrenchInd, &charVal);
+    error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == TRUE);
 }
 
-    /*
-    // Pavement layer get/set
-    error = swmm_getLidCParam(lidc_ind, SM_PAVE, SM_THICKNESS, &val);
-    BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(val - 20, 0.0001);
-    error = swmm_setLidCParam(lidc_ind, SM_PAVE, SM_THICKNESS, 100);
-    BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(lidc_ind, SM_PAVE, SM_THICKNESS, &val);
-    BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(val - 100, 0.0001);
+// Testing for Lid Control Infiltration Trench parameters get/set
+BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_PP, FixtureOpenClose_LID_PP) {
+    int error, lidIndex, subIndex;
+    double dbVal = 0;
+    char charVal = '0';
 
-    error = swmm_getLidCParam(lidc_ind, SM_PAVE, SM_VOIDFRAC, &val);
-    BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(val - 0.15, 0.0001);
-    error = swmm_setLidCParam(lidc_ind, SM_PAVE, SM_VOIDFRAC, 0.75);
-    BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(lidc_ind, SM_PAVE, SM_VOIDFRAC, &val);
-    BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(val - 0.75, 0.0001);
+    string permPave = string("PP");
+    string subcatch = string("wPP");
 
-    error = swmm_getLidCParam(lidc_ind, SM_PAVE, SM_IMPERVFRAC, &val);
+    lidIndex = swmm_getObjectIndex(SM_LID, (char *)permPave.c_str(), &error);
     BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(val - 0.5, 0.0001);
-    error = swmm_setLidCParam(lidc_ind, SM_PAVE, SM_IMPERVFRAC, 0.75);
-    BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(lidc_ind, SM_PAVE, SM_IMPERVFRAC, &val);
-    BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(val - 0.75, 0.0001);
 
-    error = swmm_getLidCParam(lidc_ind, SM_PAVE, SM_KSAT, &val);
+    subIndex = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
     BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(val - 100, 0.0001);
-    error = swmm_setLidCParam(lidc_ind, SM_PAVE, SM_KSAT, 75);
-    BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(lidc_ind, SM_PAVE, SM_KSAT, &val);
-    BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(val - 75, 0.0001);
 
-    error = swmm_getLidCParam(lidc_ind, SM_PAVE, SM_CLOGFACTOR, &val);
+    // Surface layer get/set check
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_EQUAL(val - 8, 0);
-    error = swmm_setLidCParam(lidc_ind, SM_PAVE, SM_CLOGFACTOR, 0.75);
+    BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, 100);
     BOOST_REQUIRE(error == ERR_NONE);
-    error = swmm_getLidCParam(lidc_ind, SM_PAVE, SM_CLOGFACTOR, &val);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
-    BOOST_CHECK_SMALL(val - 0.75, 0.0001);
-*/
-    
+    BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.25, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, 0.9);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.9, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.1, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, 0.2);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.2, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, 2);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 2, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ALPHA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1.05359, 0.0001);
+
+    // Pavement layer get/set check
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_THICKNESS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_PAVE, SM_THICKNESS, 100);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_THICKNESS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_VOIDFRAC, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.15, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_PAVE, SM_VOIDFRAC, 0.75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_VOIDFRAC, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_IMPERVFRAC, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_PAVE, SM_IMPERVFRAC, 0.75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_IMPERVFRAC, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_KSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_PAVE, SM_KSAT, 75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_KSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 75, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_CLOGFACTOR, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(dbVal - 0, 0);
+    error = swmm_setLidCParam(lidIndex, SM_PAVE, SM_CLOGFACTOR, 0.75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_CLOGFACTOR, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_REGENDAYS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(dbVal - 0, 0);
+    error = swmm_setLidCParam(lidIndex, SM_PAVE, SM_REGENDAYS, 1);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_REGENDAYS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_REGENDEGREE, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(dbVal - 0, 0);
+    error = swmm_setLidCParam(lidIndex, SM_PAVE, SM_REGENDEGREE, 1);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_PAVE, SM_REGENDEGREE, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1, 0.0001);
+
+    // Storage layer get/set check
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_THICKNESS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 12, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_THICKNESS, 100);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_THICKNESS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_VOIDFRAC, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_VOIDFRAC, 0.15);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_VOIDFRAC, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.15, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_KSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.5, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_KSAT, 0.75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_KSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_CLOGFACTOR, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_CLOGFACTOR, 0.75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_CLOGFACTOR, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
+
+    // Drain layer get/set
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_COEFF, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_COEFF, 1.0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_COEFF, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1.0, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_EXPON, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.5, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_EXPON, 2);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_EXPON, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 2, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_OFFSET, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_OFFSET, 20);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_OFFSET, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 20, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_DELAY, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_DELAY, 7);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_DELAY, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HOPEN, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_HOPEN, 7);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HOPEN, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HCLOSE, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_HCLOSE, 7);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HCLOSE, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
+
+    // Check for immediate overflow option
+    error = swmm_getLidCOverflow(lidIndex, &charVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_REQUIRE(charVal == FALSE);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCOverflow(lidIndex, &charVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_REQUIRE(charVal == TRUE);
+}
+
+// Testing for Lid Control Rain Barrel parameters get/set
+BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_RB, FixtureOpenClose_LID_RB) {
+    int error, lidIndex, subIndex;
+    double dbVal = 0;
+    char charVal = '0';
+
+    string lid = string("RB");
+    string subcatch = string("wRB");
+
+    lidIndex = swmm_getObjectIndex(SM_LID, (char *)lid.c_str(), &error);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    subIndex = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    // Surface layer get/set check
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, 100);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.25, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, 0.9);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_VOIDFRAC, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.9, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.1, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, 0.2);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.2, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, 2);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_SURFSLOPE, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 2, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_ALPHA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1.05359, 0.0001);
+
+    // Storage layer get/set check
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_THICKNESS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 12, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_THICKNESS, 100);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_THICKNESS, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_VOIDFRAC, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_VOIDFRAC, 0.15);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_VOIDFRAC, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.15, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_KSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.5, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_KSAT, 0.75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_KSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_CLOGFACTOR, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_STOR, SM_CLOGFACTOR, 0.75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_STOR, SM_CLOGFACTOR, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.75, 0.0001);
+
+    // Drain layer get/set
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_COEFF, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_COEFF, 1.0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_COEFF, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1.0, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_EXPON, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0.5, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_EXPON, 2);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_EXPON, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 2, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_OFFSET, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_OFFSET, 20);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_OFFSET, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 20, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_DELAY, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 6, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_DELAY, 7);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_DELAY, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HOPEN, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_HOPEN, 7);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HOPEN, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
+
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HCLOSE, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidCParam(lidIndex, SM_DRAIN, SM_HCLOSE, 7);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCParam(lidIndex, SM_DRAIN, SM_HCLOSE, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 7, 0.0001);
+
+    // Check for immediate overflow option
+    error = swmm_getLidCOverflow(lidIndex, &charVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_REQUIRE(charVal == FALSE);
+    error = swmm_setLidCParam(lidIndex, SM_SURFACE, SM_ROUGHNESS, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidCOverflow(lidIndex, &charVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_REQUIRE(charVal == TRUE);
+}
+
 /*
 
 // Testing for After Start Errors

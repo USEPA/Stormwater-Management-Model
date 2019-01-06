@@ -1223,6 +1223,10 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int param, 
                         (lidProc->pavement.thickness * 
                         lidProc->pavement.voidFrac * 
                         (1 - lidProc->pavement.impervFrac)); break;
+            case SM_REGENDAYS:
+                *value = lidProc->pavement.regenDays; break;
+            case SM_REGENDEGREE:
+                *value = lidProc->pavement.regenDegree; break;
             default:
                 errcode = ERR_API_OUTBOUNDS; break;
             }
@@ -1387,6 +1391,10 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, 
                         lidProc->pavement.voidFrac *
                         (1.0 - lidProc->pavement.impervFrac); 
                         break;
+                    case SM_REGENDAYS:
+                        lidProc->pavement.regenDays = value; break;
+                    case SM_REGENDEGREE:
+                        lidProc->pavement.regenDegree = value; break;
                     default:
                         errcode = ERR_API_OUTBOUNDS; break;
                 }
