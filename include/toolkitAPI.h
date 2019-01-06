@@ -218,6 +218,8 @@ typedef enum {
     SM_HOPEN        = 18, /**< Head When Drain Opens */
     SM_HCLOSE       = 19, /**< Head When Drain Closes */
     SM_QCURVE       = 20, /**< Curve Controlling FLow Rate (Optional) */
+    SM_REGENDAYS    = 21, /**< Clogging Regeneration Interval (Days) */
+    SM_REGENDEGREE  = 22, /**< Degree of Clogging Regeneration */
 } SM_LidLayerProperty;
 
 /// Lid unit property codes
