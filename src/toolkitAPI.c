@@ -1196,13 +1196,28 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int param, 
             case SM_THICKNESS:
                 *value = lidProc->storage.thickness * UCF(RAINDEPTH); break;
             case SM_VOIDFRAC:
-                *value = lidProc->storage.voidFrac / (1 - lidProc->storage.voidFrac); break;
+                if (lidProc->storage.voidFrac < 1)
+                {
+                    *value = lidProc->storage.voidFrac / (1 - lidProc->storage.voidFrac);
+                }
+                else
+                {
+                    *value = lidProc->storage.voidFrac;
+                }
+                break;
             case SM_KSAT:
                 *value = lidProc->storage.kSat * UCF(RAINFALL); break;
             case SM_CLOGFACTOR:
-                *value = lidProc->storage.clogFactor / 
-                        (lidProc->storage.thickness * 
-                        lidProc->storage.voidFrac); break;
+                if (lidProc->storage.thickness > 0.0)
+                {
+                    *value = lidProc->storage.clogFactor / 
+                            (lidProc->storage.thickness * 
+                            lidProc->storage.voidFrac); break;
+                }
+                else
+                {
+                    *value = lidProc->pavement.clogFactor;
+                }
             default:
                 errcode = ERR_API_OUTBOUNDS; break;
             }
@@ -1213,16 +1228,31 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int param, 
             case SM_THICKNESS:
                 *value = lidProc->pavement.thickness * UCF(RAINDEPTH); break;
             case SM_VOIDFRAC:
-                *value = lidProc->pavement.voidFrac / ( 1 - lidProc->pavement.voidFrac); break;
+                if (lidProc->pavement.voidFrac < 1)
+                {
+                    *value = lidProc->pavement.voidFrac / (1 - lidProc->pavement.voidFrac);
+                }
+                else
+                {
+                    *value = lidProc->pavement.voidFrac;
+                }
+                break;
             case SM_IMPERVFRAC:
                 *value = lidProc->pavement.impervFrac; break;
             case SM_KSAT:
                 *value = lidProc->pavement.kSat * UCF(RAINFALL); break;
             case SM_CLOGFACTOR:
-                *value = lidProc->pavement.clogFactor / 
-                        (lidProc->pavement.thickness * 
-                        lidProc->pavement.voidFrac * 
-                        (1 - lidProc->pavement.impervFrac)); break;
+                if (lidProc->pavement.thickness > 0.0)
+                {
+                    *value = lidProc->pavement.clogFactor / 
+                            (lidProc->pavement.thickness * 
+                            lidProc->pavement.voidFrac * 
+                            (1 - lidProc->pavement.impervFrac)); break;
+                }
+                else
+                {
+                    *value = lidProc->pavement.clogFactor;
+                }
             case SM_REGENDAYS:
                 *value = lidProc->pavement.regenDays; break;
             case SM_REGENDEGREE:
@@ -1345,14 +1375,29 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, 
                 switch(param)
                 {
                     case SM_THICKNESS:
-                        lidProc->storage.clogFactor /= lidProc->storage.thickness;
-                        lidProc->storage.thickness = value / UCF(RAINDEPTH); 
-                        lidProc->storage.clogFactor *= lidProc->storage.thickness;
+                        if (lidProc->storage.thickness > 0)
+                        {
+                            lidProc->storage.clogFactor /= lidProc->storage.thickness;
+                            lidProc->storage.thickness = value / UCF(RAINDEPTH);
+                            lidProc->storage.clogFactor *= lidProc->storage.thickness;
+                        }
+                        else
+                        {
+                            lidProc->storage.thickness = value / UCF(RAINDEPTH);
+                        }
                         break;
                     case SM_VOIDFRAC:
-                        lidProc->storage.clogFactor /= lidProc->storage.voidFrac;
-                        lidProc->storage.voidFrac = value / (value + 1); 
-                        lidProc->storage.clogFactor *= lidProc->storage.voidFrac;
+                        if (lidProc->storage.voidFrac > 0)
+                        {
+                            lidProc->storage.clogFactor /= lidProc->storage.voidFrac;
+                            lidProc->storage.voidFrac = value / (value + 1); 
+                            lidProc->storage.clogFactor *= lidProc->storage.voidFrac;
+                        }
+                        else
+                        {
+                            lidProc->storage.voidFrac = value / (value + 1);
+                        }
+
                         break;
                     case SM_KSAT:
                         lidProc->storage.kSat = value / UCF(RAINFALL); break;
@@ -1369,19 +1414,40 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, 
                 switch(param)
                 {
                     case SM_THICKNESS:
-                        lidProc->pavement.clogFactor /= lidProc->pavement.thickness; 
-                        lidProc->pavement.thickness = value / UCF(RAINDEPTH); 
-                        lidProc->pavement.clogFactor *= lidProc->pavement.thickness;
+                        if (lidProc->pavement.thickness > 0)
+                        {
+                            lidProc->pavement.clogFactor /= lidProc->pavement.thickness;
+                            lidProc->pavement.thickness = value / UCF(RAINDEPTH);
+                            lidProc->pavement.clogFactor *= lidProc->pavement.thickness;
+                        }
+                        else
+                        {
+                            lidProc->pavement.thickness = value / UCF(RAINDEPTH);
+                        }
                         break;
                     case SM_VOIDFRAC:
-                        lidProc->pavement.clogFactor /= lidProc->pavement.voidFrac;
-                        lidProc->pavement.voidFrac = value / (value + 1); 
-                        lidProc->pavement.clogFactor *= lidProc->pavement.voidFrac;
+                        if (lidProc->pavement.voidFrac > 0)
+                        {
+                            lidProc->pavement.clogFactor /= lidProc->pavement.voidFrac;
+                            lidProc->pavement.voidFrac = value / (value + 1);
+                            lidProc->pavement.clogFactor *= lidProc->pavement.voidFrac;
+                        }
+                        else
+                        {
+                            lidProc->pavement.voidFrac = value / (value + 1);
+                        }
                         break;
                     case SM_IMPERVFRAC:
-                        lidProc->pavement.clogFactor /= (1 - lidProc->pavement.impervFrac);
-                        lidProc->pavement.impervFrac = value;
-                        lidProc->pavement.clogFactor *= (1 - lidProc->pavement.impervFrac);
+                        if (lidProc->pavement.impervFrac > 0)
+                        {
+                            lidProc->pavement.clogFactor /= (1 - lidProc->pavement.impervFrac);
+                            lidProc->pavement.impervFrac = value;
+                            lidProc->pavement.clogFactor *= (1 - lidProc->pavement.impervFrac);
+                        }
+                        else
+                        {
+                            lidProc->pavement.impervFrac = value;
+                        }
                         break;
                     case SM_KSAT:
                         lidProc->pavement.kSat = value / UCF(RAINFALL); break;

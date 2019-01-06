@@ -38,35 +38,11 @@
 #define DATA_PATH_RPT_LID_SWALE "lid/w_wo_SWALE_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_SWALE "lid/w_wo_SWALE_2Subcatchments.out"
 
-using namespace std;
+#define DATA_PATH_INP_LID_RD "lid/w_wo_RD_2Subcatchments.inp"
+#define DATA_PATH_RPT_LID_RD "lid/w_wo_RD_2Subcatchments.rpt"
+#define DATA_PATH_OUT_LID_RD "lid/w_wo_RD_2Subcatchments.out"
 
-void openSwmmLid(int lidType){
-    switch(lidType) {
-        case 0:
-            swmm_open((char *)DATA_PATH_INP_LID_BC, (char *)DATA_PATH_RPT_LID_BC, (char *)DATA_PATH_OUT_LID_BC);
-            break;
-        case 1:
-            swmm_open((char *)DATA_PATH_INP_LID_GR, (char *)DATA_PATH_RPT_LID_GR, (char *)DATA_PATH_OUT_LID_GR);
-            break;
-        case 2:
-            swmm_open((char *)DATA_PATH_INP_LID_IT, (char *)DATA_PATH_RPT_LID_IT, (char *)DATA_PATH_OUT_LID_IT);
-            break;
-        case 3:
-            swmm_open((char *)DATA_PATH_INP_LID_PP, (char *)DATA_PATH_RPT_LID_PP, (char *)DATA_PATH_OUT_LID_PP);
-            break;
-        case 4:
-            swmm_open((char *)DATA_PATH_INP_LID_RB, (char *)DATA_PATH_RPT_LID_RB, (char *)DATA_PATH_OUT_LID_RB);
-            break;
-        case 5:
-            swmm_open((char *)DATA_PATH_INP_LID_RG, (char *)DATA_PATH_RPT_LID_RG, (char *)DATA_PATH_OUT_LID_RG);
-            break;
-        case 6:
-            swmm_open((char *)DATA_PATH_INP_LID_SWALE, (char *)DATA_PATH_RPT_LID_SWALE, (char *)DATA_PATH_OUT_LID_SWALE);
-            break;
-        default:
-            break;
-    }
-} 
+using namespace std;
 
 /* Fixture Open Close
  1. Opens Model
@@ -176,6 +152,20 @@ struct FixtureOpenClose_LID_SWALE {
         swmm_open((char *)DATA_PATH_INP_LID_SWALE, (char *)DATA_PATH_RPT_LID_SWALE, (char *)DATA_PATH_OUT_LID_SWALE);
     }
     ~FixtureOpenClose_LID_SWALE() {
+        swmm_close();
+    }
+};
+
+/* Fixture Open Close for RD
+ 1. Opens Model
+ *. testing interactions
+ 2. Closes Model 
+*/
+struct FixtureOpenClose_LID_RD {
+    FixtureOpenClose_LID_RD() {
+        swmm_open((char *)DATA_PATH_INP_LID_RD, (char *)DATA_PATH_RPT_LID_RD, (char *)DATA_PATH_OUT_LID_RD);
+    }
+    ~FixtureOpenClose_LID_RD() {
         swmm_close();
     }
 };
