@@ -57,8 +57,6 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     //Lid Control
     error = swmm_getLidCOverflow(0, &chrValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
-    error = swmm_setLidCOverflow(0, chrValue);
-    BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
     error = swmm_getLidCParam(0, 0, 0, &dbValue);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
     error = swmm_setLidCParam(0, 0, 0, dbValue);
@@ -100,8 +98,6 @@ BOOST_FIXTURE_TEST_CASE(sim_started_check, FixtureBeforeStep_LID) {
     //Lid Control
     error = swmm_getLidCOverflow(0, &chrValue);
     BOOST_CHECK_EQUAL(error, ERR_NONE); 
-    error = swmm_setLidCOverflow(0, chrValue);
-    BOOST_CHECK_EQUAL(error, ERR_NONE); 
     error = swmm_getLidCParam(0, 0, 0, &dbValue);
     BOOST_CHECK_EQUAL(error, ERR_NONE); 
     error = swmm_setLidCParam(0, 0, 0, dbValue);
@@ -138,8 +134,6 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose_LID) {
     
     //Lid Control
     error = swmm_getLidCOverflow(1, &chrValue);
-    BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX); 
-    error = swmm_setLidCOverflow(1, chrValue);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX); 
     error = swmm_getLidCParam(1, 0, 0, &dbValue);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX); 
@@ -238,6 +232,7 @@ BOOST_FIXTURE_TEST_CASE(project_lid_info, FixtureOpenClose_LID){
 // Testing for Lid Control Bio Cell parameters get/set
 BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_BC, FixtureOpenClose_LID_BC) {
     int error, lidIndex, subIndex;
+    int intVal = 0;
     double dbVal = 0;
     char charVal = '0';
 
@@ -250,6 +245,7 @@ BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_BC, FixtureOpenClose_LID_BC) {
     subIndex = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
     BOOST_REQUIRE(error == ERR_NONE);
 
+    // Lid Control
     // Surface layer get/set check
     error = swmm_getLidCParam(lidIndex, SM_SURFACE, SM_THICKNESS, &dbVal);
     BOOST_REQUIRE(error == ERR_NONE);
@@ -456,11 +452,93 @@ BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_BC, FixtureOpenClose_LID_BC) {
     error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == TRUE);
+    
+    // Lid Unit
+    error = swmm_getLidUCount(subIndex, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 50, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_UNITAREA, 1000);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1000, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 10, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FWIDTH, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_INITSAT, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 25, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FROMIMPERV, 75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 75, 0.0001);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_INDEX, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, lidIndex);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 100);
+    error = swmm_setLidUOption(subIndex, 0, SM_NUMBER, 11);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 11);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+    error = swmm_setLidUOption(subIndex, 0, SM_TOPERV, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINSUB, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINNODE, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
 }
 
 // Testing for Lid Control Green Roof parameters get/set
 BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_GR, FixtureOpenClose_LID_GR) {
     int error, lidIndex, subIndex;
+    int intVal = 0;
     double dbVal = 0;
     char charVal = '0';
 
@@ -619,11 +697,93 @@ BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_GR, FixtureOpenClose_LID_GR) {
     error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == TRUE);
+
+    // Lid Unit
+    error = swmm_getLidUCount(subIndex, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 50, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_UNITAREA, 1000);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1000, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 10, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FWIDTH, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_INITSAT, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 25, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FROMIMPERV, 75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 75, 0.0001);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_INDEX, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, lidIndex);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 100);
+    error = swmm_setLidUOption(subIndex, 0, SM_NUMBER, 11);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 11);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+    error = swmm_setLidUOption(subIndex, 0, SM_TOPERV, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINSUB, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINNODE, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
 }
 
 // Testing for Lid Control Infiltration Trench parameters get/set
 BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_IT, FixtureOpenClose_LID_IT) {
     int error, lidIndex, subIndex;
+    int intVal = 0;
     double dbVal = 0;
     char charVal = '0';
 
@@ -778,11 +938,93 @@ BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_IT, FixtureOpenClose_LID_IT) {
     error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == TRUE);
+
+    // Lid Unit
+    error = swmm_getLidUCount(subIndex, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 50, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_UNITAREA, 1000);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1000, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 10, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FWIDTH, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_INITSAT, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 25, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FROMIMPERV, 75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 75, 0.0001);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_INDEX, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, lidIndex);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 100);
+    error = swmm_setLidUOption(subIndex, 0, SM_NUMBER, 11);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 11);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+    error = swmm_setLidUOption(subIndex, 0, SM_TOPERV, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINSUB, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINNODE, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
 }
 
 // Testing for Lid Control Infiltration Trench parameters get/set
 BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_PP, FixtureOpenClose_LID_PP) {
     int error, lidIndex, subIndex;
+    int intVal = 0;
     double dbVal = 0;
     char charVal = '0';
 
@@ -1001,11 +1243,93 @@ BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_PP, FixtureOpenClose_LID_PP) {
     error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == TRUE);
+
+    // Lid Unit
+    error = swmm_getLidUCount(subIndex, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 50, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_UNITAREA, 1000);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1000, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 10, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FWIDTH, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_INITSAT, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 25, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FROMIMPERV, 75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 75, 0.0001);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_INDEX, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, lidIndex);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 100);
+    error = swmm_setLidUOption(subIndex, 0, SM_NUMBER, 11);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 11);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+    error = swmm_setLidUOption(subIndex, 0, SM_TOPERV, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINSUB, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINNODE, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
 }
 
 // Testing for Lid Control Rain Barrel parameters get/set
 BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_RB, FixtureOpenClose_LID_RB) {
     int error, lidIndex, subIndex;
+    int intVal = 0;
     double dbVal = 0;
     char charVal = '0';
 
@@ -1122,11 +1446,93 @@ BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_RB, FixtureOpenClose_LID_RB) {
     error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == TRUE);
+
+    // Lid Unit
+    error = swmm_getLidUCount(subIndex, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 12, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_UNITAREA, 1000);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1000, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 10, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FWIDTH, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_INITSAT, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 25, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FROMIMPERV, 75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 75, 0.0001);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_INDEX, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, lidIndex);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 100);
+    error = swmm_setLidUOption(subIndex, 0, SM_NUMBER, 11);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 11);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+    error = swmm_setLidUOption(subIndex, 0, SM_TOPERV, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINSUB, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINNODE, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
 }
 
 // Testing for Lid Control Rain Garden parameters get/set
 BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_RG, FixtureOpenClose_LID_RG) {
     int error, lidIndex, subIndex;
+    int intVal = 0;
     double dbVal = 0;
     char charVal = '0';
 
@@ -1292,11 +1698,93 @@ BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_RG, FixtureOpenClose_LID_RG) {
     error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == TRUE);
+
+    // Lid Unit
+    error = swmm_getLidUCount(subIndex, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 50, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_UNITAREA, 1000);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1000, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 10, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FWIDTH, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_INITSAT, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 25, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FROMIMPERV, 75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 75, 0.0001);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_INDEX, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, lidIndex);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 100);
+    error = swmm_setLidUOption(subIndex, 0, SM_NUMBER, 11);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 11);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+    error = swmm_setLidUOption(subIndex, 0, SM_TOPERV, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINSUB, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINNODE, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
 }
 
 // Testing for Lid Control Swale parameters get/set
 BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_SWALE, FixtureOpenClose_LID_SWALE) {
     int error, lidIndex, subIndex;
+    int intVal = 0;
     double dbVal = 0;
     char charVal = '0';
 
@@ -1360,11 +1848,93 @@ BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_SWALE, FixtureOpenClose_LID_SWALE) {
     error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == TRUE);
+
+    // Lid Unit
+    error = swmm_getLidUCount(subIndex, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 500, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_UNITAREA, 1000);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1000, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FWIDTH, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_INITSAT, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 25, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FROMIMPERV, 75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 75, 0.0001);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_INDEX, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, lidIndex);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 10);
+    error = swmm_setLidUOption(subIndex, 0, SM_NUMBER, 11);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 11);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+    error = swmm_setLidUOption(subIndex, 0, SM_TOPERV, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINSUB, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINNODE, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
 }
 
 // Testing for Lid Control Roof Disconnection parameters get/set
 BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_RD, FixtureOpenClose_LID_RD) {
     int error, lidIndex, subIndex;
+    int intVal = 0;
     double dbVal = 0;
     char charVal = '0';
 
@@ -1428,8 +1998,88 @@ BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_RD, FixtureOpenClose_LID_RD) {
     error = swmm_getLidCOverflow(lidIndex, &charVal);
     BOOST_REQUIRE(error == ERR_NONE);
     BOOST_REQUIRE(charVal == FALSE);
-}
 
+    // Lid Unit
+    error = swmm_getLidUCount(subIndex, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 500, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_UNITAREA, 1000);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_UNITAREA, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 1000, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 100, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FWIDTH, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FWIDTH, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 0, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_INITSAT, 5);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_INITSAT, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 5, 0.0001);
+
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 25, 0.0001);
+    error = swmm_setLidUParam(subIndex, 0, SM_FROMIMPERV, 75);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUParam(subIndex, 0, SM_FROMIMPERV, &dbVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_SMALL(dbVal - 75, 0.0001);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_INDEX, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, lidIndex);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 10);
+    error = swmm_setLidUOption(subIndex, 0, SM_NUMBER, 11);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_NUMBER, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 11);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 1);
+    error = swmm_setLidUOption(subIndex, 0, SM_TOPERV, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_TOPERV, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINSUB, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINSUB, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, -1);
+    error = swmm_setLidUOption(subIndex, 0, SM_DRAINNODE, 0);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getLidUOption(subIndex, 0, SM_DRAINNODE, &intVal);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(intVal, 0);
+}
 
 /*
 

@@ -934,8 +934,8 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
                     lidUnit->area = value / SQR(UCF(LENGTH)); break;
                 case SM_FWIDTH:
                     lidUnit->fullWidth = value / UCF(LENGTH); break;
-                case SM_BWIDTH:
-                    lidUnit->botWidth = value / UCF(LENGTH); break;
+                //case SM_BWIDTH:
+                //    lidUnit->botWidth = value / UCF(LENGTH); break;
                 case SM_INITSAT:
                     lidUnit->initSat = value / 100; break;
                 case SM_FROMIMPERV:
@@ -1042,9 +1042,13 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int param, int value)
                 case SM_TOPERV:
                     lidUnit->toPerv = value; break;
                 case SM_DRAINSUB:
-                    lidUnit->drainSubcatch = value; break;
+                    lidUnit->drainSubcatch = value; 
+                    lidUnit->drainNode = -1;
+                    break;
                 case SM_DRAINNODE:
-                    lidUnit->drainNode = value; break;
+                    lidUnit->drainNode = value; 
+                    lidUnit->drainSubcatch = -1;
+                    break;
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }
@@ -1081,46 +1085,14 @@ int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, char *condition)
     else
     {
         lidProc = lid_getLidProc(lidControlIndex);
-        *condition = lidProc->surface.canOverflow;
-    }
-    return(errcode);
-}
-
-
-int DLLEXPORT swmm_setLidCOverflow(int lidControlIndex, char condition)
-//
-// Input:   lidControlIndex = Index of desired lid control
-//          condition = replacement value
-// Return:  API Error
-// Purpose: Sets Lid Control Surface Immediate Overflow Condition
-{
-    int errcode = 0;
-    TLidProc*  lidProc;
-
-    // Check if Open
-    if(swmm_IsOpenFlag() == FALSE)
-    {
-        errcode = ERR_API_INPUTNOTOPEN;
-    }
-    // Check if subcatchment index is within bounds
-    else if(lidControlIndex < 0 || lidControlIndex >= Nobjects[LID])
-    {
-        errcode = ERR_API_OBJECT_INDEX;
-    }
-    else
-    {
-        lidProc = lid_getLidProc(lidControlIndex);
         if (lidProc != NULL)
         {
-            lidProc->surface.canOverflow = condition;
-            //re-validate lid control
-            lid_validateLidProc(lidControlIndex);
+            *condition = lidProc->surface.canOverflow;
+    
         }
     }
-
     return(errcode);
 }
-
 
 int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int param, double *value)
 //
