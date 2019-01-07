@@ -1933,12 +1933,12 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_REQUIRE(error == ERR_NONE);
 
         sub_index = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
-        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
 
         // Surface layer get/set check
         error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_THICKNESS, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_CHECK_SMALL(db_value - 12, 0.0001);
+        BOOST_CHECK_SMALL(db_value - 6, 0.0001);
         error = swmm_setLidCParam(lid_index, SM_SURFACE, SM_THICKNESS, 100);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_THICKNESS, &db_value);
@@ -1965,7 +1965,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
 
         error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_SURFSLOPE, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_CHECK_SMALL(db_value - 1, 0.0001);
+        BOOST_CHECK_SMALL(db_value - 1.0, 0.0001);
         error = swmm_setLidCParam(lid_index, SM_SURFACE, SM_SURFSLOPE, 2);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_SURFSLOPE, &db_value);
@@ -1976,6 +1976,63 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_REQUIRE(error == ERR_NONE);
         BOOST_CHECK_SMALL(db_value - 1.05359, 0.0001);
 
+        // Drain layer get/set
+        error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_COEFF, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 0, 0.0001);
+        error = swmm_setLidCParam(lid_index, SM_DRAIN, SM_COEFF, 2.0);
+        BOOST_REQUIRE(error == ERR_NONE);
+        error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_COEFF, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 2.0, 0.0001);
+
+        error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_EXPON, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 0.5, 0.0001);
+        error = swmm_setLidCParam(lid_index, SM_DRAIN, SM_EXPON, 2);
+        BOOST_REQUIRE(error == ERR_NONE);
+        error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_EXPON, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 2, 0.0001);
+        
+        // if storage thickness is zero
+        // the offset is changed to zero
+        error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_OFFSET, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 0.0, 0.0001);
+        error = swmm_setLidCParam(lid_index, SM_DRAIN, SM_OFFSET, 20);
+        BOOST_REQUIRE(error == ERR_NONE);
+        error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_OFFSET, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 0.0, 0.0001);
+
+        error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_DELAY, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 6, 0.0001);
+        error = swmm_setLidCParam(lid_index, SM_DRAIN, SM_DELAY, 7);
+        BOOST_REQUIRE(error == ERR_NONE);
+        error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_DELAY, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 7, 0.0001);
+
+        error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_HOPEN, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 0, 0.0001);
+        error = swmm_setLidCParam(lid_index, SM_DRAIN, SM_HOPEN, 7);
+        BOOST_REQUIRE(error == ERR_NONE);
+        error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_HOPEN, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 7, 0.0001);
+
+        error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_HCLOSE, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 0, 0.0001);
+        error = swmm_setLidCParam(lid_index, SM_DRAIN, SM_HCLOSE, 7);
+        BOOST_REQUIRE(error == ERR_NONE);
+        error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_HCLOSE, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 7, 0.0001);
+        
         // Check for immediate overflow option
         // No option available for immediate overflow
         error = swmm_getLidCOverflow(lid_index, &chr_value);
@@ -1994,7 +2051,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
 
         error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_CHECK_SMALL(db_value - 500, 0.0001);
+        BOOST_CHECK_SMALL(db_value - 50, 0.0001);
         error = swmm_setLidUParam(sub_index, 0, SM_UNITAREA, 1000);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
@@ -2003,7 +2060,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
 
         error = swmm_getLidUParam(sub_index, 0, SM_FWIDTH, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_CHECK_SMALL(db_value - 100, 0.0001);
+        BOOST_CHECK_SMALL(db_value - 10, 0.0001);
         error = swmm_setLidUParam(sub_index, 0, SM_FWIDTH, 5);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_getLidUParam(sub_index, 0, SM_FWIDTH, &db_value);
@@ -2034,7 +2091,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
 
         error = swmm_getLidUOption(sub_index, 0, SM_NUMBER, &int_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_CHECK_EQUAL(int_value, 10);
+        BOOST_CHECK_EQUAL(int_value, 100);
         error = swmm_setLidUOption(sub_index, 0, SM_NUMBER, 11);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_getLidUOption(sub_index, 0, SM_NUMBER, &int_value);
@@ -2106,7 +2163,6 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         error = swmm_getLidGResult(2, 14, &db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
     }
-
 
 
     // Testing for invalid parameter key
@@ -2303,10 +2359,40 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Lid Unit 
         error = swmm_setLidUOption(sub_index, 0, SM_NUMBER, 100);
         BOOST_REQUIRE(error == ERR_NONE); 
+        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, TRUE);
+        BOOST_REQUIRE(error == ERR_NONE);
+        error = swmm_setLidUParam(sub_index, 0, SM_UNITAREA, 50.0);
+        BOOST_REQUIRE(error == ERR_NONE);
+        error = swmm_setLidUParam(sub_index, 0, SM_FWIDTH, 10.0);
+        BOOST_REQUIRE(error == ERR_NONE);
+        error = swmm_setLidUParam(sub_index, 0, SM_INITSAT, 0.0);
+        BOOST_REQUIRE(error == ERR_NONE);
+        error = swmm_setLidUParam(sub_index, 0, SM_FROMIMPERV, 25.0);
+        BOOST_REQUIRE(error == ERR_NONE);
+        error = swmm_setLidUParam(sub_index, 0, SM_FROMPERV, 0.0);
+        BOOST_REQUIRE(error == ERR_NONE);
         
         error = swmm_getLidUOption(sub_index, 0, SM_NUMBER, &int_value);
-        BOOST_REQUIRE(error == ERR_NONE);  
+        BOOST_REQUIRE(error == ERR_NONE);
         BOOST_REQUIRE(int_value == 100);
+        error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_REQUIRE(int_value == TRUE);
+        error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);  
+        BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);
+        error = swmm_getLidUParam(sub_index, 0, SM_FWIDTH, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 10.0, 0.0001);
+        error = swmm_getLidUParam(sub_index, 0, SM_INITSAT, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 0.0, 0.0001);
+        error = swmm_getLidUParam(sub_index, 0, SM_FROMIMPERV, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 25.0, 0.0001);
+        error = swmm_getLidUParam(sub_index, 0, SM_FROMPERV, &db_value);
+        BOOST_REQUIRE(error == ERR_NONE);
+        BOOST_CHECK_SMALL(db_value - 0.0, 0.0001);
         
         swmm_start(0);
         do
@@ -2385,8 +2471,26 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_CHECK_SMALL(db_value - 0.0, 0.0001);
             
             error = swmm_getLidUOption(sub_index, 0, SM_NUMBER, &int_value);
-            BOOST_REQUIRE(error == ERR_NONE);  
+            BOOST_REQUIRE(error == ERR_NONE);
             BOOST_REQUIRE(int_value == 100);
+            error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_REQUIRE(int_value == TRUE);
+            error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
+            BOOST_REQUIRE(error == ERR_NONE);  
+            BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);
+            error = swmm_getLidUParam(sub_index, 0, SM_FWIDTH, &db_value);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(db_value - 10.0, 0.0001);
+            error = swmm_getLidUParam(sub_index, 0, SM_INITSAT, &db_value);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(db_value - 0.0, 0.0001);
+            error = swmm_getLidUParam(sub_index, 0, SM_FROMIMPERV, &db_value);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(db_value - 25.0, 0.0001);
+            error = swmm_getLidUParam(sub_index, 0, SM_FROMPERV, &db_value);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(db_value - 0.0, 0.0001);
             
             error = swmm_step(&elapsed_time);
             BOOST_REQUIRE(error == ERR_NONE);

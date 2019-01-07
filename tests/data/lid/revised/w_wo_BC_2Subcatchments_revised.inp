@@ -74,15 +74,15 @@ woBC             1.2        0.1        2          7          0
 ;;Name           Type/Layer Parameters
 ;;-------------- ---------- ----------
 BC               BC
-BC               SURFACE    99         .99        0.99       0.99       5         
-BC               SOIL       99         0.99       0.099      0.0099     0.99        9.9        9.9       
-BC               STORAGE    99         0.99       0.99       0.99         
-BC               DRAIN      0.99       0.99       9.9        9.9        9.9         0.99                    
+BC               SURFACE    99         .99        0.99       .99        5         
+BC               SOIL       99         0.99       0.099      0.0099     0.99       9.9        9.9       
+BC               STORAGE    99         0.99       0.99       .99       
+BC               DRAIN      0.99       0.99       9.9        6          9          00.99                
 
 [LID_USAGE]
 ;;Subcatchment   LID Process      Number  Area       Width      InitSat    FromImp    ToPerv     RptFile                  DrainTo          FromPerv  
 ;;-------------- ---------------- ------- ---------- ---------- ---------- ---------- ---------- ------------------------ ---------------- ----------
-wBC              BC               9       50         10         0          25         1          "feng_r.txt" *                0               
+wBC              BC               9       99         99         99         99         0          "feng_r.txt"             *                99               
 
 [OUTFALLS]
 ;;Name           Elevation  Type       Stage Data       Gated    Route To        
