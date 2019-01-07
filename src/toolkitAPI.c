@@ -950,7 +950,6 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
     
     if (errcode == ERR_NONE)
     {
-        //lid_updateLidUnit(lidUnit, index);
         lid_validateLidGroup(index);
         lid_updateLidGroup(index);
     }

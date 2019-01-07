@@ -2178,18 +2178,22 @@ void lid_updateLidUnit(TLidUnit* lidUnit, int subIndex)
 
 void lid_updateLidGroup(int index)
 {
-    int k;
+    int i;
+    double area, nonLidArea;
     TLidUnit* lidUnit;
     TLidList* lidList;
     TLidGroup lidGroup;
-    
+    TGroundwater *gw;
+    TAquifer a;
+
+
     //... check if group exists
     lidGroup = LidGroups[index];
     if (lidGroup == NULL) return;
 
     lidGroup->pervArea = 0.0;
 
-    //... exmaine each LID in the group
+    //... examine each LID in the group
     lidList = lidGroup->lidList;
 
     while (lidList)
@@ -2202,6 +2206,41 @@ void lid_updateLidGroup(int index)
 
         lidList = lidList->nextLidUnit;
     }
+
+    // recalculate subcatchment alpha
+    nonLidArea = Subcatch[index].area;
+    nonLidArea -= Subcatch[index].lidArea;
+
+    for (i = IMPERV0; i <= PERV; i++)
+    {
+        if (i == PERV)
+        {
+            area = (1.0 - Subcatch[index].fracImperv) * nonLidArea;
+        }
+        else
+        {
+            area = Subcatch[index].fracImperv * nonLidArea;
+        }
+        Subcatch[index].subArea[i].alpha = 0.0;
+
+        if (area > 0.0 && Subcatch[index].subArea[i].N > 0.0)
+        {
+            Subcatch[index].subArea[i].alpha = 1.49 * Subcatch[index].width / area * 
+                sqrt(Subcatch[index].slope) / Subcatch[index].subArea[i].N;
+        }
+    }
+
+
+    // update GW max infil vol
+    gw = Subcatch[index].groundwater;
+    if (gw)
+    {
+        a = Aquifer[gw->aquifer];
+        gw->maxInfilVol = (gw->surfElev - gw->waterTableElev) *
+            (a.porosity - gw->theta) /
+            subcatch_getFracPerv(index);
+    }
+
 }
 
 
@@ -2221,7 +2260,7 @@ void lid_updateAllLidUnit(int lidIndex)
         lidGroup = LidGroups[j];
         if (lidGroup == NULL) continue;
 
-        //... exmaine each LID in the group
+        //... examine each LID in the group
         lidList = lidGroup->lidList;
 
         while (lidList)
