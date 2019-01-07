@@ -253,14 +253,13 @@ struct Fixture_LID_Results
             error = swmm_getSubcatchResult(sub_index, SM_SUBCRUNOFF, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
 
-            subcatchment_runoff.push_back(db_value);
+            subcatchment_runoff.push_back(round(db_value * 100000.0) / 100000.0);
         }while (elapsed_time != 0 && !error);
         BOOST_CHECK_EQUAL(0, error);
         swmm_end();
         swmm_close();
         
         open_swmm_lid(lid_type, true);
-        swmm_start(0);
     }
     ~Fixture_LID_Results() {
         swmm_close();

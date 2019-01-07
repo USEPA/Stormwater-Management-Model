@@ -186,6 +186,9 @@ extern char       HasWetLids;          // TRUE if any LIDs are wet
 //  lid_getLidGroup          called by LID API toolkit in toolkitAPI.c
 //  lid_validateLidProc      called by LID API toolkit in toolkitAPI.c
 //  lid_validateLidGroup     called by LID API toolkit in toolkitAPI.c
+//  lid_updateLidUnit        called by LID API toolkit in toolkitAPI.c
+//  lid_updateAllLidUnit     called by LID API toolkit in toolkitAPI.c
+//  lid_updateLidGroup       called by LID API toolkit in toolkitAPI.c
 //-----------------------------------------------------------------------------
 // Local Functions
 //-----------------------------------------------------------------------------
@@ -2140,4 +2143,99 @@ void lid_validateLidGroup(int index)
 //  Output:  none
 {
     validateLidGroup(index);
+}
+
+void lid_updateLidUnit(TLidUnit* lidUnit, int subIndex)
+//
+// Purpose: update a lid unit parameters due to change in lid control parameters
+// Input:   lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
+// Output:  none
+{
+    int lidIndex;
+
+    lidIndex = lidUnit->lidIndex;
+    lidUnit->nextRegenDay = LidProcs[lidIndex].pavement.regenDays;
+    lid_validateLidGroup(subIndex);
+    if (LidProcs[lidIndex].soil.thickness > 0.0)
+    {
+        lidUnit->soilMoisture = LidProcs[lidIndex].soil.wiltPoint + 
+            lidUnit->initSat * (LidProcs[lidIndex].soil.porosity - 
+                LidProcs[lidIndex].soil.wiltPoint);
+    }
+
+    if (LidProcs[lidIndex].storage.thickness > 0.0)
+    {
+        lidUnit->storageDepth = lidUnit->initSat * 
+            LidProcs[lidIndex].storage.thickness;
+    }
+
+    if (LidProcs[lidIndex].drainMat.thickness > 0.0)
+    {
+        lidUnit->storageDepth = lidUnit->initSat *
+            LidProcs[lidIndex].drainMat.thickness;
+    }
+}
+
+void lid_updateLidGroup(int index)
+{
+    int k;
+    TLidUnit* lidUnit;
+    TLidList* lidList;
+    TLidGroup lidGroup;
+    
+    //... check if group exists
+    lidGroup = LidGroups[index];
+    if (lidGroup == NULL) return;
+
+    lidGroup->pervArea = 0.0;
+
+    //... exmaine each LID in the group
+    lidList = lidGroup->lidList;
+
+    while (lidList)
+    {
+        lidUnit = lidList->lidUnit;
+        if (isLidPervious(lidUnit->lidIndex))
+        {
+            lidGroup->pervArea += (lidUnit->area * lidUnit->number);
+        }
+
+        lidList = lidList->nextLidUnit;
+    }
+}
+
+
+void lid_updateAllLidUnit(int lidIndex)
+{
+// 
+// Purpose: update all lid unit parameters due to change in lid control parameters
+// Input:   lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
+// Output:  none
+    int j, k;
+    TLidUnit* lidUnit;
+    TLidList* lidList;
+    TLidGroup lidGroup;
+    for (j = 0; j < GroupCount; j++)
+    {
+        //... check if group exists
+        lidGroup = LidGroups[j];
+        if (lidGroup == NULL) continue;
+
+        //... exmaine each LID in the group
+        lidList = lidGroup->lidList;
+
+        while (lidList)
+        {
+            lidUnit = lidList->lidUnit;
+            k = lidUnit->lidIndex;
+
+            if (k == lidIndex)
+            {
+                lid_updateLidUnit(lidUnit, j);
+            }
+
+            lidList = lidList->nextLidUnit;
+        }
+
+    }
 }

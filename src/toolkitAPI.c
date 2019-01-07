@@ -880,7 +880,8 @@ int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int param, double *valu
             switch(param)
             {
                 case SM_UNITAREA:
-                    *value = lidUnit->area * SQR(UCF(LENGTH)); break;
+                    *value = lidUnit->area * SQR(UCF(LENGTH)); 
+                    break;
                 case SM_FWIDTH:
                     *value = lidUnit->fullWidth * UCF(LENGTH); break;
                 case SM_BWIDTH:
@@ -931,7 +932,8 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
             switch(Param)
             {
                 case SM_UNITAREA:
-                    lidUnit->area = value / SQR(UCF(LENGTH)); break;
+                    lidUnit->area = value / SQR(UCF(LENGTH)); 
+                    break;
                 case SM_FWIDTH:
                     lidUnit->fullWidth = value / UCF(LENGTH); break;
                 //case SM_BWIDTH:
@@ -943,12 +945,16 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }
-            // Validate Lid Unit 
-            // Only see function for validating all the lid units within subcatchments (lidGroup)
-            lid_validateLidGroup(index);
         }
     }
-
+    
+    if (errcode == ERR_NONE)
+    {
+        //lid_updateLidUnit(lidUnit, index);
+        lid_validateLidGroup(index);
+        lid_updateLidGroup(index);
+    }
+    
     return(errcode);
 }
 
@@ -982,6 +988,7 @@ int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int param, int *value)
         // There are no Lid Units defined for the subcatchments
         if(lidUnit)
         {
+
             switch(param)
             {
                 case SM_INDEX:
@@ -1038,7 +1045,8 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int param, int value)
                 case SM_INDEX:
                     lidUnit->lidIndex = value; break;
                 case SM_NUMBER:
-                    lidUnit->number = value; break;
+                    lidUnit->number = value; 
+                    break;
                 case SM_TOPERV:
                     lidUnit->toPerv = value; break;
                 case SM_DRAINSUB:
@@ -1052,10 +1060,14 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int param, int value)
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }
-            // Validate Lid Unit 
-            // Only see function for validating all the lid units within subcatchments (lidGroup)
-            lid_validateLidGroup(index);
         }
+    }
+
+    if (errcode == ERR_NONE)
+    {
+        lid_validateLidGroup(index);
+        lid_updateLidGroup(index);
+        lid_updateLidUnit(lidUnit, index);
     }
 
     return(errcode);
@@ -1479,6 +1491,7 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, 
     if (errcode == ERR_NONE)
     {
         lid_validateLidProc(lidControlIndex);
+        lid_updateAllLidUnit(lidControlIndex);
     }
     return(errcode);
 }
