@@ -224,11 +224,12 @@ typedef enum {
 
 /// Lid unit property codes
 typedef enum {
-	SM_UNITAREA		= 0,  /**< Area of Single Replicate Unit */
-	SM_FWIDTH		= 1,  /**< Full Top Width of Single Unit */
-	SM_BWIDTH		= 2,  /**< Bottom Width of Single Unit */
-	SM_INITSAT		= 3,  /**< Initial Saturation of Soil and Storage Layer */
-	SM_FROMIMPERV	= 4,  /**< Fraction of Impervious Area Runoff Treated */
+    SM_UNITAREA     = 0,  /**< Area of Single Replicate Unit */
+    SM_FWIDTH       = 1,  /**< Full Top Width of Single Unit */
+    SM_BWIDTH       = 2,  /**< Bottom Width of Single Unit */
+    SM_INITSAT      = 3,  /**< Initial Saturation of Soil and Storage Layer */
+    SM_FROMIMPERV   = 4,  /**< Fraction of Impervious Area Runoff Treated */
+    SM_FROMPERV     = 5,  /**< Fraction of Pervious Area Runoff Treated */
 } SM_LidUProperty;
 
 /// Lid unit option codes

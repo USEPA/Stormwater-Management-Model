@@ -890,6 +890,8 @@ int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int param, double *valu
                     *value = lidUnit->initSat * 100; break;
                 case SM_FROMIMPERV:
                     *value = lidUnit->fromImperv * 100; break;
+                case SM_FROMPERV:
+                    *value = lidUnit->fromPerv * 100; break;
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }
@@ -942,13 +944,15 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
                     lidUnit->initSat = value / 100; break;
                 case SM_FROMIMPERV:
                     lidUnit->fromImperv = value / 100; break;
+                case SM_FROMPERV:
+                    lidUnit->fromPerv = value / 100; break;
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }
         }
     }
     
-    if (errcode == ERR_NONE)
+    if(errcode == ERR_NONE)
     {
         lid_validateLidGroup(index);
         lid_updateLidGroup(index);
@@ -1047,7 +1051,7 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int param, int value)
                     lidUnit->number = value; 
                     break;
                 case SM_TOPERV:
-                    lidUnit->toPerv = value; break;
+                    lidUnit->toPerv = (value > 0.0); break;
                 case SM_DRAINSUB:
                     lidUnit->drainSubcatch = value; 
                     lidUnit->drainNode = -1;
@@ -1062,11 +1066,10 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int param, int value)
         }
     }
 
-    if (errcode == ERR_NONE)
+    if(errcode == ERR_NONE)
     {
         lid_validateLidGroup(index);
         lid_updateLidGroup(index);
-        lid_updateLidUnit(lidUnit, index);
     }
 
     return(errcode);
@@ -1487,7 +1490,7 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, 
         }
 
     }
-    if (errcode == ERR_NONE)
+    if(errcode == ERR_NONE)
     {
         lid_validateLidProc(lidControlIndex);
         lid_updateAllLidUnit(lidControlIndex);
