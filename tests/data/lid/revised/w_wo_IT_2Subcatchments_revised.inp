@@ -55,31 +55,33 @@ DRY_ONLY         NO
 [SUBCATCHMENTS]
 ;;Name           Rain Gage        Outlet           Area     %Imperv  Width    %Slope   CurbLen  SnowPack        
 ;;-------------- ---------------- ---------------- -------- -------- -------- -------- -------- ----------------
-wSWALE           1                2                5        50       100      1        0                        
-woSWALE          1                2                5        50       100      1        0                        
+wIT              1                2                5        50       100      1        0                        
+woIT             1                2                5        50       100      1        0                        
 
 [SUBAREAS]
 ;;Subcatchment   N-Imperv   N-Perv     S-Imperv   S-Perv     PctZero    RouteTo    PctRouted 
 ;;-------------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
-wSWALE           0.01       0.1        0.05       0.05       25         OUTLET    
-woSWALE          0.01       0.1        0.05       0.05       25         OUTLET    
+wIT              0.01       0.1        0.05       0.05       25         OUTLET    
+woIT             0.01       0.1        0.05       0.05       25         OUTLET    
 
 [INFILTRATION]
 ;;Subcatchment   MaxRate    MinRate    Decay      DryTime    MaxInfil  
 ;;-------------- ---------- ---------- ---------- ---------- ----------
-wSWALE           1.2        0.1        2          7          0         
-woSWALE          1.2        0.1        2          7          0         
+wIT              1.2        0.1        2          7          0         
+woIT             1.2        0.1        2          7          0         
 
 [LID_CONTROLS]
 ;;Name           Type/Layer Parameters
 ;;-------------- ---------- ----------
-SWALE            VS
-SWALE            SURFACE    12         .25        0.1        1.0        1         
+IT               IT
+IT               SURFACE    9          .99        0.99       9.9        5         
+IT               STORAGE    9          0.99       0.99       0.99        
+IT               DRAIN      0.99       0.99       9          9          9.9          0.99                    
 
 [LID_USAGE]
 ;;Subcatchment   LID Process      Number  Area       Width      InitSat    FromImp    ToPerv     RptFile                  DrainTo          FromPerv  
 ;;-------------- ---------------- ------- ---------- ---------- ---------- ---------- ---------- ------------------------ ---------------- ----------
-wSWALE           SWALE            10      500        100        0          25         1          *                        *                0               
+wIT              IT               9       99         99         99         99         0          *                        *                0.99               
 
 [OUTFALLS]
 ;;Name           Elevation  Type       Stage Data       Gated    Route To        
@@ -141,20 +143,20 @@ Units      None
 [Polygons]
 ;;Subcatchment   X-Coord            Y-Coord           
 ;;-------------- ------------------ ------------------
-wSWALE           2964.789           4971.831          
-wSWALE           6134.511           4986.413          
-wSWALE           6134.511           7445.652          
-wSWALE           2964.789           7450.704          
-woSWALE          2957.539           7437.452          
-woSWALE          2957.539           7437.452          
-woSWALE          2957.539           7437.452          
-woSWALE          3000.569           4960.151          
-woSWALE          3000.569           4960.151          
-woSWALE          1445.340           5236.773          
-woSWALE          480.238            5464.218          
-woSWALE          369.590            6558.410          
-woSWALE          443.355            7425.158          
-woSWALE          2963.686           7437.452          
+wIT              2964.789           4971.831          
+wIT              6134.511           4986.413          
+wIT              6134.511           7445.652          
+wIT              2964.789           7450.704          
+woIT             2957.539           7437.452          
+woIT             2957.539           7437.452          
+woIT             2957.539           7437.452          
+woIT             3000.569           4960.151          
+woIT             3000.569           4960.151          
+woIT             1445.340           5236.773          
+woIT             480.238            5464.218          
+woIT             369.590            6558.410          
+woIT             443.355            7425.158          
+woIT             2963.686           7437.452          
 
 [SYMBOLS]
 ;;Gage           X-Coord            Y-Coord           

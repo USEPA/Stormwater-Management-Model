@@ -55,31 +55,33 @@ DRY_ONLY         NO
 [SUBCATCHMENTS]
 ;;Name           Rain Gage        Outlet           Area     %Imperv  Width    %Slope   CurbLen  SnowPack        
 ;;-------------- ---------------- ---------------- -------- -------- -------- -------- -------- ----------------
-wSWALE           1                2                5        50       100      1        0                        
-woSWALE          1                2                5        50       100      1        0                        
+wGR              1                2                5        50       100      1        0                        
+woGR             1                2                5        50       100      1        0                        
 
 [SUBAREAS]
 ;;Subcatchment   N-Imperv   N-Perv     S-Imperv   S-Perv     PctZero    RouteTo    PctRouted 
 ;;-------------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
-wSWALE           0.01       0.1        0.05       0.05       25         OUTLET    
-woSWALE          0.01       0.1        0.05       0.05       25         OUTLET    
+wGR              0.01       0.1        0.05       0.05       25         OUTLET    
+woGR             0.01       0.1        0.05       0.05       25         OUTLET    
 
 [INFILTRATION]
 ;;Subcatchment   MaxRate    MinRate    Decay      DryTime    MaxInfil  
 ;;-------------- ---------- ---------- ---------- ---------- ----------
-wSWALE           1.2        0.1        2          7          0         
-woSWALE          1.2        0.1        2          7          0         
+wGR              1.2        0.1        2          7          0         
+woGR             1.2        0.1        2          7          0         
 
 [LID_CONTROLS]
 ;;Name           Type/Layer Parameters
 ;;-------------- ---------- ----------
-SWALE            VS
-SWALE            SURFACE    12         .25        0.1        1.0        1         
+GR               GR
+GR               SURFACE    9          .99        0.99       0.99       5         
+GR               SOIL       9          0.99       0.099      0.0099     0.99       9.9        9.0       
+GR               DRAINMAT   9          0.99       0.99      
 
 [LID_USAGE]
 ;;Subcatchment   LID Process      Number  Area       Width      InitSat    FromImp    ToPerv     RptFile                  DrainTo          FromPerv  
 ;;-------------- ---------------- ------- ---------- ---------- ---------- ---------- ---------- ------------------------ ---------------- ----------
-wSWALE           SWALE            10      500        100        0          25         1          *                        *                0               
+wGR              GR               9       99         99         99         99         0          *                        *                0.99            
 
 [OUTFALLS]
 ;;Name           Elevation  Type       Stage Data       Gated    Route To        
@@ -141,20 +143,20 @@ Units      None
 [Polygons]
 ;;Subcatchment   X-Coord            Y-Coord           
 ;;-------------- ------------------ ------------------
-wSWALE           2964.789           4971.831          
-wSWALE           6134.511           4986.413          
-wSWALE           6134.511           7445.652          
-wSWALE           2964.789           7450.704          
-woSWALE          2957.539           7437.452          
-woSWALE          2957.539           7437.452          
-woSWALE          2957.539           7437.452          
-woSWALE          3000.569           4960.151          
-woSWALE          3000.569           4960.151          
-woSWALE          1445.340           5236.773          
-woSWALE          480.238            5464.218          
-woSWALE          369.590            6558.410          
-woSWALE          443.355            7425.158          
-woSWALE          2963.686           7437.452          
+wGR              2964.789           4971.831          
+wGR              6134.511           4986.413          
+wGR              6134.511           7445.652          
+wGR              2964.789           7450.704          
+woGR             2957.539           7437.452          
+woGR             2957.539           7437.452          
+woGR             2957.539           7437.452          
+woGR             3000.569           4960.151          
+woGR             3000.569           4960.151          
+woGR             1445.340           5236.773          
+woGR             480.238            5464.218          
+woGR             369.590            6558.410          
+woGR             443.355            7425.158          
+woGR             2963.686           7437.452          
 
 [SYMBOLS]
 ;;Gage           X-Coord            Y-Coord           

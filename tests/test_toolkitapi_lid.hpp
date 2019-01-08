@@ -237,9 +237,39 @@ struct Fixture_LID_Results
     {
         int error, sub_index;
         double elapsed_time = 0.0;
-        double db_value = 0.0;
+        double db_value = 0.0;        
+        string subcatch;
         
-        string subcatch = string("wBC");
+        switch(lid_type) 
+        {
+            case 0:
+                subcatch = string("wBC");
+                break;
+            case 1:
+                subcatch = string("wGR");
+                break;
+            case 2:
+                subcatch = string("wIT");
+                break;
+            case 3:
+                subcatch = string("wPP");
+                break;
+            case 4:
+                subcatch = string("wRB");
+                break;
+            case 5:
+                subcatch = string("wRG");
+                break;
+            case 6:
+                subcatch = string("wSWALE");
+                break;
+            case 7:
+                subcatch = string("wRD");
+                break;
+            default:
+                subcatch = string("wBC");           
+                break;
+        }
         
         open_swmm_lid(lid_type);
         swmm_start(0);

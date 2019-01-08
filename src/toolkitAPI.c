@@ -1139,73 +1139,74 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int param, 
         case SM_SURFACE:
             switch(param)
             {
-            case SM_THICKNESS:
-                *value = lidProc->surface.thickness * UCF(RAINDEPTH); break;
-            case SM_VOIDFRAC:
-                *value = 1 - lidProc->surface.voidFrac; break;
-            case SM_ROUGHNESS:
-                *value = lidProc->surface.roughness; break;
-            case SM_SURFSLOPE:
-                *value = lidProc->surface.surfSlope * 100; break;
-            case SM_SIDESLOPE:
-                *value = lidProc->surface.sideSlope; break;
-            case SM_ALPHA:
-                *value = lidProc->surface.alpha; break;
-            default:
-                errcode = ERR_API_OUTBOUNDS; break;
+                case SM_THICKNESS:
+                    *value = lidProc->surface.thickness * UCF(RAINDEPTH); break;
+                case SM_VOIDFRAC:
+                    *value = 1 - lidProc->surface.voidFrac; break;
+                case SM_ROUGHNESS:
+                    *value = lidProc->surface.roughness; break;
+                case SM_SURFSLOPE:
+                    *value = lidProc->surface.surfSlope * 100; break;
+                case SM_SIDESLOPE:
+                    *value = lidProc->surface.sideSlope; break;
+                case SM_ALPHA:
+                    *value = lidProc->surface.alpha; break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
             }
             break;
         case SM_SOIL:
             switch(param)
             {
-            case SM_THICKNESS:
-                *value = lidProc->soil.thickness * UCF(RAINDEPTH); break;
-            case SM_POROSITY:
-                *value = lidProc->soil.porosity; break;
-            case SM_FIELDCAP:
-                *value = lidProc->soil.fieldCap; break;
-            case SM_WILTPOINT:
-                *value = lidProc->soil.wiltPoint; break;
-            case SM_KSAT:
-                *value = lidProc->soil.kSat * UCF(RAINFALL); break;
-            case SM_KSLOPE:
-                *value = lidProc->soil.kSlope; break;
-            case SM_SUCTION:
-                *value = lidProc->soil.suction * UCF(RAINDEPTH); break;
-            default:
-                errcode = ERR_API_OUTBOUNDS; break;
+                case SM_THICKNESS:
+                    *value = lidProc->soil.thickness * UCF(RAINDEPTH); break;
+                case SM_POROSITY:
+                    *value = lidProc->soil.porosity; break;
+                case SM_FIELDCAP:
+                    *value = lidProc->soil.fieldCap; break;
+                case SM_WILTPOINT:
+                    *value = lidProc->soil.wiltPoint; break;
+                case SM_KSAT:
+                    *value = lidProc->soil.kSat * UCF(RAINFALL); break;
+                case SM_KSLOPE:
+                    *value = lidProc->soil.kSlope; break;
+                case SM_SUCTION:
+                    *value = lidProc->soil.suction * UCF(RAINDEPTH); break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
             }
             break;
         case SM_STOR:
             switch(param)
             {
-            case SM_THICKNESS:
-                *value = lidProc->storage.thickness * UCF(RAINDEPTH); break;
-            case SM_VOIDFRAC:
-                if (lidProc->storage.voidFrac < 1)
-                {
-                    *value = lidProc->storage.voidFrac / (1 - lidProc->storage.voidFrac);
-                }
-                else
-                {
-                    *value = lidProc->storage.voidFrac;
-                }
-                break;
-            case SM_KSAT:
-                *value = lidProc->storage.kSat * UCF(RAINFALL); break;
-            case SM_CLOGFACTOR:
-                if (lidProc->storage.thickness > 0.0)
-                {
-                    *value = lidProc->storage.clogFactor / 
-                            (lidProc->storage.thickness * 
-                            lidProc->storage.voidFrac); break;
-                }
-                else
-                {
-                    *value = lidProc->pavement.clogFactor;
-                }
-            default:
-                errcode = ERR_API_OUTBOUNDS; break;
+                case SM_THICKNESS:
+                    *value = lidProc->storage.thickness * UCF(RAINDEPTH); break;
+                case SM_VOIDFRAC:
+                    if (lidProc->storage.voidFrac < 1)
+                    {
+                        *value = lidProc->storage.voidFrac / (1 - lidProc->storage.voidFrac);
+                    }
+                    else
+                    {
+                        *value = lidProc->storage.voidFrac;
+                    }
+                    break;
+                case SM_KSAT:
+                    *value = lidProc->storage.kSat * UCF(RAINFALL); break;
+                case SM_CLOGFACTOR:
+                    if (lidProc->storage.thickness > 0.0)
+                    {
+                        *value = lidProc->storage.clogFactor / 
+                                (lidProc->storage.thickness * 
+                                lidProc->storage.voidFrac); 
+                    }
+                    else
+                    {
+                        *value = lidProc->pavement.clogFactor;
+                    }
+                    break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
             }
             break;
         case SM_PAVE:
@@ -1233,12 +1234,13 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int param, 
                     *value = lidProc->pavement.clogFactor / 
                             (lidProc->pavement.thickness * 
                             lidProc->pavement.voidFrac * 
-                            (1 - lidProc->pavement.impervFrac)); break;
+                            (1 - lidProc->pavement.impervFrac)); 
                 }
                 else
                 {
                     *value = lidProc->pavement.clogFactor;
                 }
+                break;
             case SM_REGENDAYS:
                 *value = lidProc->pavement.regenDays; break;
             case SM_REGENDEGREE:

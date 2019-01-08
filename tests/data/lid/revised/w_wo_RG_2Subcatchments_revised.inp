@@ -41,6 +41,10 @@ LAT_FLOW_TOL         5
 MINIMUM_STEP         0.5
 THREADS              1
 
+[FILES]
+;;Interfacing Files
+SAVE Outflows/Calibration "C:\OWA\Stormwater-Management-Model\tests\data\lid\Example5.txt"
+
 [EVAPORATION]
 ;;Data Source    Parameters
 ;;-------------- ----------------
@@ -55,31 +59,33 @@ DRY_ONLY         NO
 [SUBCATCHMENTS]
 ;;Name           Rain Gage        Outlet           Area     %Imperv  Width    %Slope   CurbLen  SnowPack        
 ;;-------------- ---------------- ---------------- -------- -------- -------- -------- -------- ----------------
-wSWALE           1                2                5        50       100      1        0                        
-woSWALE          1                2                5        50       100      1        0                        
+wRG              1                2                5        50       100      1        0                        
+woRG             1                2                5        50       100      1        0                        
 
 [SUBAREAS]
 ;;Subcatchment   N-Imperv   N-Perv     S-Imperv   S-Perv     PctZero    RouteTo    PctRouted 
 ;;-------------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
-wSWALE           0.01       0.1        0.05       0.05       25         OUTLET    
-woSWALE          0.01       0.1        0.05       0.05       25         OUTLET    
+wRG              0.01       0.1        0.05       0.05       25         OUTLET    
+woRG             0.01       0.1        0.05       0.05       25         OUTLET    
 
 [INFILTRATION]
 ;;Subcatchment   MaxRate    MinRate    Decay      DryTime    MaxInfil  
 ;;-------------- ---------- ---------- ---------- ---------- ----------
-wSWALE           1.2        0.1        2          7          0         
-woSWALE          1.2        0.1        2          7          0         
+wRG              1.2        0.1        2          7          0         
+woRG             1.2        0.1        2          7          0         
 
 [LID_CONTROLS]
 ;;Name           Type/Layer Parameters
 ;;-------------- ---------- ----------
-SWALE            VS
-SWALE            SURFACE    12         .25        0.1        1.0        1         
+RG               RG
+RG               SURFACE    9          0.99       0.99       0.99        5         
+RG               SOIL       9          0.99       0.099      0.0099      0.99       9.9       9.9       
+RG               STORAGE    9          0.99       0.99       0.99        
 
 [LID_USAGE]
 ;;Subcatchment   LID Process      Number  Area       Width      InitSat    FromImp    ToPerv     RptFile                  DrainTo          FromPerv  
 ;;-------------- ---------------- ------- ---------- ---------- ---------- ---------- ---------- ------------------------ ---------------- ----------
-wSWALE           SWALE            10      500        100        0          25         1          *                        *                0               
+wRG              RG               99      99         99         99         99         0          *                        *                0.99            
 
 [OUTFALLS]
 ;;Name           Elevation  Type       Stage Data       Gated    Route To        
@@ -141,20 +147,20 @@ Units      None
 [Polygons]
 ;;Subcatchment   X-Coord            Y-Coord           
 ;;-------------- ------------------ ------------------
-wSWALE           2964.789           4971.831          
-wSWALE           6134.511           4986.413          
-wSWALE           6134.511           7445.652          
-wSWALE           2964.789           7450.704          
-woSWALE          2957.539           7437.452          
-woSWALE          2957.539           7437.452          
-woSWALE          2957.539           7437.452          
-woSWALE          3000.569           4960.151          
-woSWALE          3000.569           4960.151          
-woSWALE          1445.340           5236.773          
-woSWALE          480.238            5464.218          
-woSWALE          369.590            6558.410          
-woSWALE          443.355            7425.158          
-woSWALE          2963.686           7437.452          
+wRG              2964.789           4971.831          
+wRG              6134.511           4986.413          
+wRG              6134.511           7445.652          
+wRG              2964.789           7450.704          
+woRG             2957.539           7437.452          
+woRG             2957.539           7437.452          
+woRG             2957.539           7437.452          
+woRG             3000.569           4960.151          
+woRG             3000.569           4960.151          
+woRG             1445.340           5236.773          
+woRG             480.238            5464.218          
+woRG             369.590            6558.410          
+woRG             443.355            7425.158          
+woRG             2963.686           7437.452          
 
 [SYMBOLS]
 ;;Gage           X-Coord            Y-Coord           

@@ -74,12 +74,12 @@ woSWALE          1.2        0.1        2          7          0
 ;;Name           Type/Layer Parameters
 ;;-------------- ---------- ----------
 SWALE            VS
-SWALE            SURFACE    12         .25        0.1        1.0        1         
+SWALE            SURFACE    9          .99        0.99       0.99       0.99      
 
 [LID_USAGE]
 ;;Subcatchment   LID Process      Number  Area       Width      InitSat    FromImp    ToPerv     RptFile                  DrainTo          FromPerv  
 ;;-------------- ---------------- ------- ---------- ---------- ---------- ---------- ---------- ------------------------ ---------------- ----------
-wSWALE           SWALE            10      500        100        0          25         1          *                        *                0               
+wSWALE           SWALE            99      99         99         99         99         0          *                        *                0.99            
 
 [OUTFALLS]
 ;;Name           Elevation  Type       Stage Data       Gated    Route To        

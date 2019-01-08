@@ -22,9 +22,9 @@ END_TIME             00:00:00
 SWEEP_START          01/01
 SWEEP_END            12/31
 DRY_DAYS             0
-REPORT_STEP          01:00:00
-WET_STEP             00:30:00
-DRY_STEP             01:00:00
+REPORT_STEP          00:15:00
+WET_STEP             00:05:00
+DRY_STEP             00:05:00
 ROUTING_STEP         0:00:30 
 RULE_STEP            00:00:00
 
@@ -55,34 +55,35 @@ DRY_ONLY         NO
 [SUBCATCHMENTS]
 ;;Name           Rain Gage        Outlet           Area     %Imperv  Width    %Slope   CurbLen  SnowPack        
 ;;-------------- ---------------- ---------------- -------- -------- -------- -------- -------- ----------------
-wBC              1                2                5        50       100      1        0                        
-woBC             1                2                5        50       100      1        0                        
+wPP              1                2                5        50       100      1        0                        
+woPP             1                2                5        50       100      1        0                        
 
 [SUBAREAS]
 ;;Subcatchment   N-Imperv   N-Perv     S-Imperv   S-Perv     PctZero    RouteTo    PctRouted 
 ;;-------------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
-wBC              0.01       0.1        0.05       0.05       25         OUTLET    
-woBC             0.01       0.1        0.05       0.05       25         OUTLET    
+wPP              0.01       0.1        0.05       0.05       25         OUTLET    
+woPP             0.01       0.1        0.05       0.05       25         OUTLET    
 
 [INFILTRATION]
 ;;Subcatchment   MaxRate    MinRate    Decay      DryTime    MaxInfil  
 ;;-------------- ---------- ---------- ---------- ---------- ----------
-wBC              1.2        0.1        2          7          0         
-woBC             1.2        0.1        2          7          0         
+wPP              1.2        0.1        2          7          0         
+woPP             1.2        0.1        2          7          0         
 
 [LID_CONTROLS]
 ;;Name           Type/Layer Parameters
 ;;-------------- ---------- ----------
-BC               BC
-BC               SURFACE    99         .99        0.99       .99        5         
-BC               SOIL       99         0.99       0.099      0.0099     0.99       9.9        9.9       
-BC               STORAGE    99         0.99       0.99       .99       
-BC               DRAIN      0.99       0.99       9.9        6          9          00.99                
+PP               PP
+PP               SURFACE    9          .99        0.99       0.99       5         
+PP               PAVEMENT   9          0.99       0.99       9.9        0.99       9          0.99      
+PP               SOIL       9          0.99       0.099      0.0099     0.99       9.9        9.9       
+PP               STORAGE    9          0.99       0.99       0.99      
+PP               DRAIN      0.99       0.99       9          9          9.9        0.99                 
 
 [LID_USAGE]
 ;;Subcatchment   LID Process      Number  Area       Width      InitSat    FromImp    ToPerv     RptFile                  DrainTo          FromPerv  
 ;;-------------- ---------------- ------- ---------- ---------- ---------- ---------- ---------- ------------------------ ---------------- ----------
-wBC              BC               100     50         10         0          25         1          "feng_r.txt" *                0               
+wPP              PP               9       99         99         99         99         0         *                        *                 0.99               
 
 [OUTFALLS]
 ;;Name           Elevation  Type       Stage Data       Gated    Route To        
@@ -144,20 +145,20 @@ Units      None
 [Polygons]
 ;;Subcatchment   X-Coord            Y-Coord           
 ;;-------------- ------------------ ------------------
-wBC              2964.789           4971.831          
-wBC              6134.511           4986.413          
-wBC              6134.511           7445.652          
-wBC              2964.789           7450.704          
-woBC             2957.539           7437.452          
-woBC             2957.539           7437.452          
-woBC             2957.539           7437.452          
-woBC             3000.569           4960.151          
-woBC             3000.569           4960.151          
-woBC             1445.340           5236.773          
-woBC             480.238            5464.218          
-woBC             369.590            6558.410          
-woBC             443.355            7425.158          
-woBC             2963.686           7437.452          
+wPP              2964.789           4971.831          
+wPP              6134.511           4986.413          
+wPP              6134.511           7445.652          
+wPP              2964.789           7450.704          
+woPP             2957.539           7437.452          
+woPP             2957.539           7437.452          
+woPP             2957.539           7437.452          
+woPP             3000.569           4960.151          
+woPP             3000.569           4960.151          
+woPP             1445.340           5236.773          
+woPP             480.238            5464.218          
+woPP             369.590            6558.410          
+woPP             443.355            7425.158          
+woPP             2963.686           7437.452          
 
 [SYMBOLS]
 ;;Gage           X-Coord            Y-Coord           
