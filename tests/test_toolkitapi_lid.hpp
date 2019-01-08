@@ -235,45 +235,57 @@ struct Fixture_LID_Results
     
     void open_swmm_model(int lid_type)
     {
-        int error, sub_index;
+        int error, sub_index, lid_index;
         double elapsed_time = 0.0;
         double db_value = 0.0;        
         string subcatch;
+        string lid;
         
         switch(lid_type) 
         {
             case 0:
                 subcatch = string("wBC");
+                lid = string("BC");
                 break;
             case 1:
                 subcatch = string("wGR");
+                lid = string("GR");
                 break;
             case 2:
                 subcatch = string("wIT");
+                lid = string("IT");
                 break;
             case 3:
                 subcatch = string("wPP");
+                lid = string("PP");
                 break;
             case 4:
                 subcatch = string("wRB");
+                lid = string("RB");
                 break;
             case 5:
                 subcatch = string("wRG");
+                lid = string("RG");
                 break;
             case 6:
                 subcatch = string("wSWALE");
+                lid = string("SWALE");
                 break;
             case 7:
                 subcatch = string("wRD");
+                lid = string("RD");
                 break;
             default:
                 subcatch = string("wBC");           
+                lid = string("BC");
                 break;
         }
         
         open_swmm_lid(lid_type);
         swmm_start(0);
         sub_index = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
+        BOOST_REQUIRE(error == ERR_NONE);
+        lid_index = swmm_getObjectIndex(SM_LID, (char *)lid.c_str(), &error);
         BOOST_REQUIRE(error == ERR_NONE);
         
         do
@@ -282,9 +294,35 @@ struct Fixture_LID_Results
             BOOST_REQUIRE(error == ERR_NONE);
             error = swmm_getSubcatchResult(sub_index, SM_SUBCRUNOFF, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
-
             subcatchment_runoff.push_back(round(db_value * 100000.0) / 100000.0);
-        }while (elapsed_time != 0 && !error);
+            
+            error = swmm_getLidUFluxRates(sub_index, 0, SM_SURFACE, &db_value);
+            BOOST_REQUIRE(error == ERR_NONE);
+            lidunit_surface_flux.push_back(round(db_value * 100000.0) / 100000.0);
+            error = swmm_getLidUFluxRates(sub_index, 0, SM_SOIL, &db_value);
+            BOOST_REQUIRE(error == ERR_NONE);
+            lidunit_soil_flux.push_back(round(db_value * 100000.0) / 100000.0);
+            error = swmm_getLidUFluxRates(sub_index, 0, SM_STORAGE, &db_value);
+            BOOST_REQUIRE(error == ERR_NONE);
+            lidunit_storage_flux.push_back(round(db_value * 100000.0) / 100000.0);
+            error = swmm_getLidUFluxRates(sub_index, 0, SM_PAVE, &db_value);
+            BOOST_REQUIRE(error == ERR_NONE);
+            lidunit_pave_flux.push_back(round(db_value * 100000.0) / 100000.0);
+
+            error = swmm_getLidGResult(sub_index, SM_PERVAREA, &db_value);
+            BOOST_REQUIRE(error == ERR_NONE);            
+            lidgroup_pervarea_flux.push_back(round(db_value * 100000.0) / 100000.0);
+            error = swmm_getLidGResult(sub_index, SM_FLOWTOPERV, &db_value)
+            BOOST_REQUIRE(error == ERR_NONE);              
+            lidgroup_flowtoperv_flux.push_back(round(db_value * 100000.0) / 100000.0);
+            error = swmm_getLidGResult(sub_index, SM_OLDDRAINFLOW, &db_value);
+            BOOST_REQUIRE(error == ERR_NONE);  
+            lidgroup_olddrainflow_flux.push_back(round(db_value * 100000.0) / 100000.0);
+            error = swmm_getLidGResult(sub_index, SM_NEWDRAINFLOW, &db_value);
+            BOOST_REQUIRE(error == ERR_NONE);  
+            lidgroup_newdrainflow_flux.push_back(round(db_value * 100000.0) / 100000.0);
+            
+            } while (elapsed_time != 0 && !error);
         BOOST_CHECK_EQUAL(0, error);
         swmm_end();
         swmm_close();
@@ -296,6 +334,16 @@ struct Fixture_LID_Results
     }
     
     vector<double> subcatchment_runoff;
+    
+    vector<double> lidunit_surface_flux;
+    vector<double> lidunit_soil_flux;
+    vector<double> lidunit_storage_flux;
+    vector<double> lidunit_pave_flux;
+    
+    vector<double> lidgroup_pervarea_flux;
+    vector<double> lidgroup_flowtoperv_flux;
+    vector<double> lidgroup_olddrainflow_flux;
+    vector<double> lidgroup_newdrainflow_flux;    
 };
 
 /* Fixture Before End

@@ -55,15 +55,15 @@ int DLLEXPORT swmm_project_findObject(int type, char *id, int *index)
 {
     int errorcode = 0;
 
-	int idx = project_findObject(type, id);
+    int idx = project_findObject(type, id);
 
-	if (idx == -1) {
+    if (idx == -1) {
         index    = NULL;
         errorcode = ERR_API_OBJECT_INDEX;
-	} else
+    } else
         *index = idx;
 
-	return errorcode;
+    return errorcode;
 }
 
 int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month, int *day,
@@ -2139,6 +2139,10 @@ int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, int layerIndex, dou
                     errcode = ERR_API_OUTBOUNDS; break;
             }
         }
+        else
+        {
+            errcode = ERR_API_UNDEFINED_LID;
+        }
     }
     return(errcode);
 }
@@ -2168,11 +2172,7 @@ int DLLEXPORT swmm_getLidGResult(int index, int type, double *result)
     {
         lidGroup = lid_getLidGroup(index);
 
-        if (!lidGroup)
-        {
-            errcode = ERR_API_UNDEFINED_LID;
-        }
-        else
+        if (lidGroup)
         {
             switch (type)
             {   
@@ -2187,6 +2187,10 @@ int DLLEXPORT swmm_getLidGResult(int index, int type, double *result)
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }
+        }
+        else
+        {
+            errcode = ERR_API_UNDEFINED_LID;
         }
     }
     return(errcode);
@@ -2282,6 +2286,10 @@ int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, int type, double *resu
                 default:
                     errcode = ERR_API_OUTBOUNDS; break;
             }
+        }
+        else
+        {
+            errcode = ERR_API_UNDEFINED_LID;
         }
     }
     return(errcode);
