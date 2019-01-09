@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Lid Unit 
         error = swmm_setLidUOption(sub_index, 0, SM_NUMBER, 100);
         BOOST_REQUIRE(error == ERR_NONE); 
-        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, TRUE);
+        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, 1);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_setLidUParam(sub_index, 0, SM_UNITAREA, 50.0);
         BOOST_REQUIRE(error == ERR_NONE);
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_REQUIRE(int_value == 100);
         error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(int_value == TRUE);
+        BOOST_REQUIRE(int_value == 1);
         error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);  
         BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_CHECK_SMALL(db_value - 1.49, 0.0001);
             error = swmm_getLidCOverflow(lid_index, &chr_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, FALSE);
+            BOOST_CHECK_EQUAL(chr_value, 0);
 
             error = swmm_getLidCParam(lid_index, SM_SOIL, SM_THICKNESS, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);  
@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_REQUIRE(int_value == 100);
             error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_REQUIRE(int_value == TRUE);
+            BOOST_REQUIRE(int_value == 1);
             error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);  
             BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);
@@ -419,7 +419,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Lid Unit 
         error = swmm_setLidUOption(sub_index, 0, SM_NUMBER, 100);
         BOOST_REQUIRE(error == ERR_NONE); 
-        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, TRUE);
+        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, 1);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_setLidUParam(sub_index, 0, SM_UNITAREA, 50.0);
         BOOST_REQUIRE(error == ERR_NONE);
@@ -437,7 +437,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_REQUIRE(int_value == 100);
         error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(int_value == TRUE);
+        BOOST_REQUIRE(int_value == 1);
         error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);  
         BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);
@@ -474,7 +474,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_CHECK_SMALL(db_value - 1.49, 0.0001);
             error = swmm_getLidCOverflow(lid_index, &chr_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, FALSE);
+            BOOST_CHECK_EQUAL(chr_value, 0);
 
             error = swmm_getLidCParam(lid_index, SM_SOIL, SM_THICKNESS, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);  
@@ -516,7 +516,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_REQUIRE(int_value == 100);
             error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_REQUIRE(int_value == TRUE);
+            BOOST_REQUIRE(int_value == 1);
             error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);  
             BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);
@@ -653,7 +653,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Lid Unit 
         error = swmm_setLidUOption(sub_index, 0, SM_NUMBER, 100);
         BOOST_REQUIRE(error == ERR_NONE); 
-        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, TRUE);
+        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, 1);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_setLidUParam(sub_index, 0, SM_UNITAREA, 50.0);
         BOOST_REQUIRE(error == ERR_NONE);
@@ -671,7 +671,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_REQUIRE(int_value == 100);
         error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(int_value == TRUE);
+        BOOST_REQUIRE(int_value == 1);
         error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);  
         BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);
@@ -708,7 +708,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_CHECK_SMALL(db_value - 1.49, 0.0001);
             error = swmm_getLidCOverflow(lid_index, &chr_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, FALSE);
+            BOOST_CHECK_EQUAL(chr_value, 0);
 
             error = swmm_getLidCParam(lid_index, SM_STOR, SM_THICKNESS, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);  
@@ -747,7 +747,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_REQUIRE(int_value == 100);
             error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_REQUIRE(int_value == TRUE);
+            BOOST_REQUIRE(int_value == 1);
             error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);  
             BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);
@@ -960,7 +960,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Lid Unit 
         error = swmm_setLidUOption(sub_index, 0, SM_NUMBER, 100);
         BOOST_REQUIRE(error == ERR_NONE); 
-        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, TRUE);
+        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, 1);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_setLidUParam(sub_index, 0, SM_UNITAREA, 50.0);
         BOOST_REQUIRE(error == ERR_NONE);
@@ -978,7 +978,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_REQUIRE(int_value == 100);
         error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(int_value == TRUE);
+        BOOST_REQUIRE(int_value == 1);
         error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);  
         BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);
@@ -1015,7 +1015,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_CHECK_SMALL(db_value - 1.49, 0.0001);
             error = swmm_getLidCOverflow(lid_index, &chr_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, FALSE);
+            BOOST_CHECK_EQUAL(chr_value, 0);
 
             error = swmm_getLidCParam(lid_index, SM_PAVE, SM_THICKNESS, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
@@ -1098,7 +1098,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_REQUIRE(int_value == 100);
             error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_REQUIRE(int_value == TRUE);
+            BOOST_REQUIRE(int_value == 1);
             error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);  
             BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);
@@ -1209,7 +1209,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Lid Unit 
         error = swmm_setLidUOption(sub_index, 0, SM_NUMBER, 100);
         BOOST_REQUIRE(error == ERR_NONE); 
-        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, TRUE);
+        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, 1);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_setLidUParam(sub_index, 0, SM_UNITAREA, 12.0);
         BOOST_REQUIRE(error == ERR_NONE);
@@ -1227,7 +1227,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_REQUIRE(int_value == 100);
         error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(int_value == TRUE);
+        BOOST_REQUIRE(int_value == 1);
         error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);  
         BOOST_CHECK_SMALL(db_value - 12.0, 0.0001);
@@ -1284,7 +1284,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_REQUIRE(int_value == 100);
             error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_REQUIRE(int_value == TRUE);
+            BOOST_REQUIRE(int_value == 1);
             error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);  
             BOOST_CHECK_SMALL(db_value - 12.0, 0.0001);
@@ -1428,7 +1428,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Lid Unit 
         error = swmm_setLidUOption(sub_index, 0, SM_NUMBER, 100);
         BOOST_REQUIRE(error == ERR_NONE); 
-        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, TRUE);
+        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, 1);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_setLidUParam(sub_index, 0, SM_UNITAREA, 50.0);
         BOOST_REQUIRE(error == ERR_NONE);
@@ -1446,7 +1446,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_REQUIRE(int_value == 100);
         error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(int_value == TRUE);
+        BOOST_REQUIRE(int_value == 1);
         error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);  
         BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);
@@ -1483,7 +1483,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_CHECK_SMALL(db_value - 1.49, 0.0001);
             error = swmm_getLidCOverflow(lid_index, &chr_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, FALSE);
+            BOOST_CHECK_EQUAL(chr_value, 0);
         
             error = swmm_getLidCParam(lid_index, SM_SOIL, SM_THICKNESS, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);  
@@ -1527,7 +1527,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_REQUIRE(int_value == 100);
             error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_REQUIRE(int_value == TRUE);
+            BOOST_REQUIRE(int_value == 1);
             error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);  
             BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);
@@ -1613,7 +1613,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Lid Unit 
         error = swmm_setLidUOption(sub_index, 0, SM_NUMBER, 10);
         BOOST_REQUIRE(error == ERR_NONE); 
-        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, TRUE);
+        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, 1);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_setLidUParam(sub_index, 0, SM_UNITAREA, 500.0);
         BOOST_REQUIRE(error == ERR_NONE);
@@ -1631,7 +1631,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_REQUIRE(int_value == 10);
         error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(int_value == TRUE);
+        BOOST_REQUIRE(int_value == 1);
         error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);  
         BOOST_CHECK_SMALL(db_value - 500.0, 0.0001);
@@ -1672,14 +1672,14 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             // always true for veg. swale
             error = swmm_getLidCOverflow(lid_index, &chr_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, TRUE);
+            BOOST_CHECK_EQUAL(chr_value, 1);
             
             error = swmm_getLidUOption(sub_index, 0, SM_NUMBER, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_REQUIRE(int_value == 10);
             error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_REQUIRE(int_value == TRUE);
+            BOOST_REQUIRE(int_value == 1);
             error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);  
             BOOST_CHECK_SMALL(db_value - 500.0, 0.0001);
@@ -1795,7 +1795,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Lid Unit 
         error = swmm_setLidUOption(sub_index, 0, SM_NUMBER, 100);
         BOOST_REQUIRE(error == ERR_NONE); 
-        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, TRUE);
+        error = swmm_setLidUOption(sub_index, 0, SM_TOPERV, 1);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_setLidUParam(sub_index, 0, SM_UNITAREA, 50.0);
         BOOST_REQUIRE(error == ERR_NONE);
@@ -1813,7 +1813,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_REQUIRE(int_value == 100);
         error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(int_value == TRUE);
+        BOOST_REQUIRE(int_value == 1);
         error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);  
         BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);
@@ -1851,7 +1851,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_CHECK_SMALL(db_value - 1.49, 0.0001);
             error = swmm_getLidCOverflow(lid_index, &chr_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, FALSE);
+            BOOST_CHECK_EQUAL(chr_value, 0);
             
             error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_COEFF, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);  
@@ -1879,7 +1879,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_REQUIRE(int_value == 100);
             error = swmm_getLidUOption(sub_index, 0, SM_TOPERV, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_REQUIRE(int_value == TRUE);
+            BOOST_REQUIRE(int_value == 1);
             error = swmm_getLidUParam(sub_index, 0, SM_UNITAREA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);  
             BOOST_CHECK_SMALL(db_value - 50.0, 0.0001);

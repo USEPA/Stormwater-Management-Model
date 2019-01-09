@@ -426,12 +426,12 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Check for immediate overflow option
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == FALSE);
+        BOOST_REQUIRE(chr_value == 0);
         error = swmm_setLidCParam(lid_index, SM_SURFACE, SM_ROUGHNESS, 0);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == TRUE);
+        BOOST_REQUIRE(chr_value == 1);
         
         // Lid Unit
         error = swmm_getLidUCount(sub_index, &int_value);
@@ -673,12 +673,12 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Check for immediate overflow option
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == FALSE);
+        BOOST_REQUIRE(chr_value == 0);
         error = swmm_setLidCParam(lid_index, SM_SURFACE, SM_ROUGHNESS, 0);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == TRUE);
+        BOOST_REQUIRE(chr_value == 1);
 
         // Lid Unit
         error = swmm_getLidUCount(sub_index, &int_value);
@@ -916,12 +916,12 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Check for immediate overflow option
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == FALSE);
+        BOOST_REQUIRE(chr_value == 0);
         error = swmm_setLidCParam(lid_index, SM_SURFACE, SM_ROUGHNESS, 0);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == TRUE);
+        BOOST_REQUIRE(chr_value == 1);
 
         // Lid Unit
         error = swmm_getLidUCount(sub_index, &int_value);
@@ -1223,12 +1223,12 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Check for immediate overflow option
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == FALSE);
+        BOOST_REQUIRE(chr_value == 0);
         error = swmm_setLidCParam(lid_index, SM_SURFACE, SM_ROUGHNESS, 0);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == TRUE);
+        BOOST_REQUIRE(chr_value == 1);
 
         // Lid Unit
         error = swmm_getLidUCount(sub_index, &int_value);
@@ -1428,12 +1428,12 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Always available to immediate overflow
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == TRUE);
+        BOOST_REQUIRE(chr_value == 1);
         error = swmm_setLidCParam(lid_index, SM_SURFACE, SM_ROUGHNESS, 0);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == TRUE);
+        BOOST_REQUIRE(chr_value == 1);
 
         // Lid Unit
         error = swmm_getLidUCount(sub_index, &int_value);
@@ -1682,12 +1682,12 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Check for immediate overflow option
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == FALSE);
+        BOOST_REQUIRE(chr_value == 0);
         error = swmm_setLidCParam(lid_index, SM_SURFACE, SM_ROUGHNESS, 0);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == TRUE);
+        BOOST_REQUIRE(chr_value == 1);
 
         // Lid Unit
         error = swmm_getLidUCount(sub_index, &int_value);
@@ -1834,12 +1834,12 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // Always available to immediate overflow
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == TRUE);
+        BOOST_REQUIRE(chr_value == 1);
         error = swmm_setLidCParam(lid_index, SM_SURFACE, SM_ROUGHNESS, 0);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == TRUE);
+        BOOST_REQUIRE(chr_value == 1);
 
         // Lid Unit
         error = swmm_getLidUCount(sub_index, &int_value);
@@ -2043,12 +2043,12 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         // No option available for immediate overflow
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == FALSE);
+        BOOST_REQUIRE(chr_value == 0);
         error = swmm_setLidCParam(lid_index, SM_SURFACE, SM_ROUGHNESS, 0);
         BOOST_REQUIRE(error == ERR_NONE);
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
-        BOOST_REQUIRE(chr_value == FALSE);
+        BOOST_REQUIRE(chr_value == 0);
 
         // Lid Unit
         error = swmm_getLidUCount(sub_index, &int_value);
