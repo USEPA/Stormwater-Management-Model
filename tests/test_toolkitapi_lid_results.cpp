@@ -20,16 +20,6 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         char chr_value;
         
         vector<double> revised_subcatchment_runoff;
-        
-        vector<double> revised_lidunit_surface_flux;
-        vector<double> revised_lidunit_soil_flux;
-        vector<double> revised_lidunit_storage_flux;
-        vector<double> revised_lidunit_pave_flux;
-    
-        vector<double> revised_lidgroup_pervarea_flux;
-        vector<double> revised_lidgroup_flowtoperv_flux;
-        vector<double> revised_lidgroup_olddrainflow_flux;
-        vector<double> revised_lidgroup_newdrainflow_flux;    
     
         string lid = string("BC");
         string subcatch = string("wBC");
