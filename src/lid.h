@@ -271,7 +271,7 @@ TLidProc*   lid_getLidProc(int index);
 TLidGroup   lid_getLidGroup(int index);   
 void        lid_validateLidProc(int index);
 void        lid_validateLidGroup(int index);
-void        lid_updateLidUnit(TLidUnit* lidUnit);
+void        lid_updateLidUnit(TLidUnit* lidUnit, int subIndex);
 void        lid_updateAllLidUnit(int lidIndex);
 void        lid_updateLidGroup(int index);
 //-----------------------------------------------------------------------------
