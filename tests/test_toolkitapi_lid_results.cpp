@@ -1909,12 +1909,5 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_CHECK_EQUAL_COLLECTIONS(revised_subcatchment_runoff.begin(), revised_subcatchment_runoff.end(), 
                               subcatchment_runoff.begin(), subcatchment_runoff.end());
     }
-/*
 
-
-// Testing Results Getters (Before End Simulation)
-BOOST_FIXTURE_TEST_CASE(get_results_after_sim, FixtureBeforeEnd){
-
-}
-*/
 BOOST_AUTO_TEST_SUITE_END()
