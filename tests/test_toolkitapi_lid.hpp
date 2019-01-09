@@ -295,33 +295,6 @@ struct Fixture_LID_Results
             error = swmm_getSubcatchResult(sub_index, SM_SUBCRUNOFF, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
             subcatchment_runoff.push_back(round(db_value * 100000.0) / 100000.0);
-            
-            error = swmm_getLidUFluxRates(sub_index, 0, SM_SURFACE, &db_value);
-            BOOST_REQUIRE(error == ERR_NONE);
-            lidunit_surface_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            error = swmm_getLidUFluxRates(sub_index, 0, SM_SOIL, &db_value);
-            BOOST_REQUIRE(error == ERR_NONE);
-            lidunit_soil_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            error = swmm_getLidUFluxRates(sub_index, 0, SM_STORAGE, &db_value);
-            BOOST_REQUIRE(error == ERR_NONE);
-            lidunit_storage_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            error = swmm_getLidUFluxRates(sub_index, 0, SM_PAVE, &db_value);
-            BOOST_REQUIRE(error == ERR_NONE);
-            lidunit_pave_flux.push_back(round(db_value * 100000.0) / 100000.0);
-
-            error = swmm_getLidGResult(sub_index, SM_PERVAREA, &db_value);
-            BOOST_REQUIRE(error == ERR_NONE);            
-            lidgroup_pervarea_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            error = swmm_getLidGResult(sub_index, SM_FLOWTOPERV, &db_value)
-            BOOST_REQUIRE(error == ERR_NONE);              
-            lidgroup_flowtoperv_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            error = swmm_getLidGResult(sub_index, SM_OLDDRAINFLOW, &db_value);
-            BOOST_REQUIRE(error == ERR_NONE);  
-            lidgroup_olddrainflow_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            error = swmm_getLidGResult(sub_index, SM_NEWDRAINFLOW, &db_value);
-            BOOST_REQUIRE(error == ERR_NONE);  
-            lidgroup_newdrainflow_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            
             } while (elapsed_time != 0 && !error);
         BOOST_CHECK_EQUAL(0, error);
         swmm_end();
@@ -334,16 +307,6 @@ struct Fixture_LID_Results
     }
     
     vector<double> subcatchment_runoff;
-    
-    vector<double> lidunit_surface_flux;
-    vector<double> lidunit_soil_flux;
-    vector<double> lidunit_storage_flux;
-    vector<double> lidunit_pave_flux;
-    
-    vector<double> lidgroup_pervarea_flux;
-    vector<double> lidgroup_flowtoperv_flux;
-    vector<double> lidgroup_olddrainflow_flux;
-    vector<double> lidgroup_newdrainflow_flux;    
 };
 
 /* Fixture Before End

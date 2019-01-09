@@ -302,55 +302,12 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             error = swmm_getSubcatchResult(sub_index, SM_SUBCRUNOFF, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
             revised_subcatchment_runoff.push_back(round(db_value * 100000.0) / 100000.0);
-            
-            error = swmm_getLidUFluxRates(sub_index, 0, SM_SURFACE, &db_value);
-            BOOST_REQUIRE(error == ERR_NONE);
-            revised_lidunit_surface_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            error = swmm_getLidUFluxRates(sub_index, 0, SM_SOIL, &db_value);
-            BOOST_REQUIRE(error == ERR_NONE);
-            revised_lidunit_soil_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            error = swmm_getLidUFluxRates(sub_index, 0, SM_STORAGE, &db_value);
-            BOOST_REQUIRE(error == ERR_NONE);
-            revised_lidunit_storage_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            error = swmm_getLidUFluxRates(sub_index, 0, SM_PAVE, &db_value);
-            BOOST_REQUIRE(error == ERR_NONE);
-            revised_lidunit_pave_flux.push_back(round(db_value * 100000.0) / 100000.0);
-
-            error = swmm_getLidGResult(sub_index, SM_PERVAREA, &db_value)
-            BOOST_REQUIRE(error == ERR_NONE);            
-            revised_lidgroup_pervarea_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            error = swmm_getLidGResult(sub_index, SM_FLOWTOPERV, &db_value)
-            BOOST_REQUIRE(error == ERR_NONE);              
-            revised_lidgroup_flowtoperv_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            error = swmm_getLidGResult(sub_index, SM_OLDDRAINFLOW, &db_value)
-            BOOST_REQUIRE(error == ERR_NONE);  
-            revised_lidgroup_olddrainflow_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            error = swmm_getLidGResult(sub_index, SM_NEWDRAINFLOW, &db_value)
-            BOOST_REQUIRE(error == ERR_NONE);  
-            revised_lidgroup_newdrainflow_flux.push_back(round(db_value * 100000.0) / 100000.0);
-            
         }while (elapsed_time != 0 && !error);
         BOOST_CHECK_EQUAL(0, error);
         swmm_end();
         
         BOOST_CHECK_EQUAL_COLLECTIONS(revised_subcatchment_runoff.begin(), revised_subcatchment_runoff.end(), 
                               subcatchment_runoff.begin(), subcatchment_runoff.end());
-        BOOST_CHECK_EQUAL_COLLECTIONS(revised_lidunit_surface_flux.begin(), revised_lidunit_surface_flux.end(), 
-                              lidunit_surface_flux.begin(), lidunit_surface_flux.end());
-        BOOST_CHECK_EQUAL_COLLECTIONS(revised_lidunit_soil_flux.begin(), revised_lidunit_soil_flux.end(), 
-                              lidunit_soil_flux.begin(), lidunit_soil_flux.end());
-        BOOST_CHECK_EQUAL_COLLECTIONS(revised_lidunit_storage_flux.begin(), revised_lidunit_storage_flux.end(), 
-                              lidunit_storage_flux.begin(), lidunit_storage_flux.end());
-        BOOST_CHECK_EQUAL_COLLECTIONS(revised_lidunit_pave_flux.begin(), revised_lidunit_pave_flux.end(), 
-                              lidunit_pave_flux.begin(), lidunit_pave_flux.end());
-        BOOST_CHECK_EQUAL_COLLECTIONS(revised_lidgroup_pervarea_flux.begin(), revised_lidgroup_pervarea_flux.end(), 
-                              lidgroup_pervarea_flux.begin(), lidgroup_pervarea_flux.end());
-        BOOST_CHECK_EQUAL_COLLECTIONS(revised_lidgroup_flowtoperv_flux.begin(), revised_lidgroup_flowtoperv_flux.end(), 
-                              lidgroup_flowtoperv_flux.begin(), lidgroup_flowtoperv_flux.end());
-        BOOST_CHECK_EQUAL_COLLECTIONS(revised_lidgroup_olddrainflow_flux.begin(), revised_lidgroup_olddrainflow_flux.end(), 
-                              lidgroup_olddrainflow_flux.begin(), lidgroup_olddrainflow_flux.end());
-        BOOST_CHECK_EQUAL_COLLECTIONS(revised_lidgroup_newdrainflow_flux.begin(), revised_lidgroup_newdrainflow_flux.end(), 
-                              lidgroup_newdrainflow_flux.begin(), lidgroup_newdrainflow_flux.end());
     }
 
     // Testing Results Getters (During Simulation) GR
