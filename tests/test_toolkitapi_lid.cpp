@@ -173,10 +173,16 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         open_swmm_model(0);
         int error;
         double db_value = 0;
-
+        
+        //Lid Unit
+        error = swmm_getLidUResult(0, 1, SM_INFLOW, &db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
+        error = swmm_getLidUFluxRates(0, 1, SM_SURFACE, &db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
+        
         //Lid Group
         error = swmm_getLidGResult(1, 14, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);  
+        BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
     }
 
     // Testing for Project Settings after Open
