@@ -41,10 +41,6 @@ LAT_FLOW_TOL         5
 MINIMUM_STEP         0.5
 THREADS              1
 
-[FILES]
-;;Interfacing Files
-SAVE Outflows/Calibration "C:\OWA\Stormwater-Management-Model\tests\data\lid\Example5.txt"
-
 [EVAPORATION]
 ;;Data Source    Parameters
 ;;-------------- ----------------

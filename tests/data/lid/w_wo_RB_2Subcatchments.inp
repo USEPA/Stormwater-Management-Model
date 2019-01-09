@@ -40,9 +40,6 @@ LAT_FLOW_TOL         5
 MINIMUM_STEP         0.5
 THREADS              1
 
-[FILES]
-;;Interfacing Files
-
 [EVAPORATION]
 ;;Data Source    Parameters
 ;;-------------- ----------------
