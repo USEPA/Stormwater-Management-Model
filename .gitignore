@@ -21,6 +21,7 @@
 
 
 # Build files
+buildprod*/
 /build/
 *.o
 
@@ -29,6 +30,11 @@
 /Debug/
 
 # Testing
+nrtestsuite/
 performance.json
 stderr.log
 stdout.log
+tests/data/*_test.*
+
+# Generated files
+*_export.h
