@@ -24,10 +24,12 @@
 buildprod*/
 /build/
 *.o
-
-
-*.orig
 /Debug/
+
+
+# Git merge files
+*.orig
+
 
 # Testing
 nrtestsuite/
