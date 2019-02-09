@@ -45,14 +45,14 @@ script:
   # run unit tests
   - cd tests
   - ctest
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    cd $SWMM_HOME ;
-    ## install dependencies for nrtest
-    pip install --src build/packages -r tools/requirements.txt ;
-    ## run regression tests
-    tools/before-test.sh $TEST_HOME $SWMM_HOME/$BUILD_HOME/bin $TRAVIS_COMMIT ;
-    tools/run-nrtest.sh $TEST_HOME $TRAVIS_COMMIT ;
-    fi
+  #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+  #  cd $SWMM_HOME ;
+  #  ## install dependencies for nrtest
+  #  pip install --src build/packages -r tools/requirements.txt ;
+  #  ## run regression tests
+  #  tools/before-test.sh $TEST_HOME $SWMM_HOME/$BUILD_HOME/bin $TRAVIS_COMMIT ;
+  #  tools/run-nrtest.sh $TEST_HOME $TRAVIS_COMMIT ;
+  #  fi
 
 after_success:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
