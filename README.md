@@ -12,7 +12,7 @@ ORD Stormwater Management Model (aka "SWMM")
 [![Build status](https://ci.appveyor.com/api/projects/status/heoi23kwjh15od04/branch/develop?svg=true)](https://ci.appveyor.com/project/OpenWaterAnalytics/stormwater-management-model/branch/develop)
 [![Build Status](https://travis-ci.org/OpenWaterAnalytics/Stormwater-Management-Model.svg?branch=develop)](https://travis-ci.org/OpenWaterAnalytics/Stormwater-Management-Model)
 
-[![codecov](https://codecov.io/gh/michaeltryby/Stormwater-Management-Model/branch/develop/graph/badge.svg)](https://codecov.io/gh/michaeltryby/Stormwater-Management-Model)
+[![codecov](https://codecov.io/gh/OpenWaterAnalytics/Stormwater-Management-Model/branch/develop/graph/badge.svg)](https://codecov.io/gh/OpenWaterAnalytics/Stormwater-Management-Model)
 
 # Introduction
 This is the open source SWMM source code repository maintained by the Open
