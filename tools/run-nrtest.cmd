@@ -7,24 +7,39 @@
 ::          US EPA - ORD/NRMRL
 ::
 ::  Arguments:
-::    1 - nrtest script path
-::    2 - test suite path
-::    3 - version/build identifier
+::    1 - version/build identifier
+::    2 - (test suite path)
 ::
 
 @echo off
 setlocal
 
-set NRTEST_SCRIPT_PATH=%~1
-set TEST_SUITE_PATH=%~2
+
+:: CHANGE THIS VARIABLES TO UPDATE BENCHMARK
+set BENCHMARK_VER=520dev5
+
+
+:: Determine location of python Scripts folder
+FOR /F "tokens=*" %%G IN ('where python') DO (
+  set PYTHON_DIR=%%~dpG
+)
+set "NRTEST_SCRIPT_PATH=%PYTHON_DIR%Scripts"
+
+:: Check existence and apply default arguments
+IF NOT [%1]==[] ( set "SUT_VER=%~1"
+) ELSE ( set "SUT_VER=vXXX" )
+
+IF NOT [%2]==[] ( set "TEST_SUITE_PATH=%~2"
+) ELSE ( set "TEST_SUITE_PATH=nrtestsuite" )
+
 
 set NRTEST_EXECUTE_CMD=python %NRTEST_SCRIPT_PATH%\nrtest execute
-set TEST_APP_PATH=apps\swmm-%3.json
+set TEST_APP_PATH=apps\swmm-%SUT_VER%.json
 set TESTS=tests\examples tests\extran tests\routing tests\user
-set TEST_OUTPUT_PATH=benchmark\swmm-%3
+set TEST_OUTPUT_PATH=benchmark\swmm-%SUT_VER%
 
 set NRTEST_COMPARE_CMD=python %NRTEST_SCRIPT_PATH%\nrtest compare
-set REF_OUTPUT_PATH=benchmark\swmm-520dev5
+set REF_OUTPUT_PATH=benchmark\swmm-%BENCHMARK_VER%
 set RTOL_VALUE=0.01
 set ATOL_VALUE=0.00
 
