@@ -27,7 +27,6 @@ init:
   - set SWMM_HOME=%APPVEYOR_BUILD_FOLDER%
   - set BUILD_HOME=buildprod
   - set TEST_HOME=nrtestsuite
-  - set NRTEST_SCRIPT=C:\Python27\Scripts
   # See set values
   - echo %APPVEYOR_BUILD_WORKER_IMAGE%
   - echo %BUILD_HOME%
@@ -41,7 +40,7 @@ install:
 before_build:
   - mkdir %BUILD_HOME%
   - cd %BUILD_HOME%
-  - cmake -G "%GENERATOR%" 
+  - cmake -G "%GENERATOR%"
     -DBUILD_TESTS=1
     -DBOOST_ROOT="%BOOST_ROOT%"
     -DBoost_USE_STATIC_LIBS="ON" ..
@@ -49,9 +48,9 @@ before_build:
 build_script:
   - cmake --build . --config Release
 
-before_test: 
+before_test:
   - cd %SWMM_HOME%
-  - tools\before-test.cmd %TEST_HOME% %SWMM_HOME%\%BUILD_HOME%\bin\Release %APPVEYOR_REPO_COMMIT%
+  - tools\before-test.cmd %APPVEYOR_REPO_COMMIT%
 
 test_script:
   # run unit tests
@@ -59,10 +58,10 @@ test_script:
   - ctest -C Release
     # Run regression tests
   - cd %SWMM_HOME%
-  - tools\run-nrtest.cmd %NRTEST_SCRIPT% %TEST_HOME% %APPVEYOR_REPO_COMMIT%
+  - tools\run-nrtest.cmd %APPVEYOR_REPO_COMMIT%
 
-on_finish: 
-  # zip up the SUT benchmarks 
+on_finish:
+  # zip up the SUT benchmarks
   - 7z a benchmarks.zip %TEST_HOME%\benchmark\swmm-%APPVEYOR_REPO_COMMIT%\
   - appveyor PushArtifact benchmarks.zip -FileName benchmarks
 
