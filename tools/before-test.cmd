@@ -71,4 +71,4 @@ mklink /D .\tests .\swmm-example-networks-%EXAMPLES_VER%\swmm-tests
 
 :: generate json configuration file for software under test
 mkdir apps
-%SCRIPT_HOME%\gen-config.cmd %SUT_PATH% > apps\swmm-%~3.json
+%SCRIPT_HOME%\gen-config.cmd %SUT_PATH% > apps\swmm-%SUT_VER%.json
