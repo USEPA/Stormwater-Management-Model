@@ -30,7 +30,7 @@ set "SCRIPT_HOME=%~dp0"
 set "EXE_HOME=Release"
 
 :: Determine SUT executable path
-:: TODO: This fails when there is more than one cmake buildprod folder
+:: TODO: This may fail when there is more than one cmake buildprod folder
 for /d /r "%SCRIPT_HOME%..\" %%a in (*) do if /i "%%~nxa"=="bin" set "BUILD_HOME=%%a"
 set SUT_PATH=%BUILD_HOME%\%EXE_HOME%
 
