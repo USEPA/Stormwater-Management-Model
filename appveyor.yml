@@ -61,9 +61,10 @@ test_script:
   - tools\run-nrtest.cmd %APPVEYOR_REPO_COMMIT%
 
 on_finish:
+  - cd %TEST_HOME%\benchmark
   # zip up the SUT benchmarks
-  - 7z a benchmarks.zip %TEST_HOME%\benchmark\swmm-%APPVEYOR_REPO_COMMIT%\
-  - appveyor PushArtifact benchmarks.zip -FileName benchmarks
+  - 7z a swmm-benchmark.zip \swmm-%APPVEYOR_REPO_COMMIT%\
+  - appveyor PushArtifact swmm-benchmark.zip -FileName swmm-benchmark.zip
 
 #cache:
 #  - C:\ProgramData\chocolatey\bin -> appveyor.yml
