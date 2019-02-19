@@ -12,6 +12,7 @@ matrix:
     - GROUP: "EXPERIMENTAL"
 
 environment:
+  BENCH_COMMIT: ""
   matrix:
     # Python 3.4
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
@@ -51,7 +52,8 @@ build_script:
 before_test:
   - cd %SWMM_HOME%
   - tools\before-test.cmd %APPVEYOR_REPO_COMMIT%
-
+  - echo %BENCH_COMMIT%
+  
 test_script:
   # run unit tests
   - cd %BUILD_HOME%\tests

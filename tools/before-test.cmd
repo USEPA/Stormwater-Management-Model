@@ -23,7 +23,7 @@ setlocal
 
 :: CHANGE THESE VARIABLES TO UPDATE BENCHMARK
 set EXAMPLES_VER=1.0.1-dev.5
-set BENCHMARK_VER=520dev5
+set BENCH_COMMIT=520dev5
 
 
 set "SCRIPT_HOME=%~dp0"
@@ -66,6 +66,11 @@ curl -fsSL -o benchmark.zip %BENCHFILES_URL%
 7z x examples.zip *\swmm-tests\* > nul
 7z x benchmark.zip -obenchmark\ > nul
 
+
+:: determine benchmark commit
+for /f "tokens=*" %b in ('dir /b benchmark\swmm-*') do "set BENCH_COMMIT=%b"
+set BENCH_COMMIT=%BENCH_COMMIT:~5,12%
+
 :: set up symlink for tests directory
 mklink /D .\tests .\swmm-example-networks-%EXAMPLES_VER%\swmm-tests
 
@@ -73,3 +78,5 @@ mklink /D .\tests .\swmm-example-networks-%EXAMPLES_VER%\swmm-tests
 :: generate json configuration file for software under test
 mkdir apps
 %SCRIPT_HOME%\gen-config.cmd %SUT_PATH% > apps\swmm-%SUT_VER%.json
+
+return %BENCHMARK_VER
