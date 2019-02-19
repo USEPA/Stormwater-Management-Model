@@ -1,10 +1,11 @@
-language:
-  #- python Python builds are not available on the macOS environment. s. https://docs.travis-ci.com/user/languages/python/
-  - c
+language: python
 
-os:
-  - linux
-  - osx
+matrix:
+    include:
+        - os: linux
+          python: 3.6
+        - os: osx
+          language: generic
 
 #compiler:
 #  - gcc
@@ -45,14 +46,14 @@ script:
   # run unit tests
   - cd tests
   - ctest
-  #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-  #  cd $SWMM_HOME ;
-  #  ## install dependencies for nrtest
-  #  pip install --src build/packages -r tools/requirements.txt ;
-  #  ## run regression tests
-  #  tools/before-test.sh $TEST_HOME $SWMM_HOME/$BUILD_HOME/bin $TRAVIS_COMMIT ;
-  #  tools/run-nrtest.sh $TEST_HOME $TRAVIS_COMMIT ;
-  #  fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+    cd $SWMM_HOME ;
+    ## install dependencies for nrtest
+    pip install --src build/packages -r tools/requirements.txt ;
+   ## run regression tests
+    tools/before-test.sh $TEST_HOME $SWMM_HOME/$BUILD_HOME/bin $TRAVIS_COMMIT ;
+    tools/run-nrtest.sh -c -t $TEST_HOME -v $TRAVIS_COMMIT ;
+    fi
 
 after_success:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
