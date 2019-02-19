@@ -63,7 +63,7 @@ test_script:
 on_finish:
   - cd %TEST_HOME%\benchmark
   # zip up the SUT benchmarks
-  - 7z a swmm-benchmark.zip \swmm-%APPVEYOR_REPO_COMMIT%\
+  - 7z a swmm-benchmark.zip .\swmm-%APPVEYOR_REPO_COMMIT%
   - appveyor PushArtifact swmm-benchmark.zip -FileName swmm-benchmark.zip
 
 #cache:
