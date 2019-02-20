@@ -68,7 +68,9 @@ curl -fsSL -o benchmark.zip %BENCHFILES_URL%
 
 
 :: determine benchmark commit
-for /f "tokens=*" %b in ('dir /b benchmark\swmm-*') do "set BENCH_COMMIT=%b"
+FOR /F "tokens=*" %%b IN ('dir /b benchmark\swmm-*') DO (
+  set "BENCH_COMMIT=%%b"
+)
 set BENCH_COMMIT=%BENCH_COMMIT:~5,12%
 echo %BENCH_COMMIT%
 
