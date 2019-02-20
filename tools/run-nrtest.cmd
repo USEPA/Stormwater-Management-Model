@@ -17,7 +17,7 @@ setlocal
 
 :: CHANGE THIS VARIABLES TO UPDATE BENCHMARK
 set BENCHMARK_VER=520dev5
-
+echo %BENCH_COMMIT%
 
 :: Determine location of python Scripts folder
 FOR /F "tokens=*" %%G IN ('where python') DO (

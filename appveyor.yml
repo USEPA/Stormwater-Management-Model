@@ -52,9 +52,6 @@ build_script:
 before_test:
   - cd %SWMM_HOME%
   - tools\before-test.cmd %APPVEYOR_REPO_COMMIT%
-  - echo on
-  - echo %APPVEYOR_BUILD_ID%
-  - echo %BENCH_COMMIT%
 
 test_script:
   # run unit tests
