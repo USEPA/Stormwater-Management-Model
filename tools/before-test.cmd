@@ -7,8 +7,9 @@
 ::          US EPA - ORD/NRMRL
 ::
 ::  Arguments:
-::    1 - build identifier for software under test
-::    2 - (relative path regression test file staging location)
+::    1 - (build identifier for software under test)
+::    2 - (version identifier for software under test)
+::    3 - (relative path regression test file staging location)
 ::
 ::  Note:
 ::    Tests and benchmark files are stored in the swmm-example-networks repo.
@@ -26,20 +27,14 @@ set EXAMPLES_VER=1.0.1-dev.5
 set BENCHMARK_VER=520dev5
 
 
-set "SCRIPT_HOME=%~dp0"
-set "EXE_HOME=Release"
+IF [%1]==[] ( set "SUT_BUILD_ID=local"
+) ELSE ( set "SUT_BUILD_ID=%~1" )
 
-:: Determine SUT executable path
-:: TODO: This may fail when there is more than one cmake buildprod folder
-for /d /r "%SCRIPT_HOME%..\" %%a in (*) do if /i "%%~nxa"=="bin" set "BUILD_HOME=%%a"
-set SUT_PATH=%BUILD_HOME%\%EXE_HOME%
+IF [%2]==[] (set SUT_VERSION=
+) ELSE ( set "SUT_VERSION=%~2" )
 
-:: Check existence and apply default arguments
-IF NOT [%1]==[] ( set "SUT_VER=%~1"
-) ELSE ( set "SUT_VER=vXXX" )
-
-IF NOT [%2]==[] ( set "TEST_HOME=%~2"
-) ELSE ( set "TEST_HOME=nrtestsuite" )
+IF [%3]==[] ( set "TEST_HOME=nrtestsuite"
+) ELSE ( set "TEST_HOME=%~3" )
 
 
 set TESTFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/archive/v%EXAMPLES_VER%.zip
@@ -67,17 +62,17 @@ curl -fsSL -o benchmark.zip %BENCHFILES_URL%
 7z x benchmark.zip -obenchmark\ > nul
 
 
-:: determine benchmark commit
-FOR /F "tokens=*" %%b IN ('dir /b benchmark\swmm-*') DO (
-  set "BENCH_COMMIT=%%b"
-)
-set BENCH_COMMIT=%BENCH_COMMIT:~5,12%
-echo %BENCH_COMMIT%
-
 :: set up symlink for tests directory
-mklink /D .\tests .\swmm-example-networks-%EXAMPLES_VER%\swmm-tests
+mklink /D .\tests .\swmm-example-networks-%EXAMPLES_VER%\swmm-tests > nul
+
+
+:: Determine SUT executable path
+set "SCRIPT_HOME=%~dp0"
+:: TODO: This may fail when there is more than one cmake buildprod folder
+for /d /r "%SCRIPT_HOME%..\" %%a in (*) do if /i "%%~nxa"=="bin" set "BUILD_HOME=%%a"
+set "SUT_PATH=%BUILD_HOME%\Release"
 
 
 :: generate json configuration file for software under test
 mkdir apps
-%SCRIPT_HOME%\gen-config.cmd %SUT_PATH% > apps\swmm-%SUT_VER%.json
+%SCRIPT_HOME%\gen-config.cmd %SUT_PATH% %SUT_VERSION% %PLATFORM% > apps\swmm-%SUT_BUILD_ID%.json
