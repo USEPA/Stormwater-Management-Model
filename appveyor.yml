@@ -12,7 +12,6 @@ matrix:
     - GROUP: "EXPERIMENTAL"
 
 environment:
-  BENCH_COMMIT: ""
   matrix:
     # Python 3.4
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
@@ -29,10 +28,14 @@ init:
   - set BUILD_HOME=buildprod
   - set TEST_HOME=nrtestsuite
   # See set values
+  - echo Build Number %APPVEYOR_BUILD_NUMBER%
+  - echo Job Number %APPVEYOR_JOB_NUMBER%
   - echo %APPVEYOR_BUILD_WORKER_IMAGE%
   - echo %BUILD_HOME%
   - echo %GENERATOR%
   - echo %BOOST_ROOT%
+
+  # Repo is cloned after init
 
 install:
   # Install nrtest and dependencies for regression tests
