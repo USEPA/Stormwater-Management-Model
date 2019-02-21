@@ -65,7 +65,7 @@ test_script:
   - cd %SWMM_HOME%
   - tools\run-nrtest.cmd %BUILD_ID%
 
-on_failure:
+on_success:
   - cd %TEST_HOME%\benchmark
   # zip up the SUT benchmarks
   - 7z a benchmark-%PLATFORM%.zip .\swmm-%BUILD_ID%
