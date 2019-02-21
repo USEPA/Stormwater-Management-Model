@@ -7,18 +7,14 @@
 ::          US EPA - ORD/NRMRL
 ::
 ::  Arguments:
-::    1 - (build identifier)
+::    1 - (SUT build identifier)
 ::    2 - (test suite path)
 ::
 
 @echo off
 setlocal
 
-
-:: CHANGE THIS VARIABLES TO UPDATE BENCHMARK
-set BENCHMARK_VER=520dev5
-set REF_BUILD_ID=%BENCHMARK_VER%
-
+set "REF_BUILD_ID=520dev5"
 
 :: Check existence and apply default arguments
 IF [%1]==[] ( set "SUT_BUILD_ID=local"
@@ -58,6 +54,6 @@ set NRTEST_COMMAND=%NRTEST_EXECUTE_CMD% %TEST_APP_PATH% %TESTS% -o %TEST_OUTPUT_
 :: if there is an error exit the script with error value 1
 %NRTEST_COMMAND% || exit /B 1
 
-echo INFO: Comparing SUT artifact to REF %REF_BUILD_ID%
+echo INFO: Comparing SUT artifacts to REF %REF_BUILD_ID%
 set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --rtol %RTOL_VALUE% --atol %ATOL_VALUE% --output benchmark\receipt.json
 %NRTEST_COMMAND%

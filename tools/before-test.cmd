@@ -22,11 +22,6 @@
 setlocal
 
 
-:: CHANGE THESE VARIABLES TO UPDATE BENCHMARK
-set EXAMPLES_VER=1.0.1-dev.5
-set BENCHMARK_VER=520dev5
-
-
 IF [%1]==[] ( set "SUT_BUILD_ID=local"
 ) ELSE ( set "SUT_BUILD_ID=%~1" )
 
@@ -37,8 +32,12 @@ IF [%3]==[] ( set "TEST_HOME=nrtestsuite"
 ) ELSE ( set "TEST_HOME=%~3" )
 
 
-set TESTFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/archive/v%EXAMPLES_VER%.zip
-set BENCHFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/download/v%EXAMPLES_VER%/swmm-benchmark-%BENCHMARK_VER%.zip
+:: determine latest tag in swmm-example-networks repo
+set LATEST_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/latest
+FOR /F delims^=^"^ tokens^=2 %g IN ('curl --silent %LATEST_URL%') DO ( set "LATEST_TAG=%~nxg" )
+
+set TESTFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/archive/%LATEST_TAG%.zip
+set BENCHFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/download/%LATEST_TAG%/benchmark-%PLATFORM%.zip
 
 
 echo INFO: Staging files for regression testing
@@ -50,12 +49,12 @@ if exist %TEST_HOME% (
 mkdir %TEST_HOME%
 cd %TEST_HOME%
 
+
 :: retrieve swmm-examples for regression testing
 curl -fsSL -o examples.zip %TESTFILES_URL%
 
 :: retrieve swmm benchmark results
 curl -fsSL -o benchmark.zip %BENCHFILES_URL%
-
 
 :: extract tests and benchmarks
 7z x examples.zip *\swmm-tests\* > nul
