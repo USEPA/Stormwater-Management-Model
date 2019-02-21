@@ -33,11 +33,11 @@ IF [%3]==[] ( set "TEST_HOME=nrtestsuite"
 
 
 :: determine latest tag in swmm-example-networks repo
-set LATEST_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/latest
-FOR /F delims^=^"^ tokens^=2 %g IN ('curl --silent %LATEST_URL%') DO ( set "LATEST_TAG=%~nxg" )
+set "LATEST_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/latest"
+FOR /F delims^=^"^ tokens^=2 %%g IN ('curl --silent %LATEST_URL%') DO ( set "LATEST_TAG=%%~nxg" )
 
-set TESTFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/archive/%LATEST_TAG%.zip
-set BENCHFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/download/%LATEST_TAG%/benchmark-%PLATFORM%.zip
+set "TESTFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/archive/%LATEST_TAG%.zip"
+set "BENCHFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/download/%LATEST_TAG%/benchmark-%PLATFORM%.zip"
 
 
 echo INFO: Staging files for regression testing
