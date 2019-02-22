@@ -34,7 +34,7 @@ IF [%3]==[] ( set "TEST_HOME=nrtestsuite"
 
 :: determine latest tag in swmm-example-networks repo
 set "LATEST_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/latest"
-FOR /F delims^=^"^ tokens^=2 %%g IN ('curl --silent %LATEST_URL%') DO ( set "LATEST_TAG=%%~nxg" )
+FOR /F delims^=^"^ tokens^=2 %%g IN ('curl --silent %LATEST_URL%') DO ( set LATEST_TAG=%%~nxg )
 
 set "TESTFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/archive/%LATEST_TAG%.zip"
 set "BENCHFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/download/%LATEST_TAG%/benchmark-%PLATFORM%.zip"
@@ -62,7 +62,7 @@ curl -fsSL -o benchmark.zip %BENCHFILES_URL%
 
 
 :: set up symlink for tests directory
-mklink /D .\tests .\swmm-example-networks-%EXAMPLES_VER%\swmm-tests > nul
+mklink /D .\tests .\swmm-example-networks-%LATEST_TAG%\swmm-tests > nul
 
 
 :: Determine SUT executable path
