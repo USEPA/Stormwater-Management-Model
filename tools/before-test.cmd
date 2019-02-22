@@ -34,7 +34,7 @@ IF [%3]==[] ( set "TEST_HOME=nrtestsuite"
 
 :: determine latest tag in swmm-example-networks repo
 set "LATEST_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/latest"
-FOR /F delims^=^"^ tokens^=2 %g IN ('curl --silent %LATEST_URL%') DO ( set "LATEST_TAG=%~nxg" )
+FOR /F delims^=^"^ tokens^=2 %%g IN ('curl --silent %LATEST_URL%') DO ( set "LATEST_TAG=%%~nxg" )
 
 set "TESTFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/archive/%LATEST_TAG%.zip"
 set "BENCHFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/download/%LATEST_TAG%/benchmark-%PLATFORM%.zip"
@@ -62,11 +62,15 @@ curl -fsSL -o benchmark.zip %BENCHFILES_URL%
 
 
 :: set up symlink for tests directory
-mklink /D .\tests .\swmm-example-networks-%LATEST_TAG%\swmm-tests > nul
+
+mklink /D .\tests .\swmm-example-networks-%LATEST_TAG:~1%\swmm-tests > nul
 
 
 :: Determine SUT executable path
 set "SCRIPT_HOME=%~dp0"
+:: TODO: This may fail when there is more than one cmake buildprod folder
+for /d /r "%SCRIPT_HOME%..\" %%a in (*) do if /i "%%~nxa"=="bin" set "BUILD_HOME=%%a"
+set "SUT_PATH=%BUILD_HOME%\Release"
 
 
 :: generate json configuration file for software under test
