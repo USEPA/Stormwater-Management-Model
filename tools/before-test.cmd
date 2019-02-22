@@ -72,7 +72,6 @@ set "SCRIPT_HOME=%~dp0"
 for /d /r "%SCRIPT_HOME%..\" %%a in (*) do if /i "%%~nxa"=="bin" set "BUILD_HOME=%%a"
 set "SUT_PATH=%BUILD_HOME%\Release"
 
-
 :: generate json configuration file for software under test
 mkdir apps
 %SCRIPT_HOME%\gen-config.cmd %SUT_PATH% %SUT_VERSION% %PLATFORM% > apps\swmm-%SUT_BUILD_ID%.json

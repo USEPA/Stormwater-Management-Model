@@ -14,7 +14,7 @@
 @echo off
 setlocal
 
-set "REF_BUILD_ID=520dev5"
+set "REF_BUILD_ID=212_1"
 
 :: Check existence and apply default arguments
 IF [%1]==[] ( set "SUT_BUILD_ID=local"
