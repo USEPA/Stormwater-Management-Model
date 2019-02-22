@@ -7,9 +7,10 @@
 ::          US EPA - ORD/NRMRL
 ::
 ::  Arguments:
-::    1 - (build identifier for software under test)
-::    2 - (version identifier for software under test)
-::    3 - (relative path regression test file staging location)
+::    1 - (platform)
+::    2 - (build identifier for software under test)
+::    3 - (version identifier for software under test)
+::    4 - (relative path regression test file staging location)
 ::
 ::  Note:
 ::    Tests and benchmark files are stored in the swmm-example-networks repo.
@@ -19,18 +20,37 @@
 ::
 
 @echo off
-setlocal
+setlocal EnableExtensions
 
 
-IF [%1]==[] ( set "SUT_BUILD_ID=local"
-) ELSE ( set "SUT_BUILD_ID=%~1" )
+IF [%1]==[] ( set PLATFORM=
+) ELSE ( set "PLATFORM=%~1" )
 
-IF [%2]==[] (set SUT_VERSION=
-) ELSE ( set "SUT_VERSION=%~2" )
+IF [%2]==[] ( set "SUT_BUILD_ID=local"
+) ELSE ( set "SUT_BUILD_ID=%~2" )
 
-IF [%3]==[] ( set "TEST_HOME=nrtestsuite"
-) ELSE ( set "TEST_HOME=%~3" )
+IF [%3]==[] (set SUT_VERSION=
+) ELSE ( set "SUT_VERSION=%~3" )
 
+IF [%4]==[] ( set "TEST_HOME=nrtestsuite"
+) ELSE ( set "TEST_HOME=%~4" )
+
+
+echo INFO: Staging files for regression testing
+
+
+:: Determine SUT executable path
+set "SCRIPT_HOME=%~dp0"
+:: TODO: This may fail when there is more than one cmake buildprod folder
+FOR /D /R "%SCRIPT_HOME%..\" %%a IN (*) DO IF /i "%%~nxa"=="bin" set "BUILD_HOME=%%a"
+set "SUT_PATH=%BUILD_HOME%\Release"
+
+
+:: determine platform from CMakeCache.txt
+IF NOT DEFINED PLATFORM (
+  FOR /F "tokens=*" %%p IN ( 'findstr CMAKE_SHARED_LINKER_FLAGS:STRING %BUILD_HOME%\..\CmakeCache.txt' ) DO ( set "FLAG=%%p" )
+  FOR /F "delims=: tokens=3" %%m IN ( 'echo %FLAG%' ) DO IF "%%m"=="x64" ( set "PLATFORM=win64" ) ELSE ( set "PLATFORM=win32" )
+)
 
 :: determine latest tag in swmm-example-networks repo
 set "LATEST_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/latest"
@@ -39,8 +59,6 @@ FOR /F delims^=^"^ tokens^=2 %%g IN ('curl --silent %LATEST_URL%') DO ( set "LAT
 set "TESTFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/archive/%LATEST_TAG%.zip"
 set "BENCHFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/download/%LATEST_TAG%/benchmark-%PLATFORM%.zip"
 
-
-echo INFO: Staging files for regression testing
 
 :: create a clean directory for staging regression tests
 if exist %TEST_HOME% (
@@ -62,16 +80,9 @@ curl -fsSL -o benchmark.zip %BENCHFILES_URL%
 
 
 :: set up symlink for tests directory
-
 mklink /D .\tests .\swmm-example-networks-%LATEST_TAG:~1%\swmm-tests > nul
 
 
-:: Determine SUT executable path
-set "SCRIPT_HOME=%~dp0"
-:: TODO: This may fail when there is more than one cmake buildprod folder
-for /d /r "%SCRIPT_HOME%..\" %%a in (*) do if /i "%%~nxa"=="bin" set "BUILD_HOME=%%a"
-set "SUT_PATH=%BUILD_HOME%\Release"
-
 :: generate json configuration file for software under test
 mkdir apps
-%SCRIPT_HOME%\gen-config.cmd %SUT_PATH% %SUT_VERSION% %PLATFORM% > apps\swmm-%SUT_BUILD_ID%.json
+%SCRIPT_HOME%\gen-config.cmd %SUT_PATH% %PLATFORM% %SUT_BUILD_ID% %SUT_VERSION% > apps\swmm-%SUT_BUILD_ID%.json

@@ -8,8 +8,9 @@
 ::
 ::  Arguments:
 ::    1 - absolute path to test executable (valid path seperator for nrtest is "/")
-::    2 - (version tag or commit hash string)
-::    3 - (description build configuration)
+::    2 - (platform)
+::    3 - (build identifier)
+::    4 - (commit hash string)
 
 @echo off
 setlocal
@@ -21,17 +22,20 @@ set TEST_CMD=run-swmm.exe
 set ABS_BUILD_PATH=%~1
 set ABS_BUILD_PATH=%ABS_BUILD_PATH:\=/%
 
-IF [%2]==[] ( set "VERSION=unknown"
-) ELSE ( set "VERSION=%~2" )
+IF [%2]==[] ( set "PLATFORM=unknown"
+) ELSE ( set "PLATFORM=%~2" )
 
-IF [%3]==[] ( set "DESCRIPTION=unknown"
-) ELSE ( set "DESCRIPTION=%~3" )
+IF [%3]==[] ( set "BUILD_ID=unknown"
+) ELSE ( set "BUILD_ID=%~3" )
+
+IF [%4]==[] ( set "VERSION=unknown"
+) ELSE ( set "VERSION=%~4" )
 
 
 echo {
 echo     "name" : "swmm",
-echo     "version" : "Commit ID %VERSION%",
-echo     "description" : "Build configuration %DESCRIPTION%",
+echo     "version" : "%VERSION%",
+echo     "description" : "%PLATFORM% %BUILD_ID%",
 echo     "setup_script" : "",
 echo     "exe" : "%ABS_BUILD_PATH%/%TEST_CMD%"
 echo }

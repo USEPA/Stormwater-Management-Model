@@ -14,7 +14,6 @@
 @echo off
 setlocal
 
-set "REF_BUILD_ID=212_1"
 
 :: Check existence and apply default arguments
 IF [%1]==[] ( set "SUT_BUILD_ID=local"
@@ -29,6 +28,12 @@ FOR /F "tokens=*" %%G IN ('where python') DO (
   set PYTHON_DIR=%%~dpG
 )
 set "NRTEST_SCRIPT_PATH=%PYTHON_DIR%Scripts"
+
+
+:: determine REF_BUILD_ID from benchmark manifest
+7z e .\%TEST_SUITE_PATH%\benchmark.zip -o.\%TEST_SUITE_PATH% manifest.json -r -y > nul
+FOR /F delims^=^"^ tokens^=4 %%i IN ( 'findstr /l win .\%TEST_SUITE_PATH%\manifest.json' ) DO ( set "TEMP=%%i" )
+FOR /F "tokens=2" %%d IN ( 'echo %TEMP%' ) DO ( set "REF_BUILD_ID=%%d" )
 
 
 set NRTEST_EXECUTE_CMD=python %NRTEST_SCRIPT_PATH%\nrtest execute
