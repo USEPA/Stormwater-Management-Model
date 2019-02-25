@@ -1,30 +1,32 @@
-language: 
-  #- python Python builds are not available on the macOS environment. s. https://docs.travis-ci.com/user/languages/python/
-  - c
+language: python
 
-os:
-  - linux
-  - osx
-  
+matrix:
+    include:
+        - os: linux
+          python: 3.6
+        - os: osx
+          language: generic
+
 #compiler:
 #  - gcc
 #  - clang
 # On OS X, gcc is an alias for clang s. https://docs.travis-ci.com/user/languages/c/#gcc-on-os-x
 
-env: 
-  global: 
+env:
+  global:
     - SWMM_HOME=`pwd`
     - BUILD_HOME=build
     - TEST_HOME=nrtestsuite
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    brew install libomp ;
+      brew update ;
+      brew install libomp ;
     fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    sudo apt-get -qq update ;
-    sudo apt-get install -y libboost-test-dev ;
-    sudo apt-get install -y swig ;
+      sudo apt-get -qq update ;
+      sudo apt-get install -y libboost-test-dev ;
+      sudo apt-get install -y swig ;
     fi
 
 #install:
@@ -32,16 +34,26 @@ before_install:
 before_script:
   - mkdir -p $BUILD_HOME
   - cd $BUILD_HOME
-  - cmake -DBUILD_TESTS=1 ..
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      cmake -DBUILD_TESTS=ON -DBUILD_COVERAGE=ON .. ;
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      cmake -DBUILD_TESTS=ON .. ;
+    fi
 
 script:
   - cmake --build .
   # run unit tests
   - cd tests
   - ctest
-  #- cd $SWMM_HOME
-  ## install dependencies for nrtest
-  #- pip install --src build/packages -r tools/requirements.txt
-  ## run regression tests
-  #- tools/before-test.sh $TEST_HOME $SWMM_HOME/$BUILD_HOME/bin $TRAVIS_COMMIT
-  #- tools/run-nrtest.sh $TEST_HOME $TRAVIS_COMMIT
+  - cd $SWMM_HOME
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      pip install --src build/packages -r tools/requirements.txt ;
+      tools/before-test.sh $TEST_HOME $SWMM_HOME/$BUILD_HOME/bin $TRAVIS_COMMIT ;
+      tools/run-nrtest.sh -c -t $TEST_HOME -v $TRAVIS_COMMIT ;
+    fi
+
+after_success:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      bash <(curl -s https://codecov.io/bash) ;
+    fi

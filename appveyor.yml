@@ -18,21 +18,27 @@ environment:
       GENERATOR: "Visual Studio 15 2017"
       GROUP: "SUPPORTED"
       BOOST_ROOT: "C:/Libraries/boost_1_67_0"
+      PLATFORM: "win32"
+      REF_BUILD_ID: "212_1"
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       GENERATOR: "Visual Studio 15 2017 Win64"
       GROUP: "EXPERIMENTAL"
       BOOST_ROOT: "C:/Libraries/boost_1_67_0"
+      PLATFORM: "win64"
+      REF_BUILD_ID: "319_2"
 
 init:
+  - set SUT_BUILD_ID=%APPVEYOR_BUILD_NUMBER%_%APPVEYOR_JOB_NUMBER%
   - set SWMM_HOME=%APPVEYOR_BUILD_FOLDER%
   - set BUILD_HOME=buildprod
   - set TEST_HOME=nrtestsuite
-  - set NRTEST_SCRIPT=C:\Python27\Scripts
   # See set values
   - echo %APPVEYOR_BUILD_WORKER_IMAGE%
   - echo %BUILD_HOME%
   - echo %GENERATOR%
   - echo %BOOST_ROOT%
+
+  # Repo is cloned after init
 
 install:
   # Install nrtest and dependencies for regression tests
@@ -41,7 +47,7 @@ install:
 before_build:
   - mkdir %BUILD_HOME%
   - cd %BUILD_HOME%
-  - cmake -G "%GENERATOR%" 
+  - cmake -G "%GENERATOR%"
     -DBUILD_TESTS=1
     -DBOOST_ROOT="%BOOST_ROOT%"
     -DBoost_USE_STATIC_LIBS="ON" ..
@@ -49,9 +55,9 @@ before_build:
 build_script:
   - cmake --build . --config Release
 
-before_test: 
+before_test:
   - cd %SWMM_HOME%
-  - tools\before-test.cmd %TEST_HOME% %SWMM_HOME%\%BUILD_HOME%\bin\Release %APPVEYOR_REPO_COMMIT%
+  - tools\before-test.cmd %PLATFORM% %REF_BUILD_ID% %SUT_BUILD_ID% %APPVEYOR_REPO_COMMIT%
 
 test_script:
   # run unit tests
@@ -59,12 +65,17 @@ test_script:
   - ctest -C Release
     # Run regression tests
   - cd %SWMM_HOME%
-  - tools\run-nrtest.cmd %NRTEST_SCRIPT% %TEST_HOME% %APPVEYOR_REPO_COMMIT%
+  - tools\run-nrtest.cmd %REF_BUILD_ID% %SUT_BUILD_ID%
 
-on_finish: 
-  # zip up the SUT benchmarks 
-  - 7z a benchmarks.zip %TEST_HOME%\benchmark\swmm-%APPVEYOR_REPO_COMMIT%\
-  - appveyor PushArtifact benchmarks.zip -FileName benchmarks
+on_success:
+  - cd %TEST_HOME%\benchmark
+  - appveyor PushArtifact receipt.json
+
+on_failure:
+  - cd %TEST_HOME%\benchmark
+  # zip up the SUT benchmarks
+  - 7z a benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip .\swmm-%SUT_BUILD_ID%
+  - appveyor PushArtifact benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip
 
 #cache:
 #  - C:\ProgramData\chocolatey\bin -> appveyor.yml
