@@ -7,8 +7,9 @@
 ::          US EPA - ORD/NRMRL
 ::
 ::  Arguments:
-::    1 - (SUT build identifier)
-::    2 - (test suite path)
+::    1 - (REF build identifier)
+::    2 - (SUT build identifier)
+::    3 - (test suite path)
 ::
 
 @echo off
@@ -16,24 +17,21 @@ setlocal
 
 
 :: Check existence and apply default arguments
-IF [%1]==[] ( set "SUT_BUILD_ID=local"
-) ELSE ( set "SUT_BUILD_ID=%~1" )
+IF [%1]==[] ( echo "ERROR: REF_BUILD_ID must be defined" & exit /B 1
+) ELSE ( set "REF_BUILD_ID=%~1" )
 
-IF [%2]==[] ( set "TEST_SUITE_PATH=nrtestsuite"
-) ELSE ( set "TEST_SUITE_PATH=%~2" )
+IF [%2]==[] ( set "SUT_BUILD_ID=local"
+) ELSE ( set "SUT_BUILD_ID=%~2" )
+
+IF [%3]==[] ( set "TEST_SUITE_PATH=nrtestsuite"
+) ELSE ( set "TEST_SUITE_PATH=%~3" )
 
 
-:: Determine location of python Scripts folder
+:: determine location of python Scripts folder
 FOR /F "tokens=*" %%G IN ('where python') DO (
   set PYTHON_DIR=%%~dpG
 )
 set "NRTEST_SCRIPT_PATH=%PYTHON_DIR%Scripts"
-
-
-:: determine REF_BUILD_ID from benchmark manifest
-7z e .\%TEST_SUITE_PATH%\benchmark.zip -o.\%TEST_SUITE_PATH% manifest.json -r -y > nul
-FOR /F delims^=^"^ tokens^=4 %%i IN ( 'findstr /l win .\%TEST_SUITE_PATH%\manifest.json' ) DO ( set "TEMP=%%i" )
-FOR /F "tokens=2" %%d IN ( 'echo %TEMP%' ) DO ( set "REF_BUILD_ID=%%d" )
 
 
 set NRTEST_EXECUTE_CMD=python %NRTEST_SCRIPT_PATH%\nrtest execute
