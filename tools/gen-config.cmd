@@ -9,7 +9,7 @@
 ::  Arguments:
 ::    1 - absolute path to test executable (valid path seperator for nrtest is "/")
 ::    2 - (platform)
-::    3 - (build identifier)
+::    3 - (build identifier for SUT)
 ::    4 - (commit hash string)
 
 @echo off

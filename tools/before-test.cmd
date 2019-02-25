@@ -8,9 +8,10 @@
 ::
 ::  Arguments:
 ::    1 - (platform)
-::    2 - (build identifier for software under test)
-::    3 - (version identifier for software under test)
-::    4 - (relative path regression test file staging location)
+::    2 - (build identifier for reference)
+::    3 - (build identifier for software under test)
+::    4 - (version identifier for software under test)
+::    5 - (relative path regression test file staging location)
 ::
 ::  Note:
 ::    Tests and benchmark files are stored in the swmm-example-networks repo.
@@ -26,20 +27,23 @@ setlocal EnableExtensions
 IF [%1]==[] ( set PLATFORM=
 ) ELSE ( set "PLATFORM=%~1" )
 
-IF [%2]==[] ( set "SUT_BUILD_ID=local"
-) ELSE ( set "SUT_BUILD_ID=%~2" )
+IF [%2]==[] ( echo "ERROR: REF_BUILD_ID must be defined" & exit /B 1
+) ELSE (set "REF_BUILD_ID=%~2" )
 
-IF [%3]==[] (set SUT_VERSION=
-) ELSE ( set "SUT_VERSION=%~3" )
+IF [%3]==[] ( set "SUT_BUILD_ID=local"
+) ELSE ( set "SUT_BUILD_ID=%~3" )
 
-IF [%4]==[] ( set "TEST_HOME=nrtestsuite"
-) ELSE ( set "TEST_HOME=%~4" )
+IF [%4]==[] (set SUT_VERSION=
+) ELSE ( set "SUT_VERSION=%~4" )
+
+IF [%5]==[] ( set "TEST_HOME=nrtestsuite"
+) ELSE ( set "TEST_HOME=%~5" )
 
 
 echo INFO: Staging files for regression testing
 
 
-:: Determine SUT executable path
+:: determine SUT executable path
 set "SCRIPT_HOME=%~dp0"
 :: TODO: This may fail when there is more than one cmake buildprod folder
 FOR /D /R "%SCRIPT_HOME%..\" %%a IN (*) DO IF /i "%%~nxa"=="bin" set "BUILD_HOME=%%a"
@@ -52,12 +56,13 @@ IF NOT DEFINED PLATFORM (
   FOR /F "delims=: tokens=3" %%m IN ( 'echo %FLAG%' ) DO IF "%%m"=="x64" ( set "PLATFORM=win64" ) ELSE ( set "PLATFORM=win32" )
 )
 
-:: determine latest tag in swmm-example-networks repo
+:: hack to determine latest tag in swmm-example-networks repo
+:: TODO: use GitHub api instead
 set "LATEST_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/latest"
 FOR /F delims^=^"^ tokens^=2 %%g IN ('curl --silent %LATEST_URL%') DO ( set "LATEST_TAG=%%~nxg" )
 
 set "TESTFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/archive/%LATEST_TAG%.zip"
-set "BENCHFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/download/%LATEST_TAG%/benchmark-%PLATFORM%.zip"
+set "BENCHFILES_URL=https://github.com/OpenWaterAnalytics/swmm-example-networks/releases/download/%LATEST_TAG%/benchmark-%PLATFORM%-%REF_BUILD_ID%.zip"
 
 
 :: create a clean directory for staging regression tests
