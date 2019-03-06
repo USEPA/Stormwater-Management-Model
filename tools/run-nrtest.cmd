@@ -57,6 +57,8 @@ set NRTEST_COMMAND=%NRTEST_EXECUTE_CMD% %TEST_APP_PATH% %TESTS% -o %TEST_OUTPUT_
 :: if there is an error exit the script with error value 1
 %NRTEST_COMMAND% || exit /B 1
 
+echo .
+
 echo INFO: Comparing SUT artifacts to REF %REF_BUILD_ID%
 set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --rtol %RTOL_VALUE% --atol %ATOL_VALUE% --output benchmark\receipt.json
 %NRTEST_COMMAND%
