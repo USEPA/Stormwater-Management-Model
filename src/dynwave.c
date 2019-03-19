@@ -8,6 +8,7 @@
 //             09/15/14   (5.1.007)
 //             03/19/15   (5.1.008)
 //             08/01/16   (5.1.011)
+//             05/10/18   (5.1.013)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -38,26 +39,32 @@
 //   - Added test for failed memory allocation.
 //   - Fixed illegal array index bug for Ideal Pumps.
 //
+//   Build 5.1.013:
+//   - Include omp.h protected against lack of compiler support for OpenMP.
+//   - SurchargeMethod option used to decide how node surcharging is handled.
+//   - Storage nodes allowed to pressurize if their surcharge depth > 0.
+//   - Minimum flow needed to compute a Courant time step modified.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include "headers.h"
 #include <stdlib.h>
 #include <math.h>
-#if defined(_OPENMP)
-  #include <omp.h>                                                             //(5.1.008)
+#if defined(_OPENMP)                                                           //(5.1.013)
+#include <omp.h>
 #endif
 
 //-----------------------------------------------------------------------------
 //     Constants 
 //-----------------------------------------------------------------------------
-static const double MINTIMESTEP =  0.001;   // min. time step (sec)            //(5.1.008)
-static const double OMEGA       =  0.5;     // under-relaxation parameter
-
-//  Constants moved here from project.c  //                                    //(5.1.008)
-const double DEFAULT_SURFAREA  = 12.566; // Min. nodal surface area (~4 ft diam.)
-const double DEFAULT_HEADTOL   = 0.005;  // Default head tolerance (ft)
-const int    DEFAULT_MAXTRIALS = 8;      // Max. trials per time step
+static const double MINTIMESTEP         = 0.001;  // min. time step (sec)
+static const double OMEGA               = 0.5;    // under-relaxation parameter
+static const double DEFAULT_SURFAREA    = 12.566; // Min. nodal surface area (~4 ft diam.)
+static const double DEFAULT_HEADTOL     = 0.005;  // Default head tolerance (ft)
+static const double EXTRAN_CROWN_CUTOFF = 0.96;   // crown cutoff for EXTRAN   //(5.1.013)
+static const double SLOT_CROWN_CUTOFF   = 0.985257; // crown cutoff for SLOT   //(5.1.013)
+static const int    DEFAULT_MAXTRIALS   = 8;       // Max. trials per time step
 
 
 //-----------------------------------------------------------------------------
@@ -107,8 +114,6 @@ static double getNodeStep(double tMin, int *minNode);
 
 //=============================================================================
 
-////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
-
 void dynwave_init()
 //
 //  Input:   none
@@ -121,15 +126,12 @@ void dynwave_init()
 
     VariableStep = 0.0;
     Xnode = (TXnode *) calloc(Nobjects[NODE], sizeof(TXnode));
-
-////  Added to release 5.1.011.  ////                                          //(5.1.011)
     if ( Xnode == NULL )
     {
         report_writeErrorMsg(ERR_MEMORY,
             " Not enough memory for dynamic wave routing.");
         return;
     }
-//////////////////////////////////////
 
     // --- initialize node surface areas & crown elev.
     for (i = 0; i < Nobjects[NODE]; i++ )
@@ -139,7 +141,7 @@ void dynwave_init()
         Node[i].crownElev = Node[i].invertElev;
     }
 
-    // --- update node crown elev. & initialize links
+    // --- initialize links & update node crown elevations
     for (i = 0; i < Nobjects[LINK]; i++)
     {
         j = Link[i].node1;
@@ -151,6 +153,10 @@ void dynwave_init()
         Link[i].flowClass = DRY;
         Link[i].dqdh = 0.0;
     }
+
+    // --- set crown cutoff for finding top width of closed conduits           //(5.1.013)
+    if ( SurchargeMethod == SLOT ) CrownCutoff = SLOT_CROWN_CUTOFF;            //(5.1.013)
+    else                           CrownCutoff = EXTRAN_CROWN_CUTOFF;          //(5.1.013)
 }
 
 //=============================================================================
@@ -167,8 +173,6 @@ void  dynwave_close()
 
 //=============================================================================
 
-////  New function added to release 5.1.008.  ////                             //(5.1.008)
-
 void dynwave_validate()
 //
 //  Input:   none
@@ -178,11 +182,11 @@ void dynwave_validate()
 {
     if ( MinRouteStep > RouteStep ) MinRouteStep = RouteStep;
     if ( MinRouteStep < MINTIMESTEP ) MinRouteStep = MINTIMESTEP;
-	if ( MinSurfArea == 0.0 ) MinSurfArea = DEFAULT_SURFAREA;
-	else MinSurfArea /= UCF(LENGTH) * UCF(LENGTH);
+    if ( MinSurfArea == 0.0 ) MinSurfArea = DEFAULT_SURFAREA;
+    else MinSurfArea /= UCF(LENGTH) * UCF(LENGTH);
     if ( HeadTol == 0.0 ) HeadTol = DEFAULT_HEADTOL;
     else HeadTol /= UCF(LENGTH);
-	if ( MaxTrials == 0 ) MaxTrials = DEFAULT_MAXTRIALS;
+    if ( MaxTrials == 0 ) MaxTrials = DEFAULT_MAXTRIALS;
 }
 
 //=============================================================================
@@ -203,7 +207,7 @@ double dynwave_getRoutingStep(double fixedStep)
     //     use the minimum allowable time step
     if ( VariableStep == 0.0 )
     {
-        VariableStep = MinRouteStep;                                           //(5.1.008)
+        VariableStep = MinRouteStep;
     }
 
     // --- otherwise compute variable step based on current flow solution
@@ -299,12 +303,13 @@ void initNodeStates()
         {
             Xnode[i].newSurfArea = node_getSurfArea(i, Node[i].newDepth);
         }
+
+/*      ////  Removed for release 5.1.013.  ///                                //(5.1.013)
         if ( Xnode[i].newSurfArea < MinSurfArea )
         {
             Xnode[i].newSurfArea = MinSurfArea;
         }
-
-////  Following code section modified for release 5.1.007  ////                //(5.1.007)
+*/
         // --- initialize nodal inflow & outflow
         Node[i].inflow = 0.0;
         Node[i].outflow = Node[i].losses;
@@ -349,7 +354,7 @@ void  findLimitedLinks()
     for (j = 0; j < Nobjects[LINK]; j++)
     {
         // ---- check only non-dummy conduit links
-        if ( !isTrueConduit(j) ) continue;                                     //(5.1.008)
+        if ( !isTrueConduit(j) ) continue;
 
         // --- check that upstream end is full
         k = Link[j].subIndex;
@@ -374,9 +379,9 @@ void findLinkFlows(double dt)
     int i;
 
     // --- find new flow in each non-dummy conduit
-#pragma omp parallel num_threads(NumThreads)                                   //(5.1.008)
+#pragma omp parallel num_threads(NumThreads)
 {
-    #pragma omp for                                                            //(5.1.008)
+    #pragma omp for
     for ( i = 0; i < Nobjects[LINK]; i++)
     {
         if ( isTrueConduit(i) && !Link[i].bypassed )
@@ -504,14 +509,8 @@ void  findNonConduitSurfArea(int i)
     }
 
     // --- no surface area for weirs to maintain SWMM 4 compatibility
-/*
-    else if ( Link[i].type == WEIR )
-    {
-        Xlink[i].surfArea1 = Weir[Link[i].subIndex].surfArea / 2.;
-    }
-*/
-
     else Link[i].surfArea1 = 0.0;
+
     Link[i].surfArea2 = Link[i].surfArea1;
     if ( Link[i].flowClass == UP_CRITICAL ||
         Node[Link[i].node1].type == STORAGE ) Link[i].surfArea1 = 0.0;
@@ -529,7 +528,7 @@ void updateNodeFlows(int i)
 //  Purpose: updates cumulative inflow & outflow at link's end nodes.
 //
 {
-    int    k;                                                                  //(5.1.011)
+    int    k;
     int    barrels = 1;
     int    n1 = Link[i].node1;
     int    n2 = Link[i].node2;
@@ -565,7 +564,7 @@ void updateNodeFlows(int i)
     if ( Link[i].type == PUMP )
     {
         k = Link[i].subIndex;
-        if ( Pump[k].type != TYPE4_PUMP )                                      //(5.1.011)
+        if ( Pump[k].type != TYPE4_PUMP )
         {
             Xnode[n2].sumdqdh += Link[i].dqdh;
         }
@@ -587,9 +586,9 @@ int findNodeDepths(double dt)
     // --- compute new depth for all non-outfall nodes and determine if
     //     depth change from previous iteration is below tolerance
     converged = TRUE;
-#pragma omp parallel num_threads(NumThreads)                                   //(5.1.008)
+#pragma omp parallel num_threads(NumThreads)
 {
-    #pragma omp for private(yOld)                                              //(5.1.008)
+    #pragma omp for private(yOld)
     for ( i = 0; i < Nobjects[NODE]; i++ )
     {
         if ( Node[i].type == OUTFALL ) continue;
@@ -602,7 +601,7 @@ int findNodeDepths(double dt)
             Xnode[i].converged = FALSE;
         }
     }
-}                                                                              //(5.1.008)
+}
     return converged;
 }
 
@@ -618,6 +617,7 @@ void setNodeDepth(int i, double dt)
 {
     int     canPond;                   // TRUE if node can pond overflows
     int     isPonded;                  // TRUE if node is currently ponded 
+    int     isSurcharged = FALSE;      // TRUE if node is surcharged           //(5.1.013)
     double  dQ;                        // inflow minus outflow at node (cfs)
     double  dV;                        // change in node volume (ft3)
     double  dy;                        // change in node depth (ft)
@@ -641,19 +641,39 @@ void setNodeDepth(int i, double dt)
     yLast = Node[i].newDepth;
     Node[i].overflow = 0.0;
     surfArea = Xnode[i].newSurfArea;
+    surfArea = MAX(surfArea, MinSurfArea);                                     //(5.1.013)
 
     // --- determine average net flow volume into node over the time step
     dQ = Node[i].inflow - Node[i].outflow;
     dV = 0.5 * (Node[i].oldNetInflow + dQ) * dt;
 
+////  Following code segment added to release 5.1.013.  ////                   //(5.1.013)
+    // --- determine if node is EXTRAN surcharged
+    if (SurchargeMethod == EXTRAN)
+    {
+        // --- ponded nodes don't surcharge
+        if (isPonded) isSurcharged = FALSE;
+
+        // --- closed storage units that are full are in surcharge
+        else if (Node[i].type == STORAGE)
+        {
+            isSurcharged = (Node[i].surDepth > 0.0 &&
+                            yLast > Node[i].fullDepth);
+        }
+
+        // --- surcharge occurs when node depth exceeds top of its highest link
+        else isSurcharged = (yCrown > 0.0 && yLast > yCrown);
+    }
+/////////////////////////////////////////////////////////////
+
     // --- if node not surcharged, base depth change on surface area        
-    if ( yLast <= yCrown || Node[i].type == STORAGE || isPonded )
+    if (!isSurcharged)                                                         //(5.1.013)
     {
         dy = dV / surfArea;
         yNew = yOld + dy;
 
-        // --- save non-ponded surface area for use in surcharge algorithm     //(5.1.002)
-        if ( !isPonded ) Xnode[i].oldSurfArea = surfArea;                      //(5.1.002)
+        // --- save non-ponded surface area for use in surcharge algorithm
+        if ( !isPonded ) Xnode[i].oldSurfArea = surfArea;
 
         // --- apply under-relaxation to new depth estimate
         if ( Steps > 0 )
@@ -783,7 +803,7 @@ double getVariableStep(double maxStep)
     stats_updateCriticalTimeCount(minNode, minLink);
 
     // --- don't let time step go below an absolute minimum
-    if ( tMin < MinRouteStep ) tMin = MinRouteStep;                            //(5.1.008)
+    if ( tMin < MinRouteStep ) tMin = MinRouteStep;
     return tMin;
 }
 
@@ -811,7 +831,7 @@ double getLinkStep(double tMin, int *minLink)
             // --- skip conduits with negligible flow, area or Fr
             k = Link[i].subIndex;
             q = fabs(Link[i].newFlow) / Conduit[k].barrels;
-            if ( q <= 0.05 * Link[i].qFull
+            if ( q <= FUDGE                                                    //(5.1.013)
             ||   Conduit[k].a1 <= FUDGE
             ||   Link[i].froude <= 0.01 
                ) continue;

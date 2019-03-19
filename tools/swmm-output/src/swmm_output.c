@@ -80,23 +80,25 @@ typedef struct {
 //-----------------------------------------------------------------------------
 //   Local functions
 //-----------------------------------------------------------------------------
-void errorLookup(int errcode, char* errmsg, int length);
-int    validateFile(data_t* p_data);
-void   initElementNames(data_t* p_data);
+static void errorLookup(int errcode, char* errmsg, int length);
+static int  validateFile(data_t* p_data);
+static void initElementNames(data_t* p_data);
+static void clearElementNames(data_t* p_data);
 
-double getTimeValue(data_t* p_data, int timeIndex);
-float  getSubcatchValue(data_t* p_data, int timeIndex, int subcatchIndex, SMO_subcatchAttribute attr);
-float  getNodeValue(data_t* p_data, int timeIndex, int nodeIndex, SMO_nodeAttribute attr);
-float  getLinkValue(data_t* p_data, int timeIndex, int linkIndex, SMO_linkAttribute attr);
-float  getSystemValue(data_t* p_data, int timeIndex, SMO_systemAttribute attr);
+static double getTimeValue(data_t* p_data, int timeIndex);
+static float  getSubcatchValue(data_t* p_data, int timeIndex, int subcatchIndex, SMO_subcatchAttribute attr);
+static float  getNodeValue(data_t* p_data, int timeIndex, int nodeIndex, SMO_nodeAttribute attr);
+static float  getLinkValue(data_t* p_data, int timeIndex, int linkIndex, SMO_linkAttribute attr);
+static float  getSystemValue(data_t* p_data, int timeIndex, SMO_systemAttribute attr);
 
-int _fopen(FILE **f, const char *name, const char *mode);
-int _fseek(FILE* stream, F_OFF offset, int whence);
-F_OFF _ftell(FILE* stream);
+static int   _fopen(FILE **f, const char *name, const char *mode);
+static int   _fseek(FILE* stream, F_OFF offset, int whence);
+static F_OFF _ftell(FILE* stream);
 
-float* newFloatArray(int n);
-int* newIntArray(int n);
-char* newCharArray(int n);
+static float* newFloatArray(int n);
+static int*   newIntArray(int n);
+static char*  newCharArray(int n);
+
 
 int DLLEXPORT SMO_init(SMO_Handle* p_handle)
 //  Purpose: Initialized pointer for the opaque SMO_Handle.
@@ -130,7 +132,7 @@ int DLLEXPORT SMO_close(SMO_Handle* p_handle)
 //
 {
     data_t* p_data;
-    int i, n, errorcode = 0;
+    int errorcode = 0;
 
     p_data = (data_t*)*p_handle;
 
@@ -139,13 +141,7 @@ int DLLEXPORT SMO_close(SMO_Handle* p_handle)
 
     else
     {
-        if (p_data->elementNames != NULL)
-        {
-            n = p_data->Nsubcatch + p_data->Nnodes + p_data->Nlinks + p_data->Npolluts;
-
-            for(i = 0; i < n; i++)
-                free(p_data->elementNames[i].IDname);
-        }
+        clearElementNames(p_data);
 
         dst_errormanager(p_data->error_handle);
         
@@ -415,7 +411,7 @@ int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
     else if (p_data->file == NULL) errorcode = 411;
     else
     {
-        // Initialize the name array if necessary
+        // Lazy initialize the name array on demand
         if (p_data->elementNames == NULL) initElementNames(p_data);
 
         switch (type)
@@ -975,6 +971,21 @@ void initElementNames(data_t* p_data)
 
         fread(p_data->elementNames[j].IDname, sizeof(char),
                 p_data->elementNames[j].length, p_data->file);
+    }
+}
+
+void clearElementNames(data_t* p_data)
+{
+    int i, n;
+
+    if (p_data->elementNames != NULL)
+    {
+        n = p_data->Nsubcatch + p_data->Nnodes + p_data->Nlinks + p_data->Npolluts;
+
+        for(i = 0; i < n; i++)
+            free(p_data->elementNames[i].IDname);
+
+        free(p_data->elementNames);
     }
 }
 

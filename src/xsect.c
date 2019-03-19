@@ -5,6 +5,7 @@
 //   Version:  5.1
 //   Date:     03/20/14   (Build 5.1.001)
 //             03/14/17   (Build 5.1.012)
+//             05/10/18   (Build 5.1.013)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -27,6 +28,9 @@
 //
 //   Build 5.1.012:
 //   - Height at max. width for Modified Baskethandle shape corrected.
+//
+//   Build 5.1.013:
+//   - Width at full height set to 0 for closed rectangular shape.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -446,7 +450,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
 
         // --- height of circular arc
         xsect->yBot = xsect->rBot * (1.0 - cos(theta/2.0));
-        xsect->ywMax = xsect->yFull - xsect->yBot;                             //(5.1.012)
+        xsect->ywMax = xsect->yFull - xsect->yBot;
 
         // --- area of circular arc
         xsect->aBot = xsect->rBot * xsect->rBot /
@@ -537,10 +541,10 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         break;
 
     case HORIZ_ELLIPSE:
-        if ( p[1] == 0.0 ) p[2] = p[0];                                        //(5.1.008)
-        if ( p[2] > 0.0 )                        // std. ellipse pipe          //(5.1.008)
+        if ( p[1] == 0.0 ) p[2] = p[0];
+        if ( p[2] > 0.0 )                        // std. ellipse pipe
         {
-            index = (int)floor(p[2]) - 1;        // size code                  //(5.1.008)
+            index = (int)floor(p[2]) - 1;        // size code
             if ( index < 0 ||
                  index >= NumCodesEllipse ) return FALSE;
             xsect->yFull = MinorAxis_Ellipse[index]/12.;
@@ -565,10 +569,10 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         break;
 
     case VERT_ELLIPSE:
-        if ( p[1] == 0.0 ) p[2] = p[0];                                        //(5.1.008)
-        if ( p[2] > 0.0 )                        // std. ellipse pipe          //(5.1.008)
+        if ( p[1] == 0.0 ) p[2] = p[0];
+        if ( p[2] > 0.0 )                        // std. ellipse pipe
         {
-            index = (int)floor(p[2]) - 1;        // size code                  //(5.1.008)
+            index = (int)floor(p[2]) - 1;        // size code
             if ( index < 0 ||
                  index >= NumCodesEllipse ) return FALSE;
             xsect->yFull = MajorAxis_Ellipse[index]/12.;
@@ -593,10 +597,10 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
         break;
 
     case ARCH:
-        if ( p[1] == 0.0 ) p[2] = p[0];                                        //(5.1.008)
-        if ( p[2] > 0.0 )                        // std. arch pipe             //(5.1.008)
+        if ( p[1] == 0.0 ) p[2] = p[0];
+        if ( p[2] > 0.0 )                        // std. arch pipe
         {
-            index = (int)floor(p[2]) - 1;        // size code                  //(5.1.008)
+            index = (int)floor(p[2]) - 1;        // size code
             if ( index < 0 ||
                  index >= NumCodesArch ) return FALSE;
             xsect->yFull = Yfull_Arch[index]/12.;     // Yfull units are inches
@@ -984,7 +988,9 @@ double xsect_getWofY(TXsect *xsect, double y)
         return xsect->wMax * lookup(yNorm,
             Shape[Curve[xsect->transect].refersTo].widthTbl, N_SHAPE_TBL);
 
-      case RECT_CLOSED: return xsect->wMax;
+      case RECT_CLOSED: 
+          if (yNorm == 1.0) return 0.0;                                        //(5.1.013)
+          return xsect->wMax;
 
       case RECT_TRIANG: return rect_triang_getWofY(xsect, y);
 

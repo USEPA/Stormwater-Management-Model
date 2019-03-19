@@ -94,11 +94,11 @@ int kinwave_execute(int j, double* qinflow, double* qoutflow, double tStep)
     q1 = Conduit[k].q1 / Qfull;
     q2 = Conduit[k].q2 / Qfull;
 
-    // --- normalize inflow                                                    //(5.1.008)
+    // --- normalize inflow
     qin = (*qinflow) / Conduit[k].barrels / Qfull;
 
     // --- compute evaporation and infiltration loss rate
-	q3 = link_getLossRate(j, qin*Qfull, tStep) / Qfull;                        //(5.1.008)
+	q3 = link_getLossRate(j, qin*Qfull, tStep) / Qfull;
 
     // --- normalize previous areas
     a1 = Conduit[k].a1 / Afull;
@@ -155,7 +155,7 @@ int kinwave_execute(int j, double* qinflow, double* qoutflow, double tStep)
     Conduit[k].q2 = qout * Qfull;
     Conduit[k].a2 = aout * Afull;
     Conduit[k].fullState =
-        link_getFullState(Conduit[k].a1, Conduit[k].a2, Afull);                //(5.1.008)
+        link_getFullState(Conduit[k].a1, Conduit[k].a2, Afull);
     (*qinflow)  = Conduit[k].q1 * Conduit[k].barrels;
     (*qoutflow) = Conduit[k].q2 * Conduit[k].barrels;
     return result;

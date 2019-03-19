@@ -35,7 +35,7 @@
 //-----------------------------------------------------------------------------
 int    table_getNextFileEntry(TTable* table, double* x, double* y);
 int    table_parseFileLine(char* line, TTable* table, double* x, double* y);
-double table_interpolate(double x, double x1, double y1, double x2, double y2);//(5.1.008)
+double table_interpolate(double x, double x1, double y1, double x2, double y2);
 
 
 //=============================================================================
@@ -381,8 +381,6 @@ int table_getNextEntry(TTable *table, double *x, double *y)
 
 //=============================================================================
 
-////  Revised for release 5.1.008  ////                                        //(5.1.008)
-
 double table_lookup(TTable *table, double x)
 //
 //  Input:   table = pointer to a TTable structure
@@ -418,8 +416,6 @@ double table_lookup(TTable *table, double x)
 
 //=============================================================================
 
-////  Revised for release 5.1.008.  ////                                       //(5.1.008)
-
 double table_getSlope(TTable *table, double x)
 //
 //  Input:   table = pointer to a TTable structure
@@ -453,8 +449,6 @@ double table_getSlope(TTable *table, double x)
 }
 
 //=============================================================================
-
-////  Revised for release 5.1.008.  ////                                       //(5.1.008)
 
 double table_lookupEx(TTable *table, double x)
 //
@@ -495,8 +489,6 @@ double table_lookupEx(TTable *table, double x)
 
 //=============================================================================
 
-////  Revised for release 5.1.008.  ////                                       //(5.1.008)
-
 double table_intervalLookup(TTable *table, double x)
 //
 //  Input:   table = pointer to a TTable structure
@@ -520,8 +512,6 @@ double table_intervalLookup(TTable *table, double x)
 }
 
 //=============================================================================
-
-////  Revised for release 5.1.008.  ////                                       //(5.1.008)
 
 double table_inverseLookup(TTable *table, double y)
 //
@@ -558,8 +548,6 @@ double table_inverseLookup(TTable *table, double y)
 
 //=============================================================================
 
-////  Revised for release 5.1.008.  ////                                       //(5.1.008)
-
 double  table_getMaxY(TTable *table, double x)
 //
 //  Input:   table = pointer to a TTable structure
@@ -584,8 +572,6 @@ double  table_getMaxY(TTable *table, double x)
 }
 
 //=============================================================================
-
-////  Revised for release 5.1.008.  ////                                       //(5.1.008)
 
 double  table_getArea(TTable* table, double x)
 //
@@ -648,8 +634,6 @@ double  table_getArea(TTable* table, double x)
 }
 
 //=============================================================================
-
-////  Revised for release 5.1.008.  ////                                       //(5.1.008)
 
 double  table_getInverseArea(TTable* table, double a)
 //

@@ -6,7 +6,7 @@
 //   Date:     03/19/14  (Build 5.1.001)
 //             09/15/14  (Build 5.1.007)
 //             03/19/15  (Build 5.1.008)
-//             03/14/11  (Build 5.1.012)
+//             03/14/17  (Build 5.1.012)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -53,7 +53,7 @@ static const double STOPTOL = 0.005;   // storage updating stopping tolerance
 static void   initLinkDepths(void);
 static void   initNodeDepths(void);
 static void   initNodes(void);
-static void   initLinks(int routingModel);                                     //(5.1.008)
+static void   initLinks(int routingModel);
 static void   validateTreeLayout(void);      
 static void   validateGeneralLayout(void);
 static void   updateStorageState(int i, int j, int links[], double dt);
@@ -95,7 +95,7 @@ void flowrout_init(int routingModel)
 
     // --- initialize node & link volumes
     initNodes();
-    initLinks(routingModel);                                                   //(5.1.008)
+    initLinks(routingModel);
 }
 
 //=============================================================================
@@ -417,8 +417,6 @@ void initLinkDepths()
 
 //=============================================================================
 
-////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
-
 void initNodes()
 //
 //  Input:   none
@@ -465,8 +463,6 @@ void initNodes()
 }
 
 //=============================================================================
-
-////  This function was modified for release 5.1.008.  ////                    //(5.1.008)
 
 void initLinks(int routingModel)
 //
@@ -555,7 +551,7 @@ void updateStorageState(int i, int j, int links[], double dt)
     //     that do not depend on storage depth at end of time step
     vFixed = Node[i].oldVolume + 
              0.5 * (Node[i].oldNetInflow + Node[i].inflow - 
-                    Node[i].outflow) * dt;                                     //(5.1.007)
+                    Node[i].outflow) * dt;
     d1 = Node[i].newDepth;
 
     // --- iterate finding outflow (which depends on depth) and subsequent
@@ -565,7 +561,7 @@ void updateStorageState(int i, int j, int links[], double dt)
     while ( iter < MAXITER && !stopped )
     {
         // --- find new volume from flow balance eqn.
-        v2 = vFixed - 0.5 * getStorageOutflow(i, j, links, dt) * dt;           //(5.1.007)
+        v2 = vFixed - 0.5 * getStorageOutflow(i, j, links, dt) * dt;
 
         // --- limit volume to full volume if no ponding
         //     and compute overflow rate
@@ -575,7 +571,7 @@ void updateStorageState(int i, int j, int links[], double dt)
         {
             Node[i].overflow = (v2 - MAX(Node[i].oldVolume,
                                          Node[i].fullVolume)) / dt;
-            if ( Node[i].overflow < FUDGE ) Node[i].overflow = 0.0;            //(5.1.012)
+            if ( Node[i].overflow < FUDGE ) Node[i].overflow = 0.0;
             if ( !AllowPonding || Node[i].pondedArea == 0.0 )
                 v2 = Node[i].fullVolume;
         }
@@ -638,7 +634,6 @@ void setNewNodeState(int j, double dt)
     int   canPond;                     // TRUE if ponding can occur at node  
     double newNetInflow;               // inflow - outflow at node (cfs)
 
-////  Following section revised for release 5.1.012.  ////                     //(5.1.012)
     // --- update terminal storage nodes
     if ( Node[j].type == STORAGE )
     {	
@@ -646,10 +641,9 @@ void setNewNodeState(int j, double dt)
 	    updateStorageState(j, Nobjects[LINK], NULL, dt);
         return; 
     }
-//////////////////////////////////////////////////////////
 
     // --- update stored volume using mid-point integration
-    newNetInflow = Node[j].inflow - Node[j].outflow - Node[j].losses;          //(5.1.007)
+    newNetInflow = Node[j].inflow - Node[j].outflow - Node[j].losses;
     Node[j].newVolume = Node[j].oldVolume +
                         0.5 * (Node[j].oldNetInflow + newNetInflow) * dt;
     if ( Node[j].newVolume < FUDGE ) Node[j].newVolume = 0.0;
@@ -705,12 +699,12 @@ void setNewLinkState(int j)
         if ( Conduit[k].a1 >= Link[j].xsect.aFull )
         {
              Conduit[k].capacityLimited = TRUE;
-             Conduit[k].fullState = ALL_FULL;                                  //(5.1.008)
+             Conduit[k].fullState = ALL_FULL;
         }
         else
         {    
             Conduit[k].capacityLimited = FALSE;
-            Conduit[k].fullState = 0;                                          //(5.1.008)
+            Conduit[k].fullState = 0;
         }
     }
 }
@@ -771,10 +765,9 @@ int steadyflow_execute(int j, double* qin, double* qout, double tStep)
         if ( Link[j].xsect.type == DUMMY ) Conduit[k].a1 = 0.0;
         else 
         {
-            // --- subtract evap and infil losses from inflow
-            q -= link_getLossRate(j, q, tStep);                                //(5.1.008)
-            if ( q < 0.0 ) q = 0.0;
-
+            // --- adjust flow for evap and infil losses
+            q -= link_getLossRate(j, q, tStep);
+         
             // --- flow can't exceed full flow 
             if ( q > Link[j].qFull )
             {
@@ -791,11 +784,10 @@ int steadyflow_execute(int j, double* qin, double* qout, double tStep)
             }
         }
         Conduit[k].a2 = Conduit[k].a1;
-
+        
         Conduit[k].q1Old = Conduit[k].q1;
         Conduit[k].q2Old = Conduit[k].q2;
-
-
+        
         Conduit[k].q1 = q;
         Conduit[k].q2 = q;
         (*qout) = q * Conduit[k].barrels;
