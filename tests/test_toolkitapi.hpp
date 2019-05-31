@@ -25,7 +25,6 @@
 
 #include "swmm5.h"
 #include "toolkitAPI.h"
-#include "../src/error.h"
 
 // NOTE: Test Input File
 #define DATA_PATH_INP "swmm_api_test.inp"
