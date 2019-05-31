@@ -95,7 +95,7 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
     SM_SubcatchStats *subc_stats = NULL;
 
     error = swmm_getSubcatchStats(subc_ind, &subc_stats);
-    BOOST_CHECK_EQUAL(error, 0);
+    BOOST_CHECK_EQUAL(error, ERR_NONE);
     // 4 in/hr * 6hrs = 24inches
     // Time to call FEMA!
     BOOST_CHECK_SMALL(subc_stats->precip - 24, 0.0001);
