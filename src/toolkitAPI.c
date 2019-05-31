@@ -55,15 +55,15 @@ int DLLEXPORT swmm_project_findObject(int type, char *id, int *index)
 {
     int errorcode = 0;
 
-	int idx = project_findObject(type, id);
+    int idx = project_findObject(type, id);
 
-	if (idx == -1) {
+    if (idx == -1) {
         index    = NULL;
         errorcode = ERR_API_OBJECT_INDEX;
-	} else
+    } else
         *index = idx;
 
-	return errorcode;
+    return errorcode;
 }
 
 int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month, int *day,
@@ -335,6 +335,7 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
 /// Purpose: Gets ID for any object
 {
     int errcode = 0;
+    TLidProc*  lidProc;
     //Provide Empty Character Array
     strcpy(id,"");
 
@@ -382,8 +383,13 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
                 strcpy(id,Snowmelt[index].ID); break;
             //case SM_SHAPE:
                 //strcpy(id,Shape[index].ID); break;
-            //case SM_LID:
-                //strcpy(id,LidProcs[index].ID); break;
+            case SM_LID:
+                lidProc = lid_getLidProc(index);
+                if (lidProc != NULL)
+                {
+                    strcpy(id,lidProc->ID); 
+                }
+                break;
             default: errcode = ERR_API_OUTBOUNDS; break;
         }
    }
@@ -814,6 +820,695 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *out_index
     return(errcode);
 }
 
+
+int DLLEXPORT swmm_getLidUCount(int index, int *value)
+// Input:   index = Index of desired subcatchment 
+// Output:  int = number of lid units for subcatchment 
+// Return:  number of lid units for subcatchment
+// Purpose: count number of lid units for subcatchment
+{
+    int errcode = 0;
+    
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if subcatchment index is within bounds
+    else if(index < 0 || index >= Nobjects[SUBCATCH])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else
+    {
+        *value = lid_getLidUnitCount(index);
+    }
+    
+    return (errcode);
+}
+
+
+int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int param, double *value)
+//
+// Input:   index = Index of desired subcatchment 
+//          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
+//          param = Parameter desired (Based on enum SM_LidUProperty)
+// Output:  value = value to be output
+// Return:  API Error
+// Purpose: Gets Lid Unit Parameter
+{
+    int errcode = 0;
+    TLidUnit* lidUnit;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if subcatchment index is within bounds
+    else if(index < 0 || index >= Nobjects[SUBCATCH])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else
+    {
+        lidUnit = lid_getLidUnit(index, lidIndex, &errcode);
+
+        // There are no Lid Units defined for the subcatchments
+        if(lidUnit)
+        {
+            switch(param)
+            {
+                case SM_UNITAREA:
+                    *value = lidUnit->area * SQR(UCF(LENGTH)); 
+                    break;
+                case SM_FWIDTH:
+                    *value = lidUnit->fullWidth * UCF(LENGTH); break;
+                case SM_BWIDTH:
+                    *value = lidUnit->botWidth * UCF(LENGTH); break;
+                case SM_INITSAT:
+                    *value = lidUnit->initSat * 100; break;
+                case SM_FROMIMPERV:
+                    *value = lidUnit->fromImperv * 100; break;
+                case SM_FROMPERV:
+                    *value = lidUnit->fromPerv * 100; break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
+            }
+        }
+    }
+
+    return(errcode);
+}
+
+
+int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value)
+//
+// Input:   index = Index of desired subcatchment 
+//          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
+//          param = Parameter desired (Based on enum SM_LidUProperty)
+//          value = replacement
+// Return:  API Error
+// Purpose: Gets Lid Unit Parameter
+{
+    int errcode = 0;
+    TLidUnit* lidUnit;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if subcatchment index is within bounds
+    else if(index < 0 || index >= Nobjects[SUBCATCH])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    // Check if model is running
+    else if(swmm_IsStartedFlag() == TRUE)
+    {
+        errcode = ERR_API_SIM_NRUNNING;
+    }
+    else
+    {
+        lidUnit = lid_getLidUnit(index, lidIndex, &errcode);
+
+        // There are no Lid Units defined for the subcatchments
+        if(lidUnit)
+        {
+            switch(Param)
+            {
+                case SM_UNITAREA:
+                    lidUnit->area = value / SQR(UCF(LENGTH)); 
+                    break;
+                case SM_FWIDTH:
+                    lidUnit->fullWidth = value / UCF(LENGTH); break;
+                //case SM_BWIDTH:
+                //    lidUnit->botWidth = value / UCF(LENGTH); break;
+                case SM_INITSAT:
+                    lidUnit->initSat = value / 100; break;
+                case SM_FROMIMPERV:
+                    lidUnit->fromImperv = value / 100; break;
+                case SM_FROMPERV:
+                    lidUnit->fromPerv = value / 100; break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
+            }
+        }
+    }
+    
+    if(errcode == ERR_NONE)
+    {
+        lid_validateLidGroup(index);
+        lid_updateLidGroup(index);
+    }
+    
+    return(errcode);
+}
+
+
+int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int param, int *value)
+//
+// Input:   index = Index of desired subcatchment 
+//          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
+//          param = Parameter desired (Based on enum SM_LidUOption)
+// Output:  value = value to be output
+// Return:  API Error
+// Purpose: Gets Lid Unit Option Parameter
+{
+    int errcode = 0;
+    TLidUnit* lidUnit;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if subcatchment index is within bounds
+    else if(index < 0 || index >= Nobjects[SUBCATCH])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else
+    {
+        lidUnit = lid_getLidUnit(index, lidIndex, &errcode);
+
+        // There are no Lid Units defined for the subcatchments
+        if(lidUnit)
+        {
+
+            switch(param)
+            {
+                case SM_INDEX:
+                    *value = lidUnit->lidIndex; break;
+                case SM_NUMBER:
+                    *value = lidUnit->number; break;
+                case SM_TOPERV:
+                    *value = lidUnit->toPerv; break;
+                case SM_DRAINSUB:
+                    *value = lidUnit->drainSubcatch; break;
+                case SM_DRAINNODE:
+                    *value = lidUnit->drainNode; break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
+            }
+        }
+    }
+
+    return(errcode);
+}
+
+
+int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int param, int value)
+//
+// Input:   index = Index of desired subcatchment 
+//          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
+//          param = Parameter desired (Based on enum SM_LidUOption)
+//          value = replacement value
+// Return:  API Error
+// Purpose: Sets Lid Unit Option
+{
+    int errcode = 0;
+    TLidUnit* lidUnit;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if subcatchment index is within bounds
+    else if(index < 0 || index >= Nobjects[SUBCATCH])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    // Check if model is running
+    else if(swmm_IsStartedFlag() == TRUE)
+    {
+        errcode = ERR_API_SIM_NRUNNING;
+    }
+    else
+    {
+        lidUnit = lid_getLidUnit(index, lidIndex, &errcode);
+
+        // There are no Lid Units defined for the subcatchments
+        if(lidUnit)
+        {
+            switch(param)
+            {
+                case SM_INDEX:
+                    lidUnit->lidIndex = value; break;
+                case SM_NUMBER:
+                    lidUnit->number = value; 
+                    break;
+                case SM_TOPERV:
+                    lidUnit->toPerv = (value > 0.0); break;
+                case SM_DRAINSUB:
+                    lidUnit->drainSubcatch = value; 
+                    lidUnit->drainNode = -1;
+                    break;
+                case SM_DRAINNODE:
+                    lidUnit->drainNode = value; 
+                    lidUnit->drainSubcatch = -1;
+                    break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
+            }
+        }
+    }
+
+    if(errcode == ERR_NONE)
+    {
+        lid_validateLidGroup(index);
+        lid_updateLidGroup(index);
+    }
+
+    return(errcode);
+}
+
+
+int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, char *condition)
+//
+// Input:   lidControlIndex = Index of desired lid control
+// Output:  condition = value to be output
+// Return:  API Error
+// Purpose: Get Lid Control Surface Immediate Overflow Condition
+{
+    int errcode = 0;
+    TLidProc*  lidProc;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if subcatchment index is within bounds
+    else if(lidControlIndex < 0 || lidControlIndex >= Nobjects[LID])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else
+    {
+        lidProc = lid_getLidProc(lidControlIndex);
+        if (lidProc != NULL)
+        {
+            *condition = lidProc->surface.canOverflow;
+    
+        }
+    }
+    return(errcode);
+}
+
+int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int param, double *value)
+//
+// Input:   lidControlIndex = Index of desired lid control
+//          layerIndex = Index of desired lid control layer (Based on enum SM_LidLayers)
+//          param = Parameter desired (Based on enum SM_LidLayersProperty)
+// Output:  value = value to be output
+// Return:  API Error
+// Purpose: Gets Lid Control Layer Parameter
+{
+    int errcode = 0;
+    TLidProc*  lidProc;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if subcatchment index is within bounds
+    else if(lidControlIndex < 0 || lidControlIndex >= Nobjects[LID])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else
+    {
+        lidProc = lid_getLidProc(lidControlIndex);
+
+        switch(layerIndex)
+        {
+        case SM_SURFACE:
+            switch(param)
+            {
+                case SM_THICKNESS:
+                    *value = lidProc->surface.thickness * UCF(RAINDEPTH); break;
+                case SM_VOIDFRAC:
+                    *value = 1 - lidProc->surface.voidFrac; break;
+                case SM_ROUGHNESS:
+                    *value = lidProc->surface.roughness; break;
+                case SM_SURFSLOPE:
+                    *value = lidProc->surface.surfSlope * 100; break;
+                case SM_SIDESLOPE:
+                    *value = lidProc->surface.sideSlope; break;
+                case SM_ALPHA:
+                    *value = lidProc->surface.alpha; break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
+            }
+            break;
+        case SM_SOIL:
+            switch(param)
+            {
+                case SM_THICKNESS:
+                    *value = lidProc->soil.thickness * UCF(RAINDEPTH); break;
+                case SM_POROSITY:
+                    *value = lidProc->soil.porosity; break;
+                case SM_FIELDCAP:
+                    *value = lidProc->soil.fieldCap; break;
+                case SM_WILTPOINT:
+                    *value = lidProc->soil.wiltPoint; break;
+                case SM_KSAT:
+                    *value = lidProc->soil.kSat * UCF(RAINFALL); break;
+                case SM_KSLOPE:
+                    *value = lidProc->soil.kSlope; break;
+                case SM_SUCTION:
+                    *value = lidProc->soil.suction * UCF(RAINDEPTH); break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
+            }
+            break;
+        case SM_STOR:
+            switch(param)
+            {
+                case SM_THICKNESS:
+                    *value = lidProc->storage.thickness * UCF(RAINDEPTH); break;
+                case SM_VOIDFRAC:
+                    if (lidProc->storage.voidFrac < 1)
+                    {
+                        *value = lidProc->storage.voidFrac / (1 - lidProc->storage.voidFrac);
+                    }
+                    else
+                    {
+                        *value = lidProc->storage.voidFrac;
+                    }
+                    break;
+                case SM_KSAT:
+                    *value = lidProc->storage.kSat * UCF(RAINFALL); break;
+                case SM_CLOGFACTOR:
+                    if (lidProc->storage.thickness > 0.0)
+                    {
+                        *value = lidProc->storage.clogFactor / 
+                                (lidProc->storage.thickness * 
+                                lidProc->storage.voidFrac); 
+                    }
+                    else
+                    {
+                        *value = lidProc->pavement.clogFactor;
+                    }
+                    break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
+            }
+            break;
+        case SM_PAVE:
+            switch(param)
+            {
+            case SM_THICKNESS:
+                *value = lidProc->pavement.thickness * UCF(RAINDEPTH); break;
+            case SM_VOIDFRAC:
+                if (lidProc->pavement.voidFrac < 1)
+                {
+                    *value = lidProc->pavement.voidFrac / (1 - lidProc->pavement.voidFrac);
+                }
+                else
+                {
+                    *value = lidProc->pavement.voidFrac;
+                }
+                break;
+            case SM_IMPERVFRAC:
+                *value = lidProc->pavement.impervFrac; break;
+            case SM_KSAT:
+                *value = lidProc->pavement.kSat * UCF(RAINFALL); break;
+            case SM_CLOGFACTOR:
+                if (lidProc->pavement.thickness > 0.0)
+                {
+                    *value = lidProc->pavement.clogFactor / 
+                            (lidProc->pavement.thickness * 
+                            lidProc->pavement.voidFrac * 
+                            (1 - lidProc->pavement.impervFrac)); 
+                }
+                else
+                {
+                    *value = lidProc->pavement.clogFactor;
+                }
+                break;
+            case SM_REGENDAYS:
+                *value = lidProc->pavement.regenDays; break;
+            case SM_REGENDEGREE:
+                *value = lidProc->pavement.regenDegree; break;
+            default:
+                errcode = ERR_API_OUTBOUNDS; break;
+            }
+            break;
+        case SM_DRAIN:
+            switch(param)
+            {
+            case SM_COEFF:
+                *value = lidProc->drain.coeff; break;
+            case SM_EXPON:
+                *value = lidProc->drain.expon; break;
+            case SM_OFFSET:
+                *value = lidProc->drain.offset * UCF(RAINDEPTH); break;
+            case SM_DELAY:
+                *value = lidProc->drain.delay / 3600; break;
+            case SM_HOPEN:
+                *value = lidProc->drain.hOpen * UCF(RAINDEPTH); break;
+            case SM_HCLOSE:
+                *value = lidProc->drain.hClose * UCF(RAINDEPTH); break;
+            default:
+                errcode = ERR_API_OUTBOUNDS; break;
+            }
+            break;
+        case SM_DRAINMAT:
+            switch(param)
+            {
+            case SM_THICKNESS:
+                *value = lidProc->drainMat.thickness * UCF(RAINDEPTH); break;
+            case SM_VOIDFRAC:
+                *value = lidProc->drainMat.voidFrac; break;
+            case SM_ROUGHNESS:
+                *value = lidProc->drainMat.roughness; break;
+            case SM_ALPHA:
+                *value = lidProc->drainMat.alpha; break;
+            default:
+                errcode = ERR_API_OUTBOUNDS; break;
+            }
+            break;
+        default:
+            errcode = ERR_API_OUTBOUNDS; break;
+        }
+    }
+    return(errcode);
+}
+
+
+int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, double value)
+//
+// Input:   lidControlIndex = Index of desired lid control
+//          layerIndex = Index of desired lid control layer (Based on enum SM_LidLayers)
+//          param = Parameter desired (Based on enum SM_LidLayersProperty)
+//          value = replacement value
+// Return:  API Error
+// Purpose: Sets Lid Control Layer Parameter
+{
+    int errcode = 0;
+    TLidProc*  lidProc;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if subcatchment index is within bounds
+    else if(lidControlIndex < 0 || lidControlIndex >= Nobjects[LID])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else
+    {
+        lidProc = lid_getLidProc(lidControlIndex);
+
+        switch(layerIndex)
+        {
+            case SM_SURFACE:
+                switch(param)
+                {
+                    case SM_THICKNESS:
+                        lidProc->surface.thickness = value / UCF(RAINDEPTH); break;
+                    case SM_VOIDFRAC:
+                        lidProc->surface.voidFrac = 1 - value; break;
+                    case SM_ROUGHNESS:
+                        lidProc->surface.roughness = value; break;
+                    case SM_SURFSLOPE:
+                        lidProc->surface.surfSlope = value / 100; break;
+                    case SM_SIDESLOPE:
+                        lidProc->surface.sideSlope = value; break;
+                    //case SM_ALPHA:
+                    //    lidProc->surface.alpha = value; break;
+                    default:
+                        errcode = ERR_API_OUTBOUNDS; break;
+                }
+                break;
+            case SM_SOIL:
+                switch(param)
+                {
+                    case SM_THICKNESS:
+                        lidProc->soil.thickness = value / UCF(RAINDEPTH); break;
+                    case SM_POROSITY:
+                        lidProc->soil.porosity = value; break;
+                    case SM_FIELDCAP:
+                        lidProc->soil.fieldCap = value; break;
+                    case SM_WILTPOINT:
+                        lidProc->soil.wiltPoint = value; break;
+                    case SM_KSAT:
+                        lidProc->soil.kSat = value / UCF(RAINFALL); break;
+                    case SM_KSLOPE:
+                        lidProc->soil.kSlope = value; break;
+                    case SM_SUCTION:
+                        lidProc->soil.suction = value / UCF(RAINDEPTH); break;
+                    default:
+                        errcode = ERR_API_OUTBOUNDS; break;
+                }
+                break;
+            case SM_STOR:
+                switch(param)
+                {
+                    case SM_THICKNESS:
+                        if (lidProc->storage.thickness > 0)
+                        {
+                            lidProc->storage.clogFactor /= lidProc->storage.thickness;
+                            lidProc->storage.thickness = value / UCF(RAINDEPTH);
+                            lidProc->storage.clogFactor *= lidProc->storage.thickness;
+                        }
+                        else
+                        {
+                            lidProc->storage.thickness = value / UCF(RAINDEPTH);
+                        }
+                        break;
+                    case SM_VOIDFRAC:
+                        if (lidProc->storage.voidFrac > 0)
+                        {
+                            lidProc->storage.clogFactor /= lidProc->storage.voidFrac;
+                            lidProc->storage.voidFrac = value / (value + 1); 
+                            lidProc->storage.clogFactor *= lidProc->storage.voidFrac;
+                        }
+                        else
+                        {
+                            lidProc->storage.voidFrac = value / (value + 1);
+                        }
+
+                        break;
+                    case SM_KSAT:
+                        lidProc->storage.kSat = value / UCF(RAINFALL); break;
+                    case SM_CLOGFACTOR:
+                        lidProc->storage.clogFactor = value * 
+                        lidProc->storage.thickness * 
+                        lidProc->storage.voidFrac; 
+                        break;
+                    default:
+                        errcode = ERR_API_OUTBOUNDS; break;
+                }
+                break;
+            case SM_PAVE:
+                switch(param)
+                {
+                    case SM_THICKNESS:
+                        if (lidProc->pavement.thickness > 0)
+                        {
+                            lidProc->pavement.clogFactor /= lidProc->pavement.thickness;
+                            lidProc->pavement.thickness = value / UCF(RAINDEPTH);
+                            lidProc->pavement.clogFactor *= lidProc->pavement.thickness;
+                        }
+                        else
+                        {
+                            lidProc->pavement.thickness = value / UCF(RAINDEPTH);
+                        }
+                        break;
+                    case SM_VOIDFRAC:
+                        if (lidProc->pavement.voidFrac > 0)
+                        {
+                            lidProc->pavement.clogFactor /= lidProc->pavement.voidFrac;
+                            lidProc->pavement.voidFrac = value / (value + 1);
+                            lidProc->pavement.clogFactor *= lidProc->pavement.voidFrac;
+                        }
+                        else
+                        {
+                            lidProc->pavement.voidFrac = value / (value + 1);
+                        }
+                        break;
+                    case SM_IMPERVFRAC:
+                        if (lidProc->pavement.impervFrac > 0)
+                        {
+                            lidProc->pavement.clogFactor /= (1 - lidProc->pavement.impervFrac);
+                            lidProc->pavement.impervFrac = value;
+                            lidProc->pavement.clogFactor *= (1 - lidProc->pavement.impervFrac);
+                        }
+                        else
+                        {
+                            lidProc->pavement.impervFrac = value;
+                        }
+                        break;
+                    case SM_KSAT:
+                        lidProc->pavement.kSat = value / UCF(RAINFALL); break;
+                    case SM_CLOGFACTOR:
+                        lidProc->pavement.clogFactor = value *
+                        lidProc->pavement.thickness * 
+                        lidProc->pavement.voidFrac *
+                        (1.0 - lidProc->pavement.impervFrac); 
+                        break;
+                    case SM_REGENDAYS:
+                        lidProc->pavement.regenDays = value; break;
+                    case SM_REGENDEGREE:
+                        lidProc->pavement.regenDegree = value; break;
+                    default:
+                        errcode = ERR_API_OUTBOUNDS; break;
+                }
+                break;
+            case SM_DRAIN:
+                switch(param)
+                {
+                    case SM_COEFF:
+                        lidProc->drain.coeff = value; break;
+                    case SM_EXPON:
+                        lidProc->drain.expon = value; break;
+                    case SM_OFFSET:
+                        lidProc->drain.offset = value / UCF(RAINDEPTH); break;
+                    case SM_DELAY:
+                        lidProc->drain.delay = value * 3600; break;
+                    case SM_HOPEN:
+                        lidProc->drain.hOpen = value / UCF(RAINDEPTH); break;
+                    case SM_HCLOSE:
+                        lidProc->drain.hClose = value / UCF(RAINDEPTH); break;
+                    default:
+                        errcode = ERR_API_OUTBOUNDS; break;
+                }
+                break;
+            case SM_DRAINMAT:
+                switch(param)
+                {
+                    case SM_THICKNESS:
+                        lidProc->drainMat.thickness = value / UCF(RAINDEPTH); break;
+                    case SM_VOIDFRAC:
+                        lidProc->drainMat.voidFrac = value; break;
+                    case SM_ROUGHNESS:
+                        lidProc->drainMat.roughness = value; break;
+                    //case SM_ALPHA:
+                    //    lidProc->drainMat.alpha = value; break;
+                    default:
+                        errcode = ERR_API_OUTBOUNDS; break;
+                }
+                break;
+            default:
+                errcode = ERR_API_OUTBOUNDS; break;
+        }
+
+    }
+    if(errcode == ERR_NONE)
+    {
+        lid_validateLidProc(lidControlIndex);
+        lid_updateAllLidUnit(lidControlIndex);
+    }
+    return(errcode);
+}
 
 //-------------------------------
 // Active Simulation Results API
@@ -1290,6 +1985,7 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats **subcatchStats)
 /// Purpose: Gets Subcatchment Stats and Converts Units
 {
   int errorcode = 0;
+  double a;
   TSubcatchStats *tmp = (TSubcatchStats *)calloc(1, sizeof(TSubcatchStats));
 
   // Check if Open
@@ -1315,7 +2011,7 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats **subcatchStats)
     memcpy(tmp, stats_getSubcatchStat(index), sizeof(TSubcatchStats));
     *subcatchStats = (SM_SubcatchStats *)tmp;
 
-    double a = Subcatch[index].area;
+    a = Subcatch[index].area;
 
     // Cumulative Runon Volume
     (*subcatchStats)->runon *= UCF(VOLUME);
@@ -1408,6 +2104,205 @@ int DLLEXPORT swmm_getSystemRunoffStats(SM_RunoffTotals *runoffTot)
     }
 
     return(errorcode);
+}
+
+int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, int layerIndex, double *result)
+//
+// Input:   index = Index of desired subcatchment 
+//          lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
+//          layerIndex = Index of desired lid layer (default is surface)
+// Output:  result = result data desired (byref)
+// Return:  API Error
+// Purpose: Gets Lid Unit Water Balance Simulated Value at Current Time
+{
+    int errcode = 0;
+    TLidUnit* lidUnit;
+
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[SUBCATCH])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else
+    {
+        lidUnit = lid_getLidUnit(index, lidIndex, &errcode);
+
+        // There are no Lid Units defined for the subcatchments
+        if (lidUnit)
+        {
+            switch (layerIndex)
+            {
+                case SM_SURFACE:
+                    *result = lidUnit->oldFluxRates[SM_SURFACE] * UCF(LENGTH); break;
+                case SM_SOIL:
+                    *result = lidUnit->oldFluxRates[SM_SOIL] * UCF(LENGTH); break;
+                case SM_STORAGE:
+                    *result = lidUnit->oldFluxRates[SM_STORAGE] * UCF(LENGTH); break;
+                case SM_PAVE:
+                    *result = lidUnit->oldFluxRates[SM_PAVE] * UCF(LENGTH); break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
+            }
+        }
+        else
+        {
+            errcode = ERR_API_UNDEFINED_LID;
+        }
+    }
+    return(errcode);
+}
+
+int DLLEXPORT swmm_getLidGResult(int index, int type, double *result)
+//
+// Input:   index = index of desired subcatchment 
+//          type = type of result data desired
+// Output:  result = result data desired 
+// Return:  API Error
+// Purpose: Gets Lid Group Data at Current Time
+{
+    int errcode = 0;
+    TLidGroup lidGroup;
+
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[SUBCATCH])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else
+    {
+        lidGroup = lid_getLidGroup(index);
+
+        if (lidGroup)
+        {
+            switch (type)
+            {   
+                case SM_PERVAREA:
+                    *result = lidGroup->pervArea * SQR(UCF(LENGTH)); break;
+                case SM_FLOWTOPERV:
+                    *result = lidGroup->flowToPerv * UCF(FLOW); break;
+                case SM_OLDDRAINFLOW:
+                    *result = lidGroup->oldDrainFlow * UCF(FLOW); break;
+                case SM_NEWDRAINFLOW:
+                    *result = lidGroup->newDrainFlow * UCF(FLOW); break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
+            }
+        }
+        else
+        {
+            errcode = ERR_API_UNDEFINED_LID;
+        }
+    }
+    return(errcode);
+}
+
+int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, int type, double *result)
+//
+// Input:   index = Index of desired subcatchment 
+//          lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
+// Output:  result = result data desired (byref)
+// Return:  API Error
+// Purpose: Gets Lid Unit Water Balance Simulated Value at Current Time
+{
+    int errcode = 0;
+    TLidUnit* lidUnit;
+    double    Tstep = 0;
+
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+        errcode = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[SUBCATCH])
+    {
+        errcode = ERR_API_OBJECT_INDEX;
+    }
+    else
+    {
+        lidUnit = lid_getLidUnit(index, lidIndex, &errcode);
+
+        // There are no Lid Units defined for the subcatchments
+        if (lidUnit)
+        {
+            switch (type)
+            {
+                case SM_INFLOW:
+                    *result = lidUnit->waterBalance.inflow * UCF(RAINDEPTH); break;
+                case SM_EVAP:
+                    *result = lidUnit->waterBalance.evap * UCF(RAINDEPTH); break;
+                case SM_INFIL:
+                    *result = lidUnit->waterBalance.infil * UCF(RAINDEPTH); break;
+                case SM_SURFFLOW:
+                    *result = lidUnit->waterBalance.surfFlow * UCF(RAINDEPTH); break;
+                case SM_DRAINFLOW:
+                    *result = lidUnit->waterBalance.drainFlow * UCF(RAINDEPTH); break;
+                case SM_INITVOL:
+                    *result = lidUnit->waterBalance.initVol * UCF(RAINDEPTH); break;
+                case SM_FINALVOL:
+                    *result = lidUnit->waterBalance.finalVol * UCF(RAINDEPTH); break;
+                case SM_SURFDEPTH:
+                    *result = lidUnit->surfaceDepth * UCF(RAINDEPTH); break;
+                case SM_PAVEDEPTH:
+                    *result = lidUnit->paveDepth * UCF(RAINDEPTH); break;
+                case SM_SOILMOIST:
+                    *result = lidUnit->soilMoisture; break;
+                case SM_STORDEPTH:
+                    *result = lidUnit->storageDepth * UCF(RAINDEPTH); break;
+                case SM_DRYTIME:
+                    *result = lidUnit->dryTime; break;
+                case SM_OLDDRAINFLOW:
+                    *result = lidUnit->oldDrainFlow * UCF(FLOW); break;
+                case SM_NEWDRAINFLOW:
+                    *result = lidUnit->newDrainFlow * UCF(FLOW); break;
+                case SM_EVAPRATE:
+                    *result = lidUnit->waterRate.evap * UCF(RAINFALL); break;
+                case SM_NATIVEINFIL:
+                    *result = lidUnit->waterRate.maxNativeInfil * UCF(RAINFALL); break;
+                case SM_SURFINFLOW:
+                    *result = lidUnit->waterRate.surfaceInflow * UCF(RAINFALL); break;
+                case SM_SURFINFIL:
+                    *result = lidUnit->waterRate.surfaceInfil * UCF(RAINFALL); break;
+                case SM_SURFEVAP:
+                    *result = lidUnit->waterRate.surfaceEvap * UCF(RAINFALL); break;
+                case SM_SURFOUTFLOW:
+                    *result = lidUnit->waterRate.surfaceOutflow * UCF(RAINFALL); break;
+                case SM_PAVEEVAP:
+                    *result = lidUnit->waterRate.paveEvap * UCF(RAINFALL); break;
+                case SM_PAVEPERC:
+                    *result = lidUnit->waterRate.pavePerc * UCF(RAINFALL); break;
+                case SM_SOILEVAP:
+                    *result = lidUnit->waterRate.soilEvap * UCF(RAINFALL); break;
+                case SM_SOILPERC:
+                    *result = lidUnit->waterRate.soilPerc * UCF(RAINFALL); break;
+                case SM_STORAGEINFLOW:
+                    *result = lidUnit->waterRate.storageInflow * UCF(RAINFALL); break;
+                case SM_STORAGEEXFIL:
+                    *result = lidUnit->waterRate.storageExfil * UCF(RAINFALL); break;
+                case SM_STORAGEEVAP:
+                    *result = lidUnit->waterRate.storageEvap * UCF(RAINFALL); break;
+                case SM_STORAGEDRAIN:
+                    *result = lidUnit->waterRate.storageDrain * UCF(RAINFALL); break;
+                default:
+                    errcode = ERR_API_OUTBOUNDS; break;
+            }
+        }
+        else
+        {
+            errcode = ERR_API_UNDEFINED_LID;
+        }
+    }
+    return(errcode);
 }
 
 //-------------------------------

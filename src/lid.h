@@ -160,6 +160,25 @@ typedef struct
     double         finalVol;      // final stored volume (ft)
 }  TWaterBalance;
 
+// 
+typedef struct
+{
+    double         evap;           // evaporation rate (ft/s)
+    double         maxNativeInfil; // native soil infil. rate limit (ft/s)
+    double         surfaceInflow;  // percip. + runon to LID unit (ft/s)
+    double         surfaceInfil;   // infil. rate from surface layer (ft/s)
+    double         surfaceEvap;    // evap. rate from surface layer (ft/s)
+    double         surfaceOutflow; // outflow from surface layer (ft/s)
+    double         paveEvap;       // evap. from pavement layer (ft/s)
+    double         pavePerc;       // percolation from pavement layer (ft/s)
+    double         soilEvap;       // evap. from soil layer (ft/s)
+    double         soilPerc;       // percolation from soil layer (ft/s)
+    double         storageInflow;  // inflow rate to storage layer (ft/s)
+    double         storageExfil;   // exfil. rate from storage layer (ft/s)
+    double         storageEvap;    // evap. rate from storage layer (ft/s)
+    double         storageDrain;   // underdrain flow rate layer (ft/s)
+} TWaterRate;
+
 // LID Report File
 typedef struct
 {
@@ -199,7 +218,28 @@ typedef struct
     double   volTreated;     // total volume treated (ft)                      //(5.1.013)
     double   nextRegenDay;   // next day when unit regenerated                 //
     TWaterBalance  waterBalance;     // water balance quantites
+    TWaterRate     waterRate;       // water rate within lid layers
 }  TLidUnit;
+
+// LID List - list of LID units contained in an LID group
+struct LidList
+{
+    TLidUnit*        lidUnit;     // ptr. to a LID unit
+    struct LidList*  nextLidUnit;
+};
+typedef struct LidList TLidList;
+
+// LID Group - collection of LID units applied to a specific subcatchment
+////  Re-defined for release 5.1.008. ////                                     //(5.1.008)
+struct LidGroup
+{
+    double         pervArea;      // amount of pervious area in group (ft2)
+    double         flowToPerv;    // total flow sent to pervious area (cfs)
+    double         oldDrainFlow;  // total drain flow in previous period (cfs)
+    double         newDrainFlow;  // total drain flow in current period (cfs)
+    TLidList*      lidList;       // list of LID units in the group
+};
+typedef struct LidGroup* TLidGroup;
 
 //-----------------------------------------------------------------------------
 //   LID Methods
@@ -225,15 +265,23 @@ void     lid_getRunoff(int subcatch, double tStep);
 void     lid_writeSummary(void);
 void     lid_writeWaterBalance(void);
 
+int         lid_getLidUnitCount(int index);
+TLidUnit*   lid_getLidUnit(int index, int lidIndex, int* errcode);
+TLidProc*   lid_getLidProc(int index);
+TLidGroup   lid_getLidGroup(int index);   
+void        lid_validateLidProc(int index);
+void        lid_validateLidGroup(int index);
+void        lid_updateLidUnit(TLidUnit* lidUnit, int subIndex);
+void        lid_updateAllLidUnit(int lidIndex);
+void        lid_updateLidGroup(int index);
 //-----------------------------------------------------------------------------
 
 void     lidproc_initWaterBalance(TLidUnit *lidUnit, double initVol);
-
+void     lidproc_initWaterRate(TLidUnit *lidUnit);
 double   lidproc_getOutflow(TLidUnit* lidUnit, TLidProc* lidProc,
          double inflow, double evap, double infil, double maxInfil,
          double tStep, double* lidEvap, double* lidInfil, double* lidDrain);
 
 void     lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall,
          double ucfRainDepth);
-
 #endif
