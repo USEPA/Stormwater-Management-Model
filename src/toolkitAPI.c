@@ -108,17 +108,19 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month, in
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr)
+int DLLEXPORT swmm_setSimulationDateTime(int timetype, int year, int month,
+                                         int day, int hour, int minute,
+                                         int second)
 ///
-/// Input:   timetype = time type to return
-///          DateTime String
+/// Input:   timetype = time type to set
+///          year, month, day, hours, minutes, seconds = int
 /// Return:  API Error
 /// Purpose: Get the simulation start, end and report date times
 {
     int error_code_index = 0;
 
-    char theDate[10];
-    char theTime[9];
+    DateTime theDate;
+    DateTime theTime;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
@@ -132,15 +134,15 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr)
     }
     else
     {
-        strncpy(theDate, dtimestr, 10);
-        strncpy(theTime, dtimestr+11, 9);
+        theDate = datetime_encodeDate(year, month, day);
+        theTime = datetime_encodeTime(hour, minute, second);
 
         switch(timetype)
         {
             //StartDateTime (globals.h)
             case SM_STARTDATE:
-                project_readOption("START_DATE", theDate);
-                project_readOption("START_TIME", theTime);
+                StartDate = theDate;
+                StartTime = theTime;
                 StartDateTime = StartDate + StartTime;
                 TotalDuration = floor((EndDateTime - StartDateTime) * SECperDAY);
                 // --- convert total duration to milliseconds
@@ -148,8 +150,8 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr)
                 break;
             //EndDateTime (globals.h)
             case SM_ENDDATE:
-                project_readOption("END_DATE", theDate);
-                project_readOption("END_TIME", theTime);
+                EndDate = theDate;
+                EndTime = theTime;
                 EndDateTime = EndDate + EndTime;
                 TotalDuration = floor((EndDateTime - StartDateTime) * SECperDAY);
                 // --- convert total duration to milliseconds
@@ -157,8 +159,8 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, char *dtimestr)
                 break;
             //ReportStart (globals.h)
             case SM_REPORTDATE:
-                project_readOption("REPORT_START_DATE", theDate);
-                project_readOption("REPORT_START_TIME", theTime);
+                ReportStartDate = theDate;
+                ReportStartTime = theTime;
                 ReportStart = ReportStartDate + ReportStartTime;
                 break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
@@ -1519,18 +1521,21 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, 
 // Active Simulation Results API
 //-------------------------------
 
-int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr)
+int DLLEXPORT swmm_getCurrentDateTime(int *year, int *month, int *day,
+                                      int *hour, int *minute, int *second)
 ///
-/// Output:  DateTime String
+/// Input:   timetype = time type to return
+/// Output:  year, month, day, hours, minutes, seconds = int
 /// Return:  API Error
-/// Purpose: Get the current simulation time
+/// Purpose: Get the simulation start, end and report date times
 {
-    //strcpy(dtimestr,"");
     int error_code_index = 0;
-    //Provide Empty Character Array
-    char     theDate[12];
-    char     theTime[9];
-    char     _DTimeStr[22];
+    *year = 1900;
+    *month = 1;
+    *day = 1;
+    *hour = 0;
+    *minute = 0;
+    *second = 0;
     DateTime currentTime;
 
     // Check if Simulation is Running
@@ -1543,15 +1548,8 @@ int DLLEXPORT swmm_getCurrentDateTimeStr(char *dtimestr)
         // Fetch Current Time
         currentTime = getDateTime(NewRoutingTime);
 
-        // Convert To Char
-        datetime_dateToStr(currentTime, theDate);
-        datetime_timeToStr(currentTime, theTime);
-
-        strcpy(_DTimeStr, theDate);
-        strcat(_DTimeStr, " ");
-        strcat(_DTimeStr, theTime);
-
-        strcpy(dtimestr, _DTimeStr);
+        datetime_decodeDate(currentTime, year, month, day);
+        datetime_decodeTime(currentTime, hour, minute, second);
     }
 
     return error_getCode(error_code_index);
