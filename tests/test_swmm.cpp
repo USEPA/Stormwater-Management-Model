@@ -33,8 +33,8 @@
 
 using namespace std;
 
-// Custom test to check the minimum number of correct decimal digits between 
-// the test and the ref vectors.  
+// Custom test to check the minimum number of correct decimal digits between
+// the test and the ref vectors.
 bool tolCheck(float a, float b, float tol)
 {
     return abs(a - b) <= tol;

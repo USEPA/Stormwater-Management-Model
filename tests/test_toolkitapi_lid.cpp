@@ -5,27 +5,34 @@
 #include "test_toolkitapi_lid.hpp"
 #include <vector>
 
+#define ERR_NONE 0
+#define ERR_API_OUTBOUNDS 501
+#define ERR_API_INPUTNOTOPEN 502
+#define ERR_API_SIM_NRUNNING 503
+#define ERR_API_OBJECT_INDEX 505
+#define ERR_API_UNDEFINED_LID 511
+
 using namespace std;
 
 // Non-Fixuture Unit Tests
 BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi)
 
     // Test Model Not Open
-    BOOST_AUTO_TEST_CASE(model_not_open) 
+    BOOST_AUTO_TEST_CASE(model_not_open)
     {
         int error;
         int int_value = 0;
         double db_value = 0;
         char chr_value = '0';
-        
+
         //Lid Control
         error = swmm_getLidCOverflow(0, &chr_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
+        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
         error = swmm_getLidCParam(0, 0, 0, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
+        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
         error = swmm_setLidCParam(0, 0, 0, db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN); 
-        
+        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+
         //Lid Unit
         error = swmm_getLidUCount(0, &int_value);
         BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
@@ -36,15 +43,15 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi)
         error = swmm_getLidUOption(0, 0, 0, &int_value);
         BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
         error = swmm_setLidUOption(0, 0, 0, int_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);  
+        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
         error = swmm_getLidUFluxRates(0, 0, 0, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);  
+        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
         error = swmm_getLidUResult(0, 0, 0, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);  
-            
+        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
+
         //Lid Group
         error = swmm_getLidGResult(0, 0, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);  
+        BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
     }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -53,22 +60,22 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
 
     // Testing for Simulation Started Error
-    BOOST_FIXTURE_TEST_CASE(sim_started_check, FixtureBeforeStep_LID) 
+    BOOST_FIXTURE_TEST_CASE(sim_started_check, FixtureBeforeStep_LID)
     {
         open_swmm_model(0);
         int error;
         int int_value = 0;
         double db_value = 0;
         char chr_value = '0';
-        
+
         //Lid Control
         error = swmm_getLidCOverflow(0, &chr_value);
-        BOOST_CHECK_EQUAL(error, ERR_NONE); 
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
         error = swmm_getLidCParam(0, 0, 0, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_NONE); 
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
         error = swmm_setLidCParam(0, 0, 0, db_value);
-        BOOST_CHECK_EQUAL(error, ERR_NONE); 
-        
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
+
         //Lid Unit
         error = swmm_getLidUCount(0, &int_value);
         BOOST_CHECK_EQUAL(error, ERR_NONE);
@@ -79,35 +86,35 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         error = swmm_getLidUOption(0, 0, 0, &int_value);
         BOOST_CHECK_EQUAL(error, ERR_NONE);
         error = swmm_setLidUOption(0, 0, 0, int_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);  
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
         error = swmm_getLidUFluxRates(0, 0, 0, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_NONE);  
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
         error = swmm_getLidUResult(0, 0, 0, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_NONE);  
-            
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
+
         //Lid Group
         error = swmm_getLidGResult(0, 14, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_NONE); 
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
     }
 
 
     // Testing for invalid object index
-    BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose_LID) 
+    BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose_LID)
     {
         open_swmm_model(0);
         int error;
         int int_value = 0;
         double db_value = 0;
         char chr_value = '0';
-        
+
         //Lid Control
         error = swmm_getLidCOverflow(1, &chr_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX); 
+        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
         error = swmm_getLidCParam(1, 0, 0, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX); 
+        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
         error = swmm_setLidCParam(1, 0, 0, db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX); 
-        
+        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+
         //Lid Unit
         error = swmm_getLidUCount(2, &int_value);
         BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
@@ -118,36 +125,36 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         error = swmm_getLidUOption(2, 0, 0, &int_value);
         BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
         error = swmm_setLidUOption(2, 0, 0, int_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);  
+        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
         error = swmm_getLidUFluxRates(2, 0, 0, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);  
+        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
         error = swmm_getLidUResult(2, 0, 0, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);  
-            
+        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
+
         //Lid Group
         error = swmm_getLidGResult(2, 14, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX); 
+        BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
     }
 
     // Testing for invalid parameter key
-    BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose_LID) 
+    BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose_LID)
     {
         open_swmm_model(0);
         int error;
         int int_value = 0;
         double db_value = 0;
         char chr_value = '0';
-        
-        //Lid Control    
+
+        //Lid Control
         error = swmm_getLidCParam(0, 0, 100, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS); 
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
         error = swmm_setLidCParam(0, 0, 100, db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS); 
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
         error = swmm_getLidCParam(0, 100, 0, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS); 
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
         error = swmm_setLidCParam(0, 100, 0, db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS); 
-        
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+
         //Lid Unit
         error = swmm_getLidUParam(0, 0, 100, &db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
@@ -156,15 +163,15 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         error = swmm_getLidUOption(0, 0, 100, &int_value);
         BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
         error = swmm_setLidUOption(0, 0, 100, int_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);  
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
         error = swmm_getLidUFluxRates(0, 0, 100, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);  
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
         error = swmm_getLidUResult(0, 0, 100, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);  
-            
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+
         //Lid Group
         error = swmm_getLidGResult(0, 100, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS); 
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
     }
 
     // Testing for undefined lid usage
@@ -173,13 +180,13 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         open_swmm_model(0);
         int error;
         double db_value = 0;
-        
+
         //Lid Unit
         error = swmm_getLidUResult(0, 1, SM_INFLOW, &db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
         error = swmm_getLidUFluxRates(0, 1, SM_SURFACE, &db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
-        
+
         //Lid Group
         error = swmm_getLidGResult(1, 14, &db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
@@ -208,7 +215,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
     }
 
     // Testing for Lid Control Bio Cell parameters get/set
-    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_BC, FixtureOpenClose_LID) 
+    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_BC, FixtureOpenClose_LID)
     {
         open_swmm_model(0);
         int error, lid_index, sub_index;
@@ -432,7 +439,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         error = swmm_getLidCOverflow(lid_index, &chr_value);
         BOOST_REQUIRE(error == ERR_NONE);
         BOOST_REQUIRE(chr_value == 1);
-        
+
         // Lid Unit
         error = swmm_getLidUCount(sub_index, &int_value);
         BOOST_REQUIRE(error == ERR_NONE);
@@ -516,7 +523,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
     }
 
     // Testing for Lid Control Green Roof parameters get/set
-    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_GR, FixtureOpenClose_LID) 
+    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_GR, FixtureOpenClose_LID)
     {
         open_swmm_model(1);
         int error, lid_index, sub_index;
@@ -526,13 +533,13 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
 
         string greenRoof = string("GR");
         string subcatch = string("wGR");
-        
+
         lid_index = swmm_getObjectIndex(SM_LID, (char *)greenRoof.c_str(), &error);
         BOOST_REQUIRE(error == ERR_NONE);
-     
+
         sub_index = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
         BOOST_REQUIRE(error == ERR_NONE);
-        
+
         // Surface layer get/set check
         error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_THICKNESS, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
@@ -542,7 +549,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_THICKNESS, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
         BOOST_CHECK_SMALL(db_value - 100, 0.0001);
-        
+
         error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_VOIDFRAC, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
         BOOST_CHECK_SMALL(db_value - 0.25, 0.0001);
@@ -551,7 +558,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_VOIDFRAC, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
         BOOST_CHECK_SMALL(db_value - 0.9, 0.0001);
-        
+
         error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_ROUGHNESS, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
         BOOST_CHECK_SMALL(db_value - 0.1, 0.0001);
@@ -569,11 +576,11 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_SURFSLOPE, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
         BOOST_CHECK_SMALL(db_value - 2, 0.0001);
-        
+
         error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_ALPHA, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
         BOOST_CHECK_SMALL(db_value - 1.05359, 0.0001);
-        
+
         // Soil layer get/set
         error = swmm_getLidCParam(lid_index, SM_SOIL, SM_THICKNESS, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
@@ -763,7 +770,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
     }
 
     // Testing for Lid Control Infiltration Trench parameters get/set
-    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_IT, FixtureOpenClose_LID) 
+    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_IT, FixtureOpenClose_LID)
     {
         open_swmm_model(2);
         int error, lid_index, sub_index;
@@ -1006,7 +1013,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
     }
 
     // Testing for Lid Control Permeable Pavement parameters get/set
-    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_PP, FixtureOpenClose_LID) 
+    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_PP, FixtureOpenClose_LID)
     {
         open_swmm_model(3);
         int error, lid_index, sub_index;
@@ -1313,7 +1320,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
     }
 
     // Testing for Lid Control Rain Barrel parameters get/set
-    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_RB, FixtureOpenClose_LID) 
+    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_RB, FixtureOpenClose_LID)
     {
         open_swmm_model(4);
         int error, lid_index, sub_index;
@@ -1518,7 +1525,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
     }
 
     // Testing for Lid Control Rain Garden parameters get/set
-    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_RG, FixtureOpenClose_LID) 
+    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_RG, FixtureOpenClose_LID)
     {
         open_swmm_model(5);
         int error, lid_index, sub_index;
@@ -1772,7 +1779,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
     }
 
     // Testing for Lid Control Swale parameters get/set
-    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_SWALE, FixtureOpenClose_LID) 
+    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_SWALE, FixtureOpenClose_LID)
     {
         open_swmm_model(6);
         int error, lid_index, sub_index;
@@ -1924,7 +1931,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
     }
 
     // Testing for Lid Control Roof Disconnection parameters get/set
-    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_RD, FixtureOpenClose_LID) 
+    BOOST_FIXTURE_TEST_CASE(getset_lidcontrol_RD, FixtureOpenClose_LID)
     {
         open_swmm_model(7);
         int error, lid_index, sub_index;
@@ -2000,7 +2007,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_EXPON, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
         BOOST_CHECK_SMALL(db_value - 2, 0.0001);
-        
+
         // if storage thickness is zero
         // the offset is changed to zero
         error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_OFFSET, &db_value);
@@ -2038,7 +2045,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_HCLOSE, &db_value);
         BOOST_REQUIRE(error == ERR_NONE);
         BOOST_CHECK_SMALL(db_value - 7, 0.0001);
-        
+
         // Check for immediate overflow option
         // No option available for immediate overflow
         error = swmm_getLidCOverflow(lid_index, &chr_value);
@@ -2133,7 +2140,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
     }
 
     // Testing for After Start Errors
-    BOOST_FIXTURE_TEST_CASE(sim_after_start_index_check, FixtureBeforeStep_LID) 
+    BOOST_FIXTURE_TEST_CASE(sim_after_start_index_check, FixtureBeforeStep_LID)
     {
         open_swmm_model(0);
         int error;
@@ -2171,7 +2178,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
     }
 
     // Testing for invalid parameter key
-    BOOST_FIXTURE_TEST_CASE(sim_after_start_key_check, FixtureBeforeStep_LID) 
+    BOOST_FIXTURE_TEST_CASE(sim_after_start_key_check, FixtureBeforeStep_LID)
     {
         open_swmm_model(0);
         int error;
@@ -2179,7 +2186,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         double db_value = 0;
         char chr_value = '0';
 
-        //Lid Control    
+        //Lid Control
         error = swmm_getLidCParam(0, 0, 100, &db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
         error = swmm_setLidCParam(0, 0, 100, db_value);
@@ -2205,7 +2212,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
     }
 
     // Testing for undefined lid usage
-    BOOST_FIXTURE_TEST_CASE(sim_after_start_undefined_check, FixtureBeforeStep_LID) 
+    BOOST_FIXTURE_TEST_CASE(sim_after_start_undefined_check, FixtureBeforeStep_LID)
     {
         open_swmm_model(0);
         int error;
@@ -2216,7 +2223,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
         error = swmm_getLidUResult(0, 1, SM_INFLOW, &db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);
-        
+
         //Lid Group
         error = swmm_getLidGResult(1, 14, &db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_UNDEFINED_LID);

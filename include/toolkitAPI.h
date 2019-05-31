@@ -571,7 +571,7 @@ typedef struct
  @param errcode The error code
  @param[out] s The error string represented by the code
 */
-void DLLEXPORT swmm_getAPIError(int errcode, char *s);
+void DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char *s);
 
 /**
  @brief Finds the index of an object given its ID.

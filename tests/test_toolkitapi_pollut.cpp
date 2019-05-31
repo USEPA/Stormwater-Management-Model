@@ -13,10 +13,11 @@
 #define BOOST_TEST_MODULE "toolkitAPI_pollut"
 #include "test_toolkitapi.hpp"
 
+#define ERR_NONE 0
 
 BOOST_AUTO_TEST_SUITE(test_toolkitapi_pollut)
 
-// Testing Rain Gage Setter 
+// Testing Rain Gage Setter
 BOOST_FIXTURE_TEST_CASE(get_pollut_values, FixtureBeforeStep){
     int error, step_ind;
     int subc_ind;
@@ -26,7 +27,7 @@ BOOST_FIXTURE_TEST_CASE(get_pollut_values, FixtureBeforeStep){
     // Pollutant IDs
     int TSS = 0;
     int Lead = 1;
-    
+
     std::string subid = std::string("1");
 
     subc_ind = swmm_getObjectIndex(SM_SUBCATCH, (char *)subid.c_str(), &error);

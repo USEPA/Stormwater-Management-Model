@@ -28,6 +28,13 @@
 #define BOOST_TEST_MODULE "toolkitAPI"
 #include "test_toolkitapi.hpp"
 
+#define ERR_NONE 0
+#define ERR_API_OUTBOUNDS 501
+#define ERR_API_INPUTNOTOPEN 502
+#define ERR_API_SIM_NRUNNING 503
+#define ERR_API_WRONG_TYPE 504
+#define ERR_API_OBJECT_INDEX 505
+
 using namespace std;
 
 // Custom test to check the minimum number of correct decimal digits between
@@ -229,6 +236,12 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
 BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose) {
     int error;
     double val;
+    char* error_msg=new char[256];
+
+    //Error codes
+    swmm_getAPIError(341, error_msg);
+    BOOST_CHECK_EQUAL(error_msg, "\n  ERROR 341: cannot open scratch RDII interface file.");
+    delete[] error_msg;
 
     //Subcatchment
     error = swmm_getSubcatchParam(0, 100, &val);

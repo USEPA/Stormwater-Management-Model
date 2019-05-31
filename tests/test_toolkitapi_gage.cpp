@@ -14,6 +14,7 @@
 #define BOOST_TEST_MODULE "toolkitAPI_gage"
 #include "test_toolkitapi.hpp"
 
+#define ERR_NONE 0
 
 BOOST_AUTO_TEST_SUITE(test_toolkitapi_gage_fixture)
 
