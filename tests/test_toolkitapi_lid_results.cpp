@@ -1127,7 +1127,6 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         double elapsed_time = 0.0;
         int int_value = 0;
         double db_value = 0.0;
-        char chr_value;
         vector<double> revised_subcatchment_runoff;
         
         string lid = string("RB");

@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         error = swmm_getLidUParam(0, 0, 0, &db_value);
         BOOST_CHECK_EQUAL(error, ERR_NONE);
         error = swmm_setLidUParam(0, 0, 0, db_value);
-        BOOST_CHECK_EQUAL(error, ERR_NONE);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
         error = swmm_getLidUOption(0, 0, 0, &int_value);
         BOOST_CHECK_EQUAL(error, ERR_NONE);
         error = swmm_setLidUOption(0, 0, 0, int_value);
@@ -2191,8 +2191,6 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
 
         //Lid Unit
         error = swmm_getLidUParam(0, 0, 100, &db_value);
-        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
-        error = swmm_setLidUParam(0, 0, 100, db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
         error = swmm_getLidUOption(0, 0, 100, &int_value);
         BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);

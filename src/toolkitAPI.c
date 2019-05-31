@@ -924,6 +924,10 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
     {
         errcode = ERR_API_OBJECT_INDEX;
     }
+    else if(swmm_IsStartedFlag() == TRUE)
+    {
+        errcode = ERR_API_SIM_NRUNNING;
+    }
     else
     {
         lidUnit = lid_getLidUnit(index, lidIndex, &errcode);
