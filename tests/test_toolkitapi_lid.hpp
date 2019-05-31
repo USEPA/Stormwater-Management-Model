@@ -9,6 +9,8 @@
 #include "swmm5.h"
 #include "toolkitAPI.h"
 
+#define ERR_NONE 0
+
 // NOTE: Test LID Input File
 #define DATA_PATH_INP_LID_BC "lid/w_wo_BC_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_BC "lid/w_wo_BC_2Subcatchments.rpt"
@@ -283,19 +285,19 @@ struct Fixture_LID_Results
         open_swmm_lid(lid_type);
         swmm_start(0);
         sub_index = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
-        BOOST_REQUIRE(error == 0);
+        BOOST_REQUIRE(error == ERR_NONE);
         lid_index = swmm_getObjectIndex(SM_LID, (char *)lid.c_str(), &error);
-        BOOST_REQUIRE(error == 0);
+        BOOST_REQUIRE(error == ERR_NONE);
 
         do
         {
             error = swmm_step(&elapsed_time);
-            BOOST_REQUIRE(error == 0);
+            BOOST_REQUIRE(error == ERR_NONE);
             error = swmm_getSubcatchResult(sub_index, SM_SUBCRUNOFF, &db_value);
-            BOOST_REQUIRE(error == 0);
+            BOOST_REQUIRE(error == ERR_NONE);
             subcatchment_runoff.push_back(round(db_value * 100000.0) / 100000.0);
             } while (elapsed_time != 0 && !error);
-        BOOST_CHECK_EQUAL(0, error);
+        BOOST_CHECK_EQUAL(ERR_NONE, error);
         swmm_end();
         swmm_close();
 
@@ -331,7 +333,7 @@ struct FixtureBeforeEnd_LID
         {
             error = swmm_step(&elapsedTime);
         }while (elapsedTime != 0 && !error);
-        BOOST_CHECK_EQUAL(0, error);
+        BOOST_CHECK_EQUAL(ERR_NONE, error);
     }
 
     ~FixtureBeforeEnd_LID() {
@@ -363,7 +365,7 @@ struct FixtureBeforeClose_LID
         {
             error = swmm_step(&elapsedTime);
         }while (elapsedTime != 0 && !error);
-        BOOST_CHECK_EQUAL(0, error);
+        BOOST_CHECK_EQUAL(ERR_NONE, error);
         swmm_end();
     }
 
