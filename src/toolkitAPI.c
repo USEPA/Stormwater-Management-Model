@@ -924,6 +924,7 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
     {
         errcode = ERR_API_OBJECT_INDEX;
     }
+    // Check if model is running
     else if(swmm_IsStartedFlag() == TRUE)
     {
         errcode = ERR_API_SIM_NRUNNING;
@@ -1039,6 +1040,11 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int param, int value)
     else if(index < 0 || index >= Nobjects[SUBCATCH])
     {
         errcode = ERR_API_OBJECT_INDEX;
+    }
+    // Check if model is running
+    else if(swmm_IsStartedFlag() == TRUE)
+    {
+        errcode = ERR_API_SIM_NRUNNING;
     }
     else
     {
