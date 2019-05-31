@@ -105,7 +105,7 @@
 #define ERR217 "\n  ERROR 217: control rule clause invalid or out of sequence "  //(5.1.008)
 #define ERR219 "\n  ERROR 219: data provided for unidentified transect "
 #define ERR221 "\n  ERROR 221: transect station out of sequence "
-#define ERR223 "\n  ERROR 223: Transect %s has too few stations." 
+#define ERR223 "\n  ERROR 223: Transect %s has too few stations."
 #define ERR225 "\n  ERROR 225: Transect %s has too many stations."
 #define ERR227 "\n  ERROR 227: Transect %s has no Manning's N."
 #define ERR229 "\n  ERROR 229: Transect %s has invalid overbank locations."
@@ -228,6 +228,23 @@ int  error_getCode(int i)
 {
     if ( i >= 0 && i < MAXERRMSG ) return ErrorCodes[i];
     else return 0;
+}
+
+int error_getErrorIndex(int ErrorCode)
+{
+    int ErrorIndex = 0;
+    int i = 0;
+
+    while ( i < MAXERRMSG )
+    {
+        if ( ErrorCodes[i] == ErrorCode )
+        {
+            ErrorIndex = i;
+            break;
+        }
+        else i += 1;
+    }
+    return ErrorIndex;
 }
 
 int  error_setInpError(int errcode, char* s)

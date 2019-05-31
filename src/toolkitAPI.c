@@ -46,7 +46,8 @@ void DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char *s)
 /// Return:  API Error
 /// Purpose: Get an error message
 {
-    char *errmsg = error_getMsg(ErrorCodeAPI);
+    int ErrorIndex = error_getErrorIndex(ErrorCodeAPI);
+    char *errmsg = error_getMsg(ErrorIndex);
     strcpy(s, errmsg);
 }
 

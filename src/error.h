@@ -116,7 +116,7 @@ enum  ErrorType {
       ERR_RAIN_FILE_SCRATCH,    //313  72
       ERR_RAIN_FILE_OPEN,       //315  73
       ERR_RAIN_FILE_DATA,       //317  74
-      ERR_RAIN_FILE_SEQUENCE,   //318  75 
+      ERR_RAIN_FILE_SEQUENCE,   //318  75
       ERR_RAIN_FILE_FORMAT,     //319  76
       ERR_RAIN_IFACE_FORMAT,    //320  77
       ERR_RAIN_FILE_GAGE,       //321  78
@@ -143,7 +143,7 @@ enum  ErrorType {
       ERR_RDII_FILE_SCRATCH,    //341  91
       ERR_RDII_FILE_OPEN,       //343  92
       ERR_RDII_FILE_FORMAT,     //345  93
-      
+
   //... Routing File Errors
       ERR_ROUTING_FILE_OPEN,    //351  94
       ERR_ROUTING_FILE_FORMAT,  //353  95
@@ -165,7 +165,7 @@ enum  ErrorType {
       ERR_API_INPUTNOTOPEN,     //502  105
       ERR_API_SIM_NRUNNING,     //503  106
       ERR_API_WRONG_TYPE,       //504  107
-      ERR_API_OBJECT_INDEX,     //505  108	  
+      ERR_API_OBJECT_INDEX,     //505  108
       ERR_API_POLLUT_INDEX,     //506  109
       ERR_API_INFLOWTYPE,       //507  110
       ERR_API_TSERIES_INDEX,    //508  111
@@ -173,7 +173,8 @@ enum  ErrorType {
       ERR_API_LIDUNIT_INDEX,    //510  113
       ERR_API_UNDEFINED_LID,    //511  114
       MAXERRMSG};
-      
+
 char* error_getMsg(int i);
 int   error_getCode(int i);
+int   error_getErrorIndex(int ErrorCode);
 int   error_setInpError(int errcode, char* s);

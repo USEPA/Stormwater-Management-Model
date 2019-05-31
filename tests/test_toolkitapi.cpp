@@ -229,6 +229,12 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
 BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose) {
     int error;
     double val;
+    char* error_msg=new char[256];
+
+    //Error codes
+    swmm_getAPIError(341, error_msg);
+    BOOST_CHECK_EQUAL(error_msg, "\n  ERROR 341: cannot open scratch RDII interface file.");
+    delete[] error_msg;
 
     //Subcatchment
     error = swmm_getSubcatchParam(0, 100, &val);
