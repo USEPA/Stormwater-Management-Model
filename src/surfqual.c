@@ -255,12 +255,11 @@ void  surfqual_getWashoff(int j, double runoff, double tStep)
         if ( vOut1 > 0.0 ) cOut = OutflowLoad[p] / vOut1;
 
         // --- assign any difference between pre- and post-LID
-        //     subcatchment outflow loads to BMP removal
+        //     loads (with LID return flow included) to BMP removal
         if ( Subcatch[j].lidArea > 0.0 )
         {    
-            massLoad = cOut * (vOut1 - vOut2) * Pollut[p].mcf;
-            if (massLoad > 0.0)
-                massbal_updateLoadingTotals(BMP_REMOVAL_LOAD, p, massLoad);
+            massLoad = cOut * (vOut1 - vOut2 - VlidReturn) * Pollut[p].mcf;
+            massbal_updateLoadingTotals(BMP_REMOVAL_LOAD, p, massLoad);
         }
 
         // --- update subcatchment's cumulative runoff load in lbs (or kg)

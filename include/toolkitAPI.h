@@ -11,21 +11,14 @@
 #ifndef TOOLKITAPI_H
 #define TOOLKITAPI_H
 
-#ifndef DLLEXPORT
-  #ifdef _WIN32
-    #ifdef swmm5_EXPORTS
-      #define DLLEXPORT __declspec(dllexport) __stdcall
-    #else
-      #define DLLEXPORT __declspec(dllimport) __stdcall
-    #endif
-  #elif defined(__MINGW32__)
-    // Seems to be more wrapper friendly
-    #define DLLEXPORT __declspec(dllexport) __cdecl
-  #elif defined(__CYGWIN__)
-    #define DLLEXPORT __stdcall
-  #else
-    #define DLLEXPORT
-  #endif
+#ifdef WINDOWS
+#ifdef __MINGW32__
+#define DLLEXPORT __declspec(dllexport) __cdecl
+#else
+#define DLLEXPORT __declspec(dllexport) __stdcall
+#endif
+#else
+#define DLLEXPORT
 #endif
 
 #ifdef __cplusplus
@@ -34,7 +27,7 @@ extern "C" {
 
 #define _CRT_SECURE_NO_DEPRECATE
 
-///////////#include "../src/datetime.h"/////////
+#include "../src/datetime.h"
 
 /// Object type codes
 typedef enum {

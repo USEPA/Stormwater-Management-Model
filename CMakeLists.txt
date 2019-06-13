@@ -37,7 +37,6 @@ if(MSVC)
 
     set(CMAKE_SHARED_LINKER_FLAGS "/LTCG")
     set(CMAKE_EXE_LINKER_FLAGS "/LTCG")
-    add_definitions(-Dswmm5_EXPORTS)
 endif(MSVC)
 
 
@@ -100,12 +99,7 @@ set(CMAKE_C_FLAGS_DEBUG "-O0")
 
 # Creates swmm5 shared library
 add_library(swmm_objs OBJECT ${SWMM_SOURCES})
-IF (MSVC)
-add_library(swmm5 SHARED src/swmm5.c src/swmm5.def $<TARGET_OBJECTS:swmm_objs>)
-set_source_files_properties(src/swmm5.def PROPERTIES_HEADER_FILE_ONLY TRUE)
-ELSE (MSVC)
 add_library(swmm5 SHARED src/swmm5.c $<TARGET_OBJECTS:swmm_objs>)
-ENDIF (MSVC)
 target_include_directories(swmm5 PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 
@@ -114,12 +108,7 @@ ELSE (BUILD_COVERAGE)
 
 # Creates swmm5 shared library
 add_library(swmm_objs OBJECT ${SWMM_SOURCES})
-IF (MSVC)
-add_library(swmm5 SHARED src/swmm5.c src/swmm5.def $<TARGET_OBJECTS:swmm_objs>)
-set_source_files_properties(src/swmm5.def PROPERTIES_HEADER_FILE_ONLY TRUE)
-ELSE (MSVC)
 add_library(swmm5 SHARED src/swmm5.c $<TARGET_OBJECTS:swmm_objs>)
-ENDIF (MSVC)
 
 # Add includes and libraries to use when linking the swmm5 library
 target_include_directories(swmm5 PUBLIC ${PROJECT_SOURCE_DIR}/include)

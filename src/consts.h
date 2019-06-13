@@ -16,7 +16,7 @@
 //------------------
 
 // Update VERSION and SEMVERSION Simultaneously 
-#define   VERSION            51013  //52000 // Eventually will be deprecated. 
+#define   VERSION            52000          // Eventually will be deprecated. 
 #define   SEMVERSION_MAJOR   "5"            // Major Semantic Version
 #define   SEMVERSION_MINOR   "2"            // Minor Semantic Version
 #define   SEMVERSION_PATCH   "0.dev5"      // Patch Semantic Version

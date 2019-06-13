@@ -286,7 +286,7 @@ int rainFileConflict(int i)
     int j;
     char* staID = Gage[i].staID;
     char* fname = Gage[i].fname;
-    for (j = 0; j < i; j++)
+    for (j = 1; j < i; j++)
     {
         if ( strcomp(Gage[j].staID, staID) && !strcomp(Gage[j].fname, fname) )
         {

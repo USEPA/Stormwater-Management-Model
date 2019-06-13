@@ -246,7 +246,6 @@ int rdii_readUnitHydParams(char* tok[], int ntoks)
         g = project_findObject(GAGE, tok[1]);
         if ( g < 0 ) return error_setInpError(ERR_NAME, tok[1]);
         UnitHyd[j].rainGage = g;
-        Gage[g].isUsed = TRUE;
         return 0;
     }
     else if ( ntoks < 6 ) return error_setInpError(ERR_ITEMS, "");
@@ -1051,11 +1050,14 @@ void initGageData()
         g = UnitHyd[i].rainGage;
         if ( g >= 0 )
         {
+            Gage[g].isUsed = TRUE;
+
             // --- if UH's gage uses same time series as a previous gage,
             //     then assign the latter gage to the UH
             if ( Gage[g].coGage >= 0 )
             {
                 UnitHyd[i].rainGage = Gage[g].coGage;
+                Gage[Gage[g].coGage].isUsed = TRUE;
             }
         }
     }

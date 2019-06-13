@@ -150,12 +150,8 @@ int report_readOptions(char* tok[], int ntoks)
 
       default: return error_setInpError(ERR_KEYWORD, tok[1]);
     }
-    
-    if (strcomp(tok[1], w_NONE))
-        k = NONE;
-    else if (strcomp(tok[1], w_ALL))
-        k = ALL;
-    else
+    k = (char)findmatch(tok[1], NoneAllWords);
+    if ( k < 0 )
     {
         k = SOME;
         for (t = 1; t < ntoks; t++)
