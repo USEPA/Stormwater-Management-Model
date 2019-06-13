@@ -237,12 +237,14 @@ void lid_create(int lidCount, int subcatchCount)
 
     //... create LID groups
     GroupCount = subcatchCount;
-    if ( GroupCount == 0 ) return;
-    LidGroups = (TLidGroup *) calloc(GroupCount, sizeof(TLidGroup));
-    if ( LidGroups == NULL )
+    if ( GroupCount > 0 )
     {
-        ErrorCode = ERR_MEMORY;
-        return;
+        LidGroups = (TLidGroup *) calloc(GroupCount, sizeof(TLidGroup));
+        if ( LidGroups == NULL )
+        {
+            ErrorCode = ERR_MEMORY;
+            return;
+        }
     }
 
     //... initialize LID groups
@@ -1463,16 +1465,12 @@ void  lid_addDrainLoads(int j, double c[], double tStep)
         {
             lidUnit = lidList->lidUnit;
  
-            //... skip LID unit if it sends its drain flow onto
-            //    its subcatchment's pervious area
-            if (lidUnit->toPerv) continue;
-
             //... see if unit's drain flow becomes external runoff
             isRunoffLoad = (lidUnit->drainNode >= 0 ||
                             lidUnit->drainSubcatch == j);
             
-            //... for each pollutant 
-            for (p = 0; p < Nobjects[POLLUT]; p++)
+            //... for each pollutant not routed back on to subcatchment surface
+            if (!lidUnit->toPerv) for (p = 0; p < Nobjects[POLLUT]; p++)
             {
                 //... get mass load flowing through the drain
                 w = lidUnit->newDrainFlow * c[p] * tStep * LperFT3 * Pollut[p].mcf;

@@ -205,7 +205,11 @@ void runoff_execute()
 
     // --- see if street sweeping can occur on current date
     day = datetime_dayOfYear(currentDate);
-    if ( day >= SweepStart && day <= SweepEnd ) canSweep = TRUE;
+    if ( SweepStart <= SweepEnd )
+    {
+        if ( day >= SweepStart && day <= SweepEnd ) canSweep = TRUE;
+    }
+    else if ( day <= SweepEnd || day >= SweepStart ) canSweep = TRUE;
     else canSweep = FALSE;
 
     // --- get runoff time step (in seconds)

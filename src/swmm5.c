@@ -73,22 +73,6 @@
   #include <excpt.h>
 #endif
 
-
-// --- define DLLEXPORT
-
-//#ifndef DLLEXPORT
-#ifdef WINDOWS
-    #ifdef __MINGW32__
-        // Seems to be more wrapper friendly
-        #define DLLEXPORT __declspec(dllexport) __cdecl 
-    #else
-        #define DLLEXPORT __declspec(dllexport) __stdcall
-    #endif
-#else
-    #define DLLEXPORT
-#endif
-//#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
