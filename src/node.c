@@ -916,9 +916,6 @@ double storage_getLosses(int j, double tStep)
     double lossRatio;
     TExfil* exfil;
 
-    // --- if node has some stored volume
-    if ( Node[j].newVolume > FUDGE )
-    {
         // --- get node's evap. rate (ft/s) &  exfiltration object
         k = Node[j].subIndex;
         evapRate = Evap.rate * Storage[k].fEvap;
@@ -932,7 +929,8 @@ double storage_getLosses(int j, double tStep)
             area = storage_getSurfArea(j, depth);
 
             // --- compute evap rate over this area (cfs)
-            evapRate = area * evapRate;
+            if (Node[j].newVolume > FUDGE)
+                evapRate = area * evapRate;
 
             // --- find exfiltration rate (cfs) through bottom and side banks
             if ( exfil != NULL )
@@ -949,7 +947,6 @@ double storage_getLosses(int j, double tStep)
                 exfilRate *= lossRatio; 
             }
         }
-    }
 
     // --- save evap & infil losses at the node
     Storage[Node[j].subIndex].evapLoss = evapRate * tStep;
