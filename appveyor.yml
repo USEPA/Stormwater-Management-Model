@@ -70,6 +70,7 @@ test_script:
 on_success:
   - cd %TEST_HOME%\benchmark
   - appveyor PushArtifact receipt.json
+  - cd %SWMM_HOME%
   - cd %BUILD_HOME%\bin\Release
   - appveyor PushArtifact swmm5.dll
   - appveyor PushArtifact swmm-output.dll
