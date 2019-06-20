@@ -70,7 +70,10 @@ test_script:
 on_success:
   - cd %TEST_HOME%\benchmark
   - appveyor PushArtifact receipt.json
-
+  - cd %BUILD_HOME%\bin\Release
+  - appveyor PushArtifact swmm5.dll
+  - appveyor PushArtifact swmm-output.dll
+  
 on_failure:
   - cd %TEST_HOME%\benchmark
   # zip up the SUT benchmarks
@@ -80,8 +83,3 @@ on_failure:
 #cache:
 #  - C:\ProgramData\chocolatey\bin -> appveyor.yml
 #  - C:\ProgramData\chocolatey\lib -> appveyor.yml
-
-artifacts:
-  - path: %BUILD_HOME%\bin\Release\swmm5.dll
-  - path: %BUILD_HOME%\bin\Release\swmm-output.dll
-  
