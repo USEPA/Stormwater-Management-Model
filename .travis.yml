@@ -55,8 +55,8 @@ script:
     
 deploy:
   provider: releases
-  api_key:
-  file: $GH_TOKEN
+  api_key: $GH_TOKEN
+  file: 
     - $SWMM_HOME/$BUILD_HOME/bin/swmm5.so
   skip_cleanup: true
   overwrite: true 
