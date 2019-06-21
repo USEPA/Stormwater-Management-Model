@@ -52,12 +52,7 @@ script:
       tools/before-test.sh $TEST_HOME $SWMM_HOME/$BUILD_HOME/bin $TRAVIS_COMMIT ;
       tools/run-nrtest.sh -c -t $TEST_HOME -v $TRAVIS_COMMIT ;
     fi
-
-after_success:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      bash <(curl -s https://codecov.io/bash) ;
-    fi
-
+    
 deploy:
   provider: releases
   api_key:
@@ -66,3 +61,9 @@ deploy:
   skip_cleanup: true
   overwrite: true 
   draft: true 
+  
+after_success:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      bash <(curl -s https://codecov.io/bash) ;
+    fi
+
