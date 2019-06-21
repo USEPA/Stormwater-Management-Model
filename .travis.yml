@@ -60,6 +60,8 @@ deploy:
   skip_cleanup: true
   overwrite: true 
   draft: true 
+  on: 
+    branch: save_artifacts
   
 after_success:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
