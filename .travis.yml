@@ -57,3 +57,12 @@ after_success:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       bash <(curl -s https://codecov.io/bash) ;
     fi
+
+deploy:
+  provider: releases
+  api_key:
+  file: $GH_TOKEN
+    - $SWMM_HOME/$BUILD_HOME/bin/swmm5.so
+  skip_cleanup: true
+  overwrite: true 
+  draft: true 
