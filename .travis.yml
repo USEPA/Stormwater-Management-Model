@@ -55,7 +55,7 @@ script:
     
 deploy:
   provider: releases
-  api_key: $GH_TOKEN
+  api_key: $SWWM_CI_UPLOAD_TOKEN
   file: $SWMM_HOME/$BUILD_HOME/bin/*
   skip_cleanup: true
   overwrite: true 
