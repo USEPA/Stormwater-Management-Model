@@ -52,6 +52,8 @@ script:
       tools/before-test.sh $TEST_HOME $SWMM_HOME/$BUILD_HOME/bin $TRAVIS_COMMIT ;
       tools/run-nrtest.sh -c -t $TEST_HOME -v $TRAVIS_COMMIT ;
     fi
+  - echo "Build Directry: ${SWMM_HOME}/${BUILD_HOME}/bin"
+  - ls -l  $SWMM_HOME/$BUILD_HOME/bin
     
 deploy:
   provider: releases
