@@ -56,7 +56,7 @@ script:
     fi
   - cd $SWMM_HOME
   - SWMM_VERSION=$($SWMM_HOME/$BUILD_HOME/bin/run-swmm --version 2>&1)
-  - SWMM_VERSION="$(echo -e "${SWMM_VERSION}" | sed -e 's/[[:space:]]*$//')"
+  - SWMM_VERSION="$(echo -e "${SWMM_VERSION}" | sed -e ':a;N;$!ba;s/\n//g')"
   - echo $SWMM_VERSION
   - mkdir $GIT_RELEASE_DIR/$TRAVIS_OS_NAME
   - mkdir $GIT_RELEASE_DIR/$TRAVIS_OS_NAME/"lib" 
@@ -67,7 +67,6 @@ script:
   - cp $SWMM_HOME/include/* $GIT_RELEASE_DIR/$TRAVIS_OS_NAME/"include"
   - echo "OWA-SWMM-$TRAVIS_OS_NAME-$SWMM_VERSION.zip"
   - zip -r "OWA-SWMM-$TRAVIS_OS_NAME-$SWMM_VERSION.zip" $GIT_RELEASE_DIR/$TRAVIS_OS_NAME/*
-  - ls -l $SWMM_HOME/include
 deploy:
   provider: releases
   api_key: $SWWM_CI_UPLOAD_TOKEN
