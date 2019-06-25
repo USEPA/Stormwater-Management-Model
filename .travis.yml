@@ -17,6 +17,8 @@ env:
     - SWMM_HOME=`pwd`
     - BUILD_HOME=build
     - TEST_HOME=nrtestsuite
+    - SWMM_VERSION=""
+    - GIT_RELEASE_DIR=$SWMM_HOME"/GIT_RELEASE"
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
@@ -52,22 +54,31 @@ script:
       tools/before-test.sh $TEST_HOME $SWMM_HOME/$BUILD_HOME/bin $TRAVIS_COMMIT ;
       tools/run-nrtest.sh -c -t $TEST_HOME -v $TRAVIS_COMMIT ;
     fi
-  - ls -l $SWMM_HOME/$BUILD_HOME/bin
-  - ls -l $SWMM_HOME/$BUILD_HOME/lib
-    
+  - cd $SWMM_HOME
+  - SWMM_VERSION=$($SWMM_HOME/$BUILD_HOME/bin/run-swmm --version 2>&1)
+  - SWMM_VERSION="$(echo -e "${SWMM_VERSION}" | sed -e 's/[[:space:]]*$//')"
+  - echo $SWMM_VERSION
+  - mkdir $GIT_RELEASE_DIR/$TRAVIS_OS_NAME
+  - mkdir $GIT_RELEASE_DIR/$TRAVIS_OS_NAME/"lib" 
+  - mkdir $GIT_RELEASE_DIR/$TRAVIS_OS_NAME/"bin" 
+  - mkdir $GIT_RELEASE_DIR/$TRAVIS_OS_NAME/"include" 
+  - cp $SWMM_HOME/$BUILD_HOME/lib/* $GIT_RELEASE_DIR/$TRAVIS_OS_NAME/"lib"
+  - cp $SWMM_HOME/$BUILD_HOME/bin/run-swmm $GIT_RELEASE_DIR/$TRAVIS_OS_NAME/"bin"
+  - cp $SWMM_HOME/$BUILD_HOME/include/* $GIT_RELEASE_DIR/$TRAVIS_OS_NAME/"include"
+  - echo "OWA-SWMM-$TRAVIS_OS_NAME-$SWMM_VERSION.zip"
+  - zip -r "OWA-SWMM-$TRAVIS_OS_NAME-$SWMM_VERSION.zip" $GIT_RELEASE_DIR/$TRAVIS_OS_NAME/*
 deploy:
   provider: releases
   api_key: $SWWM_CI_UPLOAD_TOKEN
   file: 
-    - $SWMM_HOME/$BUILD_HOME/bin/run-swmm
-    - $SWMM_HOME/$BUILD_HOME/lib/libswmm5.so
-    - $SWMM_HOME/$BUILD_HOME/lib/libswmm-output.so
+    - "$SWMM_HOME/OWA-SWMM-$TRAVIS_OS_NAME-$SWMM_VERSION.zip"
   skip_cleanup: true
   overwrite: true 
   draft: true 
-  on: 
-    branch: develop
-    tag: true 
+  on:
+    branch: save_artifacts  
+    #branch: develop
+    #tag: true 
   
 after_success:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
