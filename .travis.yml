@@ -54,9 +54,8 @@ script:
       tools/before-test.sh $TEST_HOME $SWMM_HOME/$BUILD_HOME/bin $TRAVIS_COMMIT ;
       tools/run-nrtest.sh -c -t $TEST_HOME -v $TRAVIS_COMMIT ;
     fi
-  - cd ..
+  - cd $SWMM_HOME
   - SWMM_VERSION=$($SWMM_HOME/$BUILD_HOME/bin/run-swmm --version 2>&1)
-#  - SWMM_VERSION="$(echo -e "${SWMM_VERSION}" | sed -e ':a;N;$!ba;s/\n//g')"
   - SWMM_VERSION="$(echo -e "${SWMM_VERSION}" | sed -n -e 'H;${x;s/\n//g;p;}')"
   - echo $SWMM_VERSION
   - mkdir $GIT_RELEASE_DIR
