@@ -58,7 +58,10 @@ script:
 deploy:
   provider: releases
   api_key: $SWWM_CI_UPLOAD_TOKEN
-  file: $SWMM_HOME/$BUILD_HOME/bin/run-swmm
+  file: 
+    - $SWMM_HOME/$BUILD_HOME/bin/run-swmm
+    - $SWMM_HOME/$BUILD_HOME/lib/libswmm5.so
+    - $SWMM_HOME/$BUILD_HOME/lib/libswmm-output.so
   skip_cleanup: true
   overwrite: true 
   draft: true 
