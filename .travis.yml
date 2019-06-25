@@ -67,7 +67,9 @@ script:
   - cp $SWMM_HOME/$BUILD_HOME/bin/run-swmm $GIT_RELEASE_DIR/$TRAVIS_OS_NAME/"bin"
   - cp $SWMM_HOME/include/* $GIT_RELEASE_DIR/$TRAVIS_OS_NAME/"include"
   - echo "OWA-SWMM-$TRAVIS_OS_NAME-$SWMM_VERSION.zip"
-  - zip -r "OWA-SWMM-$TRAVIS_OS_NAME-$SWMM_VERSION.zip" ./$GIT_RELEASE_DIR/$TRAVIS_OS_NAME/
+  - cd $GIT_RELEASE_DIR/$TRAVIS_OS_NAME
+  - zip -r "../../OWA-SWMM-$TRAVIS_OS_NAME-$SWMM_VERSION.zip" ./lib/ ./bin/ ./include/
+  - cd $SWMM_HOME
 deploy:
   provider: releases
   api_key: $SWWM_CI_UPLOAD_TOKEN
