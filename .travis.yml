@@ -73,7 +73,7 @@ script:
 deploy:
   provider: releases
   api_key:
-    secure: $SWWM_CI_UPLOAD_TOKEN_SECURE
+    secure: "$SWWM_CI_UPLOAD_TOKEN_SECURE"
   file: 
     - "$SWMM_HOME/OWA-SWMM-$TRAVIS_OS_NAME-$SWMM_VERSION.zip"
   skip_cleanup: true
