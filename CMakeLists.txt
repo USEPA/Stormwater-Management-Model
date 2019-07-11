@@ -10,7 +10,7 @@
 cmake_minimum_required (VERSION 3.0)
 
 project(swmm-solver
-    VERSION 5.1.13
+    VERSION 5.1.14
     LANGUAGES C CXX
     )
 
