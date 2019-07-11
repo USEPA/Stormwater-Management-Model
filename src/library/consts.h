@@ -15,7 +15,7 @@
 // General Constants
 //------------------
 
-#define   VERSION            51013 
+#define   VERSION            51014 
 #define   MAGICNUMBER        516114522
 #define   EOFMARK            0x1A           // Use 0x04 for UNIX systems
 #define   MAXTITLE           3              // Max. # title lines
