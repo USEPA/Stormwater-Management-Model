@@ -40,6 +40,8 @@
 //   - Name of surcharge method reported in report_writeOptions().
 //   - Missing format specifier added to fprintf() in report_writeErrorCode.
 //
+//   Build 5.1.014:
+//   - Fixed bug in confusing keywords with ID names in report_readOptions().
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -150,8 +152,12 @@ int report_readOptions(char* tok[], int ntoks)
 
       default: return error_setInpError(ERR_KEYWORD, tok[1]);
     }
-    k = (char)findmatch(tok[1], NoneAllWords);
-    if ( k < 0 )
+
+    if (strcomp(tok[1], w_NONE))
+        k = NONE;
+    else if (strcomp(tok[1], w_ALL))
+        k = ALL;
+    else
     {
         k = SOME;
         for (t = 1; t < ntoks; t++)
