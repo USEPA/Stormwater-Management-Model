@@ -45,3 +45,6 @@ before_build:
 # run custom build script
 build_script:
   - cmake --build ./%BUILD_HOME% --config Release
+
+cache:
+  - C:\projects\stormwater-management-model\buildprod -> CMakeLists.txt
