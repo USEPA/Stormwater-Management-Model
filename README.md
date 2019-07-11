@@ -2,6 +2,11 @@ Stormwater-Management-Model
 ===========================
 
 ORD Stormwater Management Model (aka "SWMM")
+------------
+
+## Build Status
+[![Build status](https://ci.appveyor.com/api/projects/status/28d9pg7rollqfhqm/branch/develop?svg=true)](https://ci.appveyor.com/project/michaeltryby/stormwater-management-model/branch/develop)
+
 
 Introduction
 ------------
@@ -11,4 +16,4 @@ SWMM is a dynamic hydrology-hydraulic water quality simulation model. It is used
 
 Find Out More
 -------------
-The source code distributed here is identical to the code found at the official [SWMM Website](http://www2.epa.gov/water-research/storm-water-management-model-swmm). 
+The source code distributed here is identical to the code found at the official [SWMM Website](http://www2.epa.gov/water-research/storm-water-management-model-swmm).
