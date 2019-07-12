@@ -26,7 +26,7 @@ set(LIBRARY_DIST "lib")
 set(CONFIG_DIST  "cmake")
 
 # Add project subdirectories
-add_subdirectory(src/library)
+add_subdirectory(src/solver)
 add_subdirectory(src/run)
 
 # Create target import scripts so other cmake projects can use swmm libraries
