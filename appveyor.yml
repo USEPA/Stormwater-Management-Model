@@ -70,7 +70,12 @@ test_script:
 on_success:
   - cd %TEST_HOME%\benchmark
   - appveyor PushArtifact receipt.json
-
+  - cd %SWMM_HOME%
+  - cd %BUILD_HOME%\bin\Release
+  - appveyor PushArtifact run-swmm.exe 
+  - appveyor PushArtifact swmm5.dll
+  - appveyor PushArtifact swmm-output.dll
+  
 on_failure:
   - cd %TEST_HOME%\benchmark
   # zip up the SUT benchmarks
