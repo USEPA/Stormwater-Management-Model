@@ -73,6 +73,7 @@ after_success:
   - mkdir -p $BUILD_HOME
   - cd $BUILD_HOME
   - cmake --build . --config Release
+  - ls -l $SWMM_HOME/$BUILD_HOME/
   - cd $SWMM_HOME
   - SWMM_VERSION=$($SWMM_HOME/$BUILD_HOME/bin/run-swmm --version 2>&1)
   - SWMM_VERSION="$(echo -e "${SWMM_VERSION}" | sed -n -e 'H;${x;s/\n//g;p;}')"
