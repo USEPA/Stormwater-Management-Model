@@ -77,7 +77,7 @@ after_success:
   - cd $SWMM_HOME 
   - cd $RELEASE_HOME
   - cmake ../
-  - cmake --build . --target ALL_BUILD --config Release
+  - cmake --build . --config Release
   - ls -l $SWMM_HOME/$RELEASE_HOME/
   - cd $SWMM_HOME
   - SWMM_VERSION=$($SWMM_HOME/$RELEASE_HOME/bin/run-swmm --version 2>&1)
