@@ -69,6 +69,7 @@ deploy:
     tag: true 
   
 after_success:
+  - cd $SWMM_HOME 
   - rm -rf $BUILD_HOME
   - mkdir -p $BUILD_HOME
   - cd $BUILD_HOME
