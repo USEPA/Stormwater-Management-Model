@@ -55,6 +55,25 @@ script:
       tools/run-nrtest.sh -c -t $TEST_HOME -v $TRAVIS_COMMIT ;
     fi
   - cd $SWMM_HOME
+  
+deploy:
+  provider: releases
+  api_key: $OWA_SWMM_CI_TOKEN
+  file: 
+    - "$SWMM_HOME/OWA-SWMM-$TRAVIS_OS_NAME-$SWMM_VERSION.zip"
+  skip_cleanup: true
+  overwrite: true 
+  draft: true 
+  on:
+    branch: draft_release
+    tag: true 
+  
+after_success:
+  - rm -rf $BUILD_HOME
+  - mkdir -p $BUILD_HOME
+  - cd $BUILD_HOME
+  - cmake --build . --config Release
+  - cd $SWMM_HOME
   - SWMM_VERSION=$($SWMM_HOME/$BUILD_HOME/bin/run-swmm --version 2>&1)
   - SWMM_VERSION="$(echo -e "${SWMM_VERSION}" | sed -n -e 'H;${x;s/\n//g;p;}')"
   - echo $SWMM_VERSION
@@ -69,21 +88,6 @@ script:
   - echo "OWA-SWMM-$TRAVIS_OS_NAME-$SWMM_VERSION.zip"
   - cd $GIT_RELEASE_DIR/$TRAVIS_OS_NAME
   - zip -r "../../OWA-SWMM-$TRAVIS_OS_NAME-$SWMM_VERSION.zip" ./lib/ ./bin/ ./include/
-  - cd $SWMM_HOME
-deploy:
-  provider: releases
-  api_key: $OWA_SWMM_CI_TOKEN
-  file: 
-    - "$SWMM_HOME/OWA-SWMM-$TRAVIS_OS_NAME-$SWMM_VERSION.zip"
-  skip_cleanup: true
-  overwrite: true 
-  draft: true 
-  on:
-    branch: develop
-    tag: true 
-  
-after_success:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       bash <(curl -s https://codecov.io/bash) ;
     fi
-
