@@ -1051,9 +1051,33 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int param, int value)
     // Check if model is running
     else if(swmm_IsStartedFlag() == TRUE)
     {
-        error_code_index = ERR_API_SIM_NRUNNING;
+        lidUnit = lid_getLidUnit(index, lidIndex, &error_code_index);
+
+        // There are no Lid Units defined for the subcatchments
+        if (lidUnit)
+        {
+            switch (param)
+            {
+            case SM_INDEX:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_NUMBER:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_TOPERV:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_DRAINSUB:
+                lidUnit->drainSubcatch = value;
+                lidUnit->drainNode = -1;
+                break;
+            case SM_DRAINNODE:
+                lidUnit->drainNode = value;
+                lidUnit->drainSubcatch = -1;
+                break;
+            default:
+                error_code_index = ERR_API_OUTBOUNDS; break;
+            }
+        }
     }
-    else
+    else if(swmm_IsStartedFlag() == FALSE)
     {
         lidUnit = lid_getLidUnit(index, lidIndex, &error_code_index);
 
@@ -1082,11 +1106,18 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int param, int value)
             }
         }
     }
+    else
+    {
+        error_code_index = ERR_API_OUTBOUNDS;
+    }
 
     if(error_code_index == ERR_NONE)
     {
         lid_validateLidGroup(index);
-        lid_updateLidGroup(index);
+        if (swmm_IsStartedFlag() == FALSE)
+        {
+            lid_updateLidGroup(index);
+        }
     }
 
     return error_getCode(error_code_index);
@@ -1116,7 +1147,7 @@ int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, char *condition)
     else
     {
         lidProc = lid_getLidProc(lidControlIndex);
-        if (lidProc != NULL)
+        if(lidProc != NULL)
         {
             *condition = lidProc->surface.canOverflow;
 
@@ -1232,7 +1263,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int param, 
             case SM_THICKNESS:
                 *value = lidProc->pavement.thickness * UCF(RAINDEPTH); break;
             case SM_VOIDFRAC:
-                if (lidProc->pavement.voidFrac < 1)
+                if(lidProc->pavement.voidFrac < 1)
                 {
                     *value = lidProc->pavement.voidFrac / (1 - lidProc->pavement.voidFrac);
                 }
@@ -1246,7 +1277,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int param, 
             case SM_KSAT:
                 *value = lidProc->pavement.kSat * UCF(RAINFALL); break;
             case SM_CLOGFACTOR:
-                if (lidProc->pavement.thickness > 0.0)
+                if(lidProc->pavement.thickness > 0.0)
                 {
                     *value = lidProc->pavement.clogFactor /
                             (lidProc->pavement.thickness *
@@ -1330,7 +1361,132 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, 
     {
         error_code_index = ERR_API_OBJECT_INDEX;
     }
-    else
+    else if (swmm_IsStartedFlag() == TRUE)
+    {
+        lidProc = lid_getLidProc(lidControlIndex);
+
+        switch (layerIndex)
+        {
+        case SM_SURFACE:
+            switch (param)
+            {
+            case SM_THICKNESS:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_VOIDFRAC:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_ROUGHNESS:
+                lidProc->surface.roughness = value; break;
+            case SM_SURFSLOPE:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_SIDESLOPE:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            default:
+                error_code_index = ERR_API_OUTBOUNDS; break;
+            }
+            break;
+        case SM_SOIL:
+            switch (param)
+            {
+            case SM_THICKNESS:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_POROSITY:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_FIELDCAP:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_WILTPOINT:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_KSAT:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_KSLOPE:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_SUCTION:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            default:
+                error_code_index = ERR_API_OUTBOUNDS; break;
+            }
+            break;
+        case SM_STOR:
+            switch (param)
+            {
+            case SM_THICKNESS:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_VOIDFRAC:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_KSAT:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_CLOGFACTOR:
+                lidProc->storage.clogFactor = value *
+                    lidProc->storage.thickness *
+                    lidProc->storage.voidFrac;
+                break;
+            default:
+                error_code_index = ERR_API_OUTBOUNDS; break;
+            }
+            break;
+        case SM_PAVE:
+            switch (param)
+            {
+            case SM_THICKNESS:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_VOIDFRAC:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_IMPERVFRAC:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_KSAT:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_CLOGFACTOR:
+                lidProc->pavement.clogFactor = value *
+                    lidProc->pavement.thickness *
+                    lidProc->pavement.voidFrac *
+                    (1.0 - lidProc->pavement.impervFrac);
+                break;
+            case SM_REGENDAYS:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_REGENDEGREE:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            default:
+                error_code_index = ERR_API_OUTBOUNDS; break;
+            }
+            break;
+        case SM_DRAIN:
+            switch (param)
+            {
+            case SM_COEFF:
+                lidProc->drain.coeff = value; break;
+            case SM_EXPON:
+                lidProc->drain.expon = value; break;
+            case SM_OFFSET:
+                lidProc->drain.offset = value / UCF(RAINDEPTH); break;
+            case SM_DELAY:
+                lidProc->drain.delay = value * 3600; break;
+            case SM_HOPEN:
+                lidProc->drain.hOpen = value / UCF(RAINDEPTH); break;
+            case SM_HCLOSE:
+                lidProc->drain.hClose = value / UCF(RAINDEPTH); break;
+            default:
+                error_code_index = ERR_API_OUTBOUNDS; break;
+            }
+            break;
+        case SM_DRAINMAT:
+            switch (param)
+            {
+            case SM_THICKNESS:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_VOIDFRAC:
+                error_code_index = ERR_API_SIM_NRUNNING; break;
+            case SM_ROUGHNESS:
+                lidProc->drainMat.roughness = value; break;
+           //case SM_ALPHA:
+           //    lidProc->drainMat.alpha = value; break;
+            default:
+                error_code_index = ERR_API_OUTBOUNDS; break;
+            }
+            break;
+        default:
+            error_code_index = ERR_API_OUTBOUNDS; break;
+        }
+    }
+    else if(swmm_IsStartedFlag() == FALSE)
     {
         lidProc = lid_getLidProc(lidControlIndex);
 
@@ -1507,12 +1663,19 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, 
             default:
                 error_code_index = ERR_API_OUTBOUNDS; break;
         }
-
     }
+    else
+    {
+        error_code_index = ERR_API_OUTBOUNDS;
+    }
+
     if(error_code_index == ERR_NONE)
     {
         lid_validateLidProc(lidControlIndex);
-        lid_updateAllLidUnit(lidControlIndex);
+        if (swmm_IsStartedFlag() == FALSE)
+        {
+            lid_updateAllLidUnit(lidControlIndex);
+        }
     }
     return error_getCode(error_code_index);
 }
