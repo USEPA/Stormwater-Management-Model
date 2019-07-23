@@ -70,7 +70,7 @@ deploy:
   overwrite: true 
   draft: true 
   on:
-    branch: draft_release
+    branch: develop
     tag: true 
   
 after_success:
