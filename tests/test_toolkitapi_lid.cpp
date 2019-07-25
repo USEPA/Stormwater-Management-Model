@@ -73,9 +73,94 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_CHECK_EQUAL(error, ERR_NONE);
         error = swmm_getLidCParam(0, 0, 0, &db_value);
         BOOST_CHECK_EQUAL(error, ERR_NONE);
+        //Lid Surface
         error = swmm_setLidCParam(0, 0, 0, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 0, 1, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 0, 2, db_value);
         BOOST_CHECK_EQUAL(error, ERR_NONE);
+        error = swmm_setLidCParam(0, 0, 3, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 0, 4, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 0, 5, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+        
+        //Lid Soil
+        error = swmm_setLidCParam(0, 1, 0, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 1, 6, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 1, 7, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 1, 8, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 1, 9, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 1, 10, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 1, 11, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 1, 12, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+        
+        //Lid Storage 
+        error = swmm_setLidCParam(0, 2, 0, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 2, 1, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 2, 10, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 2, 12, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
+        error = swmm_setLidCParam(0, 2, 2, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+        
+        //Lid Pavement 
+        error = swmm_setLidCParam(0, 3, 0, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 3, 1, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 3, 13, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 3, 10, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 3, 12, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
+        error = swmm_setLidCParam(0, 3, 21, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 3, 22, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 3, 8, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
 
+        //Lid Drain
+        error = swmm_setLidCParam(0, 4, 14, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
+        error = swmm_setLidCParam(0, 4, 15, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
+        error = swmm_setLidCParam(0, 4, 16, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
+        error = swmm_setLidCParam(0, 4, 17, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
+        error = swmm_setLidCParam(0, 4, 18, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
+        error = swmm_setLidCParam(0, 4, 19, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
+        error = swmm_setLidCParam(0, 4, 12, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+
+        //Lid DrainMat
+        error = swmm_setLidCParam(0, 5, 0, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 5, 1, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidCParam(0, 5, 2, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
+        error = swmm_setLidCParam(0, 5, 12, db_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
+        
         //Lid Unit
         error = swmm_getLidUCount(0, &int_value);
         BOOST_CHECK_EQUAL(error, ERR_NONE);
@@ -87,6 +172,14 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_CHECK_EQUAL(error, ERR_NONE);
         error = swmm_setLidUOption(0, 0, 0, int_value);
         BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidUOption(0, 0, 1, int_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidUOption(0, 0, 2, int_value);
+        BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
+        error = swmm_setLidUOption(0, 0, 3, int_value);
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
+        error = swmm_setLidUOption(0, 0, 4, int_value);
+        BOOST_CHECK_EQUAL(error, ERR_NONE);
         error = swmm_getLidUFluxRates(0, 0, 0, &db_value);
         BOOST_CHECK_EQUAL(error, ERR_NONE);
         error = swmm_getLidUResult(0, 0, 0, &db_value);
