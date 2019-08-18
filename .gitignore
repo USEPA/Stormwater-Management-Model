@@ -25,6 +25,7 @@ buildprod*/
 /build/
 *.o
 /Debug/
+/build-linux/
 
 
 # Git merge files
