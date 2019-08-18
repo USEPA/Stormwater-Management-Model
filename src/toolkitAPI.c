@@ -1692,6 +1692,7 @@ int DLLEXPORT swmm_getCurrentDateTime(int *year, int *month, int *day,
 /// Return:  API Error
 /// Purpose: Get the simulation start, end and report date times
 {
+    DateTime currentTime;
     int error_code_index = 0;
     *year = 1900;
     *month = 1;
@@ -1699,7 +1700,6 @@ int DLLEXPORT swmm_getCurrentDateTime(int *year, int *month, int *day,
     *hour = 0;
     *minute = 0;
     *second = 0;
-    DateTime currentTime;
 
     // Check if Simulation is Running
     if(swmm_IsStartedFlag() == FALSE)
