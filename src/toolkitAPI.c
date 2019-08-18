@@ -1814,6 +1814,57 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
     return error_getCode(error_code_index);
 }
 
+int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray)
+///
+/// Input:   index = Index of desired ID
+///          type = Result Type (SM_LinkPollut)
+/// Output:  PollutArray pointer (pollutant data desired, byref)
+/// Return:  API Error
+/// Purpose: Gets Link Simulated Water Quality Value at Current Time
+{
+    int p;
+    int error_code_index = 0;
+    double* result;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        error_code_index = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[LINK])
+    {
+        error_code_index = ERR_API_OBJECT_INDEX;
+    }
+    else if (MEMCHECK(result = newDoubleArray(Nobjects[POLLUT])))
+    {
+        error_code_index = ERR_MEMORY;
+    }
+
+    else
+    {
+        switch (type)
+        {
+            case SM_NEWQUAL:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Link[index].newQual[p]; // NEED TO ADD UNIT CONVERSION
+                } *PollutArray = result;
+            } break;
+            case SM_TOTALLOAD:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Link[index].totalLoad[p]; // NEED TO ADD UNIT CONVERSION
+                } *PollutArray = result;
+            } break;
+            default: error_code_index = ERR_API_OUTBOUNDS; break;
+        }
+    }
+    return error_getCode(error_code_index);
+}
+
 int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result)
 ///
 /// Input:   index = Index of desired ID

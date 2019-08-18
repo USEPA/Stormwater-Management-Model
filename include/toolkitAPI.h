@@ -162,6 +162,12 @@ typedef enum {
     SM_FROUDE          = 7   /**< Froude Number */
 } SM_LinkResult;
 
+/// Link pollutant result property codes
+typedef enum {
+    SM_NEWQUAL       = 0,  /**< Current Link Quality */
+    SM_TOTALLOAD     = 1,  /**< Total Quality Mass Loading */
+} SM_LinkPollut;
+
 /// Subcatchment result property codes
 typedef enum {
     SM_SUBCRAIN      = 0,  /**< Rainfall Rate */
@@ -941,6 +947,15 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result);
  @return Error code
 */
 int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
+
+/**
+ @brief Gets pollutant values for a specified link.
+ @param index The index of a link
+ @param type The property type code (see @ref SM_LinkPollut)
+ @param[out] PollutArray result array
+ @return Error code
+*/
+int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray);
 
 /**
  @brief Get a result value for specified subcatchment.
