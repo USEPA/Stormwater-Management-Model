@@ -310,7 +310,10 @@ int DLLEXPORT  swmm_countObjects(int type, int *count)
     {
         error_code_index = ERR_API_OUTBOUNDS;
     }
-    *count = Nobjects[type];
+    else
+    {
+        *count = Nobjects[type];
+    }
     return error_getCode(error_code_index);
 }
 
