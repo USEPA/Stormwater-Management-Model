@@ -150,6 +150,11 @@ typedef enum {
     SM_LATINFLOW      = 7   /**< Lateral Inflow Rate */
 } SM_NodeResult;
 
+/// Node pollutant result property codes
+typedef enum {
+    SM_NODEQUAL       = 0,  /**< Current Node Quality */
+} SM_NodePollut;
+
 /// Link result property codes
 typedef enum {
     SM_LINKFLOW        = 0,  /**< Flowrate */
@@ -164,7 +169,7 @@ typedef enum {
 
 /// Link pollutant result property codes
 typedef enum {
-    SM_NEWQUAL       = 0,  /**< Current Link Quality */
+    SM_LINKQUAL       = 0,  /**< Current Link Quality */
     SM_TOTALLOAD     = 1,  /**< Total Quality Mass Loading */
 } SM_LinkPollut;
 
@@ -938,6 +943,15 @@ int DLLEXPORT swmm_getCurrentDateTime(int *year, int *month, int *day,
  @return Error code
 */
 int DLLEXPORT swmm_getNodeResult(int index, int type, double *result);
+
+/**
+ @brief Gets pollutant values for a specified node.
+ @param index The index of a node
+ @param type The property type code (see @ref SM_NodePollut)
+ @param[out] PollutArray result array
+ @return Error code
+*/
+int DLLEXPORT swmm_getNodePollut(int index, int type, double **PollutArray);
 
 /**
  @brief Get a result value for specified link.
