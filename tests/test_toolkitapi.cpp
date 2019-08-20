@@ -402,6 +402,83 @@ BOOST_FIXTURE_TEST_CASE(project_info, FixtureOpenClose){
 }
 
 
+// Testing for count Objects after Open
+BOOST_FIXTURE_TEST_CASE(count_objects, FixtureOpenClose){
+
+    int error, count;
+
+    //Count objects
+    error = swmm_countObjects(SM_GAGE, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 1);
+
+    error = swmm_countObjects(SM_SUBCATCH, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 8);
+
+    error = swmm_countObjects(SM_NODE, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 14);
+
+    error = swmm_countObjects(SM_LINK, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 13);
+
+    error = swmm_countObjects(SM_POLLUT, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 2);
+
+    error = swmm_countObjects(SM_LANDUSE, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 2);
+
+    error = swmm_countObjects(SM_TIMEPATTERN, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 0);
+
+    error = swmm_countObjects(SM_CURVE, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 0);
+
+    error = swmm_countObjects(SM_TSERIES, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 1);
+
+    error = swmm_countObjects(SM_CONTROL, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 0);
+
+
+    error = swmm_countObjects(SM_TRANSECT, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 0);
+
+    error = swmm_countObjects(SM_AQUIFER, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 0);
+
+    error = swmm_countObjects(SM_UNITHYD, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 0);
+
+    error = swmm_countObjects(SM_SNOWMELT, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 0);
+
+    error = swmm_countObjects(SM_SHAPE, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 0);
+
+    error = swmm_countObjects(SM_LID, &count);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(count, 0);
+
+    //return error
+    error = swmm_countObjects(999, &count);
+    BOOST_REQUIRE(error == ERR_API_OUTBOUNDS);
+}
+
+
 // Testing for subcatchment get/set
 BOOST_FIXTURE_TEST_CASE(getset_subcatch, FixtureOpenClose) {
 
