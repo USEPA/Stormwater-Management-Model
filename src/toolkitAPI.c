@@ -1849,14 +1849,18 @@ int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray)
             {
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
-                    result[p] = Link[index].newQual[p]; // NEED TO ADD UNIT CONVERSION
+                    result[p] = Link[index].newQual[p];
                 } *PollutArray = result;
             } break;
             case SM_TOTALLOAD:
             {
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
-                    result[p] = Link[index].totalLoad[p]; // NEED TO ADD UNIT CONVERSION
+                    result[p] = Link[index].totalLoad[p] * (LperFT3 * Pollut[p].mcf);
+                    if (Pollut[p].units == COUNT)
+                    {
+                        result[p] = LOG10(result[p]);
+                    }
                 } *PollutArray = result;
             } break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
