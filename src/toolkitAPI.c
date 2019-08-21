@@ -2004,6 +2004,26 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
                     result[p] = Subcatch[index].concPonded[p] / LperFT3;
                 } *PollutArray = result;
             } break;
+            case SM_SUBCQUAL:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Subcatch[index].newQual[p];
+                } *PollutArray = result;
+            } break;
+            case SM_SUBCTOTALLOAD:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Subcatch[index].totalLoad[p] * (LperFT3 * Pollut[p].mcf);
+                    if (Pollut[p].units == COUNT)
+                    {
+                        result[p] = LOG10(result[p]);
+                    }
+                } *PollutArray = result;
+            } break;
+            
+            
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         }
     }

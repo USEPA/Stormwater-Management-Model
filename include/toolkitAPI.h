@@ -169,7 +169,7 @@ typedef enum {
 
 /// Link pollutant result property codes
 typedef enum {
-    SM_LINKQUAL       = 0,  /**< Current Link Quality */
+    SM_LINKQUAL      = 0,  /**< Current Link Quality */
     SM_TOTALLOAD     = 1,  /**< Total Quality Mass Loading */
 } SM_LinkPollut;
 
@@ -185,8 +185,10 @@ typedef enum {
 
 /// Subcatchment pollutant result property codes
 typedef enum {
-    SM_BUILDUP      = 0,  /**< Pollutant Buildup Load */
-    SM_CPONDED      = 1,  /**< Ponded Pollutant Concentration */
+    SM_BUILDUP        = 0,  /**< Pollutant Buildup Load */
+    SM_CPONDED        = 1,  /**< Ponded Pollutant Concentration */
+    SM_SUBCQUAL       = 2,  /**< Current Pollutant Runoff Quality */
+    SM_SUBCTOTALLOAD  = 3,  /**< Total Pollutant Washoff load */
 } SM_SubcPollut;
 
 /// Gage precip array property codes
