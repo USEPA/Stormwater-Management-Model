@@ -62,6 +62,7 @@ script:
     fi
   - cd $SWMM_HOME
   
+  
 deploy:
   provider: releases
   api_key: $OWA_SWMM_CI_TOKEN
@@ -78,6 +79,12 @@ after_success:
   - cd $SWMM_HOME 
   - cd $RELEASE_HOME
   - cmake ../
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      cmake ../ -DBUILD_TESTS=OFF -DBUILD_COVERAGE=OFF .. ;
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      cmake ../ -DBUILD_TESTS=OFF .. ;
+    fi
   - cmake --build . --config Release
   - ls -l $SWMM_HOME/$RELEASE_HOME/
   - cd $SWMM_HOME
