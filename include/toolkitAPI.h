@@ -770,14 +770,6 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int Param, int value);
 int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, char *condition);
 
 /**
- @brief Set the lid control's surface immediate overflow condition
- @param lidControlIndex The index of specified lid control
- @param condition The new value for the surface immediate overflow condition
- @return Error code
-*/
-int DLLEXPORT swmm_setLidCOverflow(int lidControlIndex, char condition);
-
-/**
  @brief Get a property value for specified lid control
  @param lidControlIndex The index of specified lid control
  @param layerIndex The index of specified lid layer (See @ref SM_LidLayer)
