@@ -42,8 +42,8 @@ endif(MSVC)
 
 # Set compiler flags when building on UNIX.
 if(UNIX AND NOT APPLE)
-	set(CMAKE_C_FLAGS "-fopenmp")
-	set(CMAKE_CXX_FLAGS "-std=c++11 -fopenmp -Wno-write-strings")
+	set(CMAKE_C_FLAGS "-fopenmp -Ofast")
+	set(CMAKE_CXX_FLAGS "-std=c++11 -fopenmp -Wno-write-strings -Ofast")
     # add_definitions(-std=c99)
 endif(UNIX AND NOT APPLE)
 
