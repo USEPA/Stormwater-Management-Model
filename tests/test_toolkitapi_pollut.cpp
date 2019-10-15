@@ -88,8 +88,8 @@ BOOST_FIXTURE_TEST_CASE(get_pollut_values, FixtureBeforeStep){
 
             // link pollutant total load
             error = swmm_getLinkPollut(node_ind, SM_TOTALLOAD, &link_load);
-            BOOST_CHECK_SMALL(link_load[TSS] - 38.490809, 0.0001);
-            BOOST_CHECK_SMALL(link_load[Lead] - 0.00769816, 0.0001);
+            BOOST_CHECK_SMALL(link_load[TSS] - 38.496695, 0.0001);
+            BOOST_CHECK_SMALL(link_load[Lead] - 0.00769934, 0.0001);
         }
 
         if (step_ind == 720) // (Jan 1, 1998 12:00pm)
@@ -128,8 +128,8 @@ BOOST_FIXTURE_TEST_CASE(get_pollut_values, FixtureBeforeStep){
 
             // link pollutant total load
             error = swmm_getLinkPollut(node_ind, SM_TOTALLOAD, &link_load);
-            BOOST_CHECK_SMALL(link_load[TSS] - 39.773267, 0.0001);
-            BOOST_CHECK_SMALL(link_load[Lead] - 0.00795465, 0.0001);
+            BOOST_CHECK_SMALL(link_load[TSS] - 39.780193, 0.0001);
+            BOOST_CHECK_SMALL(link_load[Lead] - 0.00795604, 0.0001);
         }
 
         // Route Model Forward
