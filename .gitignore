@@ -1,6 +1,9 @@
 
 
-buildprod*/
+build*/
+nrtest*/
+
+*_export.h
 
 # Eclipse Stuff
 .metadata/
