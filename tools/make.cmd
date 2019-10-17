@@ -14,11 +14,6 @@
 ::    CMake download:
 ::      https://cmake.org/download/
 ::
-::  Environment Variables:
-::    PROJECT
-::    BUILD_HOME - defaults to build
-::    PLATFORM
-::
 ::  Optional Arguments:
 ::    /g ("GENERATOR") defaults to "Visual Studio 15 2017"
 ::    /t builds and runs unit tests (requires Boost)
@@ -31,7 +26,6 @@
 :: set global defaults
 set "PROJECT=swmm"
 set "BUILD_HOME=build"
-set "TEST_HOME=nrtests"
 set "PLATFORM=win32"
 
 :: determine project directory

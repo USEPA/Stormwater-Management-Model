@@ -14,7 +14,6 @@
 ::  Environment Variables:
 ::    PROJECT
 ::    BUILD_HOME - defaults to "build"
-::    TEST_HOME  - defaults to "nrtests"
 ::    PLATFORM
 ::
 ::  Arguments:
@@ -27,6 +26,9 @@
 ::
 
 ::@echo off
+
+:: set global default
+set "TEST_HOME=nrtests"
 
 :: determine project directory
 set "CUR_DIR=%CD%"
@@ -53,9 +55,9 @@ if [%1] == [] (set "RELEASE_TAG="
 ) else (set "RELEASE_TAG=%~1")
 
 
-:: check BUILD_HOME and TEST_HOME and apply defaults
-if not defined BUILD_HOME ( set "BUILD_HOME=build" )
-if not defined TEST_HOME ( set "TEST_HOME=nrtests" )
+:: check env variables and apply defaults
+if not defined PROJECT ( echo "ERROR: PROJECT must be defined" & exit /B 1 )
+if not defined BUILD_HOME ( echo "ERROR: BUILD_HOME must be defined" & exit /B 1 )
 if not defined PLATFORM ( echo "ERROR: PLATFORM must be defined" & exit /B 1 )
 
 
@@ -106,9 +108,7 @@ endlocal
 for /F delims^=^"^ tokens^=4 %%d in ( 'findstr %PLATFORM% %TEST_HOME%\manifest.json' ) do (
   for /F "tokens=2" %%r in ( 'echo %%d' ) do ( set "REF_BUILD_ID=%%r" )
 )
-if not defined REF_BUILD_ID ( echo "WARNING: REF_BUILD_ID could not be determined" &^
-  set "REF_BUILD_ID=unknown"
-)
+if not defined REF_BUILD_ID ( echo "ERROR: REF_BUILD_ID could not be determined" & exit /B 1 )
 
 
 :: return to users current directory

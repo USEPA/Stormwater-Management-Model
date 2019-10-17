@@ -27,6 +27,7 @@ setlocal EnableDelayedExpansion
 
 
 :: Check that required environment variables are set
+if not defined PROJECT ( echo "ERROR: PROJECT must be defined" & exit /B 1 )
 if not defined BUILD_HOME ( echo "ERROR: BUILD_HOME must be defined" & exit /B 1 )
 if not defined TEST_HOME ( echo "ERROR: TEST_HOME must be defined" & exit /B 1 )
 if not defined PLATFORM ( echo "ERROR: PLATFORM must be defined" & exit /B 1 )
