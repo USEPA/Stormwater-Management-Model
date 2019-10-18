@@ -2,6 +2,7 @@
 ::  app-config.cmd - Generates nrtest app configuration file for SUT executable
 ::
 ::  Date Created: 10/16/2019
+::  Date Modified: 10/17/2019
 ::
 ::  Author: Michael E. Tryby
 ::          US EPA - ORD/CESER
@@ -29,14 +30,15 @@ set TEST_CMD=run%PROJECT%.exe
 set ABS_BUILD_PATH=%~1
 set ABS_BUILD_PATH=%ABS_BUILD_PATH:\=/%
 
-IF [%2]==[] ( set "PLATFORM=unknown"
-) ELSE ( set "PLATFORM=%~2" )
+if [%2]==[] ( set "PLATFORM=unknown"
+) else ( set "PLATFORM=%~2" )
 
-IF [%3]==[] ( set "BUILD_ID=unknown"
-) ELSE ( set "BUILD_ID=%~3" )
+if [%3]==[] ( set "BUILD_ID=unknown"
+) else ( set "BUILD_ID=%~3" )
 
-IF [%4]==[] ( set "VERSION=unknown"
-) ELSE ( set "VERSION=%~4" )
+if "%4" == "unknown" (
+  for /F "tokens=1" %%v in ( '%ABS_BUILD_PATH%/%TEST_CMD% --version' ) do ( set "VERSION=%%v" )
+) else ( set "VERSION=%~4" )
 
 
 echo {
