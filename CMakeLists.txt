@@ -30,6 +30,7 @@ set(CONFIG_DIST  "cmake")
 
 
 # Add project subdirectories
+add_subdirectory(outfile)
 add_subdirectory(src/solver)
 add_subdirectory(src/run)
 
