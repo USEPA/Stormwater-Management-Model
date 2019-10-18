@@ -34,7 +34,7 @@
 #define RECORDSIZE  4    // Memory alignment 4 byte word size for both int and real
 #define DATESIZE    8    // Dates are stored as 8 byte word size
 
-#define NELEMENTTYPES  4 // Number of element types
+#define NELEMENTTYPES  5 // Number of element types
 
 #define MEMCHECK(x)  (((x) == NULL) ? 414 : 0 )
 
@@ -274,7 +274,8 @@ int EXPORT_OUT_API SMO_getProjectSize(SMO_Handle p_handle, int** elementCount, i
         temp[0] = p_data->Nsubcatch;
         temp[1] = p_data->Nnodes;
         temp[2] = p_data->Nlinks;
-        temp[3] = p_data->Npolluts;
+        temp[3] = 1;    //Nsystems
+        temp[4] = p_data->Npolluts;
 
         *elementCount = temp;
         *length = NELEMENTTYPES;
