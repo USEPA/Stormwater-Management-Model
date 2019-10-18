@@ -9,6 +9,10 @@
 
 cmake_minimum_required (VERSION 3.0)
 
+if("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
+    message(FATAL_ERROR "In-source builds are disabled.")
+endif()
+
 
 project(swmm-solver
     VERSION 5.1.14
@@ -29,10 +33,18 @@ set(LIBRARY_DIST "lib")
 set(CONFIG_DIST  "cmake")
 
 
+option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
+
+
 # Add project subdirectories
 add_subdirectory(outfile)
 add_subdirectory(src/solver)
 add_subdirectory(src/run)
+
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 
 
 # Create target import scripts so other cmake projects can use swmm libraries
