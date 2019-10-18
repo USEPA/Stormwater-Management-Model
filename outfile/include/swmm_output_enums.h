@@ -21,7 +21,7 @@ typedef enum {
 	SMO_subcatch,
 	SMO_node,
 	SMO_link,
-	SMO_sys
+	SMO_sys,
     SMO_pollut
 } SMO_elementType;
 

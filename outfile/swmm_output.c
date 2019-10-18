@@ -21,8 +21,6 @@
 #include "swmm_output.h"
 
 
-
-
 // NOTE: These depend on machine data model and may change when porting
 // F_OFF Must be a 8 byte / 64 bit integer for large file support
 #ifdef _WIN32 // Windows (32-bit and 64-bit)
@@ -104,7 +102,7 @@ static int*   newIntArray(int n);
 static char*  newCharArray(int n);
 
 
-int DLLEXPORT SMO_init(SMO_Handle* p_handle)
+int EXPORT_OUT_API SMO_init(SMO_Handle* p_handle)
 //  Purpose: Initialized pointer for the opaque SMO_Handle.
 //
 //  Returns: Error code 0 on success, -1 on failure
@@ -130,7 +128,7 @@ int DLLEXPORT SMO_init(SMO_Handle* p_handle)
     return errorcode;
 }
 
-int DLLEXPORT SMO_close(SMO_Handle* p_handle)
+int EXPORT_OUT_API SMO_close(SMO_Handle* p_handle)
 //
 //   Purpose: Clean up after and close Output API
 //
@@ -160,7 +158,7 @@ int DLLEXPORT SMO_close(SMO_Handle* p_handle)
     return errorcode;
 }
 
-int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path)
+int EXPORT_OUT_API SMO_open(SMO_Handle p_handle, const char* path)
 //
 //  Purpose: Open the output binary file and read the header.
 //
@@ -234,7 +232,7 @@ int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path)
     return errorcode;
 }
 
-int DLLEXPORT SMO_getVersion(SMO_Handle p_handle, int* version)
+int EXPORT_OUT_API SMO_getVersion(SMO_Handle p_handle, int* version)
 //
 //  Input:   p_handle = pointer to SMO_Handle struct
 //  Output:  version SWMM version
@@ -259,7 +257,7 @@ int DLLEXPORT SMO_getVersion(SMO_Handle p_handle, int* version)
     return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, int** elementCount, int* length)
+int EXPORT_OUT_API SMO_getProjectSize(SMO_Handle p_handle, int** elementCount, int* length)
 //
 //   Purpose: Returns project size.
 //
@@ -285,7 +283,7 @@ int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, int** elementCount, int* l
     return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag)
+int EXPORT_OUT_API SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag)
 //
 //   Purpose: Returns unit flag for flow.
 //
@@ -315,7 +313,7 @@ int DLLEXPORT SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag)
     return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* length)
+int EXPORT_OUT_API SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* length)
 //
 //   Purpose:
 //     Return integer flag representing the units that the given pollutant is
@@ -351,7 +349,7 @@ int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* le
     return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getStartDate(SMO_Handle p_handle, double* date)
+int EXPORT_OUT_API SMO_getStartDate(SMO_Handle p_handle, double* date)
 //
 //	Purpose: Returns start date.
 //
@@ -371,7 +369,7 @@ int DLLEXPORT SMO_getStartDate(SMO_Handle p_handle, double* date)
 }
 
 
-int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time)
+int EXPORT_OUT_API SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time)
 //
 //   Purpose: Returns step size and number of periods.
 //
@@ -399,7 +397,7 @@ int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time)
     return errorcode;
 }
 
-int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
+int EXPORT_OUT_API SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
         int index, char** name, int* length)
 //
 //  Purpose: Given an element index returns the element name.
@@ -464,7 +462,7 @@ int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
 }
 
 
-int DLLEXPORT SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
+int EXPORT_OUT_API SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
         SMO_subcatchAttribute attr, int startPeriod, int endPeriod,
         float** outValueSeries, int* dim)
 //
@@ -499,7 +497,7 @@ int DLLEXPORT SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
 }
 
 
-int DLLEXPORT SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex, SMO_nodeAttribute attr,
+int EXPORT_OUT_API SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex, SMO_nodeAttribute attr,
         int startPeriod, int endPeriod, float** outValueSeries, int* dim)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
@@ -533,7 +531,7 @@ int DLLEXPORT SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex, SMO_nodeAttr
 }
 
 
-int DLLEXPORT SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex, SMO_linkAttribute attr,
+int EXPORT_OUT_API SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex, SMO_linkAttribute attr,
         int startPeriod, int endPeriod, float** outValueSeries, int* dim)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
@@ -567,7 +565,7 @@ int DLLEXPORT SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex, SMO_linkAttr
 
 
 
-int DLLEXPORT SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute attr,
+int EXPORT_OUT_API SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute attr,
         int startPeriod, int endPeriod, float** outValueSeries, int* dim)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
@@ -598,7 +596,7 @@ int DLLEXPORT SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute attr,
     return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getSubcatchAttribute(SMO_Handle p_handle, int periodIndex,
+int EXPORT_OUT_API SMO_getSubcatchAttribute(SMO_Handle p_handle, int periodIndex,
         SMO_subcatchAttribute attr, float** outValueArray, int* length)
 //
 //   Purpose: For all subcatchments at given time, get a particular attribute.
@@ -629,7 +627,7 @@ int DLLEXPORT SMO_getSubcatchAttribute(SMO_Handle p_handle, int periodIndex,
 
 
 
-int DLLEXPORT SMO_getNodeAttribute(SMO_Handle p_handle, int periodIndex,
+int EXPORT_OUT_API SMO_getNodeAttribute(SMO_Handle p_handle, int periodIndex,
         SMO_nodeAttribute attr, float** outValueArray, int* length)
 //
 //  Purpose: For all nodes at given time, get a particular attribute.
@@ -658,7 +656,7 @@ int DLLEXPORT SMO_getNodeAttribute(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getLinkAttribute(SMO_Handle p_handle, int periodIndex,
+int EXPORT_OUT_API SMO_getLinkAttribute(SMO_Handle p_handle, int periodIndex,
         SMO_linkAttribute attr, float** outValueArray, int* length)
 //
 //  Purpose: For all links at given time, get a particular attribute.
@@ -688,7 +686,7 @@ int DLLEXPORT SMO_getLinkAttribute(SMO_Handle p_handle, int periodIndex,
 }
 
 
-int DLLEXPORT SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
+int EXPORT_OUT_API SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
         SMO_systemAttribute attr, float** outValueArray, int* length)
 //
 //  Purpose: For the system at given time, get a particular attribute.
@@ -714,7 +712,7 @@ int DLLEXPORT SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, int periodIndex,
+int EXPORT_OUT_API SMO_getSubcatchResult(SMO_Handle p_handle, int periodIndex,
         int subcatchIndex, float** outValueArray, int* arrayLength)
 //
 // Purpose: For a subcatchment at given time, get all attributes.
@@ -749,7 +747,7 @@ int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, int periodIndex,
 }
 
 
-int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, int periodIndex,
+int EXPORT_OUT_API SMO_getNodeResult(SMO_Handle p_handle, int periodIndex,
         int nodeIndex, float** outValueArray, int* arrayLength)
 //
 //	Purpose: For a node at given time, get all attributes.
@@ -783,7 +781,7 @@ int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, int periodIndex,
+int EXPORT_OUT_API SMO_getLinkResult(SMO_Handle p_handle, int periodIndex,
         int linkIndex, float** outValueArray, int* arrayLength)
 //
 //	Purpose: For a link at given time, get all attributes.
@@ -818,7 +816,7 @@ int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, int periodIndex,
+int EXPORT_OUT_API SMO_getSystemResult(SMO_Handle p_handle, int periodIndex,
         int dummyIndex, float** outValueArray, int* arrayLength)
 //
 //	Purpose: For the system at given time, get all attributes.
@@ -851,7 +849,7 @@ int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-void DLLEXPORT SMO_free(void** array)
+void EXPORT_OUT_API SMO_free(void** array)
 //
 //  Purpose: Frees memory allocated by API calls
 //
@@ -862,7 +860,7 @@ void DLLEXPORT SMO_free(void** array)
     }
 }
 
-void DLLEXPORT SMO_clearError(SMO_Handle p_handle)
+void EXPORT_OUT_API SMO_clearError(SMO_Handle p_handle)
 {
     data_t* p_data;
 
@@ -870,7 +868,7 @@ void DLLEXPORT SMO_clearError(SMO_Handle p_handle)
     clear_error(p_data->error_handle);
 }
 
-int DLLEXPORT SMO_checkError(SMO_Handle p_handle, char** msg_buffer)
+int EXPORT_OUT_API SMO_checkError(SMO_Handle p_handle, char** msg_buffer)
 {
     int errorcode = 0;
     char *temp = NULL;
