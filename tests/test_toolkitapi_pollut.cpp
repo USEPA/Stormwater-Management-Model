@@ -88,7 +88,7 @@ BOOST_FIXTURE_TEST_CASE(get_pollut_values, FixtureBeforeStep){
 
             // link pollutant total load
             error = swmm_getLinkPollut(node_ind, SM_TOTALLOAD, &link_load);
-            BOOST_CHECK_SMALL(link_load[TSS] - 38.496695, 0.0001);
+            BOOST_CHECK_SMALL(link_load[TSS] - 38.496695, 0.01);
             BOOST_CHECK_SMALL(link_load[Lead] - 0.00769934, 0.0001);
         }
 
@@ -128,7 +128,7 @@ BOOST_FIXTURE_TEST_CASE(get_pollut_values, FixtureBeforeStep){
 
             // link pollutant total load
             error = swmm_getLinkPollut(node_ind, SM_TOTALLOAD, &link_load);
-            BOOST_CHECK_SMALL(link_load[TSS] - 39.780193, 0.0001);
+            BOOST_CHECK_SMALL(link_load[TSS] - 39.780193, 0.01);
             BOOST_CHECK_SMALL(link_load[Lead] - 0.00795604, 0.0001);
         }
 
