@@ -1695,6 +1695,7 @@ int DLLEXPORT swmm_getCurrentDateTime(int *year, int *month, int *day,
 /// Return:  API Error
 /// Purpose: Get the simulation start, end and report date times
 {
+    DateTime currentTime;
     int error_code_index = 0;
     *year = 1900;
     *month = 1;
@@ -1702,7 +1703,6 @@ int DLLEXPORT swmm_getCurrentDateTime(int *year, int *month, int *day,
     *hour = 0;
     *minute = 0;
     *second = 0;
-    DateTime currentTime;
 
     // Check if Simulation is Running
     if(swmm_IsStartedFlag() == FALSE)
@@ -1770,6 +1770,50 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result)
     return error_getCode(error_code_index);
 }
 
+int DLLEXPORT swmm_getNodePollut(int index, int type, double **PollutArray)
+///
+/// Input:   index = Index of desired ID
+///          type = Result Type (SM_NodePollut)
+/// Output:  PollutArray pointer (pollutant data desired, byref)
+/// Return:  API Error
+/// Purpose: Gets Node Simulated Water Quality Value at Current Time
+{
+    int p;
+    int error_code_index = 0;
+    double* result;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        error_code_index = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[NODE])
+    {
+        error_code_index = ERR_API_OBJECT_INDEX;
+    }
+    else if (MEMCHECK(result = newDoubleArray(Nobjects[POLLUT])))
+    {
+        error_code_index = ERR_MEMORY;
+    }
+
+    else
+    {
+        switch (type)
+        {
+            case SM_NODEQUAL:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Node[index].newQual[p];
+                } *PollutArray = result;
+            } break;
+            default: error_code_index = ERR_API_OUTBOUNDS; break;
+        }
+    }
+    return error_getCode(error_code_index);
+}
+
 int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
 ///
 /// Input:   index = Index of desired ID
@@ -1811,6 +1855,61 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
                 *result = Link[index].targetSetting; break;
             case SM_FROUDE:
                 *result = Link[index].froude; break;
+            default: error_code_index = ERR_API_OUTBOUNDS; break;
+        }
+    }
+    return error_getCode(error_code_index);
+}
+
+int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray)
+///
+/// Input:   index = Index of desired ID
+///          type = Result Type (SM_LinkPollut)
+/// Output:  PollutArray pointer (pollutant data desired, byref)
+/// Return:  API Error
+/// Purpose: Gets Link Simulated Water Quality Value at Current Time
+{
+    int p;
+    int error_code_index = 0;
+    double* result;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        error_code_index = ERR_API_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[LINK])
+    {
+        error_code_index = ERR_API_OBJECT_INDEX;
+    }
+    else if (MEMCHECK(result = newDoubleArray(Nobjects[POLLUT])))
+    {
+        error_code_index = ERR_MEMORY;
+    }
+
+    else
+    {
+        switch (type)
+        {
+            case SM_LINKQUAL:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Link[index].newQual[p];
+                } *PollutArray = result;
+            } break;
+            case SM_TOTALLOAD:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Link[index].totalLoad[p] * (LperFT3 * Pollut[p].mcf);
+                    if (Pollut[p].units == COUNT)
+                    {
+                        result[p] = LOG10(result[p]);
+                    }
+                } *PollutArray = result;
+            } break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         }
     }
@@ -1908,6 +2007,26 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
                     result[p] = Subcatch[index].concPonded[p] / LperFT3;
                 } *PollutArray = result;
             } break;
+            case SM_SUBCQUAL:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Subcatch[index].newQual[p];
+                } *PollutArray = result;
+            } break;
+            case SM_SUBCTOTALLOAD:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Subcatch[index].totalLoad[p] * (LperFT3 * Pollut[p].mcf);
+                    if (Pollut[p].units == COUNT)
+                    {
+                        result[p] = LOG10(result[p]);
+                    }
+                } *PollutArray = result;
+            } break;
+            
+            
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         }
     }

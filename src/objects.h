@@ -398,7 +398,7 @@ typedef struct
    double*       pondedQual;      // ponded surface water quality (mass)
    double*       concPonded;      // ponded surface water quality concentration (mass/L)
    double*       totalLoad;       // total washoff load (lbs or kg)
-   double*       surfaceBuildup;  // surface buildup (mass)
+   double*       surfaceBuildup;  // current surface buildup (mass)
 }  TSubcatch;
 
 //-----------------------
