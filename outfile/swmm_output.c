@@ -283,7 +283,7 @@ int EXPORT_OUT_API SMO_getProjectSize(SMO_Handle p_handle, int** elementCount, i
     return set_error(p_data->error_handle, errorcode);
 }
 
-int DLLEXPORT SMO_getUnits(SMO_Handle p_handle, int **unitFlag, int *length)
+int EXPORT_OUT_API SMO_getUnits(SMO_Handle p_handle, int **unitFlag, int *length)
 //
 //  Purpose: Returns unit flags for unit_system, flow, and pollutants.
 //
