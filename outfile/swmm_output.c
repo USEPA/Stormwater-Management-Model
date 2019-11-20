@@ -17,7 +17,6 @@
 #include "errormanager.h"
 #include "messages.h"
 
-#include "swmm_output_enums.h"
 #include "swmm_output.h"
 
 
@@ -279,6 +278,55 @@ int EXPORT_OUT_API SMO_getProjectSize(SMO_Handle p_handle, int** elementCount, i
 
         *elementCount = temp;
         *length = NELEMENTTYPES;
+    }
+
+    return set_error(p_data->error_handle, errorcode);
+}
+
+int DLLEXPORT SMO_getUnits(SMO_Handle p_handle, int **unitFlag, int *length)
+//
+//  Purpose: Returns unit flags for unit_system, flow, and pollutants.
+//
+{
+    int     errorcode = 0;
+    int*    temp;
+    F_OFF   offset;
+    data_t* p_data;
+
+    p_data = (data_t*)p_handle;
+
+    *unitFlag = NULL;
+    if (p_data->Npolluts > 0)
+        *length = 2 + p_data->Npolluts;
+    else
+        *length = 3;
+
+    p_data = (data_t*)p_handle;
+
+    if (p_data == NULL)
+        errorcode = -1;
+    else if (MEMCHECK(temp = newIntArray(*length)))
+        errorcode = 414;
+    else {
+        // Set flow units flag
+        fseek(p_data->file, 2*RECORDSIZE, SEEK_SET);
+        fread(&temp[1], RECORDSIZE, 1, p_data->file);
+
+        // Set unit system based on flow flag
+        if (temp[1] < SMO_CMS)
+            temp[0] = SMO_US;
+        else
+            temp[0] = SMO_SI;
+
+        // Set conc units flag
+        if (p_data->Npolluts == 0)
+            temp[2] = SMO_NONE;
+        else {
+            offset = p_data->ObjPropPos - (p_data->Npolluts * RECORDSIZE);
+            _fseek(p_data->file, offset, SEEK_SET);
+            fread(&temp[2], RECORDSIZE, p_data->Npolluts, p_data->file);
+        }
+        *unitFlag = temp;
     }
 
     return set_error(p_data->error_handle, errorcode);
