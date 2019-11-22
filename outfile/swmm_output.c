@@ -10,14 +10,13 @@
  */
 
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "errormanager.h"
-#include "messages.h"
 
+#include "messages.h"
 #include "swmm_output.h"
 
 
@@ -28,11 +27,10 @@
 #else    // Other platforms
 #define F_OFF off_t
 #endif
-#define INT4 int       // Must be a 4 byte / 32 bit integer type
-#define REAL4 float    // Must be a 4 byte / 32 bit real type
+#define INT4 int      // Must be a 4 byte / 32 bit integer type
+#define REAL4 float   // Must be a 4 byte / 32 bit real type
 
-#define RECORDSIZE \
-    4                 // Memory alignment 4 byte word size for both int and real
+#define RECORDSIZE 4  // Memory alignment 4 byte word size for both int and real
 #define DATESIZE 8    // Dates are stored as 8 byte word size
 
 #define NELEMENTTYPES 4    // Number of element types
@@ -149,7 +147,7 @@ int EXPORT_OUT_API SMO_close(SMO_Handle* p_handle)
             for (i = 0; i < n; i++)
                 free(p_data->elementNames[i].IDname);
 
-			free(p_data->elementNames);
+            free(p_data->elementNames);
         }
 
         dst_errormanager(p_data->error_handle);
@@ -276,7 +274,7 @@ int EXPORT_OUT_API SMO_getVersion(SMO_Handle p_handle, int* version)
 }
 
 int EXPORT_OUT_API SMO_getProjectSize(SMO_Handle p_handle, int** elementCount,
-                                 int* length)
+    int* length)
 //
 //   Purpose: Returns project size.
 //
@@ -387,7 +385,7 @@ int EXPORT_OUT_API SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag)
 }
 
 int EXPORT_OUT_API SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag,
-                                    int* length)
+    int* length)
 //
 //   Purpose:
 //     Return integer flag representing the units that the given pollutant is
@@ -475,7 +473,7 @@ int EXPORT_OUT_API SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time)
 }
 
 int EXPORT_OUT_API SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
-                                 int index, char** name, int* length)
+    int index, char** name, int* length)
 //
 //  Purpose: Given an element index returns the element name.
 //
@@ -541,9 +539,8 @@ int EXPORT_OUT_API SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
 }
 
 int EXPORT_OUT_API SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
-                                    SMO_subcatchAttribute attr, int startPeriod,
-                                    int endPeriod, float** outValueSeries,
-                                    int* dim)
+    SMO_subcatchAttribute attr, int startPeriod, int endPeriod,
+    float** outValueSeries, int* dim)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
 //  start and length using timeIndex and length respectively.
@@ -580,8 +577,8 @@ int EXPORT_OUT_API SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
 }
 
 int EXPORT_OUT_API SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex,
-                                SMO_nodeAttribute attr, int startPeriod,
-                                int endPeriod, float** outValueSeries, int* dim)
+    SMO_nodeAttribute attr, int startPeriod, int endPeriod,
+    float** outValueSeries, int* dim)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
 //  start and length using timeIndex and length respectively.
@@ -617,8 +614,8 @@ int EXPORT_OUT_API SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex,
 }
 
 int EXPORT_OUT_API SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex,
-                                SMO_linkAttribute attr, int startPeriod,
-                                int endPeriod, float** outValueSeries, int* dim)
+    SMO_linkAttribute attr, int startPeriod, int endPeriod,
+    float** outValueSeries, int* dim)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
 //  start and length using timeIndex and length respectively.
@@ -654,8 +651,7 @@ int EXPORT_OUT_API SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex,
 }
 
 int EXPORT_OUT_API SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute attr,
-                                  int startPeriod, int endPeriod,
-                                  float** outValueSeries, int* dim)
+    int startPeriod, int endPeriod, float** outValueSeries, int* dim)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
 //  start and length using timeIndex and length respectively.
@@ -689,8 +685,7 @@ int EXPORT_OUT_API SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute 
 }
 
 int EXPORT_OUT_API SMO_getSubcatchAttribute(SMO_Handle p_handle, int periodIndex,
-                                       SMO_subcatchAttribute attr,
-                                       float** outValueArray, int* length)
+    SMO_subcatchAttribute attr, float** outValueArray, int* length)
 //
 //   Purpose: For all subcatchments at given time, get a particular attribute.
 //
@@ -721,8 +716,7 @@ int EXPORT_OUT_API SMO_getSubcatchAttribute(SMO_Handle p_handle, int periodIndex
 }
 
 int EXPORT_OUT_API SMO_getNodeAttribute(SMO_Handle p_handle, int periodIndex,
-                                   SMO_nodeAttribute attr,
-                                   float** outValueArray, int* length)
+    SMO_nodeAttribute attr, float** outValueArray, int* length)
 //
 //  Purpose: For all nodes at given time, get a particular attribute.
 //
@@ -753,8 +747,7 @@ int EXPORT_OUT_API SMO_getNodeAttribute(SMO_Handle p_handle, int periodIndex,
 }
 
 int EXPORT_OUT_API SMO_getLinkAttribute(SMO_Handle p_handle, int periodIndex,
-                                   SMO_linkAttribute attr,
-                                   float** outValueArray, int* length)
+    SMO_linkAttribute attr, float** outValueArray, int* length)
 //
 //  Purpose: For all links at given time, get a particular attribute.
 //
@@ -785,8 +778,7 @@ int EXPORT_OUT_API SMO_getLinkAttribute(SMO_Handle p_handle, int periodIndex,
 }
 
 int EXPORT_OUT_API SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
-                                     SMO_systemAttribute attr,
-                                     float** outValueArray, int* length)
+    SMO_systemAttribute attr, float** outValueArray, int* length)
 //
 //  Purpose: For the system at given time, get a particular attribute.
 //
@@ -813,8 +805,7 @@ int EXPORT_OUT_API SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
 }
 
 int EXPORT_OUT_API SMO_getSubcatchResult(SMO_Handle p_handle, int periodIndex,
-                                    int subcatchIndex, float** outValueArray,
-                                    int* arrayLength)
+    int subcatchIndex, float** outValueArray, int* arrayLength)
 //
 // Purpose: For a subcatchment at given time, get all attributes.
 //
@@ -852,8 +843,7 @@ int EXPORT_OUT_API SMO_getSubcatchResult(SMO_Handle p_handle, int periodIndex,
 }
 
 int EXPORT_OUT_API SMO_getNodeResult(SMO_Handle p_handle, int periodIndex,
-                                int nodeIndex, float** outValueArray,
-                                int* arrayLength)
+    int nodeIndex, float** outValueArray, int* arrayLength)
 //
 //	Purpose: For a node at given time, get all attributes.
 //
@@ -893,8 +883,7 @@ int EXPORT_OUT_API SMO_getNodeResult(SMO_Handle p_handle, int periodIndex,
 }
 
 int EXPORT_OUT_API SMO_getLinkResult(SMO_Handle p_handle, int periodIndex,
-                                int linkIndex, float** outValueArray,
-                                int* arrayLength)
+    int linkIndex, float** outValueArray, int* arrayLength)
 //
 //	Purpose: For a link at given time, get all attributes.
 //
@@ -935,8 +924,7 @@ int EXPORT_OUT_API SMO_getLinkResult(SMO_Handle p_handle, int periodIndex,
 }
 
 int EXPORT_OUT_API SMO_getSystemResult(SMO_Handle p_handle, int periodIndex,
-                                  int dummyIndex, float** outValueArray,
-                                  int* arrayLength)
+    int dummyIndex, float** outValueArray, int* arrayLength)
 //
 //	Purpose: For the system at given time, get all attributes.
 //
@@ -1110,6 +1098,7 @@ void initElementNames(data_t* p_data) {
 }
 
 double getTimeValue(data_t* p_data, int timeIndex) {
+
     F_OFF  offset;
     double value;
 
@@ -1124,7 +1113,8 @@ double getTimeValue(data_t* p_data, int timeIndex) {
 }
 
 float getSubcatchValue(data_t* p_data, int timeIndex, int subcatchIndex,
-                       SMO_subcatchAttribute attr) {
+    SMO_subcatchAttribute attr) {
+
     F_OFF offset;
     float value;
 
@@ -1142,7 +1132,8 @@ float getSubcatchValue(data_t* p_data, int timeIndex, int subcatchIndex,
 }
 
 float getNodeValue(data_t* p_data, int timeIndex, int nodeIndex,
-                   SMO_nodeAttribute attr) {
+    SMO_nodeAttribute attr) {
+
     F_OFF offset;
     float value;
 
@@ -1161,7 +1152,8 @@ float getNodeValue(data_t* p_data, int timeIndex, int nodeIndex,
 }
 
 float getLinkValue(data_t* p_data, int timeIndex, int linkIndex,
-                   SMO_linkAttribute attr) {
+    SMO_linkAttribute attr) {
+
     F_OFF offset;
     float value;
 
@@ -1181,6 +1173,7 @@ float getLinkValue(data_t* p_data, int timeIndex, int linkIndex,
 }
 
 float getSystemValue(data_t* p_data, int timeIndex, SMO_systemAttribute attr) {
+
     F_OFF offset;
     float value;
 

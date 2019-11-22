@@ -86,8 +86,7 @@ if %TESTING% EQU 1 (
   & echo. && ctest -C Debug --output-on-failure
 ) else (
   cmake -G"%GENERATOR%" -DBUILD_TESTS=OFF ..^
-  && cmake --build . --config Release --target package^
-  && move %PROJECT%-solver*.zip %PROJECT_PATH%
+  && cmake --build . --config Release --target install
 )
 
 
