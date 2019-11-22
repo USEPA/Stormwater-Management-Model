@@ -7,7 +7,7 @@
 #              US EPA ORD/NRMRL
 #
 
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.13)
 
 if("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     message(FATAL_ERROR "In-source builds are disabled.")
@@ -20,15 +20,14 @@ project(swmm-solver
     )
 
 
+# Searches for and create install rules for vcruntime.dll, msvcp.dll, etc.
+include(InstallRequiredSystemLibraries)
+
 # Append local dir to module search path
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Sets the position independent code property for all targets
-SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-
-# Searches for and create install rules for vcruntime.dll, msvcp.dll, etc.
-include(InstallRequiredSystemLibraries)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Sets default install prefix when cmakecache is initialized for first time
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -47,7 +46,7 @@ option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
 
 
 # Add project subdirectories
-add_subdirectory(outfile)
+add_subdirectory(src/outfile)
 add_subdirectory(src/solver)
 add_subdirectory(src/run)
 
