@@ -80,28 +80,25 @@ typedef struct {
 //-----------------------------------------------------------------------------
 //   Local functions
 //-----------------------------------------------------------------------------
-void errorLookup(int errcode, char* errmsg, int length);
-int  validateFile(data_t* p_data);
-void initElementNames(data_t* p_data);
+void errorLookup(int errcode, char *errmsg, int length);
+int  validateFile(data_t *p_data);
+void initElementNames(data_t *p_data);
 
-double getTimeValue(data_t* p_data, int timeIndex);
-float  getSubcatchValue(data_t* p_data, int timeIndex, int subcatchIndex,
-                        SMO_subcatchAttribute attr);
-float  getNodeValue(data_t* p_data, int timeIndex, int nodeIndex,
-                    SMO_nodeAttribute attr);
-float  getLinkValue(data_t* p_data, int timeIndex, int linkIndex,
-                    SMO_linkAttribute attr);
-float  getSystemValue(data_t* p_data, int timeIndex, SMO_systemAttribute attr);
+double getTimeValue(data_t *p_data, int timeIndex);
+float  getSubcatchValue(data_t *p_data, int timeIndex, int subcatchIndex, SMO_subcatchAttribute attr);
+float  getNodeValue(data_t *p_data, int timeIndex, int nodeIndex, SMO_nodeAttribute attr);
+float  getLinkValue(data_t *p_data, int timeIndex, int linkIndex, SMO_linkAttribute attr);
+float  getSystemValue(data_t *p_data, int timeIndex, SMO_systemAttribute attr);
 
-int   _fopen(FILE** f, const char* name, const char* mode);
-int   _fseek(FILE* stream, F_OFF offset, int whence);
-F_OFF _ftell(FILE* stream);
+int   _fopen(FILE **f, const char *name, const char *mode);
+int   _fseek(FILE *stream, F_OFF offset, int whence);
+F_OFF _ftell(FILE *stream);
 
-float* newFloatArray(int n);
-int*   newIntArray(int n);
-char*  newCharArray(int n);
+float *newFloatArray(int n);
+int   *newIntArray(int n);
+char  *newCharArray(int n);
 
-int EXPORT_OUT_API SMO_init(SMO_Handle* p_handle)
+int EXPORT_OUT_API SMO_init(SMO_Handle *p_handle)
 //  Purpose: Initialized pointer for the opaque SMO_Handle.
 //
 //  Returns: Error code 0 on success, -1 on failure
@@ -111,14 +108,14 @@ int EXPORT_OUT_API SMO_init(SMO_Handle* p_handle)
 //
 {
     int     errorcode = 0;
-    data_t* priv_data;
+    data_t *priv_data;
 
     // Allocate memory for private data
-    priv_data = (data_t*)calloc(1, sizeof(data_t));
+    priv_data = (data_t *)calloc(1, sizeof(data_t));
 
     if (priv_data != NULL) {
         priv_data->error_handle = new_errormanager(&errorLookup);
-        *p_handle               = priv_data;
+        *p_handle = priv_data;
     } else
         errorcode = -1;
 
@@ -131,10 +128,10 @@ int EXPORT_OUT_API SMO_close(SMO_Handle* p_handle)
 //   Purpose: Clean up after and close Output API
 //
 {
-    data_t* p_data;
-    int     i, n, errorcode = 0;
+    data_t *p_data;
+    int i, n, errorcode = 0;
 
-    p_data = (data_t*)*p_handle;
+    p_data = (data_t *)*p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -163,7 +160,7 @@ int EXPORT_OUT_API SMO_close(SMO_Handle* p_handle)
     return errorcode;
 }
 
-int EXPORT_OUT_API SMO_open(SMO_Handle p_handle, const char* path)
+int EXPORT_OUT_API SMO_open(SMO_Handle p_handle, const char *path)
 //
 //  Purpose: Open the output binary file and read the header.
 //
@@ -171,9 +168,9 @@ int EXPORT_OUT_API SMO_open(SMO_Handle p_handle, const char* path)
     int   err, errorcode = 0;
     F_OFF offset;
 
-    data_t* p_data;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         return -1;
@@ -248,7 +245,7 @@ int EXPORT_OUT_API SMO_open(SMO_Handle p_handle, const char* path)
     return errorcode;
 }
 
-int EXPORT_OUT_API SMO_getVersion(SMO_Handle p_handle, int* version)
+int EXPORT_OUT_API SMO_getVersion(SMO_Handle p_handle, int *version)
 //
 //  Input:   p_handle = pointer to SMO_Handle struct
 //  Output:  version SWMM version
@@ -258,9 +255,9 @@ int EXPORT_OUT_API SMO_getVersion(SMO_Handle p_handle, int* version)
 //
 {
     int     errorcode = 0;
-    data_t* p_data;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         return -1;
@@ -273,8 +270,7 @@ int EXPORT_OUT_API SMO_getVersion(SMO_Handle p_handle, int* version)
     return set_error(p_data->error_handle, errorcode);
 }
 
-int EXPORT_OUT_API SMO_getProjectSize(SMO_Handle p_handle, int** elementCount,
-    int* length)
+int EXPORT_OUT_API SMO_getProjectSize(SMO_Handle p_handle, int **elementCount, int *length)
 //
 //   Purpose: Returns project size.
 //
@@ -355,7 +351,7 @@ int EXPORT_OUT_API SMO_getUnits(SMO_Handle p_handle, int **unitFlag, int *length
     return set_error(p_data->error_handle, errorcode);
 }
 
-int EXPORT_OUT_API SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag)
+int EXPORT_OUT_API SMO_getFlowUnits(SMO_Handle p_handle, int *unitFlag)
 //
 //   Purpose: Returns unit flag for flow.
 //
@@ -385,8 +381,7 @@ int EXPORT_OUT_API SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag)
     return set_error(p_data->error_handle, errorcode);
 }
 
-int EXPORT_OUT_API SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag,
-    int* length)
+int EXPORT_OUT_API SMO_getPollutantUnits(SMO_Handle p_handle, int **unitFlag, int *length)
 //
 //   Purpose:
 //     Return integer flag representing the units that the given pollutant is
@@ -400,12 +395,12 @@ int EXPORT_OUT_API SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag,
 //   Args:
 //     pollutantIndex: valid values are 0 to Npolluts-1
 {
-    int     errorcode = 0;
-    int*    temp;
-    F_OFF   offset;
-    data_t* p_data;
+    int    errorcode = 0;
+    int    *temp;
+    F_OFF  offset;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -423,17 +418,17 @@ int EXPORT_OUT_API SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag,
     return set_error(p_data->error_handle, errorcode);
 }
 
-int EXPORT_OUT_API SMO_getStartDate(SMO_Handle p_handle, double* date)
+int EXPORT_OUT_API SMO_getStartDate(SMO_Handle p_handle, double *date)
 //
 //	Purpose: Returns start date.
 //
 {
     int     errorcode = 0;
-    data_t* p_data;
+    data_t *p_data;
 
     *date = -1.0;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -443,17 +438,17 @@ int EXPORT_OUT_API SMO_getStartDate(SMO_Handle p_handle, double* date)
     return set_error(p_data->error_handle, errorcode);
 }
 
-int EXPORT_OUT_API SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time)
+int EXPORT_OUT_API SMO_getTimes(SMO_Handle p_handle, SMO_time code, int *time)
 //
 //   Purpose: Returns step size and number of periods.
 //
 {
-    int     errorcode = 0;
-    data_t* p_data;
+    int    errorcode = 0;
+    data_t *p_data;
 
     *time = -1;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -474,15 +469,15 @@ int EXPORT_OUT_API SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time)
 }
 
 int EXPORT_OUT_API SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
-    int index, char** name, int* length)
+    int index, char **name, int *length)
 //
 //  Purpose: Given an element index returns the element name.
 //
 {
-    int     idx = -1, errorcode = 0;
-    data_t* p_data;
+    int    idx = -1, errorcode = 0;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = 410;
@@ -541,17 +536,17 @@ int EXPORT_OUT_API SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
 
 int EXPORT_OUT_API SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
     SMO_subcatchAttribute attr, int startPeriod, int endPeriod,
-    float** outValueSeries, int* dim)
+    float **outValueArray, int *length)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
 //  start and length using timeIndex and length respectively.
 //
 {
-    int     k, length, errorcode = 0;
-    float*  temp;
-    data_t* p_data;
+    int    k, len, errorcode = 0;
+    float  *temp;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -562,16 +557,16 @@ int EXPORT_OUT_API SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
         errorcode = 422;
     // Check memory for outValues
     else if
-        MEMCHECK(temp = newFloatArray(length = endPeriod - startPeriod))
+        MEMCHECK(temp = newFloatArray(len = endPeriod - startPeriod))
     errorcode = 411;
     else {
         // loop over and build time series
-        for (k = 0; k < length; k++)
+        for (k = 0; k < len; k++)
             temp[k] =
                 getSubcatchValue(p_data, startPeriod + k, subcatchIndex, attr);
 
-        *outValueSeries = temp;
-        *dim            = length;
+        *outValueArray = temp;
+        *length         = len;
     }
 
     return set_error(p_data->error_handle, errorcode);
@@ -579,17 +574,17 @@ int EXPORT_OUT_API SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
 
 int EXPORT_OUT_API SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex,
     SMO_nodeAttribute attr, int startPeriod, int endPeriod,
-    float** outValueSeries, int* dim)
+    float **outValueArray, int *length)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
 //  start and length using timeIndex and length respectively.
 //
 {
-    int     k, length, errorcode = 0;
-    float*  temp;
-    data_t* p_data;
+    int    k, len, errorcode = 0;
+    float  *temp;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -600,15 +595,15 @@ int EXPORT_OUT_API SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex,
         errorcode = 422;
     // Check memory for outValues
     else if
-        MEMCHECK(temp = newFloatArray(length = endPeriod - startPeriod))
+        MEMCHECK(temp = newFloatArray(len = endPeriod - startPeriod))
     errorcode = 411;
     else {
         // loop over and build time series
-        for (k = 0; k < length; k++)
+        for (k = 0; k < len; k++)
             temp[k] = getNodeValue(p_data, startPeriod + k, nodeIndex, attr);
 
-        *outValueSeries = temp;
-        *dim            = length;
+        *outValueArray = temp;
+        *length         = len;
     }
 
     return set_error(p_data->error_handle, errorcode);
@@ -616,17 +611,17 @@ int EXPORT_OUT_API SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex,
 
 int EXPORT_OUT_API SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex,
     SMO_linkAttribute attr, int startPeriod, int endPeriod,
-    float** outValueSeries, int* dim)
+    float **outValueArray, int *length)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
 //  start and length using timeIndex and length respectively.
 //
 {
-    int     k, length, errorcode = 0;
-    float*  temp;
-    data_t* p_data;
+    int    k, len, errorcode = 0;
+    float  *temp;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -637,32 +632,32 @@ int EXPORT_OUT_API SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex,
         errorcode = 422;
     // Check memory for outValues
     else if
-        MEMCHECK(temp = newFloatArray(length = endPeriod - startPeriod))
+        MEMCHECK(temp = newFloatArray(len = endPeriod - startPeriod))
     errorcode = 411;
     else {
         // loop over and build time series
-        for (k = 0; k < length; k++)
+        for (k = 0; k < len; k++)
             temp[k] = getLinkValue(p_data, startPeriod + k, linkIndex, attr);
 
-        *outValueSeries = temp;
-        *dim            = length;
+        *outValueArray = temp;
+        *length         = len;
     }
 
     return set_error(p_data->error_handle, errorcode);
 }
 
 int EXPORT_OUT_API SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute attr,
-    int startPeriod, int endPeriod, float** outValueSeries, int* dim)
+    int startPeriod, int endPeriod, float **outValueArray, int *length)
 //
 //  Purpose: Get time series results for particular attribute. Specify series
 //  start and length using timeIndex and length respectively.
 //
 {
-    int     k, length, errorcode = 0;
-    float*  temp;
-    data_t* p_data;
+    int    k, len, errorcode = 0;
+    float  *temp;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -671,31 +666,31 @@ int EXPORT_OUT_API SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute 
         errorcode = 422;
     // Check memory for outValues
     else if
-        MEMCHECK(temp = newFloatArray(length = endPeriod - startPeriod))
+        MEMCHECK(temp = newFloatArray(len = endPeriod - startPeriod))
     errorcode = 411;
     else {
         // loop over and build time series
         for (k = 0; k < length; k++)
             temp[k] = getSystemValue(p_data, startPeriod + k, attr);
 
-        *outValueSeries = temp;
-        *dim            = length;
+        *outValueArray = temp;
+        *length         = len;
     }
 
     return set_error(p_data->error_handle, errorcode);
 }
 
 int EXPORT_OUT_API SMO_getSubcatchAttribute(SMO_Handle p_handle, int periodIndex,
-    SMO_subcatchAttribute attr, float** outValueArray, int* length)
+    SMO_subcatchAttribute attr, float **outValueArray, int *length)
 //
 //   Purpose: For all subcatchments at given time, get a particular attribute.
 //
 {
-    int     k, errorcode = 0;
-    float*  temp;
-    data_t* p_data;
+    int    k, errorcode = 0;
+    float  *temp;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -717,16 +712,16 @@ int EXPORT_OUT_API SMO_getSubcatchAttribute(SMO_Handle p_handle, int periodIndex
 }
 
 int EXPORT_OUT_API SMO_getNodeAttribute(SMO_Handle p_handle, int periodIndex,
-    SMO_nodeAttribute attr, float** outValueArray, int* length)
+    SMO_nodeAttribute attr, float **outValueArray, int *length)
 //
 //  Purpose: For all nodes at given time, get a particular attribute.
 //
 {
-    int     k, errorcode = 0;
-    float*  temp;
-    data_t* p_data;
+    int    k, errorcode = 0;
+    float  *temp;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -748,16 +743,16 @@ int EXPORT_OUT_API SMO_getNodeAttribute(SMO_Handle p_handle, int periodIndex,
 }
 
 int EXPORT_OUT_API SMO_getLinkAttribute(SMO_Handle p_handle, int periodIndex,
-    SMO_linkAttribute attr, float** outValueArray, int* length)
+    SMO_linkAttribute attr, float **outValueArray, int *length)
 //
 //  Purpose: For all links at given time, get a particular attribute.
 //
 {
-    int     k, errorcode = 0;
-    float*  temp;
-    data_t* p_data;
+    int    k, errorcode = 0;
+    float  *temp;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -779,16 +774,16 @@ int EXPORT_OUT_API SMO_getLinkAttribute(SMO_Handle p_handle, int periodIndex,
 }
 
 int EXPORT_OUT_API SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
-    SMO_systemAttribute attr, float** outValueArray, int* length)
+    SMO_systemAttribute attr, float **outValueArray, int *length)
 //
 //  Purpose: For the system at given time, get a particular attribute.
 //
 {
     int     errorcode = 0;
     float   temp;
-    data_t* p_data;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -806,17 +801,17 @@ int EXPORT_OUT_API SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
 }
 
 int EXPORT_OUT_API SMO_getSubcatchResult(SMO_Handle p_handle, int periodIndex,
-    int subcatchIndex, float** outValueArray, int* arrayLength)
+    int subcatchIndex, float **outValueArray, int *arrayLength)
 //
 // Purpose: For a subcatchment at given time, get all attributes.
 //
 {
-    int     errorcode = 0;
-    float*  temp;
-    F_OFF   offset;
-    data_t* p_data;
+    int    errorcode = 0;
+    float  *temp;
+    F_OFF  offset;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -844,17 +839,17 @@ int EXPORT_OUT_API SMO_getSubcatchResult(SMO_Handle p_handle, int periodIndex,
 }
 
 int EXPORT_OUT_API SMO_getNodeResult(SMO_Handle p_handle, int periodIndex,
-    int nodeIndex, float** outValueArray, int* arrayLength)
+    int nodeIndex, float **outValueArray, int *arrayLength)
 //
 //	Purpose: For a node at given time, get all attributes.
 //
 {
-    int     errorcode = 0;
-    float*  temp;
-    F_OFF   offset;
-    data_t* p_data;
+    int    errorcode = 0;
+    float  *temp;
+    F_OFF  offset;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -884,17 +879,17 @@ int EXPORT_OUT_API SMO_getNodeResult(SMO_Handle p_handle, int periodIndex,
 }
 
 int EXPORT_OUT_API SMO_getLinkResult(SMO_Handle p_handle, int periodIndex,
-    int linkIndex, float** outValueArray, int* arrayLength)
+    int linkIndex, float **outValueArray, int *arrayLength)
 //
 //	Purpose: For a link at given time, get all attributes.
 //
 {
-    int     errorcode = 0;
-    float*  temp;
-    F_OFF   offset;
-    data_t* p_data;
+    int    errorcode = 0;
+    float  *temp;
+    F_OFF  offset;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -925,17 +920,17 @@ int EXPORT_OUT_API SMO_getLinkResult(SMO_Handle p_handle, int periodIndex,
 }
 
 int EXPORT_OUT_API SMO_getSystemResult(SMO_Handle p_handle, int periodIndex,
-    int dummyIndex, float** outValueArray, int* arrayLength)
+    int dummyIndex, float **outValueArray, int *arrayLength)
 //
 //	Purpose: For the system at given time, get all attributes.
 //
 {
-    int     errorcode = 0;
-    float*  temp;
-    F_OFF   offset;
-    data_t* p_data;
+    int    errorcode = 0;
+    float  *temp;
+    F_OFF  offset;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -964,7 +959,7 @@ int EXPORT_OUT_API SMO_getSystemResult(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-void EXPORT_OUT_API SMO_free(void** array)
+void EXPORT_OUT_API SMO_free(void **array)
 //
 //  Purpose: Frees memory allocated by API calls
 //
@@ -976,18 +971,18 @@ void EXPORT_OUT_API SMO_free(void** array)
 }
 
 void EXPORT_OUT_API SMO_clearError(SMO_Handle p_handle) {
-    data_t* p_data;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
     clear_error(p_data->error_handle);
 }
 
-int EXPORT_OUT_API SMO_checkError(SMO_Handle p_handle, char** msg_buffer) {
-    int     errorcode = 0;
-    char*   temp      = NULL;
-    data_t* p_data;
+int EXPORT_OUT_API SMO_checkError(SMO_Handle p_handle, char **msg_buffer) {
+    int    errorcode = 0;
+    char   *temp      = NULL;
+    data_t *p_data;
 
-    p_data = (data_t*)p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         return -1;
@@ -1002,12 +997,12 @@ int EXPORT_OUT_API SMO_checkError(SMO_Handle p_handle, char** msg_buffer) {
     return errorcode;
 }
 
-void errorLookup(int errcode, char* dest_msg, int dest_len)
+void errorLookup(int errcode, char *dest_msg, int dest_len)
 //
 //  Purpose: takes error code returns error message
 //
 {
-    const char* msg;
+    const char *msg;
 
     switch (errcode) {
         case 10:
@@ -1045,7 +1040,7 @@ void errorLookup(int errcode, char* dest_msg, int dest_len)
 }
 
 // Local functions:
-int validateFile(data_t* p_data) {
+int validateFile(data_t *p_data) {
     INT4 magic1, magic2, errcode;
     int  errorcode = 0;
 
@@ -1075,7 +1070,7 @@ int validateFile(data_t* p_data) {
     return errorcode;
 }
 
-void initElementNames(data_t* p_data) {
+void initElementNames(data_t *p_data) {
     int j, numNames;
 
     numNames =
@@ -1098,7 +1093,7 @@ void initElementNames(data_t* p_data) {
     }
 }
 
-double getTimeValue(data_t* p_data, int timeIndex) {
+double getTimeValue(data_t *p_data, int timeIndex) {
 
     F_OFF  offset;
     double value;
@@ -1113,7 +1108,7 @@ double getTimeValue(data_t* p_data, int timeIndex) {
     return value;
 }
 
-float getSubcatchValue(data_t* p_data, int timeIndex, int subcatchIndex,
+float getSubcatchValue(data_t *p_data, int timeIndex, int subcatchIndex,
     SMO_subcatchAttribute attr) {
 
     F_OFF offset;
@@ -1132,7 +1127,7 @@ float getSubcatchValue(data_t* p_data, int timeIndex, int subcatchIndex,
     return value;
 }
 
-float getNodeValue(data_t* p_data, int timeIndex, int nodeIndex,
+float getNodeValue(data_t *p_data, int timeIndex, int nodeIndex,
     SMO_nodeAttribute attr) {
 
     F_OFF offset;
@@ -1152,7 +1147,7 @@ float getNodeValue(data_t* p_data, int timeIndex, int nodeIndex,
     return value;
 }
 
-float getLinkValue(data_t* p_data, int timeIndex, int linkIndex,
+float getLinkValue(data_t *p_data, int timeIndex, int linkIndex,
     SMO_linkAttribute attr) {
 
     F_OFF offset;
@@ -1173,7 +1168,7 @@ float getLinkValue(data_t* p_data, int timeIndex, int linkIndex,
     return value;
 }
 
-float getSystemValue(data_t* p_data, int timeIndex, SMO_systemAttribute attr) {
+float getSystemValue(data_t *p_data, int timeIndex, SMO_systemAttribute attr) {
 
     F_OFF offset;
     float value;
@@ -1193,7 +1188,7 @@ float getSystemValue(data_t* p_data, int timeIndex, SMO_systemAttribute attr) {
     return value;
 }
 
-int _fopen(FILE** f, const char* name, const char* mode) {
+int _fopen(FILE **f, const char *name, const char *mode) {
     //
     //  Purpose: Substitute for fopen_s on platforms where it doesn't exist
     //  Note: fopen_s is part of C++11 standard
@@ -1209,7 +1204,7 @@ int _fopen(FILE** f, const char* name, const char* mode) {
     return ret;
 }
 
-int _fseek(FILE* stream, F_OFF offset, int whence)
+int _fseek(FILE *stream, F_OFF offset, int whence)
 //
 //  Purpose: Selects platform fseek() for large file support
 //
@@ -1223,7 +1218,7 @@ int _fseek(FILE* stream, F_OFF offset, int whence)
     return FSEEK64(stream, offset, whence);
 }
 
-F_OFF _ftell(FILE* stream)
+F_OFF _ftell(FILE *stream)
 //
 //  Purpose: Selects platform ftell() for large file support
 //
@@ -1236,26 +1231,26 @@ F_OFF _ftell(FILE* stream)
     return FTELL64(stream);
 }
 
-float* newFloatArray(int n)
+float *newFloatArray(int n)
 //
 //  Warning: Caller must free memory allocated by this function.
 //
 {
-    return (float*)malloc((n) * sizeof(float));
+    return (float *)malloc((n) * sizeof(float));
 }
 
-int* newIntArray(int n)
+int *newIntArray(int n)
 //
 //  Warning: Caller must free memory allocated by this function.
 //
 {
-    return (int*)malloc((n) * sizeof(int));
+    return (int *)malloc((n) * sizeof(int));
 }
 
-char* newCharArray(int n)
+char *newCharArray(int n)
 //
 //  Warning: Caller must free memory allocated by this function.
 //
 {
-    return (char*)malloc((n) * sizeof(char));
+    return (char *)malloc((n) * sizeof(char));
 }
