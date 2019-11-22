@@ -2,22 +2,15 @@
 # CMakeLists.txt - CMake configuration file for swmm-solver/library
 #
 # Created: July 11, 2019
+# Modified: Nov 22, 2019
 #
 # Modified by: Michael E. Tryby
-#              US EPA ORD/NRMRL
+#              US EPA ORD/CESER
 #
-
-# Loads settings for OpenMP and append any OpenMP compiler flags.
-find_package(OpenMP)
-if(OPENMP_FOUND)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-endif()
 
 # configure file groups
 set(SWMM_PUBLIC_HEADERS
-    ${PROJECT_SOURCE_DIR}/include/swmm5.h
+    include/swmm5.h
     )
 
 file(GLOB SWMM_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.c *.h)
@@ -26,9 +19,15 @@ add_library(swmm5
     SHARED
         ${SWMM_SOURCES}
     )
+
+find_package(OpenMP)
+if(OpenMP_C_FOUND)
+    target_link_libraries(swmm5 PUBLIC OpenMP::OpenMP_C)
+endif()
+
 target_include_directories(swmm5
     PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${INCLUDE_DIST}>
     )
 
