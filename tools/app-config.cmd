@@ -14,7 +14,6 @@
 ::    1 - absolute path to test executable (valid path seperator for nrtest is "/")
 ::    2 - (platform)
 ::    3 - (build identifier for SUT)
-::    4 - (commit hash string)
 ::
 
 @echo off
@@ -36,9 +35,9 @@ if [%2]==[] ( set "PLATFORM=unknown"
 if [%3]==[] ( set "BUILD_ID=unknown"
 ) else ( set "BUILD_ID=%~3" )
 
-if "%4" == "unknown" (
-  for /F "tokens=1" %%v in ( '%ABS_BUILD_PATH%/%TEST_CMD% --version' ) do ( set "VERSION=%%v" )
-) else ( set "VERSION=%~4" )
+:: determine version
+for /F "tokens=1" %%v in ( 'git rev-parse --short HEAD' ) do ( set "VERSION=%%v" )
+if not defined VERSION ( echo "ERROR: VERSION could not be determined" & exit /B 1 )
 
 
 echo {
