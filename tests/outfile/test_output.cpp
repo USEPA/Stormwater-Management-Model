@@ -149,8 +149,8 @@ BOOST_FIXTURE_TEST_CASE(test_getProjectSize, Fixture) {
     test.assign(i_array, i_array + array_dim);
 
     // subcatchs, nodes, links, pollutants
-    const int ref_dim            = 4;
-    int       ref_array[ref_dim] = {8, 14, 13, 2};
+    const int ref_dim            = 5;
+    int       ref_array[ref_dim] = {8, 14, 13, 1, 2};
 
     std::vector<int> ref;
     ref.assign(ref_array, ref_array + ref_dim);
