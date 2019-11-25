@@ -1,7 +1,11 @@
 #
 # CMakeLists.txt - CMake configuration file for swmm/outfile
 #
-
+# Created: July 11, 2019
+#
+# Author: Michael E. Tryby
+#         US EPA ORD/CESER
+#
 
 # configure file groups
 set(SWMM_OUT_PUBLIC_HEADERS

@@ -2,11 +2,15 @@
 # CMakeLists.txt - CMake configuration file for swmm-solver/library
 #
 # Created: July 11, 2019
-# Modified: Nov 22, 2019
+# Modified: Nov 25, 2019
 #
-# Modified by: Michael E. Tryby
-#              US EPA ORD/CESER
+# Author: Michael E. Tryby
+#         US EPA ORD/CESER
 #
+
+
+find_package(OpenMP)
+
 
 # configure file groups
 set(SWMM_PUBLIC_HEADERS
@@ -20,9 +24,11 @@ add_library(swmm5
         ${SWMM_SOURCES}
     )
 
-find_package(OpenMP)
 if(OpenMP_C_FOUND)
-    target_link_libraries(swmm5 PUBLIC OpenMP::OpenMP_C)
+    target_link_libraries(swmm5
+        PUBLIC
+            OpenMP::OpenMP_C
+        )
 endif()
 
 target_include_directories(swmm5

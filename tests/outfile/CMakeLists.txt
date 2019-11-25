@@ -1,7 +1,11 @@
 #
 # CMakeLists.txt - CMake configuration file for tests/outfile
 #
-
+# Created: July 11, 2019
+#
+# Author: Michael E. Tryby
+#         US EPA ORD/CESER
+#
 
 add_executable(test_output
     test_output.cpp

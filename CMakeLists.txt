@@ -2,10 +2,12 @@
 # CMakeLists.txt - CMake configuration file for swmm-solver
 #
 # Created: July 11, 2019
+# Modified: Nov 25, 2019
 #
-# Modified by: Michael E. Tryby
-#              US EPA ORD/NRMRL
+# Author: Michael E. Tryby
+#         US EPA ORD/CESER
 #
+
 
 cmake_minimum_required (VERSION 3.13)
 
@@ -18,10 +20,6 @@ project(swmm-solver
     VERSION 5.1.14
     LANGUAGES C CXX
     )
-
-
-# Searches for and create install rules for vcruntime.dll, msvcp.dll, etc.
-include(InstallRequiredSystemLibraries)
 
 # Append local dir to module search path
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -65,6 +63,11 @@ install(
     FILE
         swmm5-config.cmake
     )
+
+
+# Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
+set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
+include(InstallRequiredSystemLibraries)
 
 
 # Configure CPack driven installer package
