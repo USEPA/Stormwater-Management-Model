@@ -7,6 +7,9 @@
 ::  Author: Michael E. Tryby
 ::          US EPA - ORD/CESER
 ::
+::  Requires:
+::    git
+::
 ::  Environment Variables:
 ::    PROJECT
 ::
@@ -19,6 +22,12 @@
 @echo off
 setlocal
 
+
+:: check requirements
+where git > nul
+if %ERRORLEVEL% NEQ 0 ( echo "ERROR: git not installed" & exit /B 1 )
+
+:: check environment
 if not defined PROJECT ( echo "ERROR: PROJECT must be defined" & exit /B 1 )
 
 
