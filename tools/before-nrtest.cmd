@@ -84,6 +84,7 @@ if exist %TEST_HOME% (
 mkdir %TEST_HOME%
 if %ERRORLEVEL% NEQ 0 ( echo "ERROR: unable to make %TEST_HOME% dir" & exit /B 1 )
 cd %TEST_HOME%
+if %ERRORLEVEL% NEQ 0 ( echo "ERROR: unable to cd %TEST_HOME% dir" & exit /B 1 )
 
 
 :: retrieve nrtest cases and benchmark results for regression testing

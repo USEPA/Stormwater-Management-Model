@@ -80,6 +80,8 @@ if exist %BUILD_HOME% (
 
 :: perform the build
 cd %BUILD_HOME%
+if %ERRORLEVEL% NEQ 0 ( echo "ERROR: unable to cd %BUILD_HOME% dir" & exit /B 1 )
+
 if %TESTING% EQU 1 (
   cmake -G"%GENERATOR%" -DBUILD_TESTS=ON -DBOOST_ROOT=C:\local\boost_1_67_0 ..^
   && cmake --build . --config Debug^
@@ -103,4 +105,4 @@ if not defined PLATFORM ( echo "ERROR: PLATFORM could not be determined" & exit 
 
 
 :: return to users current dir
-cd %CUR_DIR%
+:: cd %CUR_DIR%
