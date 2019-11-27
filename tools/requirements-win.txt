@@ -1,0 +1,22 @@
+#
+# requirements-win.txt - Python requirements for running nrtest on Win32/Win64
+#
+# Date Created:  10/17/2019
+# Date Updated:  11/26/2019
+#
+# Author: Michael E. Tryby
+#         US EPA ORD/CESER
+#
+# Useful for configuring a python environment to run nrtests on swmm.
+#
+# usage:
+#   pip install -r tools/requirements-win.txt
+#
+
+nrtest
+
+-f https://github.com/michaeltryby/swmm-python/releases/download/v0.3.0-dev3/swmm.output-0.4.0.dev3-cp36-cp36m-win_amd64.whl
+swmm.output
+
+-f https://github.com/michaeltryby/swmm-python/releases/download/v0.3.0-dev3/nrtest_swmm-0.5.0-py3-none-any.whl
+nrtest-swmm
