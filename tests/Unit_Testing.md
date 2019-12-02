@@ -31,5 +31,5 @@ Before the project can be built and tested the required dependencies must be ins
 SWMM can be built and unit tests run with one simple command.
 ```
 \> cd swmm
-\swmm>scripts\make.cmd /t
+\swmm>tools\make.cmd /t
 ```
