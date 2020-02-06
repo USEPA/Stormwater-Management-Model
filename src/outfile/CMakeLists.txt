@@ -26,8 +26,6 @@ target_include_directories(swmm-output
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${INCLUDE_DIST}>
-    PRIVATE
-        ${CMAKE_SOURCE_DIR}/
     )
 
 include(GenerateExportHeader)

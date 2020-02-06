@@ -17,19 +17,21 @@ set(SWMM_PUBLIC_HEADERS
     include/swmm5.h
     )
 
-file(GLOB SWMM_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.c *.h)
+file(GLOB
+    SWMM_SOURCES
+        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.c *.h
+    )
 
 add_library(swmm5
     SHARED
         ${SWMM_SOURCES}
     )
 
-if(OpenMP_C_FOUND)
-    target_link_libraries(swmm5
-        PUBLIC
-            OpenMP::OpenMP_C
-        )
-endif()
+target_link_libraries(swmm5
+    PUBLIC
+        $<$<NOT:$<BOOL:$<C_COMPILER_ID:MSVC>>>:m>
+        $<$<BOOL:OpenMP_C_FOUND>:OpenMP::OpenMP_C>
+    )
 
 target_include_directories(swmm5
     PUBLIC

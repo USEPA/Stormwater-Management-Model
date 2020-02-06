@@ -64,7 +64,15 @@ install(
         swmm5-config.cmake
     )
 
-
+install(
+    EXPORT
+        swmm-outputTargets
+    DESTINATION
+        "${CONFIG_DIST}"
+    FILE
+        swmm-output-config.cmake
+    )
+    
 # Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
 set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)
