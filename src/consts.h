@@ -16,10 +16,10 @@
 //------------------
 
 // Update VERSION and SEMVERSION Simultaneously
-#define   VERSION            53000          // Eventually will be deprecated.
+#define   VERSION            52000          // Eventually will be deprecated.
 #define   SEMVERSION_MAJOR   "5"            // Major Semantic Version
-#define   SEMVERSION_MINOR   "3"            // Minor Semantic Version
-#define   SEMVERSION_PATCH   "0"      // Patch Semantic Version
+#define   SEMVERSION_MINOR   "2"            // Minor Semantic Version
+#define   SEMVERSION_PATCH   "0.dev6"      // Patch Semantic Version
 #define   SEMVERSION_LEN     20             // Version String Len
 
 #define   MAGICNUMBER        516114522
