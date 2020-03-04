@@ -9,7 +9,7 @@
 //            03/19/15  (Build 5.1.008)
 //            08/05/15  (Build 5.1.010)
 //            08/01/16  (Build 5.1.011)
-//            05/10/18  (Build 5.1.013)
+//            11/27/17  (Build 5.1.013)
 //   Author:  L. Rossman
 //
 //   Enumerated variables
@@ -34,7 +34,7 @@
 //   - s_EVENT added to InputSectionType enumeration.
 //
 //   Build 5.1.013:
-//   - SURCHARGE_METHOD and RULE_STEP options added.
+//   - CROWN_CUTOFF and RULE_STEP options added.
 //   - WEIR_CURVE added as a curve type. 
 //
 //-----------------------------------------------------------------------------
@@ -362,11 +362,6 @@ enum  CompatibilityType {
       PARTIAL_DAMPING,                 // partial damping
       FULL_DAMPING};                   // full damping
 
-////  Added to release 5.1.013.  ////                                          //(5.1.013)
- enum  SurchargeMethodType {
-      EXTRAN,                          // original EXTRAN method
-      SLOT};                           // Preissmann slot method
-
  enum InflowType {
       EXTERNAL_INFLOW,                 // user-supplied external inflow
       DRY_WEATHER_INFLOW,              // user-supplied dry weather inflow
@@ -456,20 +451,20 @@ enum  CompatibilityType {
       s_ADJUST,       s_EVENT};
 
  enum InputOptionType {
-    FLOW_UNITS, INFIL_MODEL, ROUTE_MODEL,
-    START_DATE, START_TIME, END_DATE,
-    END_TIME, REPORT_START_DATE, REPORT_START_TIME,
-    SWEEP_START, SWEEP_END, START_DRY_DAYS,
-    WET_STEP, DRY_STEP, ROUTE_STEP, RULE_STEP,                                   //(5.1.013)
-    REPORT_STEP, ALLOW_PONDING, INERT_DAMPING,
-    SLOPE_WEIGHTING, VARIABLE_STEP, NORMAL_FLOW_LTD,
-    LENGTHENING_STEP, MIN_SURFAREA, COMPATIBILITY,
-    SKIP_STEADY_STATE, TEMPDIR, IGNORE_RAINFALL,
-    FORCE_MAIN_EQN, LINK_OFFSETS, MIN_SLOPE,
-    IGNORE_SNOWMELT, IGNORE_GWATER, IGNORE_ROUTING,
-    IGNORE_QUALITY, MAX_TRIALS, HEAD_TOL,
-    SYS_FLOW_TOL, LAT_FLOW_TOL, IGNORE_RDII,
-    MIN_ROUTE_STEP, NUM_THREADS, SURCHARGE_METHOD};                              //(5.1.013)
+	 FLOW_UNITS, INFIL_MODEL, ROUTE_MODEL,
+	 START_DATE, START_TIME, END_DATE,
+	 END_TIME, REPORT_START_DATE, REPORT_START_TIME,
+	 SWEEP_START, SWEEP_END, START_DRY_DAYS,
+	 WET_STEP, DRY_STEP, ROUTE_STEP, RULE_STEP,                                //(5.1.013)
+	 REPORT_STEP, ALLOW_PONDING, INERT_DAMPING,
+	 SLOPE_WEIGHTING, VARIABLE_STEP, NORMAL_FLOW_LTD,
+	 LENGTHENING_STEP, MIN_SURFAREA, COMPATIBILITY,
+	 SKIP_STEADY_STATE, TEMPDIR, IGNORE_RAINFALL,
+	 FORCE_MAIN_EQN, LINK_OFFSETS, MIN_SLOPE,
+	 IGNORE_SNOWMELT, IGNORE_GWATER, IGNORE_ROUTING,
+	 IGNORE_QUALITY, MAX_TRIALS, HEAD_TOL,
+	 SYS_FLOW_TOL, LAT_FLOW_TOL, IGNORE_RDII,
+	 MIN_ROUTE_STEP, NUM_THREADS, CROWN_CUTOFF};                               //(5.1.013)
 
 enum  NoYesType {
       NO,

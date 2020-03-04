@@ -9,7 +9,7 @@
 //            03/19/15  (Build 5.1.008)
 //            08/01/16  (Build 5.1.011)
 //            03/14/17  (Build 5.1.012)
-//            05/10/18  (Build 5.1.013)
+//            11/27/17  (Build 5.1.013)
 //   Author:  L. Rossman
 //
 //   Global Variables
@@ -74,7 +74,6 @@ EXTERN int
                   RouteModel,               // Flow routing method
                   ForceMainEqn,             // Flow equation for force mains
                   LinkOffsets,              // Link offset convention
-                  SurchargeMethod,          // EXTRAN or SLOT method           //(5.1.013)
                   AllowPonding,             // Allow water to pond at nodes
                   InertDamping,             // Degree of inertial damping
                   NormalFlowLtd,            // Normal flow limited

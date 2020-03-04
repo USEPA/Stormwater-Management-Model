@@ -7,6 +7,7 @@
 //             04/04/14   (Build 5.1.003)
 //             04/14/14   (Build 5.1.004)
 //             09/15/14   (Build 5.1.007)
+//             03/01/20   (Build 5.1.014)
 //   Author:   L. Rossman (EPA)
 //             R. Dickinson (CDM)
 //
@@ -19,6 +20,8 @@
 //   - Ignore RDII option implemented.
 //   - Rainfall climate adjustment implemented.
 //
+//   Build 5.1.014:
+//   - Fixes bug related to isUsed property of a unit hydrograph's rain gage.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -246,6 +249,7 @@ int rdii_readUnitHydParams(char* tok[], int ntoks)
         g = project_findObject(GAGE, tok[1]);
         if ( g < 0 ) return error_setInpError(ERR_NAME, tok[1]);
         UnitHyd[j].rainGage = g;
+        Gage[g].isUsed = TRUE;
         return 0;
     }
     else if ( ntoks < 6 ) return error_setInpError(ERR_ITEMS, "");
@@ -1050,14 +1054,11 @@ void initGageData()
         g = UnitHyd[i].rainGage;
         if ( g >= 0 )
         {
-            Gage[g].isUsed = TRUE;
-
             // --- if UH's gage uses same time series as a previous gage,
             //     then assign the latter gage to the UH
             if ( Gage[g].coGage >= 0 )
             {
                 UnitHyd[i].rainGage = Gage[g].coGage;
-                Gage[Gage[g].coGage].isUsed = TRUE;
             }
         }
     }

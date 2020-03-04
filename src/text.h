@@ -14,7 +14,7 @@
 //            08/05/15  (Build 5.1.010)
 //            08/01/16  (Build 5.1.011)
 //            03/14/17  (Build 5.1.012)
-//            05/10/18  (Build 5.1.013)
+//            11/27/17  (Build 5.1.013)
 //   Author:  L. Rossman
 //
 //   Text strings
@@ -39,8 +39,8 @@
 #define FMT14  "\n    Cannot open output file "
 #define FMT15  "\n    Cannot open temporary output file"
 #define FMT16  "\n  ERROR %d detected. Execution halted."
-#define FMT17  "at line %ld of input file:"                                    //(5.1.013)
-#define FMT18  "at line %ld of %s] section:"                                   //(5.1.013)
+#define FMT17  "at line %d of input file:"
+#define FMT18  "at line %d of %s] section:"
 #define FMT19  "\n  Maximum error count exceeded."
 #define FMT20  "\n\n  Analysis begun on:  %s"
 #define FMT20a "  Analysis ended on:  %s"
@@ -56,10 +56,9 @@
 #define WARN07 "WARNING 07: routing time step reduced to the wet weather time step"
 #define WARN08 "WARNING 08: elevation drop exceeds length for Conduit"
 #define WARN09 "WARNING 09: time series interval greater than recording interval for Rain Gage"
-#define WARN10a \
-"WARNING 10: crest elevation is below downstream invert for regulator Link"    //(5.1.013)
-#define WARN10b \
-"WARNING 10: crest elevation raised to downstream invert for regulator Link"   //(5.1.013)
+//#define WARN10 "WARNING 10: crest elevation is below downstream invert for regulator Link"
+#define WARN10 \
+"WARNING 10: crest elevation raised to downstream invert for regulator Link"
 #define WARN11 "WARNING 11: non-matching attributes in Control Rule"
 
 // Analysis Option Keywords
@@ -105,7 +104,7 @@
 #define  w_IGNORE_RDII       "IGNORE_RDII"
 #define  w_MIN_ROUTE_STEP    "MINIMUM_STEP"
 #define  w_NUM_THREADS       "THREADS"
-#define  w_SURCHARGE_METHOD  "SURCHARGE_METHOD"                                //(5.1.013)
+#define  w_CROWN_CUTOFF      "CROWN_CUTOFF"                                    //(5.1.013)
 
 // Flow Units
 #define  w_CFS               "CFS"
@@ -125,10 +124,6 @@
 #define  w_KINWAVE           "KINWAVE"
 #define  w_XKINWAVE          "XKINWAVE"
 #define  w_DYNWAVE           "DYNWAVE"
-
-// Surcharge Methods                                                           //(5.1.013)
-#define  w_EXTRAN            "EXTRAN"
-#define  w_SLOT              "SLOT"
 
 // Infiltration Methods
 #define  w_HORTON            "HORTON"

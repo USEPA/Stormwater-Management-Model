@@ -7,6 +7,7 @@
 //            08/05/15  (Build 5.1.010)
 //            08/22/16  (Build 5.1.011)
 //            05/10/18  (Build 5.1.013)
+//            03/01/20  (Build 5.1.014)
 //   Author:  L. Rossman
 //
 //   Places rainfall data from external files into a SWMM rainfall
@@ -48,6 +49,9 @@
 //
 //   Release 5.1.013:
 //   - Variable x properly initialized with float value in readNwsOnlineValue().
+//
+//   Release 5.1.014:
+//   - Fixed indexing bug in rainFileConflict() function.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -286,7 +290,7 @@ int rainFileConflict(int i)
     int j;
     char* staID = Gage[i].staID;
     char* fname = Gage[i].fname;
-    for (j = 1; j < i; j++)
+    for (j = 0; j < i; j++)
     {
         if ( strcomp(Gage[j].staID, staID) && !strcomp(Gage[j].fname, fname) )
         {

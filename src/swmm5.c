@@ -7,7 +7,7 @@
 //             03/19/15  (Build 5.1.008)
 //             08/01/16  (Build 5.1.011)
 //             03/14/17  (Build 5.1.012)
-//             05/10/18  (Build 5.1.013)
+//             11/27/17  (Build 5.1.013)
 //   Author:   L. Rossman
 //
 //   This is the main module of the computational engine for Version 5 of
@@ -55,7 +55,7 @@
 #undef EXH         // indicates if exception handling included
 #ifdef WINDOWS
   #ifdef _MSC_VER
-  #define EXH
+    #define EXH
   #endif
 #endif
 
@@ -211,7 +211,7 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
 
     // --- close the system
     swmm_close();
-    return error_getCode(ErrorCode);
+    return error_getCode(ErrorCode);                                           //(5.1.011)
 }
 
 //=============================================================================
@@ -225,10 +225,8 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
 //  Purpose: opens a SWMM project.
 //
 {
-// --- to be safe, reset the state of the floating point unit                  //(5.1.013)
-#ifdef WINDOWS                                                                 //(5.1.013)
-    _fpreset();
-#endif
+
+// --- call to _fpreset() removed                                              //(5.1.013)
 
 #ifdef EXH
     // --- begin exception handling here
@@ -497,8 +495,7 @@ void execRouting()
         // --- route flows & pollutants through drainage system
         //     (while updating NewRoutingTime)
         if ( DoRouting ) routing_execute(RouteModel, routingStep);
-        else
-        NewRoutingTime = nextRoutingTime;
+        else NewRoutingTime = nextRoutingTime;
     }
 
 #ifdef EXH
@@ -632,6 +629,7 @@ int  DLLEXPORT swmm_getVersion(void)
 //           y = minor version number, and zzz = build number.
 //
 //  NOTE: Each New Release should be updated in consts.h
+//        THIS FUNCTION WILL EVENTUALLY BE DEPRECATED 
 {
     return VERSION;
 }
@@ -877,7 +875,7 @@ int xfilter(int xc, char* module, double elapsedTime, long step)
         rc = EXCEPTION_CONTINUE_EXECUTION;
         break;
     default:
-        sprintf(msg, "\n  Exception %d ", xc);
+        sprintf(msg, "\n  Exception %d", xc);
         rc = EXCEPTION_EXECUTE_HANDLER;
     }
     hour = (long)(elapsedTime / 1000.0 / 3600.0);

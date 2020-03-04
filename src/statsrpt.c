@@ -8,7 +8,7 @@
 //             03/19/15 (Build 5.1.008)
 //             04/30/15 (Build 5.1.009)
 //             08/01/16 (Build 5.1.011)
-//             05/10/18 (Build 5.1.013)
+//             11/27/17 (Build 5.1.013)
 //   Author:   L. Rossman
 //
 //   Report writing functions for summary statistics.
@@ -26,6 +26,7 @@
 //
 //   Build 5.1.013:
 //   - Pervious and impervious runoff added to Subcatchment Runoff Summary.
+//   - Definition of max. height above crown changed in Node Surcharge Summary.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -283,7 +284,7 @@ void writeSubcatchLoads()
                 x = Subcatch[j].totalLoad[p];
                 totals[p] += x;
                 if ( Pollut[p].units == COUNT ) x = LOG10(x);
-                fprintf(Frpt.file, "%14.3f", x); 
+				fprintf(Frpt.file, "%14.3f", x); 
             }
         }
 
@@ -295,7 +296,7 @@ void writeSubcatchLoads()
         {
             x = totals[p];
             if ( Pollut[p].units == COUNT ) x = LOG10(x);
-            fprintf(Frpt.file, "%14.3f", x); 
+			fprintf(Frpt.file, "%14.3f", x); 
         }
         free(totals);
         WRITE("");
@@ -382,13 +383,13 @@ void writeNodeFlows()
         fprintf(Frpt.file, FlowFmt, NodeStats[j].maxLatFlow * UCF(FLOW));
         fprintf(Frpt.file, FlowFmt, NodeStats[j].maxInflow * UCF(FLOW));
         fprintf(Frpt.file, "  %4d  %02d:%02d", days1, hrs1, mins1);
-        fprintf(Frpt.file, "%12.3g", NodeStats[j].totLatFlow * Vcf);
-        fprintf(Frpt.file, "%12.3g", NodeInflow[j] * Vcf);
-        if ( fabs(NodeOutflow[j]) < 1.0 )
+		fprintf(Frpt.file, "%12.3g", NodeStats[j].totLatFlow * Vcf);
+		fprintf(Frpt.file, "%12.3g", NodeInflow[j] * Vcf);
+    	if ( fabs(NodeOutflow[j]) < 1.0 )
             fprintf(Frpt.file, "%12.3f %s",
                 (NodeInflow[j]-NodeOutflow[j])*Vcf*1.0e6,
                 VolUnitsWords2[UnitSystem]);
-        else
+	    else
             fprintf(Frpt.file, "%12.3f", (NodeInflow[j]-NodeOutflow[j]) /
                                           NodeOutflow[j]*100.); 
     }
@@ -415,7 +416,8 @@ void writeNodeSurcharge()
         t = MAX(0.01, (NodeStats[j].timeSurcharged / 3600.0));
         if ( n == 0 )
         {
-            WRITE("Surcharging occurs when water rises above the top of the highest conduit.");
+            WRITE(
+"Surcharging occurs when water rises above the crown of the highest flowing conduit.");//(5.1.013)
             fprintf(Frpt.file, 
 "\n  ---------------------------------------------------------------------"
 "\n                                               Max. Height   Min. Depth"
@@ -430,7 +432,7 @@ void writeNodeSurcharge()
         }
         fprintf(Frpt.file, "\n  %-20s", Node[j].ID);
         fprintf(Frpt.file, " %-9s", NodeTypeWords[Node[j].type]);
-        d1 = NodeStats[j].maxDepth + Node[j].invertElev - Node[j].crownElev;
+        d1 = NodeStats[j].maxSurDepth;                                         //(5.1.013)
         if ( d1 < 0.0 ) d1 = 0.0;
         d2 = Node[j].fullDepth - NodeStats[j].maxDepth;
         if ( d2 < 0.0 ) d2 = 0.0;
@@ -487,7 +489,7 @@ void writeNodeFlooding()
         fprintf(Frpt.file, FlowFmt, NodeStats[j].maxOverflow * UCF(FLOW));
         getElapsedTime(NodeStats[j].maxOverflowDate, &days, &hrs, &mins);
         fprintf(Frpt.file, "   %4d  %02d:%02d", days, hrs, mins);
-        fprintf(Frpt.file, "%12.3f", NodeStats[j].volFlooded * Vcf);
+		fprintf(Frpt.file, "%12.3f", NodeStats[j].volFlooded * Vcf);
         if ( RouteModel == DW )
             fprintf(Frpt.file, " %9.3f",
                 (NodeStats[j].maxDepth - Node[j].fullDepth) * UCF(LENGTH));
@@ -591,7 +593,7 @@ void writeOutfallLoads()
         for (p=0; p<Nobjects[POLLUT]; p++) totals[p] = 0.0;
         flowSum = 0.0;
         freqSum = 0.0;
-        volSum  = 0.0;
+		volSum  = 0.0;
 
         // --- print table title
         WRITE("");
@@ -613,7 +615,7 @@ void writeOutfallLoads()
         fprintf(Frpt.file,
  "\n  Outfall Node           Pcnt       %3s       %3s    %8s",
             FlowUnitWords[FlowUnits], FlowUnitWords[FlowUnits],
-            VolUnitsWords[UnitSystem]);
+			VolUnitsWords[UnitSystem]);
         for (p = 0; p < Nobjects[POLLUT]; p++)
         {
             i = UnitSystem;
@@ -656,7 +658,7 @@ void writeOutfallLoads()
                 x = OutfallStats[k].totalLoad[p] * LperFT3 * Pollut[p].mcf;
                 totals[p] += x;
                 if ( Pollut[p].units == COUNT ) x = LOG10(x);
-                fprintf(Frpt.file, "%14.3f", x); 
+		fprintf(Frpt.file, "%14.3f", x); 
             }
         }
 
@@ -671,7 +673,7 @@ void writeOutfallLoads()
         fprintf(Frpt.file, FlowFmt, flowSum);
         fprintf(Frpt.file, " ");
         fprintf(Frpt.file, FlowFmt, MaxOutfallFlow*UCF(FLOW));
-        fprintf(Frpt.file, "%12.3f", volSum * Vcf);
+		fprintf(Frpt.file, "%12.3f", volSum * Vcf);
 
         for (p = 0; p < Nobjects[POLLUT]; p++)
         {
@@ -694,37 +696,39 @@ void writeLinkFlows()
 //
 {
     int    j, k, days, hrs, mins;
-    double v, fullDepth;
+    double v, fullDepth, aMax;                                                 //(5.1.013)
 
-    if (Nobjects[LINK] == 0) return;
+    if ( Nobjects[LINK] == 0 ) return;
     WRITE("");
     WRITE("********************");
     WRITE("Link Flow Summary");
     WRITE("********************");
     WRITE("");
 
+////  Lines below modified for release 5.1.013.  ////                          //(5.1.013)
     fprintf(Frpt.file,
-        "\n  -----------------------------------------------------------------------------"
-        "\n                                 Maximum  Time of Max   Maximum    Max/    Max/"
-        "\n                                  |Flow|   Occurrence   |Veloc|    Full    Full");
-    if (UnitSystem == US) fprintf(Frpt.file,
-        "\n  Link                 Type          %3s  days hr:min    ft/sec    Flow   Depth",
+"\n  -------------------------------------------------------------------------------------"
+"\n                                 Maximum  Time of Max   Maximum    Max/    Max/    Max/"
+"\n                                  |Flow|   Occurrence   |Veloc|    Full    Full    Full");
+    if ( UnitSystem == US ) fprintf(Frpt.file,
+"\n  Link                 Type          %3s  days hr:min    ft/sec    Flow   Depth  Volume",
         FlowUnitWords[FlowUnits]);
-    else fprintf(Frpt.file,
-        "\n  Link                 Type          %3s  days hr:min     m/sec    Flow   Depth",
+    else fprintf(Frpt.file, 
+"\n  Link                 Type          %3s  days hr:min     m/sec    Flow   Depth  Volume",
         FlowUnitWords[FlowUnits]);
     fprintf(Frpt.file,
-        "\n  -----------------------------------------------------------------------------");
+"\n  -------------------------------------------------------------------------------------");
+////
 
-    for (j = 0; j < Nobjects[LINK]; j++)
+    for ( j = 0; j < Nobjects[LINK]; j++ )
     {
         // --- print link ID
         k = Link[j].subIndex;
         fprintf(Frpt.file, "\n  %-20s", Link[j].ID);
 
         // --- print link type
-        if (Link[j].xsect.type == DUMMY) fprintf(Frpt.file, " DUMMY   ");
-        else if (Link[j].xsect.type == IRREGULAR) fprintf(Frpt.file, " CHANNEL ");
+        if ( Link[j].xsect.type == DUMMY ) fprintf(Frpt.file, " DUMMY   ");
+        else if ( Link[j].xsect.type == IRREGULAR ) fprintf(Frpt.file, " CHANNEL ");
         else fprintf(Frpt.file, " %-7s ", LinkTypeWords[Link[j].type]);
 
         // --- print max. flow & time of occurrence
@@ -733,7 +737,7 @@ void writeLinkFlows()
         fprintf(Frpt.file, "  %4d  %02d:%02d", days, hrs, mins);
 
         // --- print max flow / flow capacity for pumps
-        if (Link[j].type == PUMP && Link[j].qFull > 0.0)
+        if ( Link[j].type == PUMP && Link[j].qFull > 0.0)
         {
             fprintf(Frpt.file, "          ");
             fprintf(Frpt.file, "  %6.2f",
@@ -742,29 +746,31 @@ void writeLinkFlows()
         }
 
         // --- stop printing for dummy conduits
-        if (Link[j].xsect.type == DUMMY) continue;
+        if ( Link[j].xsect.type == DUMMY ) continue;
 
         // --- stop printing for outlet links (since they don't have xsections)
-        if (Link[j].type == OUTLET) continue;
+        if ( Link[j].type == OUTLET ) continue;
 
         // --- print max velocity & max/full flow for conduits
-        if (Link[j].type == CONDUIT)
+        if ( Link[j].type == CONDUIT )
         {
             v = LinkStats[j].maxVeloc*UCF(LENGTH);
-            if (v > 50.0) fprintf(Frpt.file, "    >50.00");
+            if ( v > 50.0 ) fprintf(Frpt.file, "    >50.00");
             else fprintf(Frpt.file, "   %7.2f", v);
             fprintf(Frpt.file, "  %6.2f", LinkStats[j].maxFlow / Link[j].qFull /
-                (double)Conduit[k].barrels);
+                                          (double)Conduit[k].barrels);
         }
         else fprintf(Frpt.file, "                  ");
 
         // --- print max/full depth
         fullDepth = Link[j].xsect.yFull;
-        if (Link[j].type == ORIFICE &&
-            Orifice[k].type == BOTTOM_ORIFICE) fullDepth = 0.0;
-        if (fullDepth > 0.0)
+        if ( Link[j].type == ORIFICE &&
+             Orifice[k].type == BOTTOM_ORIFICE ) fullDepth = 0.0;
+        if ( fullDepth > 0.0 )
         {
             fprintf(Frpt.file, "  %6.2f", LinkStats[j].maxDepth / fullDepth);
+            aMax = xsect_getAofY(&Link[j].xsect, LinkStats[j].maxDepth);       //(5.1.013)
+            fprintf(Frpt.file, "  %6.2f", aMax / Link[j].xsect.aFull);         //
         }
         else fprintf(Frpt.file, "        ");
     }
@@ -829,7 +835,7 @@ void writeLinkSurcharge()
     for ( j = 0; j < Nobjects[LINK]; j++ )
     {
         if ( Link[j].type != CONDUIT ||
-             Link[j].xsect.type == DUMMY ) continue; 
+			 Link[j].xsect.type == DUMMY ) continue; 
         t[0] = LinkStats[j].timeSurcharged / 3600.0;
         t[1] = LinkStats[j].timeFullUpstream / 3600.0;
         t[2] = LinkStats[j].timeFullDnstream / 3600.0;

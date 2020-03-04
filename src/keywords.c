@@ -9,7 +9,7 @@
 //            03/19/15  (Build 5.1.008)
 //            08/05/15  (Build 5.1.010)
 //            08/01/16  (Build 5.1.011)
-//            05/10/18  (Build 5.1.013)
+//            11/27/17  (Build 5.1.013)
 //   Author:  L. Rossman
 //
 //   Exportable keyword dictionary
@@ -35,7 +35,7 @@
 //   - New section keyword for [EVENTS] added.
 //
 //   Build 5.1.013:
-//   - New option keywords w_SURCHARGE_METHOD, w_RULE_STEP, w_AVERAGES 
+//   - New option keywords w_CROWN_CUTOFF, w_RULE_STEP, w_AVERAGES 
 //     and w_WEIR added.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -80,7 +80,7 @@ char* OptionWords[]        = { w_FLOW_UNITS,        w_INFIL_MODEL,
                                w_SWEEP_END,         w_START_DRY_DAYS,
                                w_WET_STEP,          w_DRY_STEP,
                                w_ROUTE_STEP,        w_RULE_STEP,               //(5.1.013)
-                               w_REPORT_STEP,
+	                           w_REPORT_STEP,
                                w_ALLOW_PONDING,     w_INERT_DAMPING,
                                w_SLOPE_WEIGHTING,   w_VARIABLE_STEP,
                                w_NORMAL_FLOW_LTD,   w_LENGTHENING_STEP,
@@ -93,7 +93,7 @@ char* OptionWords[]        = { w_FLOW_UNITS,        w_INFIL_MODEL,
                                w_MAX_TRIALS,        w_HEAD_TOL,
                                w_SYS_FLOW_TOL,      w_LAT_FLOW_TOL,
                                w_IGNORE_RDII,       w_MIN_ROUTE_STEP,
-                               w_NUM_THREADS,       w_SURCHARGE_METHOD,        //(5.1.013)
+                               w_NUM_THREADS,       w_CROWN_CUTOFF,            //(5.1.013)
                                NULL };
 char* OrificeTypeWords[]   = { w_SIDE, w_BOTTOM, NULL};
 char* OutfallTypeWords[]   = { w_FREE, w_NORMAL, w_FIXED, w_TIDAL,
@@ -142,7 +142,6 @@ char* SectWords[]          = { ws_TITLE,          ws_OPTION,
                                ws_ADJUST,         ws_EVENT,
                                NULL};                       
 char* SnowmeltWords[]      = { w_PLOWABLE, w_IMPERV, w_PERV, w_REMOVAL, NULL};
-char* SurchargeWords[]     = { w_EXTRAN, w_SLOT, NULL};                        //(5.1.013)
 char* TempKeyWords[]       = { w_TIMESERIES, w_FILE, w_WINDSPEED, w_SNOWMELT,
                                w_ADC, NULL};
 char* TransectKeyWords[]   = { w_NC, w_X1, w_GR, NULL};

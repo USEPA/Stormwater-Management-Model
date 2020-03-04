@@ -7,6 +7,7 @@
 //             09/15/14  (Build 5.1.007)
 //             03/19/15  (Build 5.1.008)
 //             03/14/17  (Build 5.1.012)
+//             03/01/20  (Build 5.1.014)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -24,6 +25,9 @@
 //   Build 5.1.012:
 //   - Overflow computed in updateStorageState() must be non-negative.
 //   - Terminal storage nodes now updated corectly.
+//
+//   Build 5.1.014:
+//   - Arguments to function link_getLossRate changed.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -766,7 +770,7 @@ int steadyflow_execute(int j, double* qin, double* qout, double tStep)
         else 
         {
             // --- adjust flow for evap and infil losses
-            q -= link_getLossRate(j, q, tStep);
+            q -= link_getLossRate(j, q);                                       //(5.1.014)
          
             // --- flow can't exceed full flow 
             if ( q > Link[j].qFull )

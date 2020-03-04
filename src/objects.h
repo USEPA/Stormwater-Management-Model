@@ -8,7 +8,7 @@
 //            03/19/15  (Build 5.1.008)
 //            08/05/15  (Build 5.1.010)
 //            08/01/16  (Build 5.1.011)
-//            05/10/18  (Build 5.1.013)
+//            11/27/17  (Build 5.1.013)
 //
 //   Author:  L. Rossman (EPA)
 //            M. Tryby (EPA)
@@ -50,7 +50,7 @@
 //   - Added definition of a hydraulic event time period (TEvent).
 //
 //   Build 5.1.013:
-//   - New member 'averages' added to the TRptFlags structure.
+//   - Member averages was added to the TRptFlags structure.
 //   - Adjustment patterns added to TSubcatch structure.
 //   - Members impervRunoff and pervRunoff added to TSubcatchStats structure.
 //   - Member cdCurve (weir coeff. curve) added to TWeir structure.
@@ -945,6 +945,7 @@ typedef struct
    double        maxDepth;
    DateTime      maxDepthDate;
    double        maxRptDepth;
+   double        maxSurDepth;                                                  //(5.1.013)
    double        volFlooded;
    double        timeFlooded;
    double        timeSurcharged;

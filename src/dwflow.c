@@ -7,6 +7,7 @@
 //             03/19/15   (Build 5.1.008)
 //             03/14/17   (Build 5.1.012)
 //             05/10/18   (Build 5.1.013)
+//             03/01/20   (Build 5.1.014)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -23,6 +24,11 @@
 //   Build 5.1.013:
 //   - Preissmann slot surcharge option implemented.
 //   - Changed sign of uniform loss rate term (dq6) in flow updating equation.
+//
+//   Build 5.1.014:
+//   - Conduit evap. and seepage loss initialized to 0 in dwflow_findConduitFlow.
+//   - Most current flow (qLast) used instead of previous time period flow
+//     (qOld) in call to link_getLossRate. 
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -96,6 +102,8 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     barrels = Conduit[k].barrels;
     qOld = Link[j].oldFlow / barrels;
     qLast = Conduit[k].q1;
+    Conduit[k].evapLossRate = 0.0;                                             //(5.1.014)
+    Conduit[k].seepLossRate = 0.0;                                             //(5.1.014)
 
     // --- get most current heads at upstream and downstream ends of conduit
     n1 = Link[j].node1;
@@ -226,7 +234,7 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     }
 
     // --- 6. term for evap and seepage losses per unit length
-    dq6 = link_getLossRate(j, qOld, dt) * 2.5 * dt * v / link_getLength(j);
+    dq6 = link_getLossRate(j, qLast) * 2.5 * dt * v / link_getLength(j);       //(5.1.014)
 
     // --- combine terms to find new conduit flow
     denom = 1.0 + dq1 + dq5;

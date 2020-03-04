@@ -8,7 +8,7 @@
 //             03/19/15   (Build 5.1.008)
 //             08/01/16   (Build 5.1.011)
 //             03/14/17   (Build 5.1.012)
-//             05/10/18   (Build 5.1.013)
+//             11/27/17   (Build 5.1.013)
 //   Author:   L. Rossman (EPA)
 //             R. Dickinson (CDM)
 //
@@ -32,10 +32,11 @@
 //   - Check for full conduit flow now accounts for number of barrels.
 //
 //   Build 5.1.013:
-//   - Include omp.h protected against lack of compiler support for OpenMP.
+//   - No need to include omp.h.
 //   - Statistics on impervious and pervious runoff totals added.
 //   - Storage nodes with a non-zero surcharge depth (e.g. enclosed tanks)
 //     can now be classified as being surcharged.
+//   - Node surcharge statistics modified to accommodate variable crown elev.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -44,9 +45,6 @@
 #include <math.h>
 #include "headers.h"
 #include "swmm5.h"
-#if defined(_OPENMP)                                                           //(5.1.013)
-#include <omp.h>
-#endif
 
 //-----------------------------------------------------------------------------
 //  Shared variables
@@ -148,6 +146,7 @@ int  stats_open()
             Subcatch[j].groundwater->stats.evap = 0.0;
             Subcatch[j].groundwater->stats.maxFlow = 0.0;
         }
+////
     }
 
     // --- allocate memory for node & link stats
@@ -169,6 +168,7 @@ int  stats_open()
         NodeStats[j].maxDepth = 0.0;
         NodeStats[j].maxDepthDate = StartDateTime;
         NodeStats[j].maxRptDepth = 0.0;
+        NodeStats[j].maxSurDepth = 0.0;                                        //(5.1.013)
         NodeStats[j].volFlooded = 0.0;
         NodeStats[j].timeFlooded = 0.0;
         NodeStats[j].timeSurcharged = 0.0;
@@ -495,7 +495,7 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
     int    k, p;
     double newVolume = Node[j].newVolume;
     double newDepth = Node[j].newDepth;
-    double yCrown = Node[j].crownElev - Node[j].invertElev;
+    double yCrown = Node[j].crownElev - Node[j].invertElev;                    //(5.1.013)
     int    canPond = (AllowPonding && Node[j].pondedArea > 0.0);
 
     // --- update depth statistics
@@ -518,14 +518,16 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
                     (newVolume - Node[j].fullVolume));
         }
 
-        // --- for dynamic wave routing, classify a node as                    //(5.1.013)
-        //     surcharged if its water level exceeds its crown elev.
-        if (RouteModel == DW)                                                  //(5.1.013)
-        {
-            if ((Node[j].type != STORAGE || Node[j].surDepth > 0.0) &&         //(5.1.013)
-                newDepth + Node[j].invertElev + FUDGE >= Node[j].crownElev)
-            {
-                NodeStats[j].timeSurcharged += tStep;
+        // --- for dynamic wave routing, classify a node as surcharged         //(5.1.013)
+        //     if its water level exceeds its crown elev.                      //
+        if (RouteModel == DW)                                                  //
+        {                                                                      //
+            if ((Node[j].type != STORAGE || Node[j].surDepth > 0.0) &&         //
+                 newDepth + FUDGE >= yCrown)                                   // 
+            {                                                                  //
+                NodeStats[j].timeSurcharged += tStep;                          //
+                NodeStats[j].maxSurDepth = MAX(NodeStats[j].maxSurDepth,       //
+                                               yCrown);                        //
             }
         }
     }
@@ -562,7 +564,7 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
         for (p=0; p<Nobjects[POLLUT]; p++)
         {
             OutfallStats[k].totalLoad[p] += Node[j].inflow * 
-            Node[j].newQual[p] * tStep;
+				Node[j].newQual[p] * tStep;
         }
         SysOutfallFlow += Node[j].inflow;
     }

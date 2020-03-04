@@ -10,7 +10,7 @@
 //             04/30/15  (Build 5.1.009)
 //             08/01/16  (Build 5.1.011)
 //             03/14/17  (Build 5.1.012)
-//             05/10/18  (Build 5.1.013)
+//             11/27/17  (Build 5.1.013)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -52,8 +52,7 @@
 //   - omp_get_num_threads function protected against lack of compiler
 //     support for OpenMP.
 //   - Rain gage validation now performed after subcatchment validation.
-//   - More robust parsing of MinSurfarea option provided.
-//   - Support added for new RuleStep analysis option.
+//   - Support added for CrownCutoff and RuleStep analysis options.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -260,13 +259,9 @@ void project_validate()
     if ( RouteModel == DW ) dynwave_validate();
 
     // --- adjust number of parallel threads to be used                        //(5.1.013)
-#pragma omp parallel                                                           //(5.1.008)
-{
-    if ( NumThreads == 0 ) NumThreads = omp_get_num_threads();                 //(5.1.008)
-    else NumThreads = MIN(NumThreads, omp_get_num_threads());                  //(5.1.008)
-}
-    if ( Nobjects[LINK] < 4 * NumThreads ) NumThreads = 1;                     //(5.1.008)
-
+    if ( NumThreads == 0 ) NumThreads = omp_get_num_threads();                 //
+    else NumThreads = MIN(NumThreads, omp_get_num_threads());                  //
+    if ( Nobjects[LINK] < 4 * NumThreads ) NumThreads = 1;                     //
 }
 
 //=============================================================================
@@ -532,7 +527,7 @@ int project_readOption(char* s1, char* s2)
       case WET_STEP:
       case DRY_STEP:
       case REPORT_STEP:
-      case RULE_STEP:                                                          //(5.1.013)
+	  case RULE_STEP:                                                          //(5.1.013)
         if ( !datetime_strToTime(s2, &aTime) )
         {
             return error_setInpError(ERR_DATETIME, s2);
@@ -541,11 +536,11 @@ int project_readOption(char* s1, char* s2)
         h += 24*(int)aTime;
         s = s + 60*m + 3600*h;
 
-        // --- RuleStep allowed to be 0 while other time steps must be > 0     //(5.1.013)
-        if (k == RULE_STEP)                                                    //      
-        {                                                                      //
-            if (s < 0) return error_setInpError(ERR_NUMBER, s2);               //
-        }                                                                      //
+		// --- RuleStep allowed to be 0 while other time steps must be > 0     //(5.1.013)
+		if (k == RULE_STEP)                                                    //      
+		{                                                                      //
+			if (s < 0) return error_setInpError(ERR_NUMBER, s2);               //
+		}                                                                      //
         else if ( s <= 0 ) return error_setInpError(ERR_NUMBER, s2);           //
 
         switch ( k )
@@ -553,7 +548,7 @@ int project_readOption(char* s1, char* s2)
           case WET_STEP:     WetStep = s;     break;
           case DRY_STEP:     DryStep = s;     break;
           case REPORT_STEP:  ReportStep = s;  break;
-          case RULE_STEP:    RuleStep = s;    break;                           //(5.1.013)
+		  case RULE_STEP:    RuleStep = s;    break;                           //(5.1.013)
         }
         break;
 
@@ -670,10 +665,7 @@ int project_readOption(char* s1, char* s2)
       // --- minimum surface area (ft2 or sq. meters) associated with nodes
       //     under dynamic wave flow routing 
       case MIN_SURFAREA:
-        if (!getDouble(s2, &MinSurfArea))                                      //(5.1.013)
-            return error_setInpError(ERR_NUMBER, s2);                          //(5.1.013)
-        if (MinSurfArea < 0.0)                                                 //(5.1.013)
-            return error_setInpError(ERR_NUMBER, s2);                          //(5.1.013)
+        MinSurfArea = atof(s2);
         break;
 
       // --- minimum conduit slope (%)
@@ -718,12 +710,17 @@ int project_readOption(char* s1, char* s2)
         LatFlowTol /= 100.0;
         break;
 
-      // --- method used for surcharging in dynamic wave flow routing          //(5.1.013)
-      case SURCHARGE_METHOD:
-          m = findmatch(s2, SurchargeWords);
-          if (m < 0) return error_setInpError(ERR_KEYWORD, s2);
-          SurchargeMethod = m;
-          break;
+      // --- fraction of full pipe depth used to compute a lower               //(5.1.013)
+      //     limit on surface area for higher flow depths                      //
+	  case CROWN_CUTOFF:                                                       //
+		  if (!getDouble(s2, &CrownCutoff))                                    //
+		  {                                                                    //
+			  return error_setInpError(ERR_NUMBER, s2);                        //
+		  }                                                                    //
+		  CrownCutoff /= 100.0;                                                //
+		  if (CrownCutoff < 0.96) CrownCutoff = 0.96;                          //
+		  if (CrownCutoff > 1.0) CrownCutoff = 1.0;                            //
+		  break;                                                               //
 
       case TEMPDIR: // Temporary Directory
         sstrncpy(TempDir, s2, MAXFNAME);
@@ -808,8 +805,6 @@ void setDefaults()
    FlowUnits       = CFS;              // CFS flow units
    InfilModel      = HORTON;           // Horton infiltration method
    RouteModel      = KW;               // Kin. wave flow routing method
-   SurchargeMethod = EXTRAN;           // Use EXTRAN method for surcharging    //(5.1.013)
-   CrownCutoff     = 0.96;                                                     //(5.1.013)
    AllowPonding    = FALSE;            // No ponding at nodes
    InertDamping    = SOME;             // Partial inertial damping
    NormalFlowLtd   = BOTH;             // Default normal flow limitation
@@ -837,6 +832,7 @@ void setDefaults()
    HeadTol         = 0.0;              // Force use of default head tolerance
    SysFlowTol      = 0.05;             // System flow tolerance for steady state
    LatFlowTol      = 0.05;             // Lateral flow tolerance for steady state
+   CrownCutoff     = 0.96;             // Fractional pipe crown cutoff         //(5.1.013)
    NumThreads      = 0;                // Number of parallel threads to use
    NumEvents       = 0;                // Number of detailed routing events
 
