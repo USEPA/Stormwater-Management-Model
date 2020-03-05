@@ -27,6 +27,22 @@ add_library(swmm5
         ${SWMM_SOURCES}
     )
 
+target_compile_options(swmm5
+PUBLIC
+    "$<$<C_COMPILER_ID:MSVC>:"
+        "$<$<CONFIG:Release>:/GL>"
+        "$<$<CONFIG:Release>:/fp:fast>"
+        "$<$<CONFIG:Release>:/Zi>"
+    ">"
+)
+
+target_link_options(swmm5
+    PUBLIC
+        "$<$<C_COMPILER_ID:MSVC>:"
+            "$<$<CONFIG:Release>:/LTCG:incremental>"
+        ">"
+    )
+
 target_link_libraries(swmm5
     PUBLIC
         $<$<NOT:$<BOOL:$<C_COMPILER_ID:MSVC>>>:m>
