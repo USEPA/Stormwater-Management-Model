@@ -22,19 +22,35 @@ file(GLOB
         RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.c *.h
     )
 
-add_library(swmm5
-    SHARED
-        ${SWMM_SOURCES}
+if(BUILD_DEF)
+    # Build library with def file interface for backward compatibility
+    set_source_files_properties(${PROJECT_SOURCE_DIR}/bindings/swmm5.def
+        PROPERTIES_HEADER_FILE_ONLY TRUE
     )
 
+    add_library(swmm5
+        SHARED
+            ${SWMM_SOURCES}
+            ${PROJECT_SOURCE_DIR/bindings/swmm5.def}
+        )
+
+else()
+
+    add_library(swmm5
+        SHARED
+            ${SWMM_SOURCES}
+        )
+
+endif()
+
 target_compile_options(swmm5
-PUBLIC
-    "$<$<C_COMPILER_ID:MSVC>:"
-        "$<$<CONFIG:Release>:/GL>"
-        "$<$<CONFIG:Release>:/fp:fast>"
-        "$<$<CONFIG:Release>:/Zi>"
-    ">"
-)
+    PUBLIC
+        "$<$<C_COMPILER_ID:MSVC>:"
+            "$<$<CONFIG:Release>:/GL>"
+            "$<$<CONFIG:Release>:/fp:fast>"
+            "$<$<CONFIG:Release>:/Zi>"
+        ">"
+    )
 
 target_link_options(swmm5
     PUBLIC

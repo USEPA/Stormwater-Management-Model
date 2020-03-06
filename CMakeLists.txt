@@ -40,7 +40,8 @@ set(LIBRARY_DIST "lib")
 set(CONFIG_DIST  "cmake")
 
 
-option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
+option(BUILD_TESTS "Builds component tests (requires Boost)" OFF)
+option(BUILD_DEF   "Builds library with def file interface" OFF)
 
 
 # Add project subdirectories
@@ -72,7 +73,7 @@ install(
     FILE
         swmm-output-config.cmake
     )
-    
+
 # Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
 set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)
