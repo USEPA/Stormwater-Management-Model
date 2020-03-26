@@ -2,3 +2,6 @@
 # Eclipse Stuff
 .metadata/
 .settings/
+
+build/
+nrtests/
