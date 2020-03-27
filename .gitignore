@@ -3,5 +3,8 @@
 .metadata/
 .settings/
 
+src/outfile/include/*_export.h
+src/solver/include/*_export.h
+
 build/
 nrtests/
