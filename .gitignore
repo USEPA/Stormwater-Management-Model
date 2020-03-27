@@ -5,6 +5,5 @@ build/
 src/outfile/include/*_export.h
 src/solver/include/*_export.h
 
-# Eclipse Stuff
-.metadata/
-.settings/
+build/
+nrtests/
