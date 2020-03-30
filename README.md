@@ -4,10 +4,6 @@ Stormwater-Management-Model
 ORD Stormwater Management Model (aka "SWMM")
 
 
-## Build Status
-[![Build status](https://ci.appveyor.com/api/projects/status/28d9pg7rollqfhqm/branch/develop?svg=true)](https://ci.appveyor.com/project/michaeltryby/stormwater-management-model/branch/develop)
-
-
 ## Introduction
 This is the official SWMM source code repository maintained by US EPA Office of Research and Development, Center For Environmental Solutions & Emergency Response, Water Infrastructure Division located in Cincinnati, Ohio.
 
