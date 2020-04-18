@@ -27,7 +27,7 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
     double elapsedTime = 0.0;
 
     double start_rainfall_rate = 0;// in/hr
-    double new_rainfall_rate = 4;  // in/hr
+    double new_rainfall_rate = 4.2;  // in/hr
 
     char rgid[] = "RG1";
     char subid[] = "1";
