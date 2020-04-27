@@ -26,8 +26,9 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
     double* precip_array;
     double elapsedTime = 0.0;
 
-    double start_rainfall_rate = 0;// in/hr
-    double new_rainfall_rate = 4;  // in/hr
+    double start_rainfall_rate = 0;     // in/hr
+    double new_rainfall_rate = 4.2;     // in/hr
+    double total_rainfall_volume;       // in
 
     char rgid[] = "RG1";
     char subid[] = "1";
@@ -96,9 +97,10 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
 
     error = swmm_getSubcatchStats(subc_ind, &subc_stats);
     BOOST_CHECK_EQUAL(error, ERR_NONE);
-    // 4 in/hr * 6hrs = 24inches
+    // 4.2 in/hr * 6hrs = 25.2 inches
+    total_rainfall_volume = new_rainfall_rate * 6;
     // Time to call FEMA!
-    BOOST_CHECK_SMALL(subc_stats->precip - 24, 0.0001);
+    BOOST_CHECK_SMALL(subc_stats->precip - total_rainfall_volume, 0.0001);
 
     freeArray((void**)&precip_array);
     freeArray((void**)&subc_stats);
