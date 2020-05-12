@@ -113,7 +113,15 @@ and return a (possibly) different pointer */
 {
  /* OUTPUT argout */
     %append_output(SWIG_NewPointerObj(SWIG_as_voidptr(retval$argnum), $1_descriptor, 0));
-} 
+}
+
+%typemap(in) SMO_Handle* p_handle_inout (SMO_Handle retval)
+{
+   /* INOUT in */
+   SWIG_ConvertPtr($input, SWIG_as_voidptrptr(&retval), 0, 0);
+   $1 = &retval;
+}
+
 /* No need for special IN typemap for opaque pointers, it works anyway */
 
 
@@ -270,7 +278,7 @@ int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, int timeIndex,
 
 /* NO EXCEPTION HANDLING FOR THESE FUNCTIONS */        
 int DLLEXPORT SMO_init(SMO_Handle* p_handle_out);
-int DLLEXPORT SMO_close(SMO_Handle* p_handle_out);
+int DLLEXPORT SMO_close(SMO_Handle* p_handle_inout);
 void DLLEXPORT SMO_free(void** array);
 
 void DLLEXPORT SMO_clearError(SMO_Handle p_handle);

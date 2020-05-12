@@ -37,7 +37,7 @@ nrtestsuite/
 performance.json
 stderr.log
 stdout.log
-tests/data/*_test.*
+tests/data/swmm_api_test.inp
 
 # Generated files
 *_export.h
