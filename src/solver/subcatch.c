@@ -11,6 +11,7 @@
 //             08/01/16  (Build 5.1.011)
 //             03/14/17  (Build 5.1.012)
 //             05/10/18  (Build 5.1.013)
+//             04/01/20  (Build 5.1.015)
 //   Author:   L. Rossman
 //
 //   Subcatchment runoff functions.
@@ -45,6 +46,8 @@
 //   - Support added for monthly adjustment of subcatchment's depression
 //     storage, pervious N, and infiltration.
 //
+//   Build 5.1.015: 
+//   - Support added for multiple infiltration methods within a project.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -446,7 +449,7 @@ void  subcatch_initState(int j)
     Subcatch[j].infilLoss = 0.0;
 
     // --- initialize state of infiltration, groundwater, & snow pack objects
-    if ( Subcatch[j].infil == j )  infil_initState(j, InfilModel);
+    if ( Subcatch[j].infil == j )  infil_initState(j);                         //(5.1.015)
     if ( Subcatch[j].groundwater ) gwater_initState(j);
     if ( Subcatch[j].snowpack )    snow_initSnowpack(j);
 
@@ -1005,7 +1008,7 @@ double getSubareaInfil(int j, TSubarea* subarea, double precip, double tStep)
     double infil = 0.0;                     // actual infiltration rate (ft/sec)
 
     // --- compute infiltration rate 
-    infil = infil_getInfil(j, InfilModel, tStep, precip,
+    infil = infil_getInfil(j, tStep, precip,                                   //(5.1.015)
                            subarea->inflow, subarea->depth);
 
     // --- limit infiltration rate by available void space in unsaturated

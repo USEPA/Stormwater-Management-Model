@@ -9,6 +9,7 @@
 //            08/05/15  (Build 5.1.010)
 //            08/01/16  (Build 5.1.011)
 //            05/10/18  (Build 5.1.013)
+//            04/01/20  (Build 5.1.015)
 //
 //   Author:  L. Rossman (EPA)
 //            M. Tryby (EPA)
@@ -54,6 +55,10 @@
 //   - Adjustment patterns added to TSubcatch structure.
 //   - Members impervRunoff and pervRunoff added to TSubcatchStats structure.
 //   - Member cdCurve (weir coeff. curve) added to TWeir structure.
+//
+//   Build 5.1.015:
+//   - Support added for multiple infiltration methods within a project.
+//   - Support added for grouped freqency table of routing time steps.
 //-----------------------------------------------------------------------------
 
 #include "mathexpr.h"
@@ -366,6 +371,7 @@ typedef struct
    int           gage;            // raingage index
    int           outNode;         // outlet node index
    int           outSubcatch;     // outlet subcatchment index
+   int           infilModel;      // infiltration method index                 //(5.1.015)
    int           infil;           // infiltration object index
    TSubarea      subArea[3];      // sub-area data
    double        width;           // overland flow width (ft)
@@ -900,6 +906,7 @@ typedef struct
 //-----------------------
 // SYSTEM-WIDE STATISTICS
 //-----------------------
+#define TIMELEVELS 6                                                           //(5.1.015)
 typedef struct
 {
    double        minTimeStep;
@@ -907,6 +914,8 @@ typedef struct
    double        avgTimeStep;
    double        avgStepCount;
    double        steadyStateCount;
+   double        timeStepIntervals[TIMELEVELS];                                //(5.1.015)
+   int           timeStepCounts[TIMELEVELS];                                   //(5.1.015)
 }  TSysStats;
 
 //--------------------

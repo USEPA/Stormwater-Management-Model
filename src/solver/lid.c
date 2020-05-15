@@ -13,6 +13,7 @@
 //             03/14/17   (Build 5.1.012)
 //             05/10/18   (Build 5.1.013)
 //             03/01/20   (Build 5.1.014)
+//             04/01/20   (Build 5.1.015)
 //   Author:   L. Rossman (US EPA)
 //
 //   This module handles all data processing involving LID (Low Impact
@@ -77,6 +78,9 @@
 //   Build 5.1.014:
 //   - Fixed bug in creating LidProcs when there are no subcatchments.
 //   - Fixed bug in adding underdrain pollutant loads to mass balances.
+//
+//   Build 5.1.015:
+//   - Support added for mutiple infiltration methods within a project.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -262,7 +266,7 @@ void lid_create(int lidCount, int subcatchCount)
             return;
         }
     }
-        
+
     //... initialize LID groups
     for (j = 0; j < GroupCount; j++) LidGroups[j] = NULL;
     
@@ -761,7 +765,7 @@ int readDrainData(int j, char* toks[], int ntoks)
     for (i = 0; i < 6; i++) x[i] = 0.0;                                        //(5.1.013)
     for (i = 2; i < 8; i++)                                                    //
     {
-        if ( ntoks > i && ! getDouble(toks[i], &x[i-2])  || x[i-2] < 0.0 )     //(5.1.013)
+        if ( ntoks > i && ! getDouble(toks[i], &x[i-2]) || x[i-2] < 0.0 )      //(5.1.013)
             return error_setInpError(ERR_NUMBER, toks[i]);
     }
 
@@ -803,7 +807,7 @@ int readDrainMatData(int j, char* toks[], int ntoks)
 
     //... read numerical parameters
     if ( ntoks < 5 ) return error_setInpError(ERR_ITEMS, "");
-	if ( LidProcs[j].lidType != GREEN_ROOF ) return 0;
+    if ( LidProcs[j].lidType != GREEN_ROOF ) return 0;
     for (i = 2; i < 5; i++)
     {
         if ( ! getDouble(toks[i], &x[i-2]) || x[i-2] < 0.0 )
@@ -1096,12 +1100,12 @@ void validateLidProc(int j)
 
     //... set storage layer parameters of a green roof 
     if ( LidProcs[j].lidType == GREEN_ROOF )
-	{
-		LidProcs[j].storage.thickness = LidProcs[j].drainMat.thickness;
-		LidProcs[j].storage.voidFrac = LidProcs[j].drainMat.voidFrac;
-		LidProcs[j].storage.clogFactor = 0.0;
-		LidProcs[j].storage.kSat = 0.0;
-	}
+    {
+        LidProcs[j].storage.thickness = LidProcs[j].drainMat.thickness;
+        LidProcs[j].storage.voidFrac = LidProcs[j].drainMat.voidFrac;
+        LidProcs[j].storage.clogFactor = 0.0;
+        LidProcs[j].storage.kSat = 0.0;
+    }
 }
 
 //=============================================================================
@@ -1155,11 +1159,10 @@ void validateLidGroup(int j)
         //... assign vegetative swale infiltration parameters
         if ( LidProcs[k].lidType == VEG_SWALE )
         {
-            if ( InfilModel == GREEN_AMPT || InfilModel == MOD_GREEN_AMPT )
+            if ( Subcatch[j].infilModel == GREEN_AMPT ||                       //(5.1.015)
+                 Subcatch[j].infilModel == MOD_GREEN_AMPT )                    //(5.1.015)
             {
-                p[0] = GAInfil[j].S * UCF(RAINDEPTH);
-                p[1] = GAInfil[j].Ks * UCF(RAINFALL);
-                p[2] = GAInfil[j].IMDmax;
+                grnampt_getParams(j, p);                                       //(5.1.015)
                 if ( grnampt_setParams(&(lidUnit->soilInfil), p) == FALSE )
                 {
                     strcpy(Msg, LidProcs[k].ID);
@@ -1720,10 +1723,10 @@ void findNativeInfil(int j, double tStep)
     //... otherwise find infil. rate for the subcatchment's rainfall + runon
     else
     {
-        NativeInfil = infil_getInfil(j, InfilModel, tStep,
+        NativeInfil = infil_getInfil(j, tStep,
                                      Subcatch[j].rainfall,
                                      Subcatch[j].runon,
-                                     getSurfaceDepth(j));                      //(5.1.008)
+                                     getSurfaceDepth(j));                      //(5.1.015)
     }
 
     //... see if there is any groundwater-imposed limit on infil.

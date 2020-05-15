@@ -4,6 +4,7 @@
 //   Project: EPA SWMM5
 //   Version: 5.1
 //   Date:    03/20/14  (Build 5.1.001)
+//            04/14/20  (Build 5.1.015)
 //   Author:  L. Rossman
 //
 //   Error codes
@@ -170,6 +171,9 @@ enum  ErrorType {
 	  ERR_API_INFLOWTYPE,       //507  110
 	  ERR_API_TSERIES_INDEX,    //508  111
 	  ERR_API_PATTERN_INDEX,    //509  112
+
+  //... Additional Errors
+      ERR_STORAGE_VOLUME,       //140  113                                     //(5.1.015)
       MAXERRMSG};
       
 char* error_getMsg(int i);

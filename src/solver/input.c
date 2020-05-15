@@ -6,6 +6,7 @@
 //   Date:     03/20/14  (Build 5.1.001)
 //             09/15/14  (Build 5.1.007)
 //             08/01/16  (Build 5.1.011)
+//             04/01/20  (Build 5.1.015)
 //   Author:   L. Rossman
 //
 //   Input data processing functions.
@@ -16,6 +17,8 @@
 //   Build 5.1.011:
 //   - Support added for reading hydraulic event dates.
 //
+//   Build 5.1.015:
+//   - Support added for multiple infiltration methods within a project.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -478,7 +481,7 @@ int  parseLine(int sect, char *line)
         return subcatch_readSubareaParams(Tok, Ntokens);
 
       case s_INFIL:
-        return infil_readParams(InfilModel, Tok, Ntokens);
+        return infil_readParams(InfilModel, Tok, Ntokens);                     //(5.1.015)
 
       case s_AQUIFER:
         j = Mobjects[AQUIFER];

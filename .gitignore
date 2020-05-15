@@ -1,7 +1,11 @@
 
+.DS_Store
+
 # Eclipse Stuff
 .metadata/
 .settings/
 
 build/
 nrtests/
+
+*_export.h
