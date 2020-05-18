@@ -19,6 +19,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: make
-      run: make.cmd /g "Visual Studio 16 2019"
+      run: |
+        make.cmd /g "Visual Studio 16 2019"
+        ::set-env name=BUILD_HOME::%BUILD_HOME%
     - name: before-test
       run: before-nrtest.cmd
