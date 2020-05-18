@@ -1,0 +1,20 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  win_build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+        working-directory: tools 
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: build
+      run: build.cmd
