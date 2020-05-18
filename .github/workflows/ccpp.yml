@@ -19,4 +19,4 @@ jobs:
     - name: make
       run: make.cmd /g "Visual Studio 16 2019"
     - name: before-test
-      run: before-test.cmd
+      run: before-nrtest.cmd
