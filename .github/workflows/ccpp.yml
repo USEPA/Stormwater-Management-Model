@@ -12,7 +12,9 @@ jobs:
     defaults:
       run:
         shell: cmd
-        working-directory: tools 
+        working-directory: tools
+    env:
+      PROJECT: swmm
 
     steps:
     - uses: actions/checkout@v2
