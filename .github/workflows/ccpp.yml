@@ -17,10 +17,14 @@ jobs:
       PROJECT: swmm
       BUILD_HOME: build
       PLATFORM: win64
-
+      TEST_HOME: nrtests
     steps:
     - uses: actions/checkout@v2
     - name: make
       run: make.cmd /g "Visual Studio 16 2019"
     - name: before-test
-      run: before-nrtest.cmd
+      run: |
+        before-nrtest.cmd
+        echo ::set-env name=REF_BUILD_ID::%REF_BUILD_ID%
+    - name: run-test
+      run: run-nrtests.cmd  
