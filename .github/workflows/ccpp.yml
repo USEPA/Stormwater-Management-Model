@@ -16,5 +16,5 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: build
-      run: build.cmd
+    - name: make
+      run: make.cmd
