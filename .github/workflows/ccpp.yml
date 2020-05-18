@@ -21,7 +21,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: make
-      run: |
-        make.cmd /g "Visual Studio 16 2019"
+      run: make.cmd /g "Visual Studio 16 2019"
     - name: before-test
       run: before-nrtest.cmd
