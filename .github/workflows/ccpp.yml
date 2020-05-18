@@ -25,6 +25,6 @@ jobs:
     - name: before-test
       run: |
         before-nrtest.cmd
-        echo ::set-env name=REF_BUILD_ID::%REF_BUILD_ID%
+        echo %REF_BUILD_ID%
     - name: run-test
       run: run-nrtests.cmd  
