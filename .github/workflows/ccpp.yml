@@ -17,4 +17,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: make
-      run: make.cmd
+      run: make.cmd /g "Visual Studio 16 2019"
