@@ -15,12 +15,13 @@ jobs:
         working-directory: tools
     env:
       PROJECT: swmm
+      BUILD_HOME: build
+      PLATFORM: win64
 
     steps:
     - uses: actions/checkout@v2
     - name: make
       run: |
-        make.cmd /g "Visual Studio 16 2019"
-        ::set-env name=BUILD_HOME::%BUILD_HOME%
+        make.cmd /g "Visual Studio 16 2019 Win64"
     - name: before-test
       run: before-nrtest.cmd
