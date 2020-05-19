@@ -15,8 +15,8 @@
 
 nrtest
 
--f https://github.com/michaeltryby/swmm-python/releases/download/v0.3.0-dev3/swmm.output-0.4.0.dev3-cp36-cp36m-win_amd64.whl
-swmm.output
+-f https://github.com/SWMM-Project/swmm-python/releases/download/v0.6.0-rc.1/swmm_toolkit-0.5.0-cp37-cp37m-win_amd64.whl
+swmm-toolkit
 
--f https://github.com/michaeltryby/swmm-python/releases/download/v0.3.0-dev3/nrtest_swmm-0.5.0-py3-none-any.whl
+-f https://github.com/SWMM-Project/swmm-python/releases/download/v0.6.0-rc.1/nrtest_swmm-0.6.0-py3-none-any.whl
 nrtest-swmm
