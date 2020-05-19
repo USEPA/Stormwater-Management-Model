@@ -28,7 +28,8 @@ jobs:
         python-version: '3.7'
     - name: Install requirements
       run: |
-        python -m pip install -f requirements-win.txt
+        python -m pip install --upgrade pip
+        python -m pip install -r requirements-win.txt
     - name: Make
       run: |
         make.cmd /g "Visual Studio 16 2019"
