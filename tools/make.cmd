@@ -106,5 +106,6 @@ if not defined PLATFORM ( echo "ERROR: PLATFORM could not be determined" & exit 
 :: GitHub Actions
 echo ::set-env name=PLATFORM::%PLATFORM%
 
+
 :: return to users current dir
 :: cd %CUR_DIR%
