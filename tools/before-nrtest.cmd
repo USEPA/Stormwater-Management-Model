@@ -47,7 +47,7 @@ if %ERRORLEVEL% neq 0 ( echo "ERROR: 7zip not installed" & exit /B 1 )
 
 
 :: set URL to github repo with test files
-set "NRTESTS_URL=https://github.com/michaeltryby/%PROJECT%-nrtests"
+set "NRTESTS_URL=https://github.com/SWMM-Project/%PROJECT%-nrtestsuite"
 
 
 :: if release tag isn't provided latest tag will be retrieved
@@ -99,7 +99,7 @@ curl -fsSL -o benchmark.zip %BENCHFILES_URL%
 
 
 :: set up symlinks for tests directory
-mklink /D .\tests .\%PROJECT%-nrtests-%RELEASE_TAG:~1%\public > nul
+mklink /D .\tests .\%PROJECT%-nrtestsuite-%RELEASE_TAG:~1%\public > nul
 
 
 endlocal
