@@ -34,7 +34,10 @@ jobs:
         echo "::set-env name=PLATFORM::%PLATFORM%"
     - name: Before test
       run: |
+        echo INFO: Platform %PLATFORM%
         before-nrtest.cmd
         echo "::set-env name=REF_BUILD_ID::%REF_BUILD_ID%"
     - name: Run test
-      run: run-nrtests.cmd
+      run: |
+        echo INFO: REF_BUILD_ID %REF_BUILD_ID%
+        run-nrtests.cmd
