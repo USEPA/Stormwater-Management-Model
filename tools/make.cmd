@@ -103,6 +103,10 @@ for /F "tokens=*" %%f in ( 'findstr CMAKE_SHARED_LINKER_FLAGS:STRING %BUILD_HOME
 )
 if not defined PLATFORM ( echo "ERROR: PLATFORM could not be determined" & exit /B 1 )
 
+:: GitHub Actions
+if exists %CI% (
+    echo ::set-env name=PLATFORM::%PLATFORM%
+)
 
 :: return to users current dir
 :: cd %CUR_DIR%
