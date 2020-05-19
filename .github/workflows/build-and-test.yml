@@ -1,0 +1,30 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ upstream-dev ]
+  pull_request:
+    branches: [ upstream-dev ]
+
+jobs:
+  win_build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+        working-directory: tools
+    env:
+      PROJECT: swmm
+      BUILD_HOME: build
+      PLATFORM: win64
+      TEST_HOME: nrtests
+    steps:
+    - uses: actions/checkout@v2
+    - name: make
+      run: make.cmd /g "Visual Studio 16 2019"
+    - name: before-test
+      run: |
+        before-nrtest.cmd
+        echo %REF_BUILD_ID%
+    - name: run-test
+      run: run-nrtests.cmd
