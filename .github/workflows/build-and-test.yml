@@ -30,12 +30,12 @@ jobs:
     - name: Make
       run: |
         make.cmd /g "Visual Studio 16 2019"
-        echo "::set-env name=PLATFORM::%PLATFORM%"
+        echo ::set-env name=PLATFORM::%PLATFORM%
     - name: Before test
       run: |
         echo INFO: Platform %PLATFORM%
         before-nrtest.cmd
-        echo "::set-env name=REF_BUILD_ID::%REF_BUILD_ID%"
+        echo ::set-env name=REF_BUILD_ID::%REF_BUILD_ID%
     - name: Run test
       run: |
         echo INFO: REF_BUILD_ID %REF_BUILD_ID%
