@@ -16,7 +16,6 @@ jobs:
     env:
       PROJECT: swmm
       BUILD_HOME: build
-      PLATFORM: unknown
       TEST_HOME: nrtests
     steps:
     - uses: actions/checkout@v2
