@@ -18,6 +18,7 @@ jobs:
       BUILD_HOME: build
       PLATFORM: win64
       TEST_HOME: nrtests
+      REF_BUILD_ID: unknown
     steps:
     - uses: actions/checkout@v2
     - name: make
@@ -25,6 +26,6 @@ jobs:
     - name: before-test
       run: |
         before-nrtest.cmd
-        echo %REF_BUILD_ID%
+        echo "::set-env name=REF_BUILD_ID::%REF_BUILD_ID%"
     - name: run-test
       run: run-nrtests.cmd
