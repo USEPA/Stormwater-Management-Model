@@ -18,8 +18,6 @@ jobs:
       BUILD_HOME: build
       PLATFORM: unknown
       TEST_HOME: nrtests
-      REF_BUILD_ID: unknown
-
     steps:
     - uses: actions/checkout@v2
     - name: Setup python
