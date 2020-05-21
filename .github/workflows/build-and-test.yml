@@ -32,6 +32,4 @@ jobs:
     - name: Before test
       run: before-nrtest.cmd
     - name: Run test
-      run: |
-        echo INFO: Path %PATH%
-        echo INFO: Pythonpath %PYTHONPATH%
+      run: run-nrtests.cmd
