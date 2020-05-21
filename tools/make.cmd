@@ -27,6 +27,8 @@
 set "PROJECT=swmm"
 set "BUILD_HOME=build"
 set "PLATFORM=win32"
+set "CONFIG=Release"
+
 
 :: determine project directory
 set "CUR_DIR=%CD%"
@@ -58,6 +60,7 @@ if NOT [%1]==[] (
   )
   if "%1"=="/t" (
     set "TESTING=1"
+    set "CONFIG=Debug"
   )
   shift
   goto :loop
@@ -83,11 +86,12 @@ cd %BUILD_HOME%
 if %ERRORLEVEL% NEQ 0 ( echo "ERROR: unable to cd %BUILD_HOME% dir" & exit /B 1 )
 
 if %TESTING% EQU 1 (
-  cmake -G"%GENERATOR%" -DBUILD_TESTS=ON .. && cmake --build . --config Debug^
-  & echo. && ctest -C Debug --output-on-failure
+  cmake -G"%GENERATOR%" -DBUILD_TESTS=ON ..^
+  && cmake --build . --config %CONFIG%^
+  & echo. && ctest -C %CONFIG% --output-on-failure
 ) else (
   cmake -G"%GENERATOR%" -DBUILD_TESTS=OFF ..^
-  && cmake --build . --config Release --target install
+  && cmake --build . --config %CONFIG% --target install
 )
 
 
@@ -104,7 +108,8 @@ if not defined PLATFORM ( echo "ERROR: PLATFORM could not be determined" & exit 
 
 :: GitHub Actions
 echo ::set-env name=PLATFORM::%PLATFORM%
+echo ::set-env name=CONFIG::%CONFIG%
 
 
 :: return to users current dir
-:: cd %CUR_DIR%
+cd %CUR_DIR%
