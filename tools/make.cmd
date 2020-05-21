@@ -83,8 +83,7 @@ cd %BUILD_HOME%
 if %ERRORLEVEL% NEQ 0 ( echo "ERROR: unable to cd %BUILD_HOME% dir" & exit /B 1 )
 
 if %TESTING% EQU 1 (
-  cmake -G"%GENERATOR%" -DBUILD_TESTS=ON -DBOOST_ROOT=C:\local\boost_1_67_0 ..^
-  && cmake --build . --config Debug^
+  cmake -G"%GENERATOR%" -DBUILD_TESTS=ON .. && cmake --build . --config Debug^
   & echo. && ctest -C Debug --output-on-failure
 ) else (
   cmake -G"%GENERATOR%" -DBUILD_TESTS=OFF ..^
