@@ -15,7 +15,7 @@
 
 nrtest
 
--f https://github.com/SWMM-Project/swmm-python/releases/download/v0.6.0-rc.1/swmm_toolkit-0.5.0-cp37-cp37m-win_amd64.whl
+-f https://github.com/SWMM-Project/swmm-python/releases/download/v0.6.0-rc.2/swmm_toolkit-0.5.0-cp37-cp37m-win_amd64.whl
 swmm-toolkit
 
 -f https://github.com/SWMM-Project/swmm-python/releases/download/v0.6.0-rc.1/nrtest_swmm-0.6.0-py3-none-any.whl
