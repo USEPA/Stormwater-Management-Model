@@ -60,7 +60,6 @@ if NOT [%1]==[] (
   )
   if "%1"=="/t" (
     set "TESTING=1"
-    set "CONFIG=Debug"
   )
   shift
   goto :loop
@@ -87,11 +86,11 @@ if %ERRORLEVEL% NEQ 0 ( echo "ERROR: unable to cd %BUILD_HOME% dir" & exit /B 1 
 
 if %TESTING% EQU 1 (
   cmake -G"%GENERATOR%" -DBUILD_TESTS=ON ..^
-  && cmake --build . --config %CONFIG%^
-  & echo. && ctest -C %CONFIG% --output-on-failure
+  && cmake --build . --config Debug^
+  & echo. && ctest -C Debug --output-on-failure
 ) else (
   cmake -G"%GENERATOR%" -DBUILD_TESTS=OFF ..^
-  && cmake --build . --config %CONFIG% --target install
+  && cmake --build . --config Release --target install
 )
 
 
@@ -106,9 +105,9 @@ for /F "tokens=*" %%f in ( 'findstr CMAKE_SHARED_LINKER_FLAGS:STRING %BUILD_HOME
 )
 if not defined PLATFORM ( echo "ERROR: PLATFORM could not be determined" & exit /B 1 )
 
+
 :: GitHub Actions
 echo ::set-env name=PLATFORM::%PLATFORM%
-echo ::set-env name=CONFIG::%CONFIG%
 
 
 :: return to users current dir
