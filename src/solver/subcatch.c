@@ -11,7 +11,7 @@
 //             08/01/16  (Build 5.1.011)
 //             03/14/17  (Build 5.1.012)
 //             05/10/18  (Build 5.1.013)
-//             04/01/20  (Build 5.1.015)
+//             05/18/20  (Build 5.1.015)
 //   Author:   L. Rossman
 //
 //   Subcatchment runoff functions.
@@ -48,6 +48,7 @@
 //
 //   Build 5.1.015: 
 //   - Support added for multiple infiltration methods within a project.
+//   - Only pervious area depression storage receives monthly adjustment.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -1142,7 +1143,7 @@ void adjustSubareaParams(int i, int j)
 //  Input:   i = type of subarea being analyzed
 //           j = index of current subcatchment being analyzed
 //  Output   adjusted values of module-level variables Dstore & Alpha
-//  Purpose: adjusts a subarea's depression storage and its pervious
+//  Purpose: adjusts a pervious subarea's depression storage and its           //(5.1.015)
 //           runoff coeff. by month of the year.
 //
 {
@@ -1150,22 +1151,25 @@ void adjustSubareaParams(int i, int j)
     int m;              // current month of the year
     double f;           // adjustment factor
 
-     // --- depression storage adjustment
-     p = Subcatch[j].dStorePattern;
-     if (p >= 0 && Pattern[p].type == MONTHLY_PATTERN)
-     {
-         m = datetime_monthOfYear(getDateTime(OldRunoffTime)) - 1;
-         f = Pattern[p].factor[m];
-         if (f >= 0.0) Dstore *= f;
-     }
-
-    // --- pervious area roughness
-    p = Subcatch[j].nPervPattern;
-    if (i == PERV && p >= 0 && Pattern[p].type == MONTHLY_PATTERN)
+    if (i == PERV)                                                             //(5.1.015)
     {
-         m = datetime_monthOfYear(getDateTime(OldRunoffTime)) - 1;
-         f = Pattern[p].factor[m];
-         if (f <= 0.0) Alpha = 0.0;
-         else          Alpha /= f;
-     }
+        // --- depression storage adjustment
+        p = Subcatch[j].dStorePattern;
+        if (p >= 0 && Pattern[p].type == MONTHLY_PATTERN)
+        {
+            m = datetime_monthOfYear(getDateTime(OldRunoffTime)) - 1;
+            f = Pattern[p].factor[m];
+            if (f >= 0.0) Dstore *= f;
+        }
+
+        // --- roughness adjustment to runoff coeff.                           //(5.1.015)
+        p = Subcatch[j].nPervPattern;
+        if (p >= 0 && Pattern[p].type == MONTHLY_PATTERN)                      //(5.1.015)
+        {
+            m = datetime_monthOfYear(getDateTime(OldRunoffTime)) - 1;
+            f = Pattern[p].factor[m];
+            if (f <= 0.0) Alpha = 0.0;
+            else          Alpha /= f;
+        }
+    }
 }
