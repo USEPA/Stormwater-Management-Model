@@ -34,7 +34,7 @@
 #define FMT08 \
   "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build 5.1.015)"         //(5.1.015)
 #define FMT09 \
-  "\n  ---------------------------------------------------------------------"
+  "\n  --------------------------------------------------------------"
 #define FMT10 "\n"
 #define FMT11  "\n    Cannot use duplicate file names."
 #define FMT12  "\n    Cannot open input file "
