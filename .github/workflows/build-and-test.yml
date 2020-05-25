@@ -27,9 +27,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install -r requirements-win.txt
-    - name: Make
-      run: make.cmd /t /g "Visual Studio 16 2019"
+    - name: Build and unit test
+      run: make.cmd /g "Visual Studio 16 2019" /t
     - name: Before test
       run: before-nrtest.cmd
-    - name: Run test
-      run: run-nrtests.cmd
+    - name: Build and reg test
+      run: |
+        make.cmd /g "Visual Studio 16 2019"
+        run-nrtests.cmd

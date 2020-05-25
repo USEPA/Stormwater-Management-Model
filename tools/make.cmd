@@ -71,26 +71,22 @@ if exist %BUILD_HOME% (
   for /F "tokens=*" %%f in ( 'findstr CMAKE_GENERATOR:INTERNAL %BUILD_HOME%\CmakeCache.txt' ) do (
     for /F "delims=:= tokens=3" %%m in ( 'echo %%f' ) do (
       set CACHE_GEN=%%m
-      if not "!CACHE_GEN!" == "!GENERATOR!" ( rmdir /s /q %BUILD_HOME% & mkdir %BUILD_HOME% )
+      if not "!CACHE_GEN!" == "!GENERATOR!" ( rmdir /s /q %BUILD_HOME% )
     )
   )
-) else (
-  mkdir %BUILD_HOME%^
-  & if %ERRORLEVEL% NEQ 0 ( echo "ERROR: unable to make %BUILD_HOME% dir" & exit /B 1 )
 )
 
-
 :: perform the build
-cd %BUILD_HOME%
-if %ERRORLEVEL% NEQ 0 ( echo "ERROR: unable to cd %BUILD_HOME% dir" & exit /B 1 )
+cmake -E make_directory %BUILD_HOME%
+
 
 if %TESTING% EQU 1 (
-  cmake -G"%GENERATOR%" -DBUILD_TESTS=ON ..^
-  && cmake --build . --config Debug^
-  & echo. && ctest -C Debug --output-on-failure
+  cmake -E chdir ./%BUILD_HOME% cmake -G"%GENERATOR%" -DBUILD_TESTS=ON ..^
+  && cmake --build ./%BUILD_HOME% --config Debug^
+  & echo. && cmake -E chdir ./%BUILD_HOME% ctest -C Debug --output-on-failure
 ) else (
-  cmake -G"%GENERATOR%" -DBUILD_TESTS=OFF ..^
-  && cmake --build . --config Release --target install
+  cmake -E chdir ./%BUILD_HOME% cmake -G"%GENERATOR%" -DBUILD_TESTS=OFF ..^
+  && cmake --build ./%BUILD_HOME% --config Release --target package
 )
 
 
