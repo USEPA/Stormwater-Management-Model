@@ -34,4 +34,5 @@ jobs:
     - name: Build and reg test
       run: |
         make.cmd /g "Visual Studio 16 2019"
+        echo.
         run-nrtests.cmd
