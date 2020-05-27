@@ -27,14 +27,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install -r requirements-win.txt
-    - name: Build and unit test
-      run: make.cmd /g "Visual Studio 16 2019" /t
+#    - name: Build and unit test
+#      run: make.cmd /g "Visual Studio 16 2019" /t
     - name: Build
       run: make.cmd /g "Visual Studio 16 2019"
     - name: Before test
       run: before-nrtest.cmd
     - name: Reg test
       run: run-nrtests.cmd
-    - uses: edgarrc/action-7z@v1.0.4
-      with:
-        args: 7z a benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip %TEST_HOME%\benchmark\swmm-%SUT_BUILD_ID% 
+    - name: Create archive
+      run: 7z a benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip %TEST_HOME%\benchmark\swmm-%SUT_BUILD_ID%
