@@ -62,7 +62,7 @@ if not exist apps\%PROJECT%-%SUT_BUILD_ID%.json (
 
 
 :: recursively build test list
-set "TESTS=examples"
+set "TESTS=tests\examples"
 :: for /F "tokens=*" %%T in ('dir /b /s /a:d tests') do (
 ::   set FULL_PATH=%%T
 ::   set TESTS=!TESTS! !FULL_PATH:*%TEST_HOME%\=!
