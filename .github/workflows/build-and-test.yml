@@ -17,6 +17,7 @@ jobs:
       PROJECT: swmm
       BUILD_HOME: build
       TEST_HOME: nrtests
+      SUT_BUILD_ID: %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
     steps:
     - uses: actions/checkout@v2
     - name: Setup python
@@ -34,4 +35,4 @@ jobs:
     - name: Before test
       run: before-nrtest.cmd
     - name: Reg test
-      run: run-nrtests.cmd
+      run: run-nrtests.cmd %GITHUB_SHA% %SUT_BUILD_ID% 
