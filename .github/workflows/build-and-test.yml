@@ -32,6 +32,8 @@ jobs:
     - name: Build
       run: make.cmd
     - name: Before test
-      run: before-nrtest.cmd
+      run: |
+        before-nrtest.cmd
+        dir ..\nrtests\benchmark
     - name: Reg test
       run: run-nrtests.cmd %GITHUB_SHA% %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
