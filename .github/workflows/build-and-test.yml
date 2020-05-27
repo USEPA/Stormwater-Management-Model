@@ -42,4 +42,4 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: benchmark
-        path: %HOME%\..\%TEST_HOME%\benchmark\benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip
+        path: %HOME%\%TEST_HOME%\benchmark\benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip
