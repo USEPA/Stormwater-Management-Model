@@ -35,12 +35,3 @@ jobs:
       run: before-nrtest.cmd
     - name: Reg test
       run: run-nrtests.cmd
-    - name: Create archive
-      run: |
-        cd ..\%TEST_HOME%\benchmark
-        7z a benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip .\swmm-%SUT_BUILD_ID%
-        echo ::set-env name=ARCHIVE_PATH::%CD%
-    - uses: actions/upload-artifact@v2
-      with:
-        name: benchmark
-        path: %ARCHIVE_PATH%\benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip
