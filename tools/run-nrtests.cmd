@@ -62,8 +62,8 @@ if not exist apps\%PROJECT%-%SUT_BUILD_ID%.json (
 
 
 :: recursively build test list
-set TESTS=
-for /F "tokens=*" %%T in ('dir /b /s /a:d tests') do (
+set "TESTS="
+  for /F "tokens=*" %%T in ('dir /b /s /a:d tests') do (
   set FULL_PATH=%%T
   set TESTS=!TESTS! !FULL_PATH:*%TEST_HOME%\=!
 )
@@ -87,7 +87,7 @@ set TEST_OUTPUT_PATH=benchmark\%PROJECT%-%SUT_BUILD_ID%
 set NRTEST_COMPARE_CMD=python.exe %NRTEST_SCRIPT_PATH%\nrtest compare
 set REF_OUTPUT_PATH=benchmark\%PROJECT%-%REF_BUILD_ID%
 set RTOL_VALUE=0.01
-set ATOL_VALUE=1.E-6
+set ATOL_VALUE=0.0
 
 :: change current directory to test suite
 ::cd %TEST_HOME%
@@ -109,6 +109,10 @@ echo.
 echo INFO: Comparing SUT artifacts to REF %REF_BUILD_ID%
 set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --rtol %RTOL_VALUE% --atol %ATOL_VALUE% -o benchmark\receipt.json
 %NRTEST_COMMAND%
+
+
+:: GitHub Actions
+echo ::set-env name=SUT_BUILD_ID::%SUT_BUILD_ID%
 
 :: Return user to their current dir
 cd %CUR_DIR%
