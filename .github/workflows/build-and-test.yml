@@ -36,4 +36,4 @@ jobs:
     - name: Reg test
       run: run-nrtests.cmd
     - name: Create archive
-      run: 7z a benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip %TEST_HOME%\benchmark\swmm-%SUT_BUILD_ID%
+      run: 7z a benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip .\%TEST_HOME%\benchmark\swmm-%SUT_BUILD_ID%
