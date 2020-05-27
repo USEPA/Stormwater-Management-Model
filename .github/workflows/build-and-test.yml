@@ -41,5 +41,5 @@ jobs:
         7z a benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip .\swmm-%SUT_BUILD_ID%
     - uses: actions/upload-artifact@v2
       with:
-        name: Upload benchmark
-        path: %CD%\..\%TEST_HOME%\benchmark\benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip
+        name: benchmark
+        path: %HOME%\..\%TEST_HOME%\benchmark\benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip
