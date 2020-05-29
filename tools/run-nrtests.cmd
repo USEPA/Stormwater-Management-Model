@@ -111,9 +111,9 @@ set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --r
 %NRTEST_COMMAND%
 
 
-:: create zip archive or SUT benchmarks
+:: create SUT benchmark archive
 cd .\benchmark
-7z a %PROJECT_DIR\upload\benchmark-%PLATFORM%.zip .\%PROJECT%-%SUT_BUILD_ID%
+7z a benchmark-%PLATFORM%.zip .\%PROJECT%-%SUT_BUILD_ID%
 
 
 :: GitHub Actions
