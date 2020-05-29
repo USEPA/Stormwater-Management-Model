@@ -62,7 +62,7 @@ if not exist apps\%PROJECT%-%SUT_BUILD_ID%.json (
 
 
 :: recursively build test list
-set "TESTS="
+set TESTS=
   for /F "tokens=*" %%T in ('dir /b /s /a:d tests') do (
   set FULL_PATH=%%T
   set TESTS=!TESTS! !FULL_PATH:*%TEST_HOME%\=!
@@ -111,8 +111,14 @@ set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --r
 %NRTEST_COMMAND%
 
 
+:: create zip archive or SUT benchmarks
+cd .\benchmark
+7z a %PROJECT_DIR\upload\benchmark-%PLATFORM%.zip .\%PROJECT%-%SUT_BUILD_ID%
+
+
 :: GitHub Actions
 echo ::set-env name=SUT_BUILD_ID::%SUT_BUILD_ID%
+
 
 :: Return user to their current dir
 cd %CUR_DIR%
