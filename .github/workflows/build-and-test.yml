@@ -6,31 +6,13 @@ on:
   pull_request:
     branches: [ upstream-dev ]
 
+
 jobs:
-  unit_test:
+  win_build:
     runs-on: windows-2016
     defaults:
       run:
         shell: cmd
-
-    env:
-      PROJECT: swmm
-      BUILD_HOME: build
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-
-    - name: Build for unit test
-      run: tools/make.cmd /t
-
-
-  reg_test:
-    runs-on: windows-2016
-    defaults:
-      run:
-        shell: cmd
-
     env:
       PROJECT: swmm
       BUILD_HOME: build
@@ -49,6 +31,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install -r tools/requirements-win.txt
+
+    - name: Build and unit test
+      run: tools/make.cmd /t
 
     - name: Build for reg test
       run: tools/make.cmd
