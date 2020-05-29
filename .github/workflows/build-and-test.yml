@@ -38,9 +38,9 @@ jobs:
     - name: Upload artifacts
       run: echo $HOME
       shell: bash
-      uses: actions/upload-artifact@v2
-      with:
-        name: receipt
-        path: $HOME/$TEST_HOME/benchmark/receipt.json  
+#      uses: actions/upload-artifact@v2
+#      with:
+#        name: receipt
+#        path: $HOME/$TEST_HOME/benchmark/receipt.json  
 
       
