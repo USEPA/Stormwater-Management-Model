@@ -38,4 +38,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: nrtest artifacts
-        path: $GITHUB_WORKSPACE/upload/receipt.json
+        path: upload/receipt.json
