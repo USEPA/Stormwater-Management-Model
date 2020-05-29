@@ -39,6 +39,6 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: receipt
-        path: $HOME/$BUILD_HOME/benchmark/receipt.json  
+        path: $HOME/$TEST_HOME/benchmark/receipt.json  
 
       
