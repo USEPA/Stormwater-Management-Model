@@ -10,6 +10,7 @@
 //             08/01/16   (Build 5.1.011)
 //             03/14/17   (Build 5.1.012)
 //             05/10/18   (Build 5.1.013)
+//             03/01/20   (Build 5.1.014)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //
@@ -45,6 +46,10 @@
 //   - Support added for head-dependent weir coefficient curves.
 //   - Adjustment of regulator link crest offset to match downstream node invert
 //     now only done for Dynamic Wave flow routing.
+//
+//  Build 5.1.014:
+//  - Conduit evap. and seepage losses initialized to 0 in conduit_initState()
+//    and not allowed to exceed current flow rate in conduit_getLossRate().
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -97,7 +102,7 @@ static double conduit_getLength(int j);
 static double conduit_getLengthFactor(int j, int k, double roughness);
 static double conduit_getSlope(int j);
 static double conduit_getInflow(int j);
-static double conduit_getLossRate(int j, double q, double tstep);
+static double conduit_getLossRate(int j, double q);                            //(5.1.014)
 
 static int    pump_readParams(int j, int k, char* tok[], int ntoks);
 static void   pump_validate(int j, int k);
@@ -865,7 +870,7 @@ double link_getPower(int j)
 
 //=============================================================================
 
-double link_getLossRate(int j, double q, double tStep)
+double link_getLossRate(int j, double q)                                       //(5.1.014)
 //
 //  Input:   j = link index
 //           q = flow rate (ft3/sec)
@@ -875,7 +880,7 @@ double link_getLossRate(int j, double q, double tStep)
 //           evaporation and seepage.
 //
 {
-    if ( Link[j].type == CONDUIT ) return conduit_getLossRate(j, q, tStep);
+    if ( Link[j].type == CONDUIT ) return conduit_getLossRate(j, q);           //(5.1.014)
     else return 0.0;
 }
 
@@ -1277,6 +1282,8 @@ void  conduit_initState(int j, int k)
 {
     Link[j].newDepth = link_getYnorm(j, Link[j].q0 / Conduit[k].barrels);
     Link[j].oldDepth = Link[j].newDepth;
+    Conduit[k].evapLossRate = 0.0;                                             //(5.1.014)
+    Conduit[k].seepLossRate = 0.0;                                             //(5.1.014)
 }
 
 //=============================================================================
@@ -1295,12 +1302,12 @@ double conduit_getInflow(int j)
 
 //=============================================================================
 
-////  This function was modified for relese 5.1.013.  ////                     //(5.1.013)
+////  This function was modified for relese 5.1.014.  ////                     //(5.1.014)
 
-double conduit_getLossRate(int j, double q, double tStep)
+double conduit_getLossRate(int j, double q)
 //
 //  Input:   j = link index
-//           tStep = time step (sec)
+//           q = current link flow rate (cfs)
 //  Output:  returns rate of evaporation & seepage losses (ft3/sec)
 //  Purpose: computes volumetric rate of water evaporation & seepage
 //           from a conduit (per barrel).
@@ -1310,7 +1317,6 @@ double conduit_getLossRate(int j, double q, double tStep)
     double depth = 0.5 * (Link[j].oldDepth + Link[j].newDepth);
     double length;
     double topWidth;
-    double maxLossRate;
     double evapLossRate = 0.0,
            seepLossRate = 0.0,
            totalLossRate = 0.0;
@@ -1342,17 +1348,13 @@ double conduit_getLossRate(int j, double q, double tStep)
         // --- compute total loss rate
         totalLossRate = evapLossRate + seepLossRate;
 
-        // --- total loss rate cannot exceed current volume
-        if ( totalLossRate > 0.0 )
+        // --- total loss rate cannot exceed flow rate
+        q = ABS(q);
+        if (totalLossRate > q)
         {
-            maxLossRate = 0.5 * (Link[j].oldVolume + Link[j].newVolume) / tStep;
-            maxLossRate = MIN(maxLossRate, fabs(q));
-            if ( totalLossRate > maxLossRate )
-            {
-                evapLossRate = evapLossRate * maxLossRate / totalLossRate;
-                seepLossRate = seepLossRate * maxLossRate / totalLossRate;
-                totalLossRate = maxLossRate;
-            }
+            evapLossRate = evapLossRate * q / totalLossRate;
+            seepLossRate = seepLossRate * q / totalLossRate;
+            totalLossRate = q;
         }
     }
 

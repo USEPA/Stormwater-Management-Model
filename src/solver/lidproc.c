@@ -12,6 +12,7 @@
 //             08/01/16   (Build 5.1.011)
 //             03/14/17   (Build 5.1.012)
 //             05/10/18   (Build 5.1.013)
+//             03/01/20   (Build 5.1.014)
 //   Author:   L. Rossman (US EPA)
 //
 //   This module computes the hydrologic performance of an LID (Low Impact
@@ -58,6 +59,10 @@
 //   - Support added for open/closed head levels and multiplier v. head curve
 //     to control underdrain flow.
 //   - Support added for regenerating pavement permeability at fixed intervals.
+//
+//   Build 5.1.014:
+//   - Fixed failure to initialize all LID layer moisture volumes to 0 before
+//     computing LID unit performance in lidproc_getOutflow.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -247,7 +252,11 @@ double lidproc_getOutflow(TLidUnit* lidUnit, TLidProc* lidProc, double inflow,
     x[STOR] = theLidUnit->storageDepth;
     x[PAVE] = theLidUnit->paveDepth;
 
-    //... initialize layer flux rates and moisture limits
+    //... initialize layer moisture volumes, flux rates and moisture limits
+    SurfaceVolume  = 0.0;
+    PaveVolume     = 0.0;
+    SoilVolume     = 0.0;
+    StorageVolume  = 0.0;
     SurfaceInflow  = inflow;
     SurfaceInfil   = 0.0;
     SurfaceEvap    = 0.0;

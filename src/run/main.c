@@ -10,7 +10,9 @@
 //   to be run with swmm5.dll.
 
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
+
 #include "swmm5.h"
 
 int  main(int argc, char *argv[])
@@ -35,7 +37,7 @@ int  main(int argc, char *argv[])
     int  msgLen = 127;
     time_t start;
     double runTime;
-    
+
     version = swmm_getVersion();
     vMajor = version / 10000;
     vMinor = (version - 10000 * vMajor) / 1000;
@@ -94,7 +96,7 @@ int  main(int argc, char *argv[])
     }
 
 // --- Use the code below if you need to keep the console window visible
-/* 
+/*
     printf("    Press Enter to continue...");
     getchar();
 */

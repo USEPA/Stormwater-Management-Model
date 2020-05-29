@@ -27,7 +27,6 @@
 set "PROJECT=swmm"
 set "BUILD_HOME=build"
 set "PLATFORM=win32"
-set "CONFIG=Release"
 
 
 :: determine project directory

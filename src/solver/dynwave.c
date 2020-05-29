@@ -45,6 +45,10 @@
 //   - Storage nodes allowed to pressurize if their surcharge depth > 0.
 //   - Minimum flow needed to compute a Courant time step modified.
 //
+//   Build 5.1.014:
+//   - updateNodeFlows() modified to subtract conduit evap. and seepage losses
+//     from downstream node inflow instead of upstream node outflow.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -541,18 +545,19 @@ void updateNodeFlows(int i)
         k = Link[i].subIndex;
         uniformLossRate = Conduit[k].evapLossRate + Conduit[k].seepLossRate; 
         barrels = Conduit[k].barrels;
+        uniformLossRate *= barrels;                                            //(5.1.014)
     }
 
     // --- update total inflow & outflow at upstream/downstream nodes
     if ( q >= 0.0 )
     {
-        Node[n1].outflow += q + uniformLossRate;
-        Node[n2].inflow  += q;
+        Node[n1].outflow += q;                                                 //(5.1.014)
+        Node[n2].inflow  += q - uniformLossRate;                               //(5.1.014)
     }
     else
     {
-        Node[n1].inflow   -= q;
-        Node[n2].outflow  -= q - uniformLossRate;
+        Node[n1].inflow   -= q + uniformLossRate;                              //(5.1.014)
+        Node[n2].outflow  -= q;                                                //(5.1.014)
     }
 
     // --- add surf. area contributions to upstream/downstream nodes
