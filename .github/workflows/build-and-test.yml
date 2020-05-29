@@ -38,5 +38,5 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: artifacts
-        path: $GITHUB_WORKSPACE/upload/*
+        name: nrtest artifacts
+        path: $GITHUB_WORKSPACE/upload/
