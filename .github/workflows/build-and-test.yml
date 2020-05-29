@@ -34,10 +34,9 @@ jobs:
     - name: Before test
       run: before-nrtest.cmd
     - name: Reg test
-      run: echo %CD%
-#        run-nrtests.cmd %GITHUB_SHA% %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+      run: run-nrtests.cmd %GITHUB_SHA% %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
     - name: Upload artifacts
-      run: echo $GITHUB_WORKSPACE
+      run: ls -l $GITHUB_WORKSPACE/upload
       shell: bash
 #      uses: actions/upload-artifact@v2
 #      with:
