@@ -39,7 +39,7 @@ set "CUR_DIR=%CD%"
 set "SCRIPT_HOME=%~dp0"
 cd %SCRIPT_HOME%
 pushd ..
-set PROJ_DIR=%CD%
+set "PROJ_DIR=%CD%"
 popd
 
 
@@ -114,6 +114,11 @@ set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --r
 :: create SUT benchmark archive
 cd .\benchmark
 7z a benchmark-%PLATFORM%.zip .\%PROJECT%-%SUT_BUILD_ID%
+
+
+:: stage artifacts for upload
+mkdir %PROJECT_DIR%\upload
+move /Y receipt.json %PROJECT_DIR%\upload\receipt.json
 
 
 :: GitHub Actions
