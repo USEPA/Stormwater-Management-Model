@@ -36,9 +36,7 @@ jobs:
     - name: Reg test
       run: run-nrtests.cmd %GITHUB_SHA% %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
     - name: Upload artifacts
-      run: ls -l $GITHUB_WORKSPACE/upload
-      shell: bash
-#      uses: actions/upload-artifact@v2
-#      with:
-#        name: receipt
-#        path: $GITHUB_WORKSPACE/$TEST_HOME/benchmark/receipt.json
+      uses: actions/upload-artifact@v2
+      with:
+        name: artifacts
+        path: $GITHUB_WORKSPACE/upload/*

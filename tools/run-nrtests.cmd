@@ -117,16 +117,15 @@ set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --r
 
 
 :: create SUT benchmark archive
+echo INFO: Staging nrtest artifacts for upload
 cd .\benchmark
 7z a benchmark-%PLATFORM%.zip .\%PROJECT%-%SUT_BUILD_ID% > nul
 
-
-:: stage artifacts for upload
 if not exist %PROJ_DIR%\upload (
   mkdir %PROJ_DIR%\upload
 )
-move /Y receipt.json %PROJ_DIR%\upload\receipt.json
-move /Y benchmark-%PLATFORM%.zip %PROJ_DIR%\upload\benchmark-%PLATFORM%.zip
+move /Y receipt.json %PROJ_DIR%\upload\receipt.json > nul
+move /Y benchmark-%PLATFORM%.zip %PROJ_DIR%\upload\benchmark-%PLATFORM%.zip > nul
 
 
 :: GitHub Actions
