@@ -39,4 +39,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: nrtest artifacts
-        path: $GITHUB_WORKSPACE/upload/
+        path: $GITHUB_WORKSPACE\upload\
