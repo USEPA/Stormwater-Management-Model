@@ -26,6 +26,11 @@
 setlocal EnableDelayedExpansion
 
 
+:: check that dependencies are installed
+where 7z > nul
+if %ERRORLEVEL% neq 0 ( echo "ERROR: 7zip not installed" & exit /B 1 )
+
+
 :: Check that required environment variables are set
 if not defined PROJECT ( echo "ERROR: PROJECT must be defined" & exit /B 1 )
 if not defined BUILD_HOME ( echo "ERROR: BUILD_HOME must be defined" & exit /B 1 )
@@ -113,13 +118,16 @@ set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --r
 
 :: create SUT benchmark archive
 cd .\benchmark
-7z a benchmark-%PLATFORM%.zip .\%PROJECT%-%SUT_BUILD_ID%
+7z a benchmark-%PLATFORM%.zip .\%PROJECT%-%SUT_BUILD_ID% > nul
 
 
 :: stage artifacts for upload
-mkdir %PROJ_DIR%\upload
+if not exist %PROJ_DIR\upload (
+  mkdir %PROJ_DIR%\upload
+)
 move /Y receipt.json %PROJ_DIR%\upload\receipt.json
 move /Y benchmark-%PLATFORM%.zip %PROJ_DIR%\upload\benchmark-%PLATFORM%.zip
+
 
 :: GitHub Actions
 echo ::set-env name=SUT_BUILD_ID::%SUT_BUILD_ID%
