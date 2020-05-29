@@ -7,7 +7,14 @@ on:
     branches: [ upstream-dev ]
 
 jobs:
+  checkout:
+    runs-on: windows-2016
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
   win_build:
+    needs: checkout
     runs-on: windows-2016
 
     defaults:
@@ -20,9 +27,6 @@ jobs:
       TEST_HOME: nrtests
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-
     - name: Setup python
       uses: actions/setup-python@v2
       with:
