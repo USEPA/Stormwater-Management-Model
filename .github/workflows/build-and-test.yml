@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ upstream-dev ]
 
-
 jobs:
   win_build:
     runs-on: windows-2016
