@@ -12,7 +12,6 @@ jobs:
     defaults:
       run:
         shell: cmd
-        working-directory: tools
     env:
       PROJECT: swmm
       BUILD_HOME: build
@@ -30,13 +29,13 @@ jobs:
 #    - name: Build and unit test
 #      run: make.cmd /t
     - name: Build
-      run: make.cmd
+      run: tools/make.cmd
     - name: Before test
-      run: before-nrtest.cmd
+      run: tools/before-nrtest.cmd
     - name: Reg test
-      run: run-nrtests.cmd %GITHUB_SHA% %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+      run: tools/run-nrtests.cmd %GITHUB_SHA% %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
         name: nrtest artifacts
-        path: $GITHUB_WORKSPACE\upload\receipt.json
+        path: $GITHUB_WORKSPACE/upload/receipt.json
