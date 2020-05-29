@@ -119,7 +119,7 @@ cd .\benchmark
 :: stage artifacts for upload
 mkdir %PROJ_DIR%\upload
 move /Y receipt.json %PROJ_DIR%\upload\receipt.json
-
+move /Y benchmark-%PLATFORM%.zip %PROJ_DIR%\upload\benchmark-%PLATFORM%.zip
 
 :: GitHub Actions
 echo ::set-env name=SUT_BUILD_ID::%SUT_BUILD_ID%
