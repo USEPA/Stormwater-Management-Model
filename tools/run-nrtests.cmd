@@ -122,7 +122,7 @@ cd .\benchmark
 
 
 :: stage artifacts for upload
-if not exist %PROJ_DIR\upload (
+if not exist %PROJ_DIR%\upload (
   mkdir %PROJ_DIR%\upload
 )
 move /Y receipt.json %PROJ_DIR%\upload\receipt.json
