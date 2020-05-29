@@ -117,8 +117,8 @@ cd .\benchmark
 
 
 :: stage artifacts for upload
-mkdir %PROJECT_DIR%\upload
-move /Y receipt.json %PROJECT_DIR%\upload\receipt.json
+mkdir %PROJ_DIR%\upload
+move /Y receipt.json %PROJ_DIR%\upload\receipt.json
 
 
 :: GitHub Actions
