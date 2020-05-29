@@ -129,7 +129,7 @@ if not exist %PROJ_DIR%\upload (
 move /Y receipt.json %PROJ_DIR%\upload\receipt.json > nul
 move /Y benchmark-%PLATFORM%.zip %PROJ_DIR%\upload\benchmark-%PLATFORM%.zip > nul
 
-echo INFO: Artifacts staged at %PROJ_DIR%\upload
+:: echo INFO: Artifacts staged at %PROJ_DIR%\upload
 
 
 :: GitHub Actions
