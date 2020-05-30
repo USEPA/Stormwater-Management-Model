@@ -117,11 +117,13 @@ echo.
 echo INFO: Comparing SUT artifacts to REF %REF_BUILD_ID%
 set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --rtol %RTOL_VALUE% --atol %ATOL_VALUE% -o benchmark\receipt.json
 %NRTEST_COMMAND%
-set RESULT=%ERRORLEVEL%
 
+set RESULT=%ERRORLEVEL%
+cd .\benchmark
+
+:: stage artifacts for upload
 if %RESULT% neq 0 (
   echo ERROR: nrtest compare exited with errors
-  cd .\benchmark
   7z a benchmark-%PLATFORM%.zip .\%PROJECT%-%SUT_BUILD_ID% > nul
   move /Y benchmark-%PLATFORM%.zip %PROJ_DIR%\upload\benchmark-%PLATFORM%.zip > nul
 ) else (
@@ -129,6 +131,6 @@ if %RESULT% neq 0 (
   move /Y receipt.json %PROJ_DIR%\upload\receipt.json > nul
 )
 
-:: Return user to their current dir and exit
+:: return user to their current dir and exit
 cd %CUR_DIR%
 exit /B %RESULT%
