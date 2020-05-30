@@ -40,10 +40,10 @@ setlocal
 
 
 :: check that dependencies are installed
-where curl > nul
-if %ERRORLEVEL% neq 0 ( echo "ERROR: curl not installed" & exit /B 1 )
-where 7z > nul
-if %ERRORLEVEL% neq 0 ( echo "ERROR: 7zip not installed" & exit /B 1 )
+for %%d in (curl 7z) do (
+    where %%d > nul
+    if %ERRORLEVEL% neq 0 ( echo "ERROR: %%d not installed" & exit /B 1 )
+)
 
 
 :: set URL to github repo with test files
