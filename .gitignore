@@ -13,3 +13,4 @@ src/solver/include/*_export.h
 
 build/
 nrtests/
+upload/
