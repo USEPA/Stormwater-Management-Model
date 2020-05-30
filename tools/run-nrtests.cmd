@@ -28,7 +28,7 @@ setlocal EnableDelayedExpansion
 
 :: check that dependencies are installed
 where 7z > nul
-if %ERRORLEVEL% neq 0 ( echo "ERROR: 7zip not installed" & exit /B 1 )
+if %ERRORLEVEL% neq 0 ( echo "ERROR: 7z not installed" & exit /B 1 )
 
 :: Check that required environment variables are set
 for %%v in (PROJECT BUILD_HOME TEST_HOME PLATFORM REF_BUILD_ID) do (
@@ -69,12 +69,12 @@ if not exist %PROJ_DIR%\upload (
 
 
 :: recursively build test list
-set "TESTS=tests\examples"
-:: set TESTS=
-:: for /F "tokens=*" %%T in ('dir /b /s /a:d tests') do (
-::   set FULL_PATH=%%T
-::   set TESTS=!TESTS! !FULL_PATH:*%TEST_HOME%\=!
-:: )
+:: set "TESTS=tests\examples"
+set TESTS=
+for /F "tokens=*" %%T in ('dir /b /s /a:d tests') do (
+  set FULL_PATH=%%T
+  set TESTS=!TESTS! !FULL_PATH:*%TEST_HOME%\=!
+)
 
 
 :: determine location of python Scripts folder
