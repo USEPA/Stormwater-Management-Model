@@ -2,7 +2,7 @@
 # CMakeLists.txt - CMake configuration file for swmm-solver
 #
 # Created: July 11, 2019
-# Modified: Nov 25, 2019
+# Updated: May 29, 2020
 #
 # Author: Michael E. Tryby
 #         US EPA ORD/CESER
@@ -22,7 +22,7 @@ project(swmm-solver
     )
 
 # Append local dir to module search path
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+# list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Sets the position independent code property for all targets
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -40,8 +40,7 @@ set(LIBRARY_DIST "lib")
 set(CONFIG_DIST  "cmake")
 
 
-option(BUILD_TESTS "Builds component tests (requires Boost)" OFF)
-option(BUILD_DEF   "Builds library with def file interface" OFF)
+option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
 
 
 # Add project subdirectories
@@ -73,6 +72,7 @@ install(
     FILE
         swmm-output-config.cmake
     )
+
 
 # Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
 set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)

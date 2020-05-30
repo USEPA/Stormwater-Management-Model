@@ -1,8 +1,8 @@
 ::
 ::  before-test.cmd - Stages test and benchmark files for nrtest
 ::
-::  Date Created: 10/16/2019
-::  Date Updated:
+::  Created: Oct 16, 2019
+::  Updated: May 29, 2020
 ::
 ::  Author: Michael E. Tryby
 ::          US EPA - ORD/CESER
@@ -110,6 +110,9 @@ for /F delims^=^"^ tokens^=4 %%d in ( 'findstr %PLATFORM% %TEST_HOME%\manifest.j
   for /F "tokens=2" %%r in ( 'echo %%d' ) do ( set "REF_BUILD_ID=%%r" )
 )
 if not defined REF_BUILD_ID ( echo "ERROR: REF_BUILD_ID could not be determined" & exit /B 1 )
+
+:: GitHub Actions
+echo ::set-env name=REF_BUILD_ID::%REF_BUILD_ID%
 
 
 :: return to users current directory

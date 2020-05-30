@@ -1,8 +1,8 @@
 ::
 ::  run_nrtest.cmd - Runs numerical regression test
 ::
-::  Date Created: 10/16/2019
-::  Date Updated:
+::  Created: Oct 16, 2019
+::  Updated: May 29, 2020
 ::
 ::  Author: Michael E. Tryby
 ::          US EPA - ORD/CESER
@@ -26,6 +26,11 @@
 setlocal EnableDelayedExpansion
 
 
+:: check that dependencies are installed
+where 7z > nul
+if %ERRORLEVEL% neq 0 ( echo "ERROR: 7zip not installed" & exit /B 1 )
+
+
 :: Check that required environment variables are set
 if not defined PROJECT ( echo "ERROR: PROJECT must be defined" & exit /B 1 )
 if not defined BUILD_HOME ( echo "ERROR: BUILD_HOME must be defined" & exit /B 1 )
@@ -39,7 +44,7 @@ set "CUR_DIR=%CD%"
 set "SCRIPT_HOME=%~dp0"
 cd %SCRIPT_HOME%
 pushd ..
-set PROJ_DIR=%CD%
+set "PROJ_DIR=%CD%"
 popd
 
 
@@ -62,6 +67,7 @@ if not exist apps\%PROJECT%-%SUT_BUILD_ID%.json (
 
 
 :: recursively build test list
+:: set "TESTS=tests\examples"
 set TESTS=
 for /F "tokens=*" %%T in ('dir /b /s /a:d tests') do (
   set FULL_PATH=%%T
@@ -109,6 +115,26 @@ echo.
 echo INFO: Comparing SUT artifacts to REF %REF_BUILD_ID%
 set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --rtol %RTOL_VALUE% --atol %ATOL_VALUE% -o benchmark\receipt.json
 %NRTEST_COMMAND%
+
+echo.
+
+:: create SUT benchmark archive
+echo INFO: Staging nrtest artifacts for upload
+cd .\benchmark
+7z a benchmark-%PLATFORM%.zip .\%PROJECT%-%SUT_BUILD_ID% > nul
+
+if not exist %PROJ_DIR%\upload (
+  mkdir %PROJ_DIR%\upload
+)
+move /Y receipt.json %PROJ_DIR%\upload\receipt.json > nul
+move /Y benchmark-%PLATFORM%.zip %PROJ_DIR%\upload\benchmark-%PLATFORM%.zip > nul
+
+:: echo INFO: Artifacts staged at %PROJ_DIR%\upload
+
+
+:: GitHub Actions
+echo ::set-env name=SUT_BUILD_ID::%SUT_BUILD_ID%
+
 
 :: Return user to their current dir
 cd %CUR_DIR%
