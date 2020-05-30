@@ -112,10 +112,10 @@ echo.
 echo INFO: Comparing SUT artifacts to REF %REF_BUILD_ID%
 set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --rtol %RTOL_VALUE% --atol %ATOL_VALUE% -o benchmark\receipt.json
 %NRTEST_COMMAND%
-if %ERRORLEVEL% eq 0 (
-    echo INFO: nrtest compare exited successfully
-) else (
+if %ERRORLEVEL% neq 0 (
     echo ERROR: nrtest compare exited with errors
+) else (
+    echo INFO: nrtest compare exited successfully
 )
 
 
