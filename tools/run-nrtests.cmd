@@ -62,6 +62,11 @@ if not exist apps\%PROJECT%-%SUT_BUILD_ID%.json (
     %PLATFORM% %SUT_BUILD_ID% %SUT_VERSION% > apps\%PROJECT%-%SUT_BUILD_ID%.json
 )
 
+:: prepare for artifact upload
+if not exist %PROJ_DIR%\upload (
+  mkdir %PROJ_DIR%\upload
+)
+
 
 :: recursively build test list
 set "TESTS=tests\examples"
@@ -112,24 +117,18 @@ echo.
 echo INFO: Comparing SUT artifacts to REF %REF_BUILD_ID%
 set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --rtol %RTOL_VALUE% --atol %ATOL_VALUE% -o benchmark\receipt.json
 %NRTEST_COMMAND%
-if %ERRORLEVEL% neq 0 (
-    echo ERROR: nrtest compare exited with errors
+set RESULT=%ERRORLEVEL%
+
+if %RESULT% neq 0 (
+  echo ERROR: nrtest compare exited with errors
+  cd .\benchmark
+  7z a benchmark-%PLATFORM%.zip .\%PROJECT%-%SUT_BUILD_ID% > nul
+  move /Y benchmark-%PLATFORM%.zip %PROJ_DIR%\upload\benchmark-%PLATFORM%.zip > nul
 ) else (
-    echo INFO: nrtest compare exited successfully
+  echo INFO: nrtest compare exited successfully
+  move /Y receipt.json %PROJ_DIR%\upload\receipt.json > nul
 )
 
-
-:: create SUT benchmark archive
-echo INFO: Staging nrtest artifacts for upload
-cd .\benchmark
-7z a benchmark-%PLATFORM%.zip .\%PROJECT%-%SUT_BUILD_ID% > nul
-
-if not exist %PROJ_DIR%\upload (
-  mkdir %PROJ_DIR%\upload
-)
-move /Y receipt.json %PROJ_DIR%\upload\receipt.json > nul
-move /Y benchmark-%PLATFORM%.zip %PROJ_DIR%\upload\benchmark-%PLATFORM%.zip > nul
-
-
-:: Return user to their current dir
+:: Return user to their current dir and exit
 cd %CUR_DIR%
+exit /B %RESULT%
