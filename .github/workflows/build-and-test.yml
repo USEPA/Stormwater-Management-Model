@@ -2,9 +2,9 @@ name: Build and Test
 
 on:
   push:
-    branches: [ upstream-dev ]
+    branches: [ develop ]
   pull_request:
-    branches: [ upstream-dev ]
+    branches: [ develop ]
 
 jobs:
   win_build:
