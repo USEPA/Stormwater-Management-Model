@@ -44,6 +44,7 @@ jobs:
       run: tools/run-nrtests.cmd %GITHUB_SHA% %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
     - name: Upload artifacts
+      if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
         name: nrtest-artifacts
