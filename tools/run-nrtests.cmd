@@ -64,12 +64,12 @@ if not exist apps\%PROJECT%-%SUT_BUILD_ID%.json (
 
 
 :: recursively build test list
-:: set "TESTS=tests\examples"
-set TESTS=
-for /F "tokens=*" %%T in ('dir /b /s /a:d tests') do (
-  set FULL_PATH=%%T
-  set TESTS=!TESTS! !FULL_PATH:*%TEST_HOME%\=!
-)
+set "TESTS=tests\examples"
+:: set TESTS=
+:: for /F "tokens=*" %%T in ('dir /b /s /a:d tests') do (
+::   set FULL_PATH=%%T
+::   set TESTS=!TESTS! !FULL_PATH:*%TEST_HOME%\=!
+:: )
 
 
 :: determine location of python Scripts folder
@@ -112,8 +112,12 @@ echo.
 echo INFO: Comparing SUT artifacts to REF %REF_BUILD_ID%
 set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --rtol %RTOL_VALUE% --atol %ATOL_VALUE% -o benchmark\receipt.json
 %NRTEST_COMMAND%
+if %ERRORLEVEL% eq 0 (
+    echo INFO: nrtest compare exited successfully
+) else (
+    echo ERROR: nrtest compare exited with errors
+)
 
-echo.
 
 :: create SUT benchmark archive
 echo INFO: Staging nrtest artifacts for upload
