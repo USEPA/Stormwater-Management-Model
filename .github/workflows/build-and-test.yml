@@ -1,10 +1,20 @@
+#
+#  build-and-test.yml - GitHub Actions CI for swmm-solver
+#
+#  Created: May 19, 2019
+#  Updated: May 31, 2019
+#
+#  Author: Michael E. Tryby
+#          US EPA - ORD/CESER
+#
+
 name: Build and Test
 
 on:
   push:
-    branches: [ upstream-dev ]
+    branches: [ develop ]
   pull_request:
-    branches: [ upstream-dev ]
+    branches: [ develop ]
 
 jobs:
   win_build:
