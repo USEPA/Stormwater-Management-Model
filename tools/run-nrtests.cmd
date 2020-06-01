@@ -28,15 +28,12 @@ setlocal EnableDelayedExpansion
 
 :: check that dependencies are installed
 where 7z > nul
-if %ERRORLEVEL% neq 0 ( echo "ERROR: 7zip not installed" & exit /B 1 )
-
+if %ERRORLEVEL% neq 0 ( echo "ERROR: 7z not installed" & exit /B 1 )
 
 :: Check that required environment variables are set
-if not defined PROJECT ( echo "ERROR: PROJECT must be defined" & exit /B 1 )
-if not defined BUILD_HOME ( echo "ERROR: BUILD_HOME must be defined" & exit /B 1 )
-if not defined TEST_HOME ( echo "ERROR: TEST_HOME must be defined" & exit /B 1 )
-if not defined PLATFORM ( echo "ERROR: PLATFORM must be defined" & exit /B 1 )
-if not defined REF_BUILD_ID ( echo "ERROR: REF_BUILD_ID must be defined" & exit /B 1 )
+for %%v in (PROJECT BUILD_HOME TEST_HOME PLATFORM REF_BUILD_ID) do (
+  if not defined %%v ( echo "ERROR: %%v must be defined" & exit /B 1 )
+)
 
 
 :: determine project directory
@@ -63,6 +60,11 @@ if not exist apps\%PROJECT%-%SUT_BUILD_ID%.json (
   mkdir apps
   call %SCRIPT_HOME%\app-config.cmd %PROJ_DIR%\%BUILD_HOME%\bin\Release^
     %PLATFORM% %SUT_BUILD_ID% %SUT_VERSION% > apps\%PROJECT%-%SUT_BUILD_ID%.json
+)
+
+:: prepare for artifact upload
+if not exist %PROJ_DIR%\upload (
+  mkdir %PROJ_DIR%\upload
 )
 
 
@@ -116,25 +118,19 @@ echo INFO: Comparing SUT artifacts to REF %REF_BUILD_ID%
 set NRTEST_COMMAND=%NRTEST_COMPARE_CMD% %TEST_OUTPUT_PATH% %REF_OUTPUT_PATH% --rtol %RTOL_VALUE% --atol %ATOL_VALUE% -o benchmark\receipt.json
 %NRTEST_COMMAND%
 
-echo.
-
-:: create SUT benchmark archive
-echo INFO: Staging nrtest artifacts for upload
+set RESULT=%ERRORLEVEL%
 cd .\benchmark
-7z a benchmark-%PLATFORM%.zip .\%PROJECT%-%SUT_BUILD_ID% > nul
 
-if not exist %PROJ_DIR%\upload (
-  mkdir %PROJ_DIR%\upload
+:: stage artifacts for upload
+if %RESULT% neq 0 (
+  echo ERROR: nrtest compare exited with errors
+  7z a benchmark-%PLATFORM%.zip .\%PROJECT%-%SUT_BUILD_ID% > nul
+  move /Y benchmark-%PLATFORM%.zip %PROJ_DIR%\upload\benchmark-%PLATFORM%.zip > nul
+) else (
+  echo INFO: nrtest compare exited successfully
+  move /Y receipt.json %PROJ_DIR%\upload\receipt.json > nul
 )
-move /Y receipt.json %PROJ_DIR%\upload\receipt.json > nul
-move /Y benchmark-%PLATFORM%.zip %PROJ_DIR%\upload\benchmark-%PLATFORM%.zip > nul
 
-:: echo INFO: Artifacts staged at %PROJ_DIR%\upload
-
-
-:: GitHub Actions
-echo ::set-env name=SUT_BUILD_ID::%SUT_BUILD_ID%
-
-
-:: Return user to their current dir
+:: return user to their current dir and exit
 cd %CUR_DIR%
+exit /B %RESULT%

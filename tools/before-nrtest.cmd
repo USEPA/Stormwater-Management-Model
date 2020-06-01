@@ -40,10 +40,10 @@ setlocal
 
 
 :: check that dependencies are installed
-where curl > nul
-if %ERRORLEVEL% neq 0 ( echo "ERROR: curl not installed" & exit /B 1 )
-where 7z > nul
-if %ERRORLEVEL% neq 0 ( echo "ERROR: 7zip not installed" & exit /B 1 )
+for %%d in (curl 7z) do (
+    where %%d > nul
+    if %ERRORLEVEL% neq 0 ( echo "ERROR: %%d not installed" & exit /B 1 )
+)
 
 
 :: set URL to github repo with test files
@@ -56,10 +56,9 @@ if [%1] == [] (set "RELEASE_TAG="
 
 
 :: check env variables and apply defaults
-if not defined PROJECT ( echo "ERROR: PROJECT must be defined" & exit /B 1 )
-if not defined BUILD_HOME ( echo "ERROR: BUILD_HOME must be defined" & exit /B 1 )
-if not defined PLATFORM ( echo "ERROR: PLATFORM must be defined" & exit /B 1 )
-
+for %%v in (PROJECT BUILD_HOME PLATFORM) do (
+  if not defined %%v ( echo "ERROR: %%v must be defined" & exit /B 1 )
+)
 
 echo INFO: Staging files for regression testing
 
