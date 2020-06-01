@@ -3,9 +3,6 @@ Stormwater-Management-Model
 
 ORD Stormwater Management Model (aka "SWMM")
 
-## Build Status
-![Build and Test](https://github.com/SWMM-Project/swmm-solver/workflows/Build%20and%20Test/badge.svg?branch=upstream-dev)
-
 
 ## Build Status
 ![Build and Test](https://github.com/USEPA/Stormwater-Management-Model/workflows/Build%20and%20Test/badge.svg)
