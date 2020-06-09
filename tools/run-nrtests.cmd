@@ -87,7 +87,7 @@ set TEST_OUTPUT_PATH=benchmark\%PROJECT%-%SUT_BUILD_ID%
 set NRTEST_COMPARE_CMD=python.exe %NRTEST_SCRIPT_PATH%\nrtest compare
 set REF_OUTPUT_PATH=benchmark\%PROJECT%-%REF_BUILD_ID%
 set RTOL_VALUE=0.01
-set ATOL_VALUE=0.0
+set ATOL_VALUE=1.0E-6
 
 :: change current directory to test suite
 ::cd %TEST_HOME%
