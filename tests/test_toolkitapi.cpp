@@ -413,6 +413,98 @@ BOOST_FIXTURE_TEST_CASE(project_info, FixtureOpenClose){
 
 }
 
+// Testing for Simulation parameters after Open
+BOOST_FIXTURE_TEST_CASE(project_info_metric, FixtureOpenCloseMetric){
+    // int paramType[10] =    {SM_ROUTESTEP, SM_MINROUTESTEP, SM_LENGTHSTEP,
+    //                         SM_STARTDRYDAYS, SM_COURANTFACTOR, SM_MINSURFAREA,
+    //                         SM_MINSLOPE, SM_HEADTOL,
+    //                         SM_SYSFLOWTOL, SM_LATFLOWTOL};
+    // double expectedValue[10] = {60., 0.5, 0.01,
+    //                             5., 0.75, 1.2,
+    //                             0.001/100, 0.015,
+    //                             5/100, 5/100};
+    int error;
+    double value;
+    //Simulation parameters
+    error = swmm_getSimulationParam(SM_ROUTESTEP, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 60);
+
+    error = swmm_getSimulationParam(SM_MINROUTESTEP, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 0.5);
+
+    error = swmm_getSimulationParam(SM_LENGTHSTEP, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 0.01);
+
+    error = swmm_getSimulationParam(SM_STARTDRYDAYS, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 5);
+
+    error = swmm_getSimulationParam(SM_COURANTFACTOR, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 0.75);
+
+    error = swmm_getSimulationParam(SM_MINSLOPE, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 0.001/100);
+
+    error = swmm_getSimulationParam(SM_MINSURFAREA, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 1.2);
+
+    error = swmm_getSimulationParam(SM_HEADTOL, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 0.015);
+}
+
+
+// Testing for Simulation parameters after Open on DW routing
+BOOST_FIXTURE_TEST_CASE(project_info_metric_dw, FixtureOpenCloseMetricDW){
+    // int paramType[10] =    {SM_ROUTESTEP, SM_MINROUTESTEP, SM_LENGTHSTEP,
+    //                         SM_STARTDRYDAYS, SM_COURANTFACTOR, SM_MINSURFAREA,
+    //                         SM_MINSLOPE, SM_HEADTOL,
+    //                         SM_SYSFLOWTOL, SM_LATFLOWTOL};
+    // double expectedValue[10] = {60., 0.5, 0.01,
+    //                             5., 0.75, 1.2,
+    //                             0.001/100, 0.015,
+    //                             5/100, 5/100};
+    int error;
+    double value;
+    //Simulation parameters
+    error = swmm_getSimulationParam(SM_ROUTESTEP, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 60);
+
+    error = swmm_getSimulationParam(SM_MINROUTESTEP, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 0.5);
+
+    error = swmm_getSimulationParam(SM_LENGTHSTEP, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 0.01);
+
+    error = swmm_getSimulationParam(SM_STARTDRYDAYS, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 5);
+
+    error = swmm_getSimulationParam(SM_COURANTFACTOR, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 0.75);
+
+    error = swmm_getSimulationParam(SM_MINSLOPE, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 0.001/100);
+
+    error = swmm_getSimulationParam(SM_MINSURFAREA, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 1.2);
+
+    error = swmm_getSimulationParam(SM_HEADTOL, &value);
+    BOOST_REQUIRE(error == ERR_NONE);
+    BOOST_CHECK_EQUAL(value, 0.015);
+}
 
 // Testing for count Objects after Open
 BOOST_FIXTURE_TEST_CASE(count_objects, FixtureOpenClose){

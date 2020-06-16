@@ -31,6 +31,16 @@
 #define DATA_PATH_RPT "swmm_api_test.rpt"
 #define DATA_PATH_OUT "swmm_api_test.out"
 
+// NOTE: Test Input File in metric units
+#define DATA_PATH_INP_METRIC "swmm_api_test_metric.inp"
+#define DATA_PATH_RPT_METRIC "swmm_api_test_metric.rpt"
+#define DATA_PATH_OUT_METRIC "swmm_api_test_metric.out"
+
+// NOTE: Test Input File in metric units with DW routing
+#define DATA_PATH_INP_METRIC_DW "swmm_api_test_metric_dw.inp"
+#define DATA_PATH_RPT_METRIC_DW "swmm_api_test_metric_dw.rpt"
+#define DATA_PATH_OUT_METRIC_DW "swmm_api_test_metric_dw.out"
+
 // NOTE: Test RTK Input File
 #define DATA_PATH_INP_RTK "swmm_rtk_test.inp"
 #define DATA_PATH_RPT_RTK "swmm_rtk_test.rpt"
@@ -50,6 +60,28 @@ struct FixtureOpenClose{
         swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
     }
     ~FixtureOpenClose() {
+        swmm_close();
+    }
+};
+
+struct FixtureOpenCloseMetric{
+    FixtureOpenCloseMetric() {
+        swmm_open((char *)DATA_PATH_INP_METRIC,
+                  (char *)DATA_PATH_RPT_METRIC,
+                  (char *)DATA_PATH_OUT_METRIC);
+    }
+    ~FixtureOpenCloseMetric() {
+        swmm_close();
+    }
+};
+
+struct FixtureOpenCloseMetricDW{
+    FixtureOpenCloseMetricDW() {
+        swmm_open((char *)DATA_PATH_INP_METRIC_DW,
+                  (char *)DATA_PATH_RPT_METRIC_DW,
+                  (char *)DATA_PATH_OUT_METRIC_DW);
+    }
+    ~FixtureOpenCloseMetricDW() {
         swmm_close();
     }
 };

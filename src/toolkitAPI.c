@@ -273,7 +273,16 @@ int DLLEXPORT  swmm_getSimulationParam(int type, double *value)
             // Courant time step factor
             case SM_COURANTFACTOR: *value = CourantFactor; break;
             // Minimum nodal surface area
-            case SM_MINSURFAREA: *value = MinSurfArea; break;
+            case SM_MINSURFAREA:
+                if(RouteModel == DW)
+                {
+                    *value = MinSurfArea * UCF(LENGTH) * UCF(LENGTH);
+                }
+                else
+                {
+                    *value = MinSurfArea;
+                }
+                break;
             // Minimum conduit slope
             case SM_MINSLOPE: *value = MinSlope; break;
             // Runoff continuity error
@@ -284,8 +293,17 @@ int DLLEXPORT  swmm_getSimulationParam(int type, double *value)
             case SM_FLOWERROR: *value = FlowError; break;
             // Quality routing error
             case SM_QUALERROR: *value = QualError; break;
-            // DW routing head tolerance (ft)
-            case SM_HEADTOL: *value = HeadTol; break;
+            // DW routing head tolerance (ft) * UCF(LENGTH)
+            case SM_HEADTOL:
+                if(RouteModel == DW)
+                {
+                    *value = HeadTol * UCF(LENGTH);
+                }
+                else
+                {
+                    *value = HeadTol;
+                }
+                break;
             // Tolerance for steady system flow
             case SM_SYSFLOWTOL: *value = SysFlowTol; break;
             // Tolerance for steady nodal inflow
