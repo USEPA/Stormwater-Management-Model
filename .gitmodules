@@ -1,0 +1,3 @@
+[submodule "ci-tools"]
+	path = ci-tools
+	url = https://github.com/michaeltryby/ci-tools.git
