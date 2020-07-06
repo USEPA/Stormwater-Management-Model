@@ -1,53 +1,27 @@
 #
-# CMakeLists.txt - CMake configuration file for swmm/tests
+# CMakeLists.txt - CMake configuration file for swmm-solver/tests
 #
-# Created: February 23, 2018
-# Author:  Constantin Savtchenko
-# Ref: http://neyasystems.com/an-engineers-guide-to-unit-testing-cmake-and-boost-unit-tests/
+# Created: Mar 4, 2020
+# Updated: May 21, 2020
 #
-# Modified by: Michael E. Tryby
-#              US EPA ORD/NRMRL
-# 
-
-cmake_minimum_required (VERSION 3.0)
+# Author: Michael E. Tryby
+#         US EPA ORD/CESER
+#
 
 
-#Setup CMake to run tests
-enable_testing()
+#Prep ourselves for compiling with boost
+include(../extern/boost.cmake)
 
 
-# Sets for output directory for executables and libraries. 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+add_subdirectory(outfile)
 
 
-if(UNIX)
-    set(CMAKE_CXX_FLAGS "-std=c++11")
-endif(UNIX)
+# Setting up tests to run from build tree
+set(TEST_BIN_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIGURATION>")
 
 
-#Prep ourselves for compiling boost
-find_package(Boost REQUIRED)
-include_directories (${Boost_INCLUDE_DIRS})
-
-
-# Test files are a separate source directory called tests
-file(GLOB TEST_SRCS . test_*.cpp)
-
-
-#Run through each source
-foreach(testSrc ${TEST_SRCS})
-        #Extract the filename without an extension (NAME_WE)
-        get_filename_component(testName ${testSrc} NAME_WE)
-
-        #Add compile target
-        add_executable(${testName} ${testSrc})
-
-        #link to Boost libraries AND your targets and dependencies
-        target_link_libraries(${testName} ${Boost_LIBRARIES} swmm5 swmm-output)
-
-        #Finally add it to test execution - 
-        #Notice the WORKING_DIRECTORY and COMMAND
-        add_test(NAME ${testName}
-                 COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${testName}  
-                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data)
-endforeach(testSrc)
+# ctest doesn't like tests added in subdirectories so adding them here
+add_test(NAME test_output
+    COMMAND "${TEST_BIN_DIRECTORY}/test_output"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/outfile/data
+)

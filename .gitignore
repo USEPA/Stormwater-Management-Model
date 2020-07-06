@@ -21,7 +21,6 @@
 
 
 # Build files
-buildprod*/
 /build/
 *.o
 /Debug/
@@ -33,7 +32,8 @@ buildprod*/
 
 
 # Testing
-nrtestsuite/
+nrtests/
+upload/
 performance.json
 stderr.log
 stdout.log
