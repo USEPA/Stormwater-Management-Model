@@ -26,49 +26,49 @@ typedef void* SMO_Handle;
   extern "C" {
 #endif
 
-int DLLEXPORT SMO_init(SMO_Handle* p_handle);
-int DLLEXPORT SMO_close(SMO_Handle* p_handle);
-int DLLEXPORT SMO_open(SMO_Handle p_handle, const char* path);
-int DLLEXPORT SMO_getVersion(SMO_Handle p_handle, int* version);
-int DLLEXPORT SMO_getProjectSize(SMO_Handle p_handle, int** elementCount, int* length);
+int EXPORT_OUT_API SMO_init(SMO_Handle* p_handle);
+int EXPORT_OUT_API SMO_close(SMO_Handle* p_handle);
+int EXPORT_OUT_API SMO_open(SMO_Handle p_handle, const char* path);
+int EXPORT_OUT_API SMO_getVersion(SMO_Handle p_handle, int* version);
+int EXPORT_OUT_API SMO_getProjectSize(SMO_Handle p_handle, int** elementCount, int* length);
 
-int DLLEXPORT SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag);
-int DLLEXPORT SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* length);
-int DLLEXPORT SMO_getStartDate(SMO_Handle p_handle, double* date);
-int DLLEXPORT SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time);
-int DLLEXPORT SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
+int EXPORT_OUT_API SMO_getFlowUnits(SMO_Handle p_handle, int* unitFlag);
+int EXPORT_OUT_API SMO_getPollutantUnits(SMO_Handle p_handle, int** unitFlag, int* length);
+int EXPORT_OUT_API SMO_getStartDate(SMO_Handle p_handle, double* date);
+int EXPORT_OUT_API SMO_getTimes(SMO_Handle p_handle, SMO_time code, int* time);
+int EXPORT_OUT_API SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
 		int elementIndex, char** elementName, int* size);
 
-int DLLEXPORT SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
+int EXPORT_OUT_API SMO_getSubcatchSeries(SMO_Handle p_handle, int subcatchIndex,
 	SMO_subcatchAttribute attr, int startPeriod, int endPeriod, float** outValueSeries, int* dim);
-int DLLEXPORT SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex, SMO_nodeAttribute attr,
+int EXPORT_OUT_API SMO_getNodeSeries(SMO_Handle p_handle, int nodeIndex, SMO_nodeAttribute attr,
 	int startPeriod, int endPeriod, float** outValueSeries, int* dim);
-int DLLEXPORT SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex, SMO_linkAttribute attr,
+int EXPORT_OUT_API SMO_getLinkSeries(SMO_Handle p_handle, int linkIndex, SMO_linkAttribute attr,
 	int startPeriod, int endPeriod, float** outValueSeries, int* dim);
-int DLLEXPORT SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute attr,
+int EXPORT_OUT_API SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute attr,
 	int startPeriod, int endPeriod, float** outValueSeries, int* dim);
 
-int DLLEXPORT SMO_getSubcatchAttribute(SMO_Handle p_handle, int timeIndex,
+int EXPORT_OUT_API SMO_getSubcatchAttribute(SMO_Handle p_handle, int timeIndex,
 	SMO_subcatchAttribute attr, float** outValueArray, int* length);
-int DLLEXPORT SMO_getNodeAttribute(SMO_Handle p_handle, int timeIndex,
+int EXPORT_OUT_API SMO_getNodeAttribute(SMO_Handle p_handle, int timeIndex,
 	SMO_nodeAttribute attr, float** outValueArray, int* length);
-int DLLEXPORT SMO_getLinkAttribute(SMO_Handle p_handle, int timeIndex,
+int EXPORT_OUT_API SMO_getLinkAttribute(SMO_Handle p_handle, int timeIndex,
 	SMO_linkAttribute attr, float** outValueArray, int* length);
-int DLLEXPORT SMO_getSystemAttribute(SMO_Handle p_handle, int timeIndex,
+int EXPORT_OUT_API SMO_getSystemAttribute(SMO_Handle p_handle, int timeIndex,
 	SMO_systemAttribute attr, float** outValueArray, int* length);
 
-int DLLEXPORT SMO_getSubcatchResult(SMO_Handle p_handle, int timeIndex,
+int EXPORT_OUT_API SMO_getSubcatchResult(SMO_Handle p_handle, int timeIndex,
 	int subcatchIndex, float** outValueArray, int* arrayLength);
-int DLLEXPORT SMO_getNodeResult(SMO_Handle p_handle, int timeIndex,
+int EXPORT_OUT_API SMO_getNodeResult(SMO_Handle p_handle, int timeIndex,
 	int nodeIndex, float** outValueArray, int* arrayLength);
-int DLLEXPORT SMO_getLinkResult(SMO_Handle p_handle, int timeIndex,
+int EXPORT_OUT_API SMO_getLinkResult(SMO_Handle p_handle, int timeIndex,
 	int linkIndex, float** outValueArray, int* arrayLength);
-int DLLEXPORT SMO_getSystemResult(SMO_Handle p_handle, int timeIndex,
+int EXPORT_OUT_API SMO_getSystemResult(SMO_Handle p_handle, int timeIndex,
 	int dummyIndex, float** outValueArray, int* arrayLength);
 
-void DLLEXPORT SMO_free(void** array);
-void DLLEXPORT SMO_clearError(SMO_Handle p_handle_in);
-int DLLEXPORT SMO_checkError(SMO_Handle p_handle_in, char** msg_buffer);
+void EXPORT_OUT_API SMO_free(void** array);
+void EXPORT_OUT_API SMO_clearError(SMO_Handle p_handle_in);
+int EXPORT_OUT_API SMO_checkError(SMO_Handle p_handle_in, char** msg_buffer);
 
 #ifdef __cplusplus
   }

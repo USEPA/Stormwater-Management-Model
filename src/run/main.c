@@ -12,8 +12,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+
 #include "swmm5.h"
-#include "consts.h"
 
 int  main(int argc, char *argv[])
 //
@@ -32,11 +32,16 @@ int  main(int argc, char *argv[])
     char *binaryFile;
     char *arg1;
     char blank[] = "";
+    int  version, vMajor, vMinor, vRelease;
     char errMsg[128];
     int  msgLen = 127;
     time_t start;
     double runTime;
 
+    version = swmm_getVersion();
+    vMajor = version / 10000;
+    vMinor = (version - 10000 * vMajor) / 1000;
+    vRelease = (version - 10000 * vMajor - 1000 * vMinor);
     start = time(0);
 
     // --- check for proper number of command line arguments
@@ -62,10 +67,7 @@ int  main(int argc, char *argv[])
         else if (strcmp(arg1, "--version") == 0 || strcmp(arg1, "-v") == 0)
         {
             // Output version number
-            printf("\n%s.%s.%s\n\n",
-                SEMVERSION_MAJOR,
-                SEMVERSION_MINOR,
-                SEMVERSION_PATCH);
+            printf("\n%d.%d.%0d\n\n", vMajor, vMinor, vRelease);
         }
         else
         {
@@ -79,9 +81,8 @@ int  main(int argc, char *argv[])
         reportFile = argv[2];
         if (argc > 3) binaryFile = argv[3];
         else          binaryFile = blank;
-        printf("\n... EPA-SWMM %s.%s (Build %s.%s.%s)\n",
-            SEMVERSION_MAJOR, SEMVERSION_MINOR,
-            SEMVERSION_MAJOR, SEMVERSION_MINOR, SEMVERSION_PATCH);
+        printf("\n... EPA-SWMM %d.%d (Build %d.%d.%0d)\n", vMajor, vMinor,
+            vMajor, vMinor, vRelease);
 
         // --- run SWMM
         swmm_run(inputFile, reportFile, binaryFile);
