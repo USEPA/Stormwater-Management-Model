@@ -1,0 +1,169 @@
+[TITLE]
+;;Project Title/Notes
+ Example 5
+ A simple groundwater example.
+
+[OPTIONS]
+;;Option             Value
+FLOW_UNITS           CFS
+INFILTRATION         HORTON
+FLOW_ROUTING         KINWAVE
+LINK_OFFSETS         DEPTH
+MIN_SLOPE            0
+ALLOW_PONDING        NO
+SKIP_STEADY_STATE    NO
+
+START_DATE           09/13/2014
+START_TIME           00:00:00
+REPORT_START_DATE    09/13/2014
+REPORT_START_TIME    00:00:00
+END_DATE             09/15/2014
+END_TIME             00:00:00
+SWEEP_START          01/01
+SWEEP_END            12/31
+DRY_DAYS             0
+REPORT_STEP          00:15:00
+WET_STEP             00:05:00
+DRY_STEP             00:05:00
+ROUTING_STEP         0:00:30 
+
+INERTIAL_DAMPING     PARTIAL
+NORMAL_FLOW_LIMITED  BOTH
+FORCE_MAIN_EQUATION  H-W
+VARIABLE_STEP        0.75
+LENGTHENING_STEP     0
+MIN_SURFAREA         12.557
+MAX_TRIALS           8
+HEAD_TOLERANCE       0.005
+SYS_FLOW_TOL         5
+LAT_FLOW_TOL         5
+MINIMUM_STEP         0.5
+THREADS              1
+
+[FILES]
+;;Interfacing Files
+
+[EVAPORATION]
+;;Data Source    Parameters
+;;-------------- ----------------
+CONSTANT         0.0
+DRY_ONLY         NO
+
+[RAINGAGES]
+;;Name           Format    Interval SCF      Source    
+;;-------------- --------- ------ ------ ----------
+1                INTENSITY 0:15     1.0      TIMESERIES Rainfall        
+
+[SUBCATCHMENTS]
+;;Name           Rain Gage        Outlet           Area     %Imperv  Width    %Slope   CurbLen  SnowPack        
+;;-------------- ---------------- ---------------- -------- -------- -------- -------- -------- ----------------
+wPP              1                2                5        50       100      1        0                        
+woPP             1                2                5        50       100      1        0                        
+
+[SUBAREAS]
+;;Subcatchment   N-Imperv   N-Perv     S-Imperv   S-Perv     PctZero    RouteTo    PctRouted 
+;;-------------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
+wPP              0.01       0.1        0.05       0.05       25         OUTLET    
+woPP             0.01       0.1        0.05       0.05       25         OUTLET    
+
+[INFILTRATION]
+;;Subcatchment   MaxRate    MinRate    Decay      DryTime    MaxInfil  
+;;-------------- ---------- ---------- ---------- ---------- ----------
+wPP              1.2        0.1        2          7          0         
+woPP             1.2        0.1        2          7          0         
+
+[LID_CONTROLS]
+;;Name           Type/Layer Parameters
+;;-------------- ---------- ----------
+PP               PP
+PP               SURFACE    6          .25        0.1        1.0        5         
+PP               PAVEMENT   6          0.15       0          100        0         
+PP               SOIL       12         0.5        0.2        0.1        0.5        10.0       3.5       
+PP               STORAGE    12         0.75       0.5        0         
+PP               DRAIN      0          0.5        6          6         
+
+[LID_USAGE]
+;;Subcatchment   LID Process      Number  Area       Width      InitSat    FromImp    ToPerv     RptFile                  DrainTo         
+;;-------------- ---------------- ------- ---------- ---------- ---------- ---------- ---------- ------------------------ ----------------
+wPP              PP               100     50         10         0          25         1         
+
+[OUTFALLS]
+;;Name           Elevation  Type       Stage Data       Gated    Route To        
+;;-------------- ---------- ---------- ---------------- -------- ----------------
+2                0          FREE                        NO                       
+
+[TIMESERIES]
+;;Name           Date       Time       Value     
+;;-------------- ---------- ---------- ----------
+Rainfall                    0:00       0.037     
+Rainfall                    0:15       0.111     
+Rainfall                    0:30       0.185     
+Rainfall                    0:45       0.259     
+Rainfall                    1:00       0.333     
+Rainfall                    1:15       0.407     
+Rainfall                    1:30       0.481     
+Rainfall                    1:45       0.556     
+Rainfall                    2:00       0.630     
+Rainfall                    2:15       0.644     
+Rainfall                    2:30       0.600     
+Rainfall                    2:45       0.556     
+Rainfall                    3:00       0.511     
+Rainfall                    3:15       0.467     
+Rainfall                    3:30       0.422     
+Rainfall                    3:45       0.378     
+Rainfall                    4:00       0.333     
+Rainfall                    4:15       0.289     
+Rainfall                    4:30       0.244     
+Rainfall                    4:45       0.200     
+Rainfall                    5:00       0.156     
+Rainfall                    5:15       0.111     
+Rainfall                    5:30       0.067     
+Rainfall                    5:45       0.022     
+Rainfall                    6:00       0         
+
+[REPORT]
+;;Reporting Options
+INPUT      YES
+CONTROLS   YES
+SUBCATCHMENTS ALL
+NODES ALL
+LINKS ALL
+
+[TAGS]
+
+[MAP]
+DIMENSIONS 2806.303 3109.860 6292.997 8439.437
+Units      None
+
+[COORDINATES]
+;;Node           X-Coord            Y-Coord           
+;;-------------- ------------------ ------------------
+2                4556.338           3352.113          
+
+[VERTICES]
+;;Link           X-Coord            Y-Coord           
+;;-------------- ------------------ ------------------
+
+[Polygons]
+;;Subcatchment   X-Coord            Y-Coord           
+;;-------------- ------------------ ------------------
+wPP              2964.789           4971.831          
+wPP              6134.511           4986.413          
+wPP              6134.511           7445.652          
+wPP              2964.789           7450.704          
+woPP             2957.539           7437.452          
+woPP             2957.539           7437.452          
+woPP             2957.539           7437.452          
+woPP             3000.569           4960.151          
+woPP             3000.569           4960.151          
+woPP             1445.340           5236.773          
+woPP             480.238            5464.218          
+woPP             369.590            6558.410          
+woPP             443.355            7425.158          
+woPP             2963.686           7437.452          
+
+[SYMBOLS]
+;;Gage           X-Coord            Y-Coord           
+;;-------------- ------------------ ------------------
+1                4485.915           8197.183          
+

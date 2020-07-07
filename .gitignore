@@ -37,9 +37,7 @@ upload/
 performance.json
 stderr.log
 stdout.log
-tests/solver/data/*
-tests/solver/data/lid/*
-!tests/solver/data/**/test_*
+
 
 # Generated files
 *_export.h
