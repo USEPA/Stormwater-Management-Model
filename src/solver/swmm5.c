@@ -820,7 +820,7 @@ void  writecon(char *s)
 //  Purpose: writes string of characters to the console.
 //
 {
-    fprintf(stdout,s);
+    fprintf(stdout,"%s",s);
     fflush(stdout);
 }
 
