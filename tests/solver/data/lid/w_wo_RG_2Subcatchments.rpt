@@ -1,0 +1,79 @@
+
+  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build 5.2.0.dev6)
+  --------------------------------------------------------------
+
+   Example 5 
+   A simple groundwater example. 
+  
+  
+  *************
+  Element Count
+  *************
+  Number of rain gages ...... 1
+  Number of subcatchments ... 2
+  Number of nodes ........... 1
+  Number of links ........... 0
+  Number of pollutants ...... 0
+  Number of land uses ....... 0
+  
+  
+  ****************
+  Raingage Summary
+  ****************
+                                                      Data       Recording
+  Name                 Data Source                    Type       Interval 
+  ------------------------------------------------------------------------
+  1                    Rainfall                       INTENSITY   15 min.
+  
+  
+  ********************
+  Subcatchment Summary
+  ********************
+  Name                       Area     Width   %Imperv    %Slope Rain Gage            Outlet              
+  -----------------------------------------------------------------------------------------------------------
+  wRG                        5.00    100.00     50.00    1.0000 1                    2                   
+  woRG                       5.00    100.00     50.00    1.0000 1                    2                   
+
+
+  *******************
+  LID Control Summary
+  *******************
+                                   No. of        Unit        Unit      % Area    % Imperv      % Perv
+  Subcatchment     LID Control      Units        Area       Width     Covered     Treated     Treated
+  ---------------------------------------------------------------------------------------------------
+  wRG              RG                 100       50.00       10.00        2.30       25.00        0.00
+  
+  
+  ************
+  Node Summary
+  ************
+                                           Invert      Max.    Ponded    External
+  Name                 Type                 Elev.     Depth      Area    Inflow  
+  -------------------------------------------------------------------------------
+  2                    OUTFALL               0.00      0.00       0.0
+  
+  
+  
+  ERROR 185: invalid parameter value for LID RG - check soil layer parameters.
+  
+  ERROR 185: invalid parameter value for LID RG - check soil layer parameters.
+  
+  ERROR 185: invalid parameter value for LID RG - check soil layer parameters.
+  
+  ERROR 185: invalid parameter value for LID RG - check soil layer parameters.
+  
+  ERROR 185: invalid parameter value for LID RG - check soil layer parameters.
+  
+  ERROR 185: invalid parameter value for LID RG - check soil layer parameters.
+  
+  ERROR 185: invalid parameter value for LID RG - check soil layer parameters.
+  
+  ERROR 185: invalid parameter value for LID RG - check soil layer parameters.
+  
+  ERROR 185: invalid parameter value for LID RG - check soil layer parameters.
+  
+  ERROR 185: invalid parameter value for LID RG - check soil layer parameters.
+
+  Analysis begun on:  Tue Jul  7 15:19:48 2020
+  Analysis ended on:  Tue Jul  7 15:19:48 2020
+  Total elapsed time: < 1 sec

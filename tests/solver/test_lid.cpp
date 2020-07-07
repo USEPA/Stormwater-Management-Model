@@ -1,9 +1,16 @@
-// NOTE: Travis installs libboost test version 1.5.4
-//#define BOOST_TEST_DYN_LINK
 
-#define BOOST_TEST_MODULE "toolkitAPI_lid"
-#include "test_toolkitapi_lid.hpp"
-#include <vector>
+
+
+
+
+
+#define BOOST_TEST_MODULE "lid"
+
+
+#include <boost/test/included/unit_test.hpp>
+
+#include "test_lid.hpp"
+
 
 #define ERR_NONE 0
 #define ERR_API_OUTBOUNDS 501
@@ -13,6 +20,76 @@
 #define ERR_API_UNDEFINED_LID 511
 
 using namespace std;
+
+
+void open_swmm_lid(int lid_type, bool revised=false)
+{
+    if (revised)
+    {
+        switch(lid_type)
+        {
+            case 0:
+                swmm_open((char *)DATA_PATH_INP_LID_BC_REVISED, (char *)DATA_PATH_RPT_LID_BC_REVISED, (char *)DATA_PATH_OUT_LID_BC_REVISED);
+                break;
+            case 1:
+                swmm_open((char *)DATA_PATH_INP_LID_GR_REVISED, (char *)DATA_PATH_RPT_LID_GR_REVISED, (char *)DATA_PATH_OUT_LID_GR_REVISED);
+                break;
+            case 2:
+                swmm_open((char *)DATA_PATH_INP_LID_IT_REVISED, (char *)DATA_PATH_RPT_LID_IT_REVISED, (char *)DATA_PATH_OUT_LID_IT_REVISED);
+                break;
+            case 3:
+                swmm_open((char *)DATA_PATH_INP_LID_PP_REVISED, (char *)DATA_PATH_RPT_LID_PP_REVISED, (char *)DATA_PATH_OUT_LID_PP_REVISED);
+                break;
+            case 4:
+                swmm_open((char *)DATA_PATH_INP_LID_RB_REVISED, (char *)DATA_PATH_RPT_LID_RB_REVISED, (char *)DATA_PATH_OUT_LID_RB_REVISED);
+                break;
+            case 5:
+                swmm_open((char *)DATA_PATH_INP_LID_RG_REVISED, (char *)DATA_PATH_RPT_LID_RG_REVISED, (char *)DATA_PATH_OUT_LID_RG_REVISED);
+                break;
+            case 6:
+                swmm_open((char *)DATA_PATH_INP_LID_SWALE_REVISED, (char *)DATA_PATH_RPT_LID_SWALE_REVISED, (char *)DATA_PATH_OUT_LID_SWALE_REVISED);
+                break;
+            case 7:
+                swmm_open((char *)DATA_PATH_INP_LID_RD_REVISED, (char *)DATA_PATH_RPT_LID_RD_REVISED, (char *)DATA_PATH_OUT_LID_RD_REVISED);
+                break;
+            default:
+                break;
+        }
+    }
+    else
+    {
+        switch(lid_type)
+        {
+            case 0:
+                swmm_open((char *)DATA_PATH_INP_LID_BC, (char *)DATA_PATH_RPT_LID_BC, (char *)DATA_PATH_OUT_LID_BC);
+                break;
+            case 1:
+                swmm_open((char *)DATA_PATH_INP_LID_GR, (char *)DATA_PATH_RPT_LID_GR, (char *)DATA_PATH_OUT_LID_GR);
+                break;
+            case 2:
+                swmm_open((char *)DATA_PATH_INP_LID_IT, (char *)DATA_PATH_RPT_LID_IT, (char *)DATA_PATH_OUT_LID_IT);
+                break;
+            case 3:
+                swmm_open((char *)DATA_PATH_INP_LID_PP, (char *)DATA_PATH_RPT_LID_PP, (char *)DATA_PATH_OUT_LID_PP);
+                break;
+            case 4:
+                swmm_open((char *)DATA_PATH_INP_LID_RB, (char *)DATA_PATH_RPT_LID_RB, (char *)DATA_PATH_OUT_LID_RB);
+                break;
+            case 5:
+                swmm_open((char *)DATA_PATH_INP_LID_RG, (char *)DATA_PATH_RPT_LID_RG, (char *)DATA_PATH_OUT_LID_RG);
+                break;
+            case 6:
+                swmm_open((char *)DATA_PATH_INP_LID_SWALE, (char *)DATA_PATH_RPT_LID_SWALE, (char *)DATA_PATH_OUT_LID_SWALE);
+                break;
+            case 7:
+                swmm_open((char *)DATA_PATH_INP_LID_RD, (char *)DATA_PATH_RPT_LID_RD, (char *)DATA_PATH_OUT_LID_RD);
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 
 // Non-Fixuture Unit Tests
 BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi)
@@ -86,7 +163,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
         error = swmm_setLidCParam(0, 0, 5, db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
-        
+
         //Lid Soil
         error = swmm_setLidCParam(0, 1, 0, db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
@@ -104,8 +181,8 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
         error = swmm_setLidCParam(0, 1, 12, db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
-        
-        //Lid Storage 
+
+        //Lid Storage
         error = swmm_setLidCParam(0, 2, 0, db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
         error = swmm_setLidCParam(0, 2, 1, db_value);
@@ -116,8 +193,8 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_CHECK_EQUAL(error, ERR_NONE);
         error = swmm_setLidCParam(0, 2, 2, db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
-        
-        //Lid Pavement 
+
+        //Lid Pavement
         error = swmm_setLidCParam(0, 3, 0, db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
         error = swmm_setLidCParam(0, 3, 1, db_value);
@@ -160,7 +237,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_CHECK_EQUAL(error, ERR_NONE);
         error = swmm_setLidCParam(0, 5, 12, db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
-        
+
         //Lid Unit
         error = swmm_getLidUCount(0, &int_value);
         BOOST_CHECK_EQUAL(error, ERR_NONE);

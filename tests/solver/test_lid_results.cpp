@@ -1,13 +1,15 @@
-// NOTE: Travis installs libboost test version 1.5.4
-//#define BOOST_TEST_DYN_LINK
 
-#define BOOST_TEST_MODULE "toolkitAPI_lid_result"
-#include "test_toolkitapi_lid.hpp"
-#include <vector>
+
+
+
+#include <boost/test/unit_test.hpp>
+
+#include "test_lid.hpp"
 
 #define ERR_NONE 0
 
 using namespace std;
+
 
 BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
 

@@ -8,11 +8,10 @@
  *   Unit testing mechanics for the gage API using Boost Test.
  */
 
-// NOTE: Travis installs libboost test version 1.5.4
-//#define BOOST_TEST_DYN_LINK
+ #include <boost/test/unit_test.hpp>
 
-#define BOOST_TEST_MODULE "toolkitAPI_gage"
-#include "test_toolkitapi.hpp"
+ #include "test_toolkit.hpp"
+
 
 #define ERR_NONE 0
 

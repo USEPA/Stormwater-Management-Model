@@ -1,9 +1,15 @@
-#include <boost/test/included/unit_test.hpp>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string>
-#include <math.h>
+
+
+
+
+
+
+
+#ifndef TEST_LID_HPP
+#define TEST_LID_HPP
+
+
 #include <vector>
 
 #include "swmm5.h"
@@ -78,73 +84,11 @@
 
 using namespace std;
 
-void open_swmm_lid(int lid_type, bool revised=false)
-{
-    if (revised)
-    {
-        switch(lid_type)
-        {
-            case 0:
-                swmm_open((char *)DATA_PATH_INP_LID_BC_REVISED, (char *)DATA_PATH_RPT_LID_BC_REVISED, (char *)DATA_PATH_OUT_LID_BC_REVISED);
-                break;
-            case 1:
-                swmm_open((char *)DATA_PATH_INP_LID_GR_REVISED, (char *)DATA_PATH_RPT_LID_GR_REVISED, (char *)DATA_PATH_OUT_LID_GR_REVISED);
-                break;
-            case 2:
-                swmm_open((char *)DATA_PATH_INP_LID_IT_REVISED, (char *)DATA_PATH_RPT_LID_IT_REVISED, (char *)DATA_PATH_OUT_LID_IT_REVISED);
-                break;
-            case 3:
-                swmm_open((char *)DATA_PATH_INP_LID_PP_REVISED, (char *)DATA_PATH_RPT_LID_PP_REVISED, (char *)DATA_PATH_OUT_LID_PP_REVISED);
-                break;
-            case 4:
-                swmm_open((char *)DATA_PATH_INP_LID_RB_REVISED, (char *)DATA_PATH_RPT_LID_RB_REVISED, (char *)DATA_PATH_OUT_LID_RB_REVISED);
-                break;
-            case 5:
-                swmm_open((char *)DATA_PATH_INP_LID_RG_REVISED, (char *)DATA_PATH_RPT_LID_RG_REVISED, (char *)DATA_PATH_OUT_LID_RG_REVISED);
-                break;
-            case 6:
-                swmm_open((char *)DATA_PATH_INP_LID_SWALE_REVISED, (char *)DATA_PATH_RPT_LID_SWALE_REVISED, (char *)DATA_PATH_OUT_LID_SWALE_REVISED);
-                break;
-            case 7:
-                swmm_open((char *)DATA_PATH_INP_LID_RD_REVISED, (char *)DATA_PATH_RPT_LID_RD_REVISED, (char *)DATA_PATH_OUT_LID_RD_REVISED);
-                break;
-            default:
-                break;
-        }
-    }
-    else
-    {
-        switch(lid_type)
-        {
-            case 0:
-                swmm_open((char *)DATA_PATH_INP_LID_BC, (char *)DATA_PATH_RPT_LID_BC, (char *)DATA_PATH_OUT_LID_BC);
-                break;
-            case 1:
-                swmm_open((char *)DATA_PATH_INP_LID_GR, (char *)DATA_PATH_RPT_LID_GR, (char *)DATA_PATH_OUT_LID_GR);
-                break;
-            case 2:
-                swmm_open((char *)DATA_PATH_INP_LID_IT, (char *)DATA_PATH_RPT_LID_IT, (char *)DATA_PATH_OUT_LID_IT);
-                break;
-            case 3:
-                swmm_open((char *)DATA_PATH_INP_LID_PP, (char *)DATA_PATH_RPT_LID_PP, (char *)DATA_PATH_OUT_LID_PP);
-                break;
-            case 4:
-                swmm_open((char *)DATA_PATH_INP_LID_RB, (char *)DATA_PATH_RPT_LID_RB, (char *)DATA_PATH_OUT_LID_RB);
-                break;
-            case 5:
-                swmm_open((char *)DATA_PATH_INP_LID_RG, (char *)DATA_PATH_RPT_LID_RG, (char *)DATA_PATH_OUT_LID_RG);
-                break;
-            case 6:
-                swmm_open((char *)DATA_PATH_INP_LID_SWALE, (char *)DATA_PATH_RPT_LID_SWALE, (char *)DATA_PATH_OUT_LID_SWALE);
-                break;
-            case 7:
-                swmm_open((char *)DATA_PATH_INP_LID_RD, (char *)DATA_PATH_RPT_LID_RD, (char *)DATA_PATH_OUT_LID_RD);
-                break;
-            default:
-                break;
-        }
-    }
-}
+
+// Fixture helper function
+void open_swmm_lid(int lid_type, bool revised);
+
+
 
 /* Fixture Open Close
  1. Opens Model
@@ -157,7 +101,7 @@ struct FixtureOpenClose_LID
 
     void open_swmm_model(int lid_type)
     {
-        open_swmm_lid(lid_type);
+        open_swmm_lid(lid_type, false);
     }
 
     ~FixtureOpenClose_LID()
@@ -179,7 +123,7 @@ struct FixtureBeforeStart_LID {
 
     void open_swmm_model(int lid_type)
     {
-        open_swmm_lid(lid_type);
+        open_swmm_lid(lid_type, false);
     }
 
     ~FixtureBeforeStart_LID() {
@@ -209,7 +153,7 @@ struct FixtureBeforeStep_LID {
 
     void open_swmm_model(int lid_type)
     {
-        open_swmm_lid(lid_type);
+        open_swmm_lid(lid_type, false);
         swmm_start(0);
     }
 
@@ -282,7 +226,7 @@ struct Fixture_LID_Results
                 break;
         }
 
-        open_swmm_lid(lid_type);
+        open_swmm_lid(lid_type, false);
         swmm_start(0);
         sub_index = swmm_getObjectIndex(SM_SUBCATCH, (char *)subcatch.c_str(), &error);
         BOOST_REQUIRE(error == ERR_NONE);
@@ -324,7 +268,7 @@ struct FixtureBeforeEnd_LID
 
     void open_swmm_model(int lid_type)
     {
-        open_swmm_lid(lid_type);
+        open_swmm_lid(lid_type, false);
         swmm_start(0);
 
         int error;
@@ -356,7 +300,7 @@ struct FixtureBeforeClose_LID
 
     void open_swmm_model(int lid_type)
     {
-        open_swmm_lid(lid_type);
+        open_swmm_lid(lid_type, false);
         swmm_start(0);
 
         int error;
@@ -373,3 +317,6 @@ struct FixtureBeforeClose_LID
         swmm_close();
     }
 };
+
+
+#endif //TEST_LID_HPP

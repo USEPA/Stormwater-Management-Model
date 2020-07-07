@@ -8,16 +8,14 @@
  *   Unit testing for SWMM outputapi using Boost Test.
  */
 
-// NOTE: Travis installs libboost test version 1.5.4
-//#define BOOST_TEST_DYN_LINK
-
 #define BOOST_TEST_MODULE "output"
-#include <boost/test/included/unit_test.hpp>
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+
+#include <boost/test/included/unit_test.hpp>
 
 #include "swmm_output.h"
 
@@ -39,25 +37,27 @@ boost::test_tools::predicate_result check_cdd(std::vector<float>& test,
     std::vector<float>::iterator test_it;
     std::vector<float>::iterator ref_it;
 
-    for (test_it = test.begin(); test_it < test.end(); ++test_it) {
-        for (ref_it = ref.begin(); ref_it < ref.end(); ++ref_it) {
+    for (test_it = test.begin(), ref_it = ref.begin();
+    (test_it < test.end()) && (ref_it < ref.end());
+    ++test_it, ++ref_it)
+    {
 
-             if (*test_it != *ref_it) {
-                // Compute log absolute error
-                tmp = abs(*test_it - *ref_it);
-                if (tmp < 1.0e-7)
-                    tmp = 1.0e-7f;
+        if (*test_it != *ref_it)
+        {
+            // Compute log absolute error
+            tmp = abs(*test_it - *ref_it);
+            if (tmp < 1.0e-7)
+                tmp = 1.0e-7f;
 
-                else if (tmp > 2.0)
-                    tmp = 1.0f;
+            else if (tmp > 2.0)
+                tmp = 1.0f;
 
-                tmp = - log10f(tmp);
-                if (tmp < 0.0)
-                    tmp = 0.0f;
+            tmp = - log10f(tmp);
+            if (tmp < 0.0)
+                tmp = 0.0f;
 
-                if (tmp < min_cdd)
-                    min_cdd = tmp;
-            }
+            if (tmp < min_cdd)
+                min_cdd = tmp;
         }
     }
 
@@ -251,7 +251,7 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
     std::vector<float> test_vec;
     test_vec.assign(array, array + array_dim);
 
-    BOOST_CHECK(check_cdd(test_vec, ref_vec, 3));
+    BOOST_CHECK(check_cdd(test_vec, ref_vec, 2));
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {

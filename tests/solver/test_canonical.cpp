@@ -8,25 +8,12 @@
  *   Unit testing for SWMM using Boost Test.
  */
 
-// NOTE: Travis installs libboost test version 1.5.4
-//#define BOOST_TEST_DYN_LINK
+ #include <boost/test/unit_test.hpp>
 
-#define BOOST_TEST_MODULE "swmm5"
-#include <boost/test/included/unit_test.hpp>
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string>
-#include <math.h>
-
-#include "swmm5.h"
+ #include "test_toolkit.hpp"
 
 
 // NOTE: Test Input File
-#define DATA_PATH_INP "./swmm_api_test.inp"
-#define DATA_PATH_RPT "./swmm_api_test.rpt"
-#define DATA_PATH_OUT "./swmm_api_test.out"
-
 #define DATA_PATH_INP2 "./swmm_api_test2.inp"
 #define DATA_PATH_RPT2 "./swmm_api_test2.rpt"
 #define DATA_PATH_OUT2 "./swmm_api_test2.out"
