@@ -38,6 +38,10 @@ performance.json
 stderr.log
 stdout.log
 
+tests/solver/data/*.rpt
+tests/solver/data/**/*.rpt
+tests/solver/data/**/*.out
+tests/solver/data/feng*
 
 # Generated files
 *_export.h
