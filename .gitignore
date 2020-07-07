@@ -37,7 +37,9 @@ upload/
 performance.json
 stderr.log
 stdout.log
-tests/data/swmm_api_test.inp
+tests/solver/data/*
+tests/solver/data/lid/*
+!tests/solver/data/**/test_*
 
 # Generated files
 *_export.h

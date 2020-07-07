@@ -1,9 +1,0 @@
-SWMM5 LID Report File
-
-Project:   Example 5 
-LID Unit: BC in Subcatchment wBC
-
-                    	  Elapsed	    Total	    Total	  Surface	 Pavement	     Soil	  Storage	  Surface	    Drain	  Surface	 Pavement	     Soil	  Storage
-                    	     Time	   Inflow	     Evap	    Infil	     Perc	     Perc	    Exfil	   Runoff	  OutFlow	    Level	    Level	 Moisture	    Level
-Date        Time    	    Hours	    in/hr	    in/hr	    in/hr	    in/hr	    in/hr	    in/hr	    in/hr	    in/hr	   inches	   inches	  Content	   inches
------------ --------	 ---------	 ---------	 ---------	 ---------	 ---------	 ---------	 ---------	 ---------	 ---------	 ---------	 ---------	 ---------	 ---------

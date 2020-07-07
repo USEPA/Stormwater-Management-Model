@@ -15,7 +15,7 @@
 
 
 // Add shared data paths here
-#define DATA_PATH_INP "swmm_api_test.inp"
+#define DATA_PATH_INP "test_swmm_api.inp"
 #define DATA_PATH_RPT "swmm_api_test.rpt"
 #define DATA_PATH_OUT "swmm_api_test.out"
 
@@ -32,7 +32,7 @@ struct FixtureBeforeStep{
 };
 
 
-// Declare shared test predicates
+// Declare shared test predicates here
 boost::test_tools::predicate_result check_cdd_double(std::vector<double>& test,
     std::vector<double>& ref, long cdd_tol);
 

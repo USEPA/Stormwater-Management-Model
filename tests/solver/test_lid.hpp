@@ -18,67 +18,67 @@
 #define ERR_NONE 0
 
 // NOTE: Test LID Input File
-#define DATA_PATH_INP_LID_BC "lid/w_wo_BC_2Subcatchments.inp"
+#define DATA_PATH_INP_LID_BC "lid/test_w_wo_BC_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_BC "lid/w_wo_BC_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_BC "lid/w_wo_BC_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_BC_REVISED "lid/revised/w_wo_BC_2Subcatchments_revised.inp"
+#define DATA_PATH_INP_LID_BC_REVISED "lid/revised/test_w_wo_BC_2Subcatchments_revised.inp"
 #define DATA_PATH_RPT_LID_BC_REVISED "lid/revised/w_wo_BC_2Subcatchments_revised.rpt"
 #define DATA_PATH_OUT_LID_BC_REVISED "lid/revised/w_wo_BC_2Subcatchments_revised.out"
 
-#define DATA_PATH_INP_LID_GR "lid/w_wo_GR_2Subcatchments.inp"
+#define DATA_PATH_INP_LID_GR "lid/test_w_wo_GR_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_GR "lid/w_wo_GR_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_GR "lid/w_wo_GR_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_GR_REVISED "lid/revised/w_wo_GR_2Subcatchments_revised.inp"
+#define DATA_PATH_INP_LID_GR_REVISED "lid/revised/test_w_wo_GR_2Subcatchments_revised.inp"
 #define DATA_PATH_RPT_LID_GR_REVISED "lid/revised/w_wo_GR_2Subcatchments_revised.rpt"
 #define DATA_PATH_OUT_LID_GR_REVISED "lid/revised/w_wo_GR_2Subcatchments_revised.out"
 
-#define DATA_PATH_INP_LID_IT "lid/w_wo_IT_2Subcatchments.inp"
+#define DATA_PATH_INP_LID_IT "lid/test_w_wo_IT_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_IT "lid/w_wo_IT_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_IT "lid/w_wo_IT_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_IT_REVISED "lid/revised/w_wo_IT_2Subcatchments_revised.inp"
+#define DATA_PATH_INP_LID_IT_REVISED "lid/revised/test_w_wo_IT_2Subcatchments_revised.inp"
 #define DATA_PATH_RPT_LID_IT_REVISED "lid/revised/w_wo_IT_2Subcatchments_revised.rpt"
 #define DATA_PATH_OUT_LID_IT_REVISED "lid/revised/w_wo_IT_2Subcatchments_revised.out"
 
-#define DATA_PATH_INP_LID_PP "lid/w_wo_PP_2Subcatchments.inp"
+#define DATA_PATH_INP_LID_PP "lid/test_w_wo_PP_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_PP "lid/w_wo_PP_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_PP "lid/w_wo_PP_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_PP_REVISED "lid/revised/w_wo_PP_2Subcatchments_revised.inp"
+#define DATA_PATH_INP_LID_PP_REVISED "lid/revised/test_w_wo_PP_2Subcatchments_revised.inp"
 #define DATA_PATH_RPT_LID_PP_REVISED "lid/revised/w_wo_PP_2Subcatchments_revised.rpt"
 #define DATA_PATH_OUT_LID_PP_REVISED "lid/revised/w_wo_PP_2Subcatchments_revised.out"
 
-#define DATA_PATH_INP_LID_RB "lid/w_wo_RB_2Subcatchments.inp"
+#define DATA_PATH_INP_LID_RB "lid/test_w_wo_RB_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_RB "lid/w_wo_RB_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_RB "lid/w_wo_RB_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_RB_REVISED "lid/revised/w_wo_RB_2Subcatchments_revised.inp"
+#define DATA_PATH_INP_LID_RB_REVISED "lid/revised/test_w_wo_RB_2Subcatchments_revised.inp"
 #define DATA_PATH_RPT_LID_RB_REVISED "lid/revised/w_wo_RB_2Subcatchments_revised.rpt"
 #define DATA_PATH_OUT_LID_RB_REVISED "lid/revised/w_wo_RB_2Subcatchments_revised.out"
 
-#define DATA_PATH_INP_LID_RG "lid/w_wo_RG_2Subcatchments.inp"
+#define DATA_PATH_INP_LID_RG "lid/test_w_wo_RG_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_RG "lid/w_wo_RG_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_RG "lid/w_wo_RG_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_RG_REVISED "lid/revised/w_wo_RG_2Subcatchments_revised.inp"
+#define DATA_PATH_INP_LID_RG_REVISED "lid/revised/test_w_wo_RG_2Subcatchments_revised.inp"
 #define DATA_PATH_RPT_LID_RG_REVISED "lid/revised/w_wo_RG_2Subcatchments_revised.rpt"
 #define DATA_PATH_OUT_LID_RG_REVISED "lid/revised/w_wo_RG_2Subcatchments_revised.out"
 
-#define DATA_PATH_INP_LID_SWALE "lid/w_wo_SWALE_2Subcatchments.inp"
+#define DATA_PATH_INP_LID_SWALE "lid/test_w_wo_SWALE_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_SWALE "lid/w_wo_SWALE_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_SWALE "lid/w_wo_SWALE_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_SWALE_REVISED "lid/revised/w_wo_SWALE_2Subcatchments_revised.inp"
+#define DATA_PATH_INP_LID_SWALE_REVISED "lid/revised/test_w_wo_SWALE_2Subcatchments_revised.inp"
 #define DATA_PATH_RPT_LID_SWALE_REVISED "lid/revised/w_wo_SWALE_2Subcatchments_revised.rpt"
 #define DATA_PATH_OUT_LID_SWALE_REVISED "lid/revised/w_wo_SWALE_2Subcatchments_revised.out"
 
-#define DATA_PATH_INP_LID_RD "lid/w_wo_RD_2Subcatchments.inp"
+#define DATA_PATH_INP_LID_RD "lid/test_w_wo_RD_2Subcatchments.inp"
 #define DATA_PATH_RPT_LID_RD "lid/w_wo_RD_2Subcatchments.rpt"
 #define DATA_PATH_OUT_LID_RD "lid/w_wo_RD_2Subcatchments.out"
 
-#define DATA_PATH_INP_LID_RD_REVISED "lid/revised/w_wo_RD_2Subcatchments_revised.inp"
+#define DATA_PATH_INP_LID_RD_REVISED "lid/revised/test_w_wo_RD_2Subcatchments_revised.inp"
 #define DATA_PATH_RPT_LID_RD_REVISED "lid/revised/w_wo_RD_2Subcatchments_revised.rpt"
 #define DATA_PATH_OUT_LID_RD_REVISED "lid/revised/w_wo_RD_2Subcatchments_revised.out"
 

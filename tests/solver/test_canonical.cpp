@@ -12,13 +12,8 @@
 
  #include "test_toolkit.hpp"
 
-
-// NOTE: Test Input File
-#define DATA_PATH_INP2 "./swmm_api_test2.inp"
-#define DATA_PATH_RPT2 "./swmm_api_test2.rpt"
-#define DATA_PATH_OUT2 "./swmm_api_test2.out"
-
 using namespace std;
+
 
 // Custom test to check the minimum number of correct decimal digits between
 // the test and the ref vectors.
