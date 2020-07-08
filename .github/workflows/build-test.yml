@@ -23,6 +23,7 @@ jobs:
       run:
         shell: cmd
     strategy:
+      fail-fast: false
       matrix:
         generator: [Visual Studio 15 2017, Visual Studio 15 2017 Win64]
     env:
