@@ -30,9 +30,12 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+
+    - name: Checkout ci-tools repo
+      uses: actions/checkout@v2
       with:
-          repository: michaeltryby/ci-tools
-          path: ci-tools
+        repository: michaeltryby/ci-tools
+        path: ci-tools
 
     - name: Setup python
       uses: actions/setup-python@v2
