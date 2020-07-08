@@ -20,9 +20,11 @@ jobs:
   win_build:
     runs-on: windows-2016
     continue-on-error: ${{ matrix.experimental }}
+
     defaults:
       run:
         shell: cmd
+
     strategy:
       fail-fast: false
       matrix:
@@ -31,6 +33,7 @@ jobs:
         include:
           - generator: Visual Studio 15 2017 Win64
             experimental: true
+
     env:
       PROJECT: swmm
       BUILD_HOME: build
@@ -66,7 +69,7 @@ jobs:
       run: ci-tools/windows/before-nrtest.cmd
 
     - name: Run reg test
-      run: ci-tools/windows/run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+      run: ci-tools/windows/run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_ACTION%
 
     - name: Upload artifacts
       if: ${{ always() }}
