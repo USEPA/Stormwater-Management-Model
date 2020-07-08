@@ -66,5 +66,5 @@ jobs:
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
-        name: nrtest-artifacts
-        path: upload/
+        name: build-test-artifacts
+        path: upload/*
