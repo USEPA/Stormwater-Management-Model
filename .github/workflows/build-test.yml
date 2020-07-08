@@ -51,10 +51,10 @@ jobs:
         python -m pip install -r ci-tools/windows/requirements-swmm.txt
 
     - name: Build and unit test
-      run: ci-tools/windows/make.cmd /t /g ${{ matrix.generator }}
+      run: ci-tools/windows/make.cmd /t /g "${{ matrix.generator }}"
 
     - name: Build for reg test
-      run: ci-tools/windows/make.cmd /g ${{ matrix.generator }}
+      run: ci-tools/windows/make.cmd /g "${{ matrix.generator }}"
 
     - name: Before reg test
       run: ci-tools/windows/before-nrtest.cmd
