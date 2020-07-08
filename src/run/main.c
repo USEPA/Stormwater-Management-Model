@@ -9,6 +9,7 @@
 //   Main stub for the command line version of EPA SWMM 5.1
 //   to be run with swmm5.dll.
 
+#include <string.h>
 #include <stdio.h>
 #include <time.h>
 #include "swmm5.h"
