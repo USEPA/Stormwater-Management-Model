@@ -26,8 +26,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        generator: [Visual Studio 15 2017]
-        experimental: [false]
+        include:
+          - generator: Visual Studio 15 2017
+            experimental: false
         include:
           - generator: Visual Studio 15 2017 Win64
             experimental: true
