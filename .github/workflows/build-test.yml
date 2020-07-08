@@ -43,7 +43,7 @@ jobs:
     - name: Checkout submodule
       uses: actions/checkout@v2
       with:
-        repository: michaeltryby/ci-tools
+        repository: OpenWaterAnalytics/ci-tools
         path: ci-tools
 
     - name: Setup python
