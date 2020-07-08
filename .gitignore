@@ -21,7 +21,7 @@
 
 
 # Build files
-/build/
+build/
 *.o
 /Debug/
 /build-linux/
