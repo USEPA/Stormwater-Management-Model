@@ -19,13 +19,18 @@ on:
 jobs:
   win_build:
     runs-on: windows-2016
+    continue-on-error: ${{ matrix.experimental }}
     defaults:
       run:
         shell: cmd
     strategy:
       fail-fast: false
       matrix:
-        generator: [Visual Studio 15 2017, Visual Studio 15 2017 Win64]
+        generator: [Visual Studio 15 2017]
+        experimental: [false]
+        include:
+          - generator: Visual Studio 15 2017 Win64
+            experimental: true
     env:
       PROJECT: swmm
       BUILD_HOME: build
