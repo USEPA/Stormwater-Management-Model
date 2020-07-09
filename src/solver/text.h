@@ -17,11 +17,15 @@
 //            05/10/18  (Build 5.1.013)
 //            03/01/20  (Build 5.1.014)
 //            04/01/20  (Build 5.1.015)
-//            
+//
 //   Author:  L. Rossman
 //
 //   Text strings
 //-----------------------------------------------------------------------------
+
+#ifndef TEXT_H
+#define TEXT_H
+
 
 #define FMT01 \
  "\tswmm5 <input file> <report file> <output file>\n"
@@ -446,3 +450,6 @@
 #define  ws_GWF              "[GWF"
 #define  ws_ADJUST           "[ADJUSTMENT"
 #define  ws_EVENT            "[EVENT"
+
+
+#endif //TEXT_H

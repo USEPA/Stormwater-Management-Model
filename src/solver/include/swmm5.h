@@ -14,6 +14,7 @@
 #ifndef SWMM5_H
 #define SWMM5_H
 
+
 // --- define WINDOWS
 
 #undef WINDOWS
@@ -35,8 +36,8 @@
 // --- use "C" linkage for C++ programs
 
 #ifdef __cplusplus
-extern "C" { 
-#endif 
+extern "C" {
+#endif
 
 int  DLLEXPORT   swmm_run(char* f1, char* f2, char* f3);
 int  DLLEXPORT   swmm_open(char* f1, char* f2, char* f3);
@@ -51,8 +52,9 @@ int  DLLEXPORT   swmm_getVersion(void);
 int  DLLEXPORT   swmm_getError(char* errMsg, int msgLen);
 int  DLLEXPORT   swmm_getWarnings(void);
 
-#ifdef __cplusplus 
-}   // matches the linkage specification from above */ 
+#ifdef __cplusplus
+}   // matches the linkage specification from above */
 #endif
 
-#endif
+
+#endif //SWMM5_H

@@ -18,6 +18,10 @@
 //   - New getTimeStamp function added.
 //-----------------------------------------------------------------------------
 
+#ifndef DATETIME_H
+#define DATETIME_H
+
+
 typedef double DateTime;
 
 #define Y_M_D 0
@@ -61,3 +65,6 @@ void datetime_setDateFormat(int fmt);
 DateTime datetime_addSeconds(DateTime date1, double seconds);
 DateTime datetime_addDays(DateTime date1, DateTime date2);
 long     datetime_timeDiff(DateTime date1, DateTime date2);
+
+
+#endif //DATETIME_H
