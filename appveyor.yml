@@ -1,0 +1,87 @@
+# https://ci.appveyor.com/project/OpenWaterAnalytics/stormwater-management-model/
+
+version: 2.0.{build}
+
+platform:
+  - x64
+
+matrix:
+  allow_failures:
+    #Group: (EXPERIMENTAL / SUPPORTED)
+    #EXPERIMENTAL is allowed to fail under the build matrix
+    - GROUP: "EXPERIMENTAL"
+
+environment:
+  matrix:
+    # Python 3.4
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR: "Visual Studio 15 2017"
+      GROUP: "SUPPORTED"
+      BOOST_ROOT: "C:/Libraries/boost_1_67_0"
+      PLATFORM: "win32"
+      REF_BUILD_ID: "323_1"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR: "Visual Studio 15 2017 Win64"
+      GROUP: "EXPERIMENTAL"
+      BOOST_ROOT: "C:/Libraries/boost_1_67_0"
+      PLATFORM: "win64"
+      REF_BUILD_ID: "323_2"
+
+init:
+  - set SUT_BUILD_ID=%APPVEYOR_BUILD_NUMBER%_%APPVEYOR_JOB_NUMBER%
+  - set SWMM_HOME=%APPVEYOR_BUILD_FOLDER%
+  - set BUILD_HOME=buildprod
+  - set TEST_HOME=nrtestsuite
+  # See set values
+  - echo %APPVEYOR_BUILD_WORKER_IMAGE%
+  - echo %BUILD_HOME%
+  - echo %GENERATOR%
+  - echo %BOOST_ROOT%
+
+  # Repo is cloned after init
+
+install:
+  # Install nrtest and dependencies for regression tests
+  - python -m pip install -r tools\requirements-appveyor.txt
+
+before_build:
+  - mkdir %BUILD_HOME%
+  - cd %BUILD_HOME%
+  - cmake -G "%GENERATOR%"
+    -DBUILD_TESTS=1
+    -DBOOST_ROOT="%BOOST_ROOT%"
+    -DBoost_USE_STATIC_LIBS="ON" ..
+
+build_script:
+  - cmake --build . --config Release
+
+before_test:
+  - cd %SWMM_HOME%
+  - tools\before-test.cmd %PLATFORM% %REF_BUILD_ID% %SUT_BUILD_ID% %APPVEYOR_REPO_COMMIT%
+
+test_script:
+  # run unit tests
+  - cd %BUILD_HOME%\tests
+  - ctest -C Release
+    # Run regression tests
+  - cd %SWMM_HOME%
+  - tools\run-nrtest.cmd %REF_BUILD_ID% %SUT_BUILD_ID%
+
+on_success:
+  - cd %TEST_HOME%\benchmark
+  - appveyor PushArtifact receipt.json
+  - cd %SWMM_HOME%
+  - cd %BUILD_HOME%\bin\Release
+  - appveyor PushArtifact run-swmm.exe
+  - appveyor PushArtifact swmm5.dll
+  - appveyor PushArtifact swmm-output.dll
+
+on_failure:
+  - cd %TEST_HOME%\benchmark
+  # zip up the SUT benchmarks
+  - 7z a benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip .\swmm-%SUT_BUILD_ID%
+  - appveyor PushArtifact benchmark-%PLATFORM%-%SUT_BUILD_ID%.zip
+
+#cache:
+#  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+#  - C:\ProgramData\chocolatey\lib -> appveyor.yml
