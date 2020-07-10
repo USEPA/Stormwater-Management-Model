@@ -13,11 +13,15 @@
 //   Various Constants
 //-----------------------------------------------------------------------------
 
+#ifndef CONSTS_H
+#define CONSTS_H
+
+
 //------------------
 // General Constants
 //------------------
 
-#define   VERSION            51015 
+#define   VERSION            51015
 #define   MAGICNUMBER        516114522
 #define   EOFMARK            0x1A           // Use 0x04 for UNIX systems
 #define   MAXTITLE           3              // Max. # title lines
@@ -94,5 +98,8 @@
 
 //---------------------------
 // Token separator characters
-//--------------------------- 
-#define   SEPSTR    " \t\n\r" 
+//---------------------------
+#define   SEPSTR    " \t\n\r"
+
+
+#endif //CONSTS_H
