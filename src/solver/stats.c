@@ -40,6 +40,7 @@
 //
 //   Build 5.1.015:
 //   - Fixes bug in summary statistics when Report Start date > Start Date.
+//   - Fixes failure to initialize all subcatchment groundwater statistics.
 //   - Support added for grouped freqency table of routing time steps.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -155,6 +156,8 @@ int  stats_open()
             Subcatch[j].groundwater->stats.deepFlow = 0.0;
             Subcatch[j].groundwater->stats.evap = 0.0;
             Subcatch[j].groundwater->stats.maxFlow = 0.0;
+            Subcatch[j].groundwater->stats.finalUpperMoist = 0.0;              //(5.1.015)
+            Subcatch[j].groundwater->stats.finalWaterTable = 0.0;              //
         }
     }
 
