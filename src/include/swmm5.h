@@ -1,6 +1,6 @@
 /** @file swmm5.h
  @see http://github.com/openwateranalytics/stormwater-management-model
- 
+
  swmm5.h
  @brief Prototypes for SWMM5 functions exported to swmm5.dll.
  @date 03/24/14  (Build 5.1.001)
@@ -28,7 +28,7 @@
 #ifdef WINDOWS
 	#ifdef __MINGW32__
 		// Seems to be more wrapper friendly
-		#define DLLEXPORT __declspec(dllexport) __cdecl 
+		#define DLLEXPORT __declspec(dllexport) __cdecl
 	#else
 		#define DLLEXPORT __declspec(dllexport) __stdcall
 	#endif
@@ -40,8 +40,8 @@
 // --- use "C" linkage for C++ programs
 
 #ifdef __cplusplus
-extern "C" { 
-#endif 
+extern "C" {
+#endif
 
 /**
  @brief Opens SWMM input file, reads in network data, runs, and closes
@@ -50,7 +50,7 @@ extern "C" {
  @param f3 pointer to name of binary output file (to be created)
  @return error code
 */
-int  DLLEXPORT   swmm_run(char* f1, char* f2, char* f3);
+int  DLLEXPORT   swmm_run(const char *f1, const char *f2, const char *f3);
 
 /**
  @brief Opens SWMM input file & reads in network data
@@ -59,7 +59,7 @@ int  DLLEXPORT   swmm_run(char* f1, char* f2, char* f3);
  @param f3 pointer to name of binary output file (to be created)
  @return error code
 */
-int  DLLEXPORT   swmm_open(char* f1, char* f2, char* f3);
+int  DLLEXPORT   swmm_open(const char *f1, const char *f2, const char *f3);
 
 /**
  @brief Start SWMM simulation
@@ -128,8 +128,8 @@ int  DLLEXPORT   swmm_getWarnings(void);                                       /
 int  swmm_IsOpenFlag(void);
 int  swmm_IsStartedFlag(void);
 
-#ifdef __cplusplus 
-}   // matches the linkage specification from above */ 
+#ifdef __cplusplus
+}   // matches the linkage specification from above */
 #endif
 
 #endif
