@@ -31,7 +31,7 @@ add_test(NAME test_output
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/outfile/data
 )
 
-add_test(NAME test_toolkit
-    COMMAND "${TEST_BIN_DIRECTORY}/test_toolkit"
+add_test(NAME test_solver
+    COMMAND "${TEST_BIN_DIRECTORY}/test_solver"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/solver/data
 )

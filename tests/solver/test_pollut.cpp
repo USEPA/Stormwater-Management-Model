@@ -9,8 +9,8 @@
 
  #include <boost/test/unit_test.hpp>
 
- #include "test_toolkit.hpp"
- 
+ #include "test_solver.hpp"
+
 
 #define ERR_NONE 0
 

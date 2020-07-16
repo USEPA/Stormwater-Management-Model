@@ -10,7 +10,7 @@
 
  #include <boost/test/unit_test.hpp>
 
- #include "test_toolkit.hpp"
+ #include "test_solver.hpp"
 
 using namespace std;
 
@@ -25,37 +25,37 @@ bool tolCheck(float a, float b, float tol)
 BOOST_AUTO_TEST_SUITE (test_swmm_auto)
 
 BOOST_AUTO_TEST_CASE(RunTest) {
-    int error = swmm_run( (char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
+    int error = swmm_run(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);
     BOOST_CHECK_EQUAL(0, error);
 }
 
 BOOST_AUTO_TEST_CASE(OpenTest) {
-    int error = swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
+    int error = swmm_open(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);
     BOOST_CHECK_EQUAL(0, error);
     swmm_close();
 }
 
 // Try to open valid file but not an input file - Should Fail at 200?
 BOOST_AUTO_TEST_CASE(FailOpen191) {
-    int error = swmm_open((char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT, (char *)"");
+    int error = swmm_open(DATA_PATH_RPT, DATA_PATH_OUT, "");
     BOOST_CHECK_EQUAL(191, error);
     swmm_close();
 }
 
 BOOST_AUTO_TEST_CASE(FailOpen301) {
-    int error = swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_INP, (char *)DATA_PATH_INP);
+    int error = swmm_open(DATA_PATH_INP, DATA_PATH_INP, DATA_PATH_INP);
     BOOST_CHECK_EQUAL(301, error);
     swmm_close();
 }
 
 BOOST_AUTO_TEST_CASE(FailOpen303) {
-    int error = swmm_open((char *)"", (char *)DATA_PATH_INP, (char *)DATA_PATH_OUT);
+    int error = swmm_open("", DATA_PATH_INP, DATA_PATH_OUT);
     BOOST_CHECK_EQUAL(303, error);
     swmm_close();
 }
 
 BOOST_AUTO_TEST_CASE(FailOpen305) {
-    int error = swmm_open((char *)DATA_PATH_INP, (char *)"", (char *)DATA_PATH_OUT);
+    int error = swmm_open(DATA_PATH_INP, "", DATA_PATH_OUT);
     BOOST_CHECK_EQUAL(305, error);
     swmm_close();
 }
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(FailOpen305) {
 BOOST_AUTO_TEST_CASE(FailOpen307) {
     FILE * fp;
     fp = fopen(DATA_PATH_OUT, "r");
-    int error = swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
+    int error = swmm_open(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);
     BOOST_CHECK_EQUAL(0, error);// Should be 307
     swmm_close();
     fclose(fp);
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_SUITE_END()
 // Adding Fixtures
 struct FixtureStep{
     FixtureStep() {
-        swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
+        swmm_open(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);
     }
     ~FixtureStep() {
         swmm_end();
@@ -84,7 +84,7 @@ struct FixtureStep{
 
 struct FixtureBeforeClose{
     FixtureBeforeClose() {
-        swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
+        swmm_open(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);
         swmm_start(0);
 
         int error;
@@ -103,7 +103,7 @@ struct FixtureBeforeClose{
 
 struct FixtureBeforeStart{
     FixtureBeforeStart() {
-        swmm_open((char *)DATA_PATH_INP, (char *)DATA_PATH_RPT, (char *)DATA_PATH_OUT);
+        swmm_open(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);
     }
     ~FixtureBeforeStart() {
         int error;

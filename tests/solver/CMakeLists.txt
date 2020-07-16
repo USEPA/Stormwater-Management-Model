@@ -30,23 +30,29 @@ set_target_properties(test_lid
 
 
 # Toolkit Test Module
-set(toolkit_test_srcs
+set(solver_test_srcs
     test_canonical.cpp
     test_gage.cpp
     test_pollut.cpp
     test_toolkit.cpp
+    test_solver.cpp
     # ADD NEW TEST SUITES TO EXISTING TOOLKIT TEST MODULE
 )
 
-add_executable(test_toolkit
-    ${toolkit_test_srcs}
+add_executable(test_solver
+    ${solver_test_srcs}
 )
 
-target_link_libraries(test_toolkit
+target_compile_features(test_solver
+    PUBLIC
+      cxx_generalized_initializers
+)
+  
+target_link_libraries(test_solver
     ${Boost_LIBRARIES}
     swmm5
 )
 
-set_target_properties(test_toolkit
+set_target_properties(test_solver
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
