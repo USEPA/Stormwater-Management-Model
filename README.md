@@ -9,7 +9,7 @@ ORD Stormwater Management Model (aka "SWMM")
 [![docs](https://img.shields.io/badge/docs-passing-green.svg)](http://wateranalytics.org/Stormwater-Management-Model/)
 
 ## Build Status
-![build](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/workflows/Build%20and%20Test/badge.svg?branch=ci_tools_scripts)
+![build](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/workflows/Build%20and%20Test/badge.svg?branch=develop)
 
 [![Build Status](https://travis-ci.org/OpenWaterAnalytics/Stormwater-Management-Model.svg?branch=develop)](https://travis-ci.org/OpenWaterAnalytics/Stormwater-Management-Model)
 
