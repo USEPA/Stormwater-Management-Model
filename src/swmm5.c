@@ -19,7 +19,7 @@
 //
 //   Build 5.1.008:
 //   - Support added for the MinGW compiler.
-//   - Reporting of project options moved to swmm_start. 
+//   - Reporting of project options moved to swmm_start.
 //   - Hot start file now read before routing system opened.
 //   - Final routing step adjusted so that total duration not exceeded.
 //
@@ -38,7 +38,7 @@
 //   Build 5.1.013:
 //   - Support added for saving average results within a reporting period.
 //   - SWMM engine now always compiled to a shared object library.
-//     
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -80,7 +80,7 @@
 #ifdef WINDOWS
     #ifdef __MINGW32__
         // Seems to be more wrapper friendly
-        #define DLLEXPORT __declspec(dllexport) __cdecl 
+        #define DLLEXPORT __declspec(dllexport) __cdecl
     #else
         #define DLLEXPORT __declspec(dllexport) __stdcall
     #endif
@@ -109,7 +109,7 @@
 #include "datetime.h"                  // date/time functions
 #include "objects.h"                   // definitions of SWMM's data objects
 #include "funcs.h"                     // declaration of all global functions
-#include "text.h"                      // listing of all text strings 
+#include "text.h"                      // listing of all text strings
 #define  EXTERN                        // defined as 'extern' in headers.h
 #include "globals.h"                   // declaration of all global variables
 
@@ -121,7 +121,7 @@
 //-----------------------------------------------------------------------------
 //  Unit conversion factors
 //-----------------------------------------------------------------------------
-const double Ucf[10][2] = 
+const double Ucf[10][2] =
       {//  US      SI
       {43200.0,   1097280.0 },         // RAINFALL (in/hr, mm/hr --> ft/sec)
       {12.0,      304.8     },         // RAINDEPTH (in, mm --> ft)
@@ -138,7 +138,7 @@ const double Ucf[10][2] =
 extern const double Qcf[6] =           // Flow Conversion Factors:
 #else
 const double Qcf[6] =                  // Flow Conversion Factors:
-#endif 
+#endif
     {1.0,     448.831, 0.64632,        // cfs, gpm, mgd --> cfs
      0.02832, 28.317,  2.4466 };       // cms, lps, mld --> cfs
 
@@ -177,7 +177,7 @@ static int  xfilter(int xc, char* module, double elapsedTime, long step);
 
 //=============================================================================
 
-int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
+int DLLEXPORT  swmm_run(const char *f1, const char *f2, const char *f3)
 //
 //  Input:   f1 = name of input file
 //           f2 = name of report file
@@ -242,7 +242,7 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
 
 //=============================================================================
 
-int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
+int DLLEXPORT swmm_open(const char *f1, const char *f2, const char *f3)
 //
 //  Input:   f1 = name of input file
 //           f2 = name of report file
@@ -271,7 +271,7 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
         ExceptionCount = 0;
 
         // --- open a SWMM project
-        project_open(f1, f2, f3);
+        project_open((char *)f1, (char *)f2, (char *)f3);
         if ( ErrorCode ) return error_getCode(ErrorCode);
         IsOpenFlag = TRUE;
         report_writeLogo();
@@ -303,7 +303,7 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
 
 int DLLEXPORT swmm_start(int saveResults)
 //
-//  Input:   saveResults = TRUE if simulation results saved to binary file 
+//  Input:   saveResults = TRUE if simulation results saved to binary file
 //  Output:  returns an error code
 //  Purpose: starts a SWMM simulation.
 //
@@ -372,7 +372,7 @@ int DLLEXPORT swmm_start(int saveResults)
         massbal_open();
         stats_open();
 
-        // --- write project options to report file 
+        // --- write project options to report file
         report_writeOptions();
         if ( RptFlags.controls ) report_writeControlActionsHeading();
     }
@@ -519,7 +519,7 @@ void execRouting()
 
         // --- if no runoff analysis, update climate state (for evaporation)
         else climate_setState(getDateTime(NewRoutingTime));
-  
+
         // --- route flows & pollutants through drainage system
         //     (while updating NewRoutingTime)
         if ( DoRouting ) routing_execute(RouteModel, routingStep);
@@ -658,7 +658,7 @@ int  DLLEXPORT swmm_getVersion(void)
 //           y = minor version number, and zzz = build number.
 //
 //  NOTE: Each New Release should be updated in consts.h
-//        THIS FUNCTION WILL EVENTUALLY BE DEPRECATED 
+//        THIS FUNCTION WILL EVENTUALLY BE DEPRECATED
 {
     return VERSION;
 }
@@ -667,7 +667,7 @@ void DLLEXPORT swmm_getSemVersion(char* semver)
 //
 //  Output: Returns Semantic Version
 //  Purpose: retrieves the current semantic version
-//  
+//
 //  NOTE: Each New Release should be updated in consts.h
 {
     getSemVersion(semver);
@@ -677,7 +677,7 @@ void DLLEXPORT swmm_getVersionInfo(char* major, char* minor, char* patch)
 //
 //  Output: Returns Semantic Version Info
 //  Purpose: retrieves the current semantic version
-//  
+//
 //  NOTE: Each New Release should be updated in consts.h
 {
     strncpy(major, SEMVERSION_MAJOR, sizeof SEMVERSION_MAJOR);
@@ -965,10 +965,10 @@ void getSemVersion(char* semver)
 //
 //  Output: Returns Semantic Version
 //  Purpose: retrieves the current semantic version
-//  
+//
 //  NOTE: Each New Release should be updated in consts.h
 {
-    snprintf(semver, SEMVERSION_LEN, "%s.%s.%s", 
+    snprintf(semver, SEMVERSION_LEN, "%s.%s.%s",
         SEMVERSION_MAJOR, SEMVERSION_MINOR, SEMVERSION_PATCH);
 }
 //=============================================================================

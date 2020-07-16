@@ -1,0 +1,79 @@
+#
+#  build-and-test.yml - GitHub Actions CI for swmm-solver
+#
+#  Created: May 19, 2020
+#  Updated: Jul 8, 2020
+#
+#  Author: Michael E. Tryby
+#          US EPA - ORD/CESER
+#
+
+name: Build and Test
+
+on:
+  push:
+    branches: [ ci_tools_scripts ]
+  pull_request:
+    branches: [ ci_tools_scripts ]
+
+jobs:
+  win_build:
+    runs-on: windows-2016
+    continue-on-error: ${{ matrix.experimental }}
+
+    defaults:
+      run:
+        shell: cmd
+
+    strategy:
+      fail-fast: false
+      matrix:
+        generator: [Visual Studio 15 2017]
+        experimental: [false]
+        include:
+          - generator: Visual Studio 15 2017 Win64
+            experimental: true
+
+    env:
+      PROJECT: swmm
+      BUILD_HOME: build
+      TEST_HOME: nrtests
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Checkout submodule
+      uses: actions/checkout@v2
+      with:
+        repository: OpenWaterAnalytics/ci-tools
+        path: ci-tools
+
+    - name: Setup python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+
+    - name: Install requirements
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -r ci-tools/windows/requirements-swmm.txt
+
+    - name: Build and unit test
+      run: ci-tools/windows/make.cmd /t /g "${{ matrix.generator }}"
+
+    - name: Build for reg test
+      run: ci-tools/windows/make.cmd /g "${{ matrix.generator }}"
+
+    - name: Before reg test
+      run: ci-tools/windows/before-nrtest.cmd
+
+    - name: Run reg test
+      run: ci-tools/windows/run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+
+    - name: Upload artifacts
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: build-test-artifacts
+        path: upload/*.*

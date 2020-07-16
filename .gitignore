@@ -21,8 +21,7 @@
 
 
 # Build files
-buildprod*/
-/build/
+build/
 *.o
 /Debug/
 /build-linux/
@@ -33,11 +32,16 @@ buildprod*/
 
 
 # Testing
-nrtestsuite/
+nrtests/
+upload/
 performance.json
 stderr.log
 stdout.log
-tests/data/swmm_api_test.inp
+
+tests/solver/data/*.rpt
+tests/solver/data/**/*.rpt
+tests/solver/data/**/*.out
+tests/solver/data/feng*
 
 # Generated files
 *_export.h
