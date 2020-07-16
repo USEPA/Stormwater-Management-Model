@@ -12,9 +12,9 @@ name: Build and Test
 
 on:
   push:
-    branches: [ ci_tools_scripts ]
+    branches: [ develop ]
   pull_request:
-    branches: [ ci_tools_scripts ]
+    branches: [ develop ]
 
 jobs:
   win_build:
