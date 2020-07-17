@@ -23,6 +23,7 @@ jobs:
       run:
         shell: cmd
     env:
+      OMP_NUM_THREADS: 1
       PROJECT: swmm
       BUILD_HOME: build
       TEST_HOME: nrtests
