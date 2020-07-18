@@ -40,6 +40,7 @@
 //
 //   Build 5.1.015:
 //   - Fixes bug in summary statistics when Report Start date > Start Date.
+//   - Fixes failure to initialize all subcatchment groundwater statistics.
 //   - Support added for grouped freqency table of routing time steps.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -155,6 +156,8 @@ int  stats_open()
             Subcatch[j].groundwater->stats.deepFlow = 0.0;
             Subcatch[j].groundwater->stats.evap = 0.0;
             Subcatch[j].groundwater->stats.maxFlow = 0.0;
+            Subcatch[j].groundwater->stats.finalUpperMoist = 0.0;              //(5.1.015)
+            Subcatch[j].groundwater->stats.finalWaterTable = 0.0;              //
         }
     }
 
@@ -264,10 +267,10 @@ int  stats_open()
     }
 
     // --- allocate memory & initialize pumping statistics
-    if ( Nlinks[PUMP] > 0 ) 
-    { 
+    if ( Nlinks[PUMP] > 0 )
+    {
         PumpStats = (TPumpStats *) calloc(Nlinks[PUMP], sizeof(TPumpStats));
-        if ( !PumpStats ) 
+        if ( !PumpStats )
         {
             report_writeErrorMsg(ERR_MEMORY, "");
             return ErrorCode;
@@ -277,14 +280,14 @@ int  stats_open()
             PumpStats[j].utilized = 0.0;
             PumpStats[j].minFlow  = 0.0;
             PumpStats[j].avgFlow  = 0.0;
-            PumpStats[j].maxFlow  = 0.0; 
+            PumpStats[j].maxFlow  = 0.0;
             PumpStats[j].volume   = 0.0;
             PumpStats[j].energy   = 0.0;
             PumpStats[j].startUps = 0;
-            PumpStats[j].offCurveLow = 0.0; 
+            PumpStats[j].offCurveLow = 0.0;
             PumpStats[j].offCurveHigh = 0.0;
-        } 
-    } 
+        }
+    }
 
     // --- initialize system stats
     MaxRunoffFlow = 0.0;
@@ -316,7 +319,7 @@ int  stats_open()
 void  stats_close()
 //
 //  Input:   none
-//  Output:  
+//  Output:
 //  Purpose: closes the simulation statistics system.
 //
 {
@@ -325,7 +328,7 @@ void  stats_close()
     FREE(SubcatchStats);
     FREE(NodeStats);
     FREE(LinkStats);
-    FREE(StorageStats); 
+    FREE(StorageStats);
     if ( OutfallStats )
     {
         for ( j=0; j<Nnodes[OUTFALL]; j++ )
@@ -418,10 +421,10 @@ void  stats_updateMaxRunoff()
 {
     int j;
     double sysRunoff = 0.0;
-    
+
     for (j=0; j<Nobjects[SUBCATCH]; j++) sysRunoff += Subcatch[j].newRunoff;
     MaxRunoffFlow = MAX(MaxRunoffFlow, sysRunoff);
-}    
+}
 
 //=============================================================================
 
@@ -500,7 +503,7 @@ void   stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
 }
 
 //=============================================================================
-   
+
 void stats_updateCriticalTimeCount(int node, int link)
 //
 //  Input:   node = node index
@@ -532,12 +535,12 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
 
     // --- update depth statistics
     NodeStats[j].avgDepth += newDepth;
-    if ( newDepth > NodeStats[j].maxDepth )
+    if ( (newDepth - NodeStats[j].maxDepth) > ZERO )
     {
         NodeStats[j].maxDepth = newDepth;
         NodeStats[j].maxDepthDate = aDate;
     }
-    
+
     // --- update flooding, ponding, and surcharge statistics
     if ( Node[j].type != OUTFALL )
     {
@@ -567,13 +570,13 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
     {
         k = Node[j].subIndex;
         StorageStats[k].avgVol += newVolume;
-        StorageStats[k].evapLosses += 
-            Storage[Node[j].subIndex].evapLoss; 
+        StorageStats[k].evapLosses +=
+            Storage[Node[j].subIndex].evapLoss;
         StorageStats[k].exfilLosses +=
-            Storage[Node[j].subIndex].exfilLoss; 
+            Storage[Node[j].subIndex].exfilLoss;
 
         newVolume = MIN(newVolume, Node[j].fullVolume);
-        if ( newVolume > StorageStats[k].maxVol )
+        if ( (newVolume - StorageStats[k].maxVol) > ZERO )
         {
             StorageStats[k].maxVol = newVolume;
             StorageStats[k].maxVolDate = aDate;
@@ -582,7 +585,7 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
     }
 
     // --- update outfall statistics
-    if ( Node[j].type == OUTFALL ) 
+    if ( Node[j].type == OUTFALL )
     {
         k = Node[j].subIndex;
         if ( Node[j].inflow >= MIN_RUNOFF_FLOW )
@@ -593,25 +596,25 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
         }
         for (p=0; p<Nobjects[POLLUT]; p++)
         {
-            OutfallStats[k].totalLoad[p] += Node[j].inflow * 
+            OutfallStats[k].totalLoad[p] += Node[j].inflow *
             Node[j].newQual[p] * tStep;
         }
         SysOutfallFlow += Node[j].inflow;
     }
 
     // --- update inflow statistics
-    NodeStats[j].totLatFlow += ( (Node[j].oldLatFlow + Node[j].newLatFlow) * 
+    NodeStats[j].totLatFlow += ( (Node[j].oldLatFlow + Node[j].newLatFlow) *
                                  0.5 * tStep );
     if ( fabs(Node[j].newLatFlow) > fabs(NodeStats[j].maxLatFlow) )
         NodeStats[j].maxLatFlow = Node[j].newLatFlow;
-    if ( Node[j].inflow > NodeStats[j].maxInflow )
+    if ( (Node[j].inflow - NodeStats[j].maxInflow) > ZERO )
     {
         NodeStats[j].maxInflow = Node[j].inflow;
         NodeStats[j].maxInflowDate = aDate;
     }
 
     // --- update overflow statistics
-    if ( Node[j].overflow > NodeStats[j].maxOverflow )
+    if ( (Node[j].overflow - NodeStats[j].maxOverflow) > ZERO )
     {
         NodeStats[j].maxOverflow = Node[j].overflow;
         NodeStats[j].maxOverflowDate = aDate;
@@ -636,7 +639,7 @@ void  stats_updateLinkStats(int j, double tStep, DateTime aDate)
     // --- update max. flow
     dq = Link[j].newFlow - Link[j].oldFlow;
     q = fabs(Link[j].newFlow);
-    if ( q > LinkStats[j].maxFlow )
+    if ( (q - LinkStats[j].maxFlow) > ZERO )
     {
         LinkStats[j].maxFlow = q;
         LinkStats[j].maxFlowDate = aDate;
@@ -650,7 +653,7 @@ void  stats_updateLinkStats(int j, double tStep, DateTime aDate)
     }
 
     // --- update max. depth
-    if ( Link[j].newDepth > LinkStats[j].maxDepth )
+    if ( (Link[j].newDepth - LinkStats[j].maxDepth) > ZERO )
     {
         LinkStats[j].maxDepth = Link[j].newDepth;
     }
@@ -683,10 +686,10 @@ void  stats_updateLinkStats(int j, double tStep, DateTime aDate)
     else if ( Link[j].type == CONDUIT )
     {
 
-        // --- update time under normal flow & inlet control 
+        // --- update time under normal flow & inlet control
         if ( Link[j].normalFlow ) LinkStats[j].timeNormalFlow += tStep;
         if ( Link[j].inletControl ) LinkStats[j].timeInletControl += tStep;
-    
+
         // --- update flow classification distribution
         k = Link[j].flowClass;
         if ( k >= 0 && k < MAX_FLOW_CLASSES )
@@ -697,7 +700,7 @@ void  stats_updateLinkStats(int j, double tStep, DateTime aDate)
         // --- update time conduit is full
         k = Link[j].subIndex;
         if ( q >= Link[j].qFull * (double)Conduit[k].barrels )
-            LinkStats[j].timeFullFlow += tStep; 
+            LinkStats[j].timeFullFlow += tStep;
         if ( Conduit[k].capacityLimited )
             LinkStats[j].timeCapacityLimited += tStep;
 
@@ -745,11 +748,11 @@ void  stats_findMaxStats()
         MaxMassBalErrs[j].value   = -1.0;
         MaxCourantCrit[j].index   = -1;
         MaxCourantCrit[j].value   = -1.0;
-        MaxFlowTurns[j].index     = -1; 
+        MaxFlowTurns[j].index     = -1;
         MaxFlowTurns[j].value     = -1.0;
     }
 
-    // --- find links with most flow turns 
+    // --- find links with most flow turns
     if ( stepCount > 2 )                                                       //(5.1.015)
     {
         for (j=0; j<Nobjects[LINK]; j++)
