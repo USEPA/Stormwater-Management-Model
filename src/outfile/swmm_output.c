@@ -847,15 +847,12 @@ int EXPORT_OUT_API SMO_getSystemResult(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-void EXPORT_OUT_API SMO_free(void** array)
+void EXPORT_OUT_API SMO_freeMemory(void *array)
 //
 //  Purpose: Frees memory allocated by API calls
 //
 {
-    if (array != NULL) {
-        free(*array);
-        *array = NULL;
-    }
+    free(array);
 }
 
 void EXPORT_OUT_API SMO_clearError(SMO_Handle p_handle)

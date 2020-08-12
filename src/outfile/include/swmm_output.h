@@ -66,7 +66,7 @@ int EXPORT_OUT_API SMO_getLinkResult(SMO_Handle p_handle, int timeIndex,
 int EXPORT_OUT_API SMO_getSystemResult(SMO_Handle p_handle, int timeIndex,
 	int dummyIndex, float** outValueArray, int* arrayLength);
 
-void EXPORT_OUT_API SMO_free(void** array);
+void EXPORT_OUT_API SMO_freeMemory(void *array);
 void EXPORT_OUT_API SMO_clearError(SMO_Handle p_handle_in);
 int EXPORT_OUT_API SMO_checkError(SMO_Handle p_handle_in, char** msg_buffer);
 
