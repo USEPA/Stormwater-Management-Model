@@ -30,7 +30,8 @@ jobs:
             generator: Visual Studio 15 2017 Win64
             experimental: true
             script_extension: cmd
-            ci_tools_path: ./ci-tools/windows
+            ci_tools_path: ci-tools/windows
+            perm_exec: echo
             requirements: windows/requirements-swmm.txt
             defaults:
               run:
@@ -38,7 +39,8 @@ jobs:
           - os: ubuntu-latest
             generator: Ninja
             experimental: true
-            ci_tools_path: ./ci-tools/linux
+            ci_tools_path: ci-tools/linux
+            perm_exec: chmod +x
             script_extension: sh
             requirements: linux/requirements-swmm.txt
             defaults:
@@ -47,7 +49,8 @@ jobs:
           - os: macos-latest
             generator: Ninja
             experimental: true
-            ci_tools_path: ./ci-tools/darwin
+            ci_tools_path: ci-tools/darwin
+            perm_exec: chmod +x
             script_extension: zsh
             requirements: darwin/requirements-swmm.txt
             defaults:
@@ -80,16 +83,24 @@ jobs:
           python -m pip install -r ci-tools/${{ matrix.requirements }}
 
       - name: Build and unit test
-        run: ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
+        run:
+          ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }}
+          ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
 
       - name: Build for reg test
-        run: ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }} /g "${{ matrix.generator }}"
+        run: 
+          ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }}
+          ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }} /g "${{ matrix.generator }}"
 
       - name: Before reg test
-        run: ${{ matrix.ci_tools_path }}/before-nrtest.${{ matrix.script_extension }}
+        run: 
+          ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/before-nrtest.${{ matrix.script_extension }}
+          ${{ matrix.ci_tools_path }}/before-nrtest.${{ matrix.script_extension }}
 
       - name: Run reg test
-        run: ${{ matrix.ci_tools_path }}/run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+        run: 
+          ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/before-nrtest.${{ matrix.script_extension }}
+          ${{ matrix.ci_tools_path }}/run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
       - name: Upload artifacts
         if: ${{ always() }}
