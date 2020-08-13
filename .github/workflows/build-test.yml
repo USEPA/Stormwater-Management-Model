@@ -19,8 +19,12 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    env:
+      OMP_NUM_THREADS: 1
+      PROJECT: swmm
+      BUILD_HOME: build
+      TEST_HOME: nrtests
     continue-on-error: ${{ matrix.experimental }}
-
     strategy:
       fail-fast: false
       matrix:
@@ -36,6 +40,7 @@ jobs:
             defaults:
               run:
                 shell: cmd
+
           - os: ubuntu-latest
             generator: Ninja
             experimental: true
@@ -46,6 +51,7 @@ jobs:
             defaults:
               run:
                 shell: bash
+
           - os: macos-latest
             generator: Ninja
             experimental: true
@@ -55,13 +61,8 @@ jobs:
             requirements: darwin/requirements-swmm.txt
             defaults:
               run:
-                shell: zsh     
-    env:
-      OMP_NUM_THREADS: 1
-      PROJECT: swmm
-      BUILD_HOME: build
-      TEST_HOME: nrtests
-
+                shell: zsh
+                     
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
