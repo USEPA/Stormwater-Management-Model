@@ -83,22 +83,22 @@ jobs:
           python -m pip install -r ci-tools/${{ matrix.requirements }}
 
       - name: Build and unit test
-        run:
+        run: |
           ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }}
           ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
 
       - name: Build for reg test
-        run: 
+        run: |
           ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }}
           ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }} /g "${{ matrix.generator }}"
 
       - name: Before reg test
-        run: 
+        run: |
           ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/before-nrtest.${{ matrix.script_extension }}
           ${{ matrix.ci_tools_path }}/before-nrtest.${{ matrix.script_extension }}
 
       - name: Run reg test
-        run: 
+        run: |
           ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/before-nrtest.${{ matrix.script_extension }}
           ${{ matrix.ci_tools_path }}/run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
