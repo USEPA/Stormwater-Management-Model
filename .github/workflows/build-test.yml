@@ -12,28 +12,46 @@ name: Build and Test
 
 on:
   push:
-    branches: [ develop ]
+    branches: [develop]
   pull_request:
-    branches: [ develop ]
+    branches: [develop]
 
 jobs:
-  win_build:
-    runs-on: windows-2016
+  build:
+    runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
-
-    defaults:
-      run:
-        shell: cmd
 
     strategy:
       fail-fast: false
       matrix:
-        generator: [Visual Studio 15 2017]
-        experimental: [false]
+        os: [windows-2016, ubuntu-latest, macos-latest]
         include:
-          - generator: Visual Studio 15 2017 Win64
+          - os: windows-2016
+            generator: Visual Studio 15 2017 Win64
             experimental: true
+            script_extension: cmd
+            requirements: windows/requirements-swmm.txt
+            defaults:
+              run:
+                shell: cmd
 
+          - os: ubuntu-latest
+            generator: Ninja
+            experimental: true
+            script_extension: sh
+            requirements: linux/requirements-swmm.txt
+            defaults:
+              run:
+                shell: bash
+
+          - os: macos-latest
+            generator: Ninja
+            experimental: true
+            script_extension: zsh
+            requirements: darwin/requirements-swmm.txt
+            defaults:
+              run:
+                shell: zsh     
     env:
       OMP_NUM_THREADS: 1
       PROJECT: swmm
@@ -41,40 +59,40 @@ jobs:
       TEST_HOME: nrtests
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v2
 
-    - name: Checkout submodule
-      uses: actions/checkout@v2
-      with:
-        repository: OpenWaterAnalytics/ci-tools
-        path: ci-tools
+      - name: Checkout submodule
+        uses: actions/checkout@v2
+        with:
+          repository: OpenWaterAnalytics/ci-tools
+          path: ci-tools
 
-    - name: Setup python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7'
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
 
-    - name: Install requirements
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install -r ci-tools/windows/requirements-swmm.txt
+      - name: Install requirements
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r ci-tools/${{ matrix.requirements }}
 
-    - name: Build and unit test
-      run: ci-tools/windows/make.cmd /t /g "${{ matrix.generator }}"
+      - name: Build and unit test
+        run: ci-tools/windows/make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
 
-    - name: Build for reg test
-      run: ci-tools/windows/make.cmd /g "${{ matrix.generator }}"
+      - name: Build for reg test
+        run: ci-tools/windows/make.${{ matrix.script_extension }} /g "${{ matrix.generator }}"
 
-    - name: Before reg test
-      run: ci-tools/windows/before-nrtest.cmd
+      - name: Before reg test
+        run: ci-tools/windows/before-nrtest.${{ matrix.script_extension }}
 
-    - name: Run reg test
-      run: ci-tools/windows/run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+      - name: Run reg test
+        run: ci-tools/windows/run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
-    - name: Upload artifacts
-      if: ${{ always() }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: build-test-artifacts
-        path: upload/*.*
+      - name: Upload artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-test-artifacts
+          path: upload/*.*
