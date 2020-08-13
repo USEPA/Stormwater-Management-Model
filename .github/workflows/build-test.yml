@@ -34,7 +34,6 @@ jobs:
             defaults:
               run:
                 shell: cmd
-
           - os: ubuntu-latest
             generator: Ninja
             experimental: true
@@ -43,7 +42,6 @@ jobs:
             defaults:
               run:
                 shell: bash
-
           - os: macos-latest
             generator: Ninja
             experimental: true
