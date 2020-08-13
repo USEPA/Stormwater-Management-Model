@@ -2,6 +2,7 @@
 
 
 
+#include <math.h>
 #include <boost/test/unit_test.hpp>
 
 #include "test_lid.hpp"
