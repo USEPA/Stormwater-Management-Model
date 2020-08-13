@@ -17,22 +17,23 @@ on:
     branches: [ develop ]
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
+  win_build:
+    runs-on: windows-2016
     continue-on-error: ${{ matrix.experimental }}
+
+    defaults:
+      run:
+        shell: cmd
+
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2016, ubuntu-latest, mac-os-latest]
+        generator: [Visual Studio 15 2017]
+        experimental: [false]
         include:
-        - os: windows-2016
-          generator: Visual Studio 15 2017
-          experimental: false
-  
-        - os: windows-2016
-          generator: Visual Studio 15 2017 Win64
-          experimental: true
-                   
+          - generator: Visual Studio 15 2017 Win64
+            experimental: true
+
     env:
       OMP_NUM_THREADS: 1
       PROJECT: swmm
