@@ -27,7 +27,7 @@ jobs:
       PROJECT: swmm
       BUILD_HOME: build
       TEST_HOME: nrtests
-      NRTESTS_URL: https://github.com/OpenWaterAnalytics/%PROJECT%-nrtestsuite
+      NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
