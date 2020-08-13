@@ -89,7 +89,7 @@ jobs:
 
       # check and install for specific os
       - name: Install Generator
-        if: ${{ ${{ matrix.os }} != windows-2016 }}
+        if: ${{ matrix.os }} != windows-2016
         uses: seanmiddleditch/gha-setup-ninja@master
 
       - name: Build and unit test
