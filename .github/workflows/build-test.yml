@@ -30,7 +30,7 @@ jobs:
             generator: Visual Studio 15 2017 Win64
             experimental: true
             script_extension: cmd
-            ci_tools_path: ${{ matrix.ci_tools_path }}
+            ci_tools_path: ci-tools/windows
             requirements: windows/requirements-swmm.txt
             defaults:
               run:
