@@ -46,8 +46,9 @@ option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
 
 # Add project subdirectories
 add_subdirectory(src/outfile)
+add_subdirectory(src/solver)
 add_subdirectory(src/run)
-add_subdirectory(src)
+
 
 if(BUILD_TESTS)
     enable_testing()
