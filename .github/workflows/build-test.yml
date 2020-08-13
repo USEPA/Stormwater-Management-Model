@@ -86,15 +86,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r ci-tools/${{ matrix.requirements }}
+          
+      # check and install for specific os
+      - name: Install generator
+        uses: seanmiddleditch/gha-setup-ninja@master
 
       - name: Build and unit test
-        uses: seanmiddleditch/gha-setup-ninja@master
         run: |
           ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }}
           ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
 
       - name: Build for reg test
-        uses: seanmiddleditch/gha-setup-ninja@master
         run: |
           ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }}
           ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }} /g "${{ matrix.generator }}"
