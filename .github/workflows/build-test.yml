@@ -7,6 +7,9 @@
 #  Author: Michael E. Tryby
 #          US EPA - ORD/CESER
 #
+#          Caleb A. Buahin
+#          Xylem Inc.
+#
 
 name: Build and Test
 
@@ -24,6 +27,7 @@ jobs:
       PROJECT: swmm
       BUILD_HOME: build
       TEST_HOME: nrtests
+      NRTESTS_URL: https://github.com/OpenWaterAnalytics/%PROJECT%-nrtestsuite
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
@@ -62,7 +66,7 @@ jobs:
             defaults:
               run:
                 shell: zsh
-                     
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -84,11 +88,13 @@ jobs:
           python -m pip install -r ci-tools/${{ matrix.requirements }}
 
       - name: Build and unit test
+        uses: seanmiddleditch/gha-setup-ninja@master
         run: |
           ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }}
           ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
 
       - name: Build for reg test
+        uses: seanmiddleditch/gha-setup-ninja@master
         run: |
           ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }}
           ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }} /g "${{ matrix.generator }}"
