@@ -30,7 +30,7 @@ jobs:
             generator: Visual Studio 15 2017 Win64
             experimental: true
             script_extension: cmd
-            ci_tools_path: ci-tools/windows
+            ci_tools_path: ./ci-tools/windows
             requirements: windows/requirements-swmm.txt
             defaults:
               run:
@@ -38,7 +38,7 @@ jobs:
           - os: ubuntu-latest
             generator: Ninja
             experimental: true
-            ci_tools_path: ci-tools/linux
+            ci_tools_path: ./ci-tools/linux
             script_extension: sh
             requirements: linux/requirements-swmm.txt
             defaults:
@@ -47,7 +47,7 @@ jobs:
           - os: macos-latest
             generator: Ninja
             experimental: true
-            ci_tools_path: ci-tools/darwin
+            ci_tools_path: ./ci-tools/darwin
             script_extension: zsh
             requirements: darwin/requirements-swmm.txt
             defaults:
