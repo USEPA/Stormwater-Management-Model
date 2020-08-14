@@ -109,7 +109,7 @@ jobs:
 
       - name: Run reg test
         run: |
-          ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/before-nrtest.${{ matrix.script_extension }}
+          ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/run-nrtests.${{ matrix.script_extension }}
           ${{ matrix.ci_tools_path }}/run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
       - name: Upload artifacts
