@@ -117,5 +117,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: build-test-artifacts
-          path: upload/*.*
+          path: upload/*.* 
 
