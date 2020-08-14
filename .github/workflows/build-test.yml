@@ -22,13 +22,13 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     env:
       OMP_NUM_THREADS: 1
       PROJECT: swmm
       BUILD_HOME: build
       TEST_HOME: nrtests
       NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
-    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
@@ -119,4 +119,3 @@ jobs:
           name: build-test-artifacts
           path: upload/*.*
 
-          
