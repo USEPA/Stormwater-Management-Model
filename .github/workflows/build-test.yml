@@ -27,7 +27,7 @@ jobs:
       OMP_NUM_THREADS: 1
       PROJECT: swmm
       BUILD_HOME: build
-      TEST_HOME: nrtests
+      TEST_HOME: nrtests 
       NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
     strategy:
       fail-fast: false
@@ -116,5 +116,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: build-test-artifacts
-          path: upload/*.* 
+          path: upload/*.*
 
