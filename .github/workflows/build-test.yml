@@ -39,7 +39,7 @@ jobs:
             generator: Visual Studio 15 2017 Win64
             experimental: true
             script_extension: cmd
-            working-directory: ./ci-tools/windows
+            working-directory: ./ci-tools/windows/
             defaults:
               run:
                 shell: cmd
@@ -48,7 +48,7 @@ jobs:
             generator: Make
             experimental: true
             script_extension: sh
-            working-directory: ./ci-tools/linux
+            working-directory: ./ci-tools/linux/
             defaults:
               run:
                 shell: bash
@@ -58,7 +58,7 @@ jobs:
             experimental: true
             ci_tools_path: ci-tools/darwin
             script_extension: zsh
-            working-directory: ./ci-tools/darwin
+            working-directory: ./ci-tools/darwin/
             defaults:
               run:
                 shell: zsh
@@ -86,7 +86,8 @@ jobs:
       - name: Build and unit test
         working-directory: ${{ matrix.working-directory }}
         run: |
-          make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
+          echo ${PWD}
+          # make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
 
       - name: Build for reg test
         working-directory: ${{ matrix.working-directory }}
