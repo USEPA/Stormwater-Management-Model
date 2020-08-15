@@ -45,7 +45,7 @@ jobs:
                 shell: cmd
 
           - os: ubuntu-latest
-            generator: Make
+            generator: Unix Makefiles
             experimental: true
             script_extension: sh
             working-directory: ./ci-tools/linux/
