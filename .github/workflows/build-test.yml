@@ -90,7 +90,7 @@ jobs:
       - name: Build for reg test
         run: |
           ${{ matrix.working-directory }}make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
-
+ 
       - name: Before reg test
         run: |
           ${{ matrix.working-directory }}before-nrtest.${{ matrix.script_extension }}
