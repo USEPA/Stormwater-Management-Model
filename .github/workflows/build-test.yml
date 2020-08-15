@@ -85,11 +85,11 @@ jobs:
 
       - name: Build and unit test
         run: |
-          ${{ matrix.working-directory }}make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
+          ${{ matrix.working-directory }}make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
 
       - name: Build for reg test
         run: |
-          ${{ matrix.working-directory }}make.${{ matrix.script_extension }} /g "${{ matrix.generator }}"
+          ${{ matrix.working-directory }}make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
 
       - name: Before reg test
         run: |
