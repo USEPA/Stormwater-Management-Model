@@ -33,37 +33,35 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-2016, ubuntu-latest, macos-latest]
+        requirements: [requirements-swmm.txt]
         include:
           - os: windows-2016
             generator: Visual Studio 15 2017 Win64
             experimental: true
             script_extension: cmd
-            requirements: windows/requirements-swmm.txt
+            working-directory: ci-tools/windows
             defaults:
               run:
                 shell: cmd
-                working-directory: ./ci-tools/windows
 
           - os: ubuntu-latest
             generator: Make
             experimental: true
             script_extension: sh
-            requirements: linux/requirements-swmm.txt
+            working-directory: ci-tools/linux
             defaults:
               run:
                 shell: bash
-                working-directory: ./ci-tools/linux
 
           - os: macos-latest
             generator: Xcode
             experimental: true
             ci_tools_path: ci-tools/darwin
             script_extension: zsh
-            requirements: darwin/requirements-swmm.txt
+            working-directory: ci-tools/darwin
             defaults:
               run:
                 shell: zsh
-                working-directory: ./ci-tools/darwin
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -82,23 +80,28 @@ jobs:
       - name: Install requirements
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r ci-tools/${{ matrix.requirements }}
+          python -m pip install -r ${{ matrix.requirements }}
+        working-directory: ${{ matrix.working-directory }}
 
       - name: Build and unit test
         run: |
           make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
+        working-directory: ${{ matrix.working-directory }}
 
       - name: Build for reg test
         run: |
           make.${{ matrix.script_extension }} /g "${{ matrix.generator }}"
+        working-directory: ${{ matrix.working-directory }}
 
       - name: Before reg test
         run: |
           before-nrtest.${{ matrix.script_extension }}
+        working-directory: ${{ matrix.working-directory }}
 
       - name: Run reg test
         run: |
           run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+        working-directory: ${{ matrix.working-directory }}
 
       - name: Upload artifacts
         if: ${{ always() }}
