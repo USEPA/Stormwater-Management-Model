@@ -42,7 +42,6 @@ jobs:
             defaults:
               run:
                 shell: cmd
-            env:
                 working-directory: ci-tools/windows
 
           - os: ubuntu-latest
@@ -53,8 +52,7 @@ jobs:
             defaults:
               run:
                 shell: bash
-            env:
-              working-directory: ci-tools/linux
+                working-directory: ci-tools/linux
 
           - os: macos-latest
             generator: Xcode
@@ -65,7 +63,6 @@ jobs:
             defaults:
               run:
                 shell: zsh
-            env:
                 working-directory: ci-tools/darwin
     steps:
       - name: Checkout repo
@@ -88,22 +85,18 @@ jobs:
           python -m pip install -r ci-tools/${{ matrix.requirements }}
 
       - name: Build and unit test
-        working-directory: ${{ env.working-directory }}
         run: |
           make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
 
       - name: Build for reg test
-        working-directory: ${{ env.working-directory }}
         run: |
           make.${{ matrix.script_extension }} /g "${{ matrix.generator }}"
 
       - name: Before reg test
-        working-directory: ${{ env.working-directory }}
         run: |
           before-nrtest.${{ matrix.script_extension }}
 
       - name: Run reg test
-        working-directory: ${{ env.working-directory }}
         run: |
           run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
