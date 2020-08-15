@@ -87,21 +87,26 @@ jobs:
         working-directory: ${{ matrix.working-directory }}
         run: |
           echo ${PWD}
-          # make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
+          cd ../../ 
+          echo ${PWD}
+          make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
 
       - name: Build for reg test
         working-directory: ${{ matrix.working-directory }}
         run: |
+          cd ../../
           make.${{ matrix.script_extension }} /g "${{ matrix.generator }}"
 
       - name: Before reg test
         working-directory: ${{ matrix.working-directory }}
         run: |
+          cd ../../
           before-nrtest.${{ matrix.script_extension }}
 
       - name: Run reg test
         working-directory: ${{ matrix.working-directory }}
         run: |
+          cd ../../
           run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
       - name: Upload artifacts
