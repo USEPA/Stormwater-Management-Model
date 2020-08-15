@@ -2,7 +2,7 @@
 #  build-and-test.yml - GitHub Actions CI for swmm-solver
 #
 #  Created: May 19, 2020
-#  Updated: Jul 8, 2020
+#  Updated: Aug 13, 2020
 #
 #  Author: Michael E. Tryby
 #          US EPA - ORD/CESER
@@ -39,7 +39,6 @@ jobs:
             experimental: true
             script_extension: cmd
             ci_tools_path: ci-tools/windows
-            perm_exec: echo
             requirements: windows/requirements-swmm.txt
             defaults:
               run:
@@ -93,22 +92,18 @@ jobs:
 
       - name: Build and unit test
         run: |
-          ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }}
           ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
 
       - name: Build for reg test
         run: |
-          ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }}
           ${{ matrix.ci_tools_path }}/make.${{ matrix.script_extension }} /g "${{ matrix.generator }}"
 
       - name: Before reg test
         run: |
-          ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/before-nrtest.${{ matrix.script_extension }}
           ${{ matrix.ci_tools_path }}/before-nrtest.${{ matrix.script_extension }}
 
       - name: Run reg test
         run: |
-          ${{ matrix.perm_exec }} ${{ matrix.ci_tools_path }}/run-nrtests.${{ matrix.script_extension }}
           ${{ matrix.ci_tools_path }}/run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
       - name: Upload artifacts
