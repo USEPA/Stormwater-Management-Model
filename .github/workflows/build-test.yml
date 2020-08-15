@@ -84,30 +84,20 @@ jobs:
           python -m pip install -r ${{ matrix.requirements }}
 
       - name: Build and unit test
-        working-directory: ${{ matrix.working-directory }}
         run: |
-          echo ${PWD}
-          cd ../../ 
-          echo ${PWD}
-          make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
+          ${{ matrix.working-directory }}make.${{ matrix.script_extension }} /t /g "${{ matrix.generator }}"
 
       - name: Build for reg test
-        working-directory: ${{ matrix.working-directory }}
         run: |
-          cd ../../
-          make.${{ matrix.script_extension }} /g "${{ matrix.generator }}"
+          ${{ matrix.working-directory }}make.${{ matrix.script_extension }} /g "${{ matrix.generator }}"
 
       - name: Before reg test
-        working-directory: ${{ matrix.working-directory }}
         run: |
-          cd ../../
-          before-nrtest.${{ matrix.script_extension }}
+          ${{ matrix.working-directory }}before-nrtest.${{ matrix.script_extension }}
 
       - name: Run reg test
-        working-directory: ${{ matrix.working-directory }}
         run: |
-          cd ../../
-          run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+          ${{ matrix.working-directory }}run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
       - name: Upload artifacts
         if: ${{ always() }}
