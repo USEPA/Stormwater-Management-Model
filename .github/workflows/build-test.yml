@@ -42,8 +42,7 @@ jobs:
             defaults:
               run:
                 shell: cmd
-            env:
-              working-directory: ci-tools/windows
+                working-directory: ci-tools/windows
 
           - os: ubuntu-latest
             generator: Make
@@ -53,8 +52,7 @@ jobs:
             defaults:
               run:
                 shell: bash
-            env:
-              working-directory: ci-tools/linux
+                working-directory: ci-tools/linux
 
           - os: macos-latest
             generator: Xcode
@@ -65,8 +63,7 @@ jobs:
             defaults:
               run:
                 shell: zsh4
-            env:
-              working-directory: ci-tools/darwin
+                working-directory: ci-tools/darwin
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
