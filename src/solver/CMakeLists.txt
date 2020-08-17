@@ -15,6 +15,8 @@ find_package(OpenMP)
 # configure file groups
 set(SWMM_PUBLIC_HEADERS
     include/swmm5.h
+    include/toolkitAPI.h
+    include/toolkitAPI_enums.h
 )
 
 file(GLOB
