@@ -73,18 +73,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
 
-      - name: Read tag version
-        id: tag
-        run: |
-          echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-
-      - name: Set tag as environment
-        env:
-          RELEASE_VERSION: ${{ steps.tag.outputs.tag }}
-        run: |
-          echo $RELEASE_VERSION
-          echo ${{ steps.tag.outputs.tag }}
-
       - name: Checkout submodule
         uses: actions/checkout@v2
         with:
@@ -124,24 +112,25 @@ jobs:
           name: build-test-artifacts
           path: upload/*.*
 
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: true
-          prerelease: true
+          
+      # - name: Create release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ github.ref }}
+      #     release_name: Release ${{ github.ref }}
+      #     draft: true
+      #     prerelease: true
 
-      - name: Upload release ssset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: upload/*.zip
-          asset_name: my-artifact.zip
-          asset_content_type: application/zip
+      # - name: Upload release ssset
+      #   id: upload-release-asset 
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: upload/*.zip
+      #     asset_name: my-artifact.zip
+      #     asset_content_type: application/zip
