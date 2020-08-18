@@ -23,6 +23,9 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.defaults.run.working-directory}}
     env:
       OMP_NUM_THREADS: 1
       PROJECT: swmm
