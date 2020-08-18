@@ -16,6 +16,8 @@ name: Build and Test
 on:
   push:
     branches: [develop]
+    tags:
+    - 'v*.*.*'
   pull_request:
     branches: [develop]
 
@@ -71,6 +73,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
 
+      - name: Read tag version
+        run: |
+          run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
+          echo "Release Tag:" ${{ env.RELEASE_VERSION }}
+
       - name: Checkout submodule
         uses: actions/checkout@v2
         with:
@@ -89,7 +96,6 @@ jobs:
 
       - name: Build and unit test
         run: |
-          echo $PWD
           make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
 
       - name: Build for reg test
@@ -130,4 +136,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: upload/*.zip
+          asset_name: my-artifact.zip
           asset_content_type: application/zip
