@@ -17,7 +17,7 @@ on:
   push:
     branches: [develop]
     tags:
-    - 'v*.*.*'
+      - 'v*.*.*'
   pull_request:
     branches: [develop]
 
