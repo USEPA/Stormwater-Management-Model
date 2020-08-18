@@ -25,8 +25,8 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     defaults:
       run:
-        shell: ${{ matrix.os.defaults.run.shell }}
-        working-directory: ${{ matrix.os.defaults.run.working-directory }}
+        shell: ${{ matrix.defaults.run.shell }}
+        working-directory: ${{ matrix.defaults.run.working-directory }}
     env:
       OMP_NUM_THREADS: 1
       PROJECT: swmm
