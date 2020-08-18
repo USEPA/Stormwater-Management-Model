@@ -25,7 +25,8 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     defaults:
       run:
-        working-directory: ${{ matrix.defaults.run.working-directory}}
+        shell: ${{ matrix.os.defaults.run.shell }}
+        working-directory: ${{ matrix.os.defaults.run.working-directory }}
     env:
       OMP_NUM_THREADS: 1
       PROJECT: swmm
@@ -88,6 +89,7 @@ jobs:
 
       - name: Build and unit test
         run: |
+          echo $PWD
           make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
 
       - name: Build for reg test
