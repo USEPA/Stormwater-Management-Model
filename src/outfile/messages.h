@@ -10,6 +10,7 @@
 #ifndef SRC_MESSAGES_H_
 #define SRC_MESSAGES_H_
 
+
 #define MAXMSG 56
 
 /*------------------- Error Messages --------------------*/
@@ -27,5 +28,6 @@
 #define ERR436 "File Error 436: invalid file - contains no results"
 
 #define ERR440 "ERROR 440: an unspecified error has occurred"
+
 
 #endif /* SRC_MESSAGES_H_ */
