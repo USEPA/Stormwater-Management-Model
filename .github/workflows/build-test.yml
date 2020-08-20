@@ -23,33 +23,21 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
-    defaults:
-      run:
-        shell: ${{ matrix.defaults.run.shell }}
-        working-directory: ${{ matrix.defaults.run.working-directory }}
-    env:
-      OMP_NUM_THREADS: 1
-      PROJECT: swmm
-      BUILD_HOME: build
-      TEST_HOME: nrtests 
-      NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2016, ubuntu-latest, macos-latest]
+        # os: [windows-2016, ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         requirements: [requirements-swmm.txt]
         include:
-          - os: windows-2016
-            generator: Visual Studio 15 2017 Win64
-            experimental: true
-            script_extension: cmd
-            defaults:
-              run:
-                shell: cmd
-                working-directory: ./ci-tools/windows
-
+          # - os: windows-2016
+          #   generator: Visual Studio 15 2017 Win64
+          #   experimental: true
+          #   script_extension: cmd
+          #   defaults:
+          #     run:
+          #       shell: cmd
+          #       working-directory: ./ci-tools/windows
           - os: ubuntu-latest
             generator: "Unix Makefiles" 
             experimental: true
@@ -58,16 +46,28 @@ jobs:
               run:
                 shell: bash
                 working-directory: ./ci-tools/linux
-
-          - os: macos-latest
-            generator: Xcode
-            experimental: true
-            ci_tools_path: ci-tools/darwin
-            script_extension: zsh
-            defaults:
-              run:
-                shell: zsh
-                working-directory: ./ci-tools/darwin
+          # - os: macos-latest
+          #   generator: Xcode
+          #   experimental: true
+          #   ci_tools_path: ci-tools/darwin
+          #   script_extension: zsh
+          #   defaults:
+          #     run:
+          #       shell: zsh
+          #       working-directory: ./ci-tools/darwin
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    defaults:
+      run:
+        shell: ${{ matrix.defaults.run.shell }}
+        working-directory: ${{ matrix.defaults.run.working-directory }}
+    
+    env:
+      OMP_NUM_THREADS: 1
+      PROJECT: swmm
+      BUILD_HOME: build
+      TEST_HOME: nrtests 
+      NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
 
     steps:
       - name: Checkout repo
@@ -91,6 +91,7 @@ jobs:
 
       - name: Build and unit test
         run: |
+          echo $PWD
           make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
 
       - name: Build for reg test
