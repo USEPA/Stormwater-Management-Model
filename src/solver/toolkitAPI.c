@@ -39,7 +39,7 @@ double* newDoubleArray(int n);
 //-----------------------------------------------------------------------------
 //  Extended API Functions
 //-----------------------------------------------------------------------------
-void DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char *s)
+int DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char *s)
 ///
 /// Input:   ErrorCodeAPI = error code
 /// Output:  errmessage String
@@ -49,6 +49,7 @@ void DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char *s)
     int ErrorIndex = error_getErrorIndex(ErrorCodeAPI);
     char *errmsg = error_getMsg(ErrorIndex);
     strcpy(s, errmsg);
+    return 0;
 }
 
 
@@ -59,7 +60,7 @@ int DLLEXPORT swmm_project_findObject(int type, char *id, int *index)
     int idx = project_findObject(type, id);
 
     if (idx == -1) {
-        index    = NULL;
+        index = NULL;
         error_code_index = ERR_API_OBJECT_INDEX;
     } else
         *index = idx;
@@ -2821,4 +2822,13 @@ void DLLEXPORT freeArray(void** array)
         FREE(*array);
         *array = NULL;
     }
+}
+
+
+void DLLEXPORT freeMemory(void *array)
+//
+//  Purpose: Frees memory allocated by API calls
+//
+{
+    free(array);
 }

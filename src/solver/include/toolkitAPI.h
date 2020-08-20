@@ -33,8 +33,9 @@ extern "C" {
  @brief Get the text of an error code.
  @param errcode The error code
  @param[out] s The error string represented by the code
+ @return Error code
 */
-void DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char *s);
+int DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char *s);
 
 /**
  @brief Finds the index of an object given its ID.
