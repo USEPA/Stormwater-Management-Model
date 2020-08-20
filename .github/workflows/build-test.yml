@@ -92,6 +92,8 @@ jobs:
       - name: Build and unit test
         run: |
           echo $PWD
+          ls -l
+          chmod +x make.${{ matrix.script_extension }}
           make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
 
       - name: Build for reg test
