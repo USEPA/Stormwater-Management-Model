@@ -91,22 +91,19 @@ jobs:
 
       - name: Build and unit test
         run: |
-          echo $PWD
-          ls -l
-          chmod +x make.${{ matrix.script_extension }}
-          make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
+          ./make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
 
       - name: Build for reg test
         run: |
-          make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
+          ./make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
  
       - name: Before reg test
         run: |
-          before-nrtest.${{ matrix.script_extension }}
+          ./before-nrtest.${{ matrix.script_extension }}
 
       - name: Run reg test
         run: |
-          run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+          ./run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
       - name: Upload artifacts
         if: ${{ always() }}
