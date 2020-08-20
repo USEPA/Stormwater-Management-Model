@@ -26,18 +26,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: [windows-2016, ubuntu-latest, macos-latest]
-        os: [ubuntu-latest]
+        os: [windows-2016, ubuntu-latest, macos-latest]
         requirements: [requirements-swmm.txt]
         include:
-          # - os: windows-2016
-          #   generator: Visual Studio 15 2017 Win64
-          #   experimental: true
-          #   script_extension: cmd
-          #   defaults:
-          #     run:
-          #       shell: cmd
-          #       working-directory: ./ci-tools/windows
+          - os: windows-2016
+            generator: Visual Studio 15 2017 Win64
+            experimental: true
+            script_extension: cmd
+            defaults:
+              run:
+                shell: cmd
+                working-directory: ./ci-tools/windows
           - os: ubuntu-latest
             generator: "Unix Makefiles" 
             experimental: true
@@ -46,15 +45,15 @@ jobs:
               run:
                 shell: bash
                 working-directory: ./ci-tools/linux
-          # - os: macos-latest
-          #   generator: Xcode
-          #   experimental: true
-          #   ci_tools_path: ci-tools/darwin
-          #   script_extension: zsh
-          #   defaults:
-          #     run:
-          #       shell: zsh
-          #       working-directory: ./ci-tools/darwin
+          - os: macos-latest
+            generator: Xcode
+            experimental: true
+            ci_tools_path: ci-tools/darwin
+            script_extension: zsh
+            defaults:
+              run:
+                shell: zsh
+                working-directory: ./ci-tools/darwin
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     defaults:
