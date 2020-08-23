@@ -1146,7 +1146,7 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int param, int value)
 }
 
 
-int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, char *condition)
+int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, int *condition)
 //
 // Input:   lidControlIndex = Index of desired lid control
 // Output:  condition = value to be output
@@ -1170,8 +1170,8 @@ int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, char *condition)
     {
         lidProc = lid_getLidProc(lidControlIndex);
         if(lidProc != NULL)
-        {
-            *condition = lidProc->surface.canOverflow;
+        {   
+            *condition = (int) lidProc->surface.canOverflow;
 
         }
     }

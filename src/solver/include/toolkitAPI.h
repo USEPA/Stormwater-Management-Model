@@ -196,7 +196,7 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int Param, int value);
  @param[out] condition The value of surface immediate overflow condition
  @return Error code
 */
-int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, char *condition);
+int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, int *condition);
 
 /**
  @brief Get a property value for specified lid control
