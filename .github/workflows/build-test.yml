@@ -56,7 +56,7 @@ jobs:
             gh_run_number: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
             defaults:
               run:
-                shell: zsh
+                shell: zsh {0}
                 working-directory: ./ci-tools/darwin
 
     runs-on: ${{ matrix.os }}
