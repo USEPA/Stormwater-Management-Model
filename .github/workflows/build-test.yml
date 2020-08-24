@@ -92,6 +92,14 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r ${{ matrix.requirements }}
 
+      - name: Instal MacOS requirements
+        if: ${{ matrix.so == 'macos-latest'}}
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh
+          brew install llvm
+          echo ::set-env name=CC::/usr/local/opt/llvm/bin/clang
+          echo ::set-env name=CXX::/usr/local/opt/llvm/bin/clang++
+
       - name: Build and unit test
         run: |
           ./make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
