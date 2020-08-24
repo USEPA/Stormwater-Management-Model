@@ -59,14 +59,13 @@ jobs:
           #     run:
           #       shell: zsh
           #       working-directory: ./ci-tools/darwin
-          
+
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     defaults:
       run:
         shell: ${{ matrix.defaults.run.shell }}
         working-directory: ${{ matrix.defaults.run.working-directory }}
-    
     env:
       OMP_NUM_THREADS: 1
       PROJECT: swmm
