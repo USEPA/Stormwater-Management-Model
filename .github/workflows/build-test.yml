@@ -30,20 +30,24 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         requirements: [requirements-swmm.txt]
         include:
-          # - os: windows-2016
-          #   generator: Visual Studio 15 2017 Win64
-          #   experimental: true
-          #   script_extension: cmd
-          #   gh_run_number: %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
-          #   defaults:
-          #     run:
-          #       shell: cmd
-          #       working-directory: ./ci-tools/windows
+          - os: windows-2016
+            generator: Visual Studio 15 2017 Win64
+            experimental: true
+            script_extension: cmd
+            artifacts_ext: zip
+            artifact_content_type: zip
+            gh_run_number: "%GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%"
+            defaults:
+              run:
+                shell: cmd
+                working-directory: ./ci-tools/windows
           - os: ubuntu-latest
             generator: "Unix Makefiles" 
             experimental: true
             script_extension: sh
             gh_run_number: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
+            artifacts_ext: tar.gz
+            artifact_content_type: tar
             defaults:
               run:
                 shell: bash
@@ -54,6 +58,8 @@ jobs:
             ci_tools_path: ci-tools/darwin
             script_extension: zsh
             gh_run_number: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
+            artifacts_ext: tar.gz
+            artifact_content_type: tar
             defaults:
               run:
                 shell: zsh {0}
@@ -92,12 +98,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r ${{ matrix.requirements }}
 
-      - name: Install MacOS requirements
-        if: ${{ matrix.os == 'macos-latest'}}
-        run: |
-          echo ::set-env name=CC::/usr/local/opt/llvm/bin/clang
-          echo ::set-env name=CXX::/usr/local/opt/llvm/bin/clang++
-
       - name: Build and unit test
         run: |
           ./make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
@@ -121,24 +121,24 @@ jobs:
           name: build-test-artifacts
           path: upload/*.*
 
-      # - name: Create release
-      #   id: create_release
-      #   uses: actions/create-release@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     tag_name: ${{ github.ref }}
-      #     release_name: Release ${{ github.ref }}
-      #     draft: true
-      #     prerelease: true
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: true
 
-      # - name: Upload release ssset
-      #   id: upload-release-asset 
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: upload/*.zip
-      #     asset_name: my-artifact.zip
-      #     asset_content_type: application/zip
+      - name: Upload release ssset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: upload/${PROJECT}*.{{ matrix.artifacts_ext }}
+          asset_name: owa-${PROJECT}-{{ matrix.os }}-{{ github.ref }}.{{ matrix.artifacts_ext }}
+          asset_content_type: application/{{ matrix.artifact_content_type }}
