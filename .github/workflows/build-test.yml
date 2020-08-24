@@ -34,6 +34,7 @@ jobs:
           #   generator: Visual Studio 15 2017 Win64
           #   experimental: true
           #   script_extension: cmd
+          #   gh_run_number: %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
           #   defaults:
           #     run:
           #       shell: cmd
@@ -42,6 +43,7 @@ jobs:
             generator: "Unix Makefiles" 
             experimental: true
             script_extension: sh
+            gh_run_number: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
             defaults:
               run:
                 shell: bash
@@ -52,6 +54,7 @@ jobs:
           #   experimental: true
           #   ci_tools_path: ci-tools/darwin
           #   script_extension: zsh
+          #   gh_run_number: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
           #   defaults:
           #     run:
           #       shell: zsh
@@ -104,7 +107,7 @@ jobs:
 
       - name: Run reg test
         run: |
-          ./run-nrtests.${{ matrix.script_extension }} %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+          ./run-nrtests.${{ matrix.script_extension }} ${{ matrix.gh_run_number }}
       
       - name: Upload artifacts
         if: ${{ always() }}
