@@ -95,8 +95,6 @@ jobs:
       - name: Install MacOS requirements
         if: ${{ matrix.os == 'macos-latest'}}
         run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-          brew install llvm
           echo ::set-env name=CC::/usr/local/opt/llvm/bin/clang
           echo ::set-env name=CXX::/usr/local/opt/llvm/bin/clang++
 
