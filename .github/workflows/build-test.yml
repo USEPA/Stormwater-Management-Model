@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         # os: [windows-2016, ubuntu-latest, macos-latest]
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest]
         requirements: [requirements-swmm.txt]
         include:
           # - os: windows-2016
@@ -48,17 +48,16 @@ jobs:
               run:
                 shell: bash
                 working-directory: ./ci-tools/linux
-
-          # - os: macos-latest
-          #   generator: Xcode
-          #   experimental: true
-          #   ci_tools_path: ci-tools/darwin
-          #   script_extension: zsh
-          #   gh_run_number: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
-          #   defaults:
-          #     run:
-          #       shell: zsh
-          #       working-directory: ./ci-tools/darwin
+          - os: macos-latest
+            generator: Xcode
+            experimental: true
+            ci_tools_path: ci-tools/darwin
+            script_extension: zsh
+            gh_run_number: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
+            defaults:
+              run:
+                shell: zsh
+                working-directory: ./ci-tools/darwin
 
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
