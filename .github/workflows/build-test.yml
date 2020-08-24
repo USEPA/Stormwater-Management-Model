@@ -93,7 +93,7 @@ jobs:
           python -m pip install -r ${{ matrix.requirements }}
 
       - name: Instal MacOS requirements
-        if: ${{ matrix.so == 'macos-latest'}}
+        if: ${{ matrix.os == 'macos-latest'}}
         run: |
           curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh
           brew install llvm
