@@ -10,6 +10,7 @@
 //             08/01/16   (5.1.011)
 //             05/10/18   (5.1.013)
 //             03/01/20   (5.1.014)
+//             07/10/20   (5.1.015)
 //   Author:   L. Rossman (EPA)
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -49,6 +50,9 @@
 //   Build 5.1.014:
 //   - updateNodeFlows() modified to subtract conduit evap. and seepage losses
 //     from downstream node inflow instead of upstream node outflow.
+//
+//   Build 5.1.015:
+//   - The 5.1.014 change regarding conduit losses has been retracted.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -552,13 +556,13 @@ void updateNodeFlows(int i)
     // --- update total inflow & outflow at upstream/downstream nodes
     if ( q >= 0.0 )
     {
-        Node[n1].outflow += q;                                                 //(5.1.014)
-        Node[n2].inflow  += q - uniformLossRate;                               //(5.1.014)
+        Node[n1].outflow += q + uniformLossRate;                               //(5.1.015)
+        Node[n2].inflow  += q;                                                 //(5.1.015)
     }
     else
     {
-        Node[n1].inflow   -= q + uniformLossRate;                              //(5.1.014)
-        Node[n2].outflow  -= q;                                                //(5.1.014)
+        Node[n1].inflow   -= q;                                                //(5.1.015)
+        Node[n2].outflow  -= q - uniformLossRate;                              //(5.1.015)
     }
 
     // --- add surf. area contributions to upstream/downstream nodes
