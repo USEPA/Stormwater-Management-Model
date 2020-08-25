@@ -17,9 +17,9 @@ endif()
 
 
 project(swmm-solver
-    VERSION 5.1.14
+    VERSION 5.1.15
     LANGUAGES C CXX
-    )
+)
 
 # Append local dir to module search path
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -40,6 +40,7 @@ set(LIBRARY_DIST "lib")
 set(CONFIG_DIST  "cmake")
 
 
+# Define build options
 option(BUILD_TESTS "Builds component tests (requires Boost)" OFF)
 option(BUILD_DEF   "Builds library with def file interface" OFF)
 
@@ -54,25 +55,6 @@ if(BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-
-# Create target import scripts so other cmake projects can use swmm libraries
-install(
-    EXPORT
-        swmm5Targets
-    DESTINATION
-        "${CONFIG_DIST}"
-    FILE
-        swmm5-config.cmake
-    )
-
-install(
-    EXPORT
-        swmm-outputTargets
-    DESTINATION
-        "${CONFIG_DIST}"
-    FILE
-        swmm-output-config.cmake
-    )
 
 # Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
 set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)

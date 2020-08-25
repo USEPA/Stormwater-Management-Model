@@ -52,7 +52,7 @@
 //     from downstream node inflow instead of upstream node outflow.
 //
 //   Build 5.1.015:
-//   - The 5.1.014 change regarding conduit losses has been retracted.
+//   - Roll back the 5.1.014 change for conduit losses in updateNodeFlows().
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
