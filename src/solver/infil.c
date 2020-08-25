@@ -37,6 +37,7 @@
 //
 //   Build 5.1.015:
 //   - Support added for multiple infiltration methods within a project.
+//   - Conversion of runon to ponded depth fixed for Curve Number infiltration.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -319,7 +320,7 @@ double infil_getInfil(int j, double tstep, double rainfall,
             Subcatch[j].infilModel);
 
       case CURVE_NUMBER:
-        depth += runon / tstep;
+        depth += runon * tstep;                                                //(5.1.015)
         return curvenum_getInfil(&Infil[j].curveNum, tstep, rainfall, depth);
 
       default:
