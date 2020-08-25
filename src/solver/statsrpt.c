@@ -29,7 +29,8 @@
 //   - Pervious and impervious runoff added to Subcatchment Runoff Summary.
 //
 //   Build 5.1.015:
-//   - Fixes bug in summary statistics when Report Start date > Start Date.
+//   - Fixes bug in summary statistics when Report Start Date > Start Date.
+//   - Insures that flow values listed in tables are separated by a space.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -87,8 +88,8 @@ void statsrpt_writeReport()
 //
 {
     // --- set number of decimal places for reporting flow values
-    if ( FlowUnits == MGD || FlowUnits == CMS ) strcpy(FlowFmt, "%9.3f");
-    else strcpy(FlowFmt, "%9.2f");
+    if ( FlowUnits == MGD || FlowUnits == CMS ) strcpy(FlowFmt, " %8.3f");     //(5.1.015)
+    else strcpy(FlowFmt, " %8.2f");                                            //(5.1.015)
 
     // --- volume conversion factor from ft3 to Mgal or Mliters
     if (UnitSystem == US) Vcf = 7.48 / 1.0e6;
