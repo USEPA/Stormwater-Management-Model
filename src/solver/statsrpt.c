@@ -31,7 +31,6 @@
 //   Build 5.1.015:
 //   - Fixes bug in summary statistics when Report Start Date > Start Date.
 //   - Insures that flow values listed in tables are separated by a space.
-//   - Adds a '-' entry to blank columns in the Link Flow Summary table.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -741,7 +740,7 @@ void writeLinkFlows()
         // --- print max flow / flow capacity for pumps
         if (Link[j].type == PUMP && Link[j].qFull > 0.0)
         {
-            fprintf(Frpt.file, "         -");
+            fprintf(Frpt.file, "          ");
             fprintf(Frpt.file, "  %6.2f",
                 LinkStats[j].maxFlow / Link[j].qFull);
             continue;
@@ -762,6 +761,7 @@ void writeLinkFlows()
             fprintf(Frpt.file, "  %6.2f", LinkStats[j].maxFlow / Link[j].qFull /
                 (double)Conduit[k].barrels);
         }
+        else fprintf(Frpt.file, "                  ");
 
         // --- print max/full depth
         fullDepth = Link[j].xsect.yFull;
@@ -769,10 +769,9 @@ void writeLinkFlows()
             Orifice[k].type == BOTTOM_ORIFICE) fullDepth = 0.0;
         if (fullDepth > 0.0)
         {
-            if (Link[j].type != CONDUIT)
-                fprintf(Frpt.file, "         -       -");
             fprintf(Frpt.file, "  %6.2f", LinkStats[j].maxDepth / fullDepth);
         }
+        else fprintf(Frpt.file, "        ");
     }
     WRITE("");
 }
