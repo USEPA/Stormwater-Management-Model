@@ -584,10 +584,15 @@ void updateNodeFlows(int i)
 
 //=============================================================================
 
+////  ---  modified for release 5.1.015  ----  ////                            //(5.1.015)
 int findNodeDepths(double dt)
+//
+//  Input:   dt = time step (sec)
+//  Output:  returns TRUE if no change in depth at all nodes, FALSE otherwise
+//  Purpose: finds new depth at all nodes and checks if convergence achieved.
+//
 {
     int i;
-    int converged;      // convergence flag
     double yOld;        // previous node depth (ft)
 
     // --- compute outfall depths based on flow in connecting link
@@ -595,24 +600,25 @@ int findNodeDepths(double dt)
 
     // --- compute new depth for all non-outfall nodes and determine if
     //     depth change from previous iteration is below tolerance
-    converged = TRUE;
 #pragma omp parallel num_threads(NumThreads)
 {
     #pragma omp for private(yOld)
     for ( i = 0; i < Nobjects[NODE]; i++ )
     {
+        Xnode[i].converged = TRUE;
         if ( Node[i].type == OUTFALL ) continue;
         yOld = Node[i].newDepth;
         setNodeDepth(i, dt);
-        Xnode[i].converged = TRUE;
         if ( fabs(yOld - Node[i].newDepth) > HeadTol )
         {
-            converged = FALSE;
             Xnode[i].converged = FALSE;
         }
     }
 }
-    return converged;
+    // --- return FALSE if any node failed to converge
+    for (i = 0; i < Nobjects[NODE]; i++)
+      if (Xnode[i].converged == FALSE) return FALSE;
+    return TRUE;
 }
 
 //=============================================================================
