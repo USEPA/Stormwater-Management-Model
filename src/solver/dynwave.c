@@ -600,9 +600,9 @@ int findNodeDepths(double dt)
 
     // --- compute new depth for all non-outfall nodes and determine if
     //     depth change from previous iteration is below tolerance
-//#pragma omp parallel num_threads(NumThreads)
-//{
-//    #pragma omp for private(yOld)
+#pragma omp parallel num_threads(NumThreads)
+{
+    #pragma omp for private(yOld)
     for ( i = 0; i < Nobjects[NODE]; i++ )
     {
         Xnode[i].converged = TRUE;
@@ -614,7 +614,7 @@ int findNodeDepths(double dt)
             Xnode[i].converged = FALSE;
         }
     }
-//}
+}
     // --- return FALSE if any node failed to converge
     for (i = 0; i < Nobjects[NODE]; i++)
       if (Xnode[i].converged == FALSE) return FALSE;
