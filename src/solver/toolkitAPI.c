@@ -2814,7 +2814,7 @@ double* newDoubleArray(int n)
 
 void copyStringPointer(char **strPointer, char *str)
 {
-    char *s = (char *)malloc(sizeof(char) * (sizeof(str)/sizeof(char)));
+    char *s = (char *)malloc(sizeof(char) * strlen(str));
     strcpy(s, "");
     strcpy(s, str);
     strPointer = &s;
