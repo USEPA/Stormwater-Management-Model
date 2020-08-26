@@ -20,6 +20,8 @@
 #include "toolkitAPI.h"
 #include "hash.h"
 
+#include "shared/cstr_helper.h"
+
 // Function Declarations for API
 int     massbal_getRoutingFlowTotal(SM_RoutingTotals *routingTot);
 int     massbal_getRunoffTotal(SM_RunoffTotals *runoffTot);
@@ -36,7 +38,6 @@ TSubcatchStats *stats_getSubcatchStat(int index);
 
 // Utilty Function Declarations
 double* newDoubleArray(int n);
-void copyStringPointer(char **strPointer, char *str);
 
 
 //-----------------------------------------------------------------------------
@@ -49,9 +50,8 @@ int DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char **errorMsg)
 /// Return:  API Error
 /// Purpose: Get an error message
 {
-    errorMsg = NULL;
     int ErrorIndex = error_getErrorIndex(ErrorCodeAPI);
-    copyStringPointer(errorMsg, error_getMsg(ErrorIndex));
+    cstr_duplicate(errorMsg, error_getMsg(ErrorIndex));
     return 0;
 }
 
@@ -61,7 +61,7 @@ int DLLEXPORT swmm_project_findObject(int type, char *id, int *index)
     int error_code_index = 0;
 
     int idx = project_findObject(type, id);
-
+ 
     if (idx == -1) {
         index = NULL;
         error_code_index = ERR_API_OBJECT_INDEX;
@@ -368,7 +368,7 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char **id)
 {
     int error_code_index = 0;
     TLidProc*  lidProc;
-    id = NULL;
+    
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -384,38 +384,38 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char **id)
         switch (type)
         {
             case SM_GAGE:
-                copyStringPointer(id, Gage[index].ID); break;
+                cstr_duplicate(id, Gage[index].ID); break;
             case SM_SUBCATCH:
-                copyStringPointer(id, Subcatch[index].ID); break;
+                cstr_duplicate(id, Subcatch[index].ID); break;
             case SM_NODE:
-                copyStringPointer(id, Node[index].ID); break;
+                cstr_duplicate(id, Node[index].ID); break;
             case SM_LINK:
-                copyStringPointer(id, Link[index].ID); break;
+                cstr_duplicate(id, Link[index].ID); break;
             case SM_POLLUT:
-                copyStringPointer(id, Pollut[index].ID); break;
+                cstr_duplicate(id, Pollut[index].ID); break;
             case SM_LANDUSE:
-                copyStringPointer(id, Landuse[index].ID); break;
+                cstr_duplicate(id, Landuse[index].ID); break;
             case SM_TIMEPATTERN:
-                copyStringPointer(id, Pattern[index].ID); break;
+                cstr_duplicate(id, Pattern[index].ID); break;
             case SM_CURVE:
-                copyStringPointer(id, Curve[index].ID); break;
+                cstr_duplicate(id, Curve[index].ID); break;
             case SM_TSERIES:
-                copyStringPointer(id, Tseries[index].ID); break;
+                cstr_duplicate(id, Tseries[index].ID); break;
             //case SM_CONTROL:
-                //copyStringPointer(id, Rules[index].ID); break;
+                //cstr_duplicate(id, Rules[index].ID); break;
             case SM_TRANSECT:
-                copyStringPointer(id, Transect[index].ID); break;
+                cstr_duplicate(id, Transect[index].ID); break;
             case SM_AQUIFER:
-                copyStringPointer(id, Aquifer[index].ID); break;
+                cstr_duplicate(id, Aquifer[index].ID); break;
             case SM_UNITHYD:
-                copyStringPointer(id, UnitHyd[index].ID); break;
+                cstr_duplicate(id, UnitHyd[index].ID); break;
             case SM_SNOWMELT:
-                copyStringPointer(id, Snowmelt[index].ID); break;
+                cstr_duplicate(id, Snowmelt[index].ID); break;
             //case SM_SHAPE:
-                //copyStringPointer(id, Shape[index].ID); break;
+                //cstr_duplicate(id, Shape[index].ID); break;
             case SM_LID:
                 lidProc = lid_getLidProc(index);
-                if (lidProc != NULL) copyStringPointer(id, lidProc->ID);
+                if (lidProc != NULL) cstr_duplicate(id, lidProc->ID);
                 else error_code_index = ERR_API_OUTBOUNDS;
                 break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
@@ -2809,15 +2809,6 @@ double* newDoubleArray(int n)
 ///
 {
     return (double*) malloc((n)*sizeof(double));
-}
-
-
-void copyStringPointer(char **strPointer, char *str)
-{
-    char *s = (char *)malloc(sizeof(char) * strlen(str));
-    strcpy(s, "");
-    strcpy(s, str);
-    strPointer = &s;
 }
 
 

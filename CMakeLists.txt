@@ -48,6 +48,7 @@ option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
 add_subdirectory(src/outfile)
 add_subdirectory(src/solver)
 add_subdirectory(src/run)
+add_subdirectory(src/shared)
 
 
 if(BUILD_TESTS)
