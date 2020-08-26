@@ -33,22 +33,25 @@ int  stats_getLinkStat(int index, SM_LinkStats *linkStats);
 int  stats_getPumpStat(int index, SM_PumpStats *pumpStats);
 TSubcatchStats *stats_getSubcatchStat(int index);
 
+
 // Utilty Function Declarations
 double* newDoubleArray(int n);
+void copyStringPointer(char **strPointer, char *str);
+
 
 //-----------------------------------------------------------------------------
 //  Extended API Functions
 //-----------------------------------------------------------------------------
-int DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char *s)
+int DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char **errorMsg)
 ///
 /// Input:   ErrorCodeAPI = error code
 /// Output:  errmessage String
 /// Return:  API Error
 /// Purpose: Get an error message
 {
+    errorMsg = NULL;
     int ErrorIndex = error_getErrorIndex(ErrorCodeAPI);
-    char *errmsg = error_getMsg(ErrorIndex);
-    strcpy(s, errmsg);
+    copyStringPointer(errorMsg, error_getMsg(ErrorIndex));
     return 0;
 }
 
@@ -355,7 +358,7 @@ int DLLEXPORT swmm_getObjectIndex(SM_ObjectType type, char *id, int *index)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
+int DLLEXPORT swmm_getObjectId(int type, int index, char **id)
 ///
 /// Input:   type = object type (Based on SM_ObjectType enum)
 ///          index = Index of desired ID
@@ -365,9 +368,7 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
 {
     int error_code_index = 0;
     TLidProc*  lidProc;
-    //Provide Empty Character Array
-    strcpy(id,"");
-
+    id = NULL;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -383,41 +384,39 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char *id)
         switch (type)
         {
             case SM_GAGE:
-                strcpy(id,Gage[index].ID); break;
+                copyStringPointer(id, Gage[index].ID); break;
             case SM_SUBCATCH:
-                strcpy(id,Subcatch[index].ID); break;
+                copyStringPointer(id, Subcatch[index].ID); break;
             case SM_NODE:
-                strcpy(id,Node[index].ID); break;
+                copyStringPointer(id, Node[index].ID); break;
             case SM_LINK:
-                strcpy(id,Link[index].ID); break;
+                copyStringPointer(id, Link[index].ID); break;
             case SM_POLLUT:
-                strcpy(id,Pollut[index].ID); break;
+                copyStringPointer(id, Pollut[index].ID); break;
             case SM_LANDUSE:
-                strcpy(id,Landuse[index].ID); break;
+                copyStringPointer(id, Landuse[index].ID); break;
             case SM_TIMEPATTERN:
-                strcpy(id,Pattern[index].ID); break;
+                copyStringPointer(id, Pattern[index].ID); break;
             case SM_CURVE:
-                strcpy(id,Curve[index].ID); break;
+                copyStringPointer(id, Curve[index].ID); break;
             case SM_TSERIES:
-                strcpy(id,Tseries[index].ID); break;
+                copyStringPointer(id, Tseries[index].ID); break;
             //case SM_CONTROL:
-                //strcpy(id,Rules[index].ID); break;
+                //copyStringPointer(id, Rules[index].ID); break;
             case SM_TRANSECT:
-                strcpy(id,Transect[index].ID); break;
+                copyStringPointer(id, Transect[index].ID); break;
             case SM_AQUIFER:
-                strcpy(id,Aquifer[index].ID); break;
+                copyStringPointer(id, Aquifer[index].ID); break;
             case SM_UNITHYD:
-                strcpy(id,UnitHyd[index].ID); break;
+                copyStringPointer(id, UnitHyd[index].ID); break;
             case SM_SNOWMELT:
-                strcpy(id,Snowmelt[index].ID); break;
+                copyStringPointer(id, Snowmelt[index].ID); break;
             //case SM_SHAPE:
-                //strcpy(id,Shape[index].ID); break;
+                //copyStringPointer(id, Shape[index].ID); break;
             case SM_LID:
                 lidProc = lid_getLidProc(index);
-                if (lidProc != NULL)
-                {
-                    strcpy(id,lidProc->ID);
-                }
+                if (lidProc != NULL) copyStringPointer(id, lidProc->ID);
+                else error_code_index = ERR_API_OUTBOUNDS;
                 break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         }
@@ -2810,6 +2809,15 @@ double* newDoubleArray(int n)
 ///
 {
     return (double*) malloc((n)*sizeof(double));
+}
+
+
+void copyStringPointer(char **strPointer, char *str)
+{
+    char *s = (char *)malloc(sizeof(char) * (sizeof(str)/sizeof(char)));
+    strcpy(s, "");
+    strcpy(s, str);
+    strPointer = &s;
 }
 
 

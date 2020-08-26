@@ -32,15 +32,16 @@ extern "C" {
 /**
  @brief Get the text of an error code.
  @param errcode The error code
- @param[out] s The error string represented by the code
+ @param[out] errorMsg The error string represented by the code
  @return Error code
 */
-int DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char *s);
+int DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char **errorMsg);
 
 /**
  @brief Finds the index of an object given its ID.
  @param type An object type
  @param id The object ID
+
  @param[out] index The objects index
  @return Error code
 */
@@ -85,7 +86,7 @@ int DLLEXPORT swmm_countObjects(int type, int *count);
  @param[out] id The string ID of object.
  @return Error code
  */
-int DLLEXPORT swmm_getObjectId(int type, int index, char *id);
+int DLLEXPORT swmm_getObjectId(int type, int index, char **id);
 
 /**
  @brief Gets Object Index
