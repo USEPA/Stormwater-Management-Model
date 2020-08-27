@@ -96,6 +96,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r ${{ matrix.requirements }}
+      
+      - name: Install Darwin requirements
+        if: ${{ matrix.os == 'macos-latest'}}
+        run: |
+          brew install libomp
 
       - name: Build and unit test
         run: |
@@ -120,24 +125,24 @@ jobs:
           name: build-test-artifacts
           path: upload/*.*
 
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: true
-          prerelease: true
+      # - name: Create release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ github.ref }}
+      #     release_name: Release ${{ github.ref }}
+      #     draft: true
+      #     prerelease: true
 
-      - name: Upload release assets
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: upload/${PROJECT}*.${{ matrix.artifacts_ext }}
-          asset_name: owa-${PROJECT}-${{ matrix.os }}-${{ github.ref }}.${{ matrix.artifacts_ext }}
-          asset_content_type: application/${{ matrix.artifact_content_type }}
+      # - name: Upload release assets
+      #   id: upload-release-asset 
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: upload/${PROJECT}*.${{ matrix.artifacts_ext }}
+      #     asset_name: owa-${PROJECT}-${{ matrix.os }}-${{ github.ref }}.${{ matrix.artifacts_ext }}
+      #     asset_content_type: application/${{ matrix.artifact_content_type }}
