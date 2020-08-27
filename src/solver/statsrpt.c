@@ -701,6 +701,7 @@ void writeLinkFlows()
 {
     int    j, k, days, hrs, mins;
     double v, fullDepth;
+    char   nullValue = ' ';
 
     if (Nobjects[LINK] == 0) return;
     WRITE("");
@@ -741,7 +742,7 @@ void writeLinkFlows()
         // --- print max flow / flow capacity for pumps
         if (Link[j].type == PUMP && Link[j].qFull > 0.0)
         {
-            fprintf(Frpt.file, "         -");
+            fprintf(Frpt.file, "         %c", nullValue);
             fprintf(Frpt.file, "  %6.2f",
                 LinkStats[j].maxFlow / Link[j].qFull);
             continue;
@@ -770,7 +771,7 @@ void writeLinkFlows()
         if (fullDepth > 0.0)
         {
             if (Link[j].type != CONDUIT)
-                fprintf(Frpt.file, "         -       -");
+                fprintf(Frpt.file, "         %c       %c", nullValue, nullValue);
             fprintf(Frpt.file, "  %6.2f", LinkStats[j].maxDepth / fullDepth);
         }
     }

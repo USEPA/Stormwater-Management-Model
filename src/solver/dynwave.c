@@ -605,19 +605,22 @@ int findNodeDepths(double dt)
     #pragma omp for private(yOld)
     for ( i = 0; i < Nobjects[NODE]; i++ )
     {
-        Xnode[i].converged = TRUE;
         if ( Node[i].type == OUTFALL ) continue;
         yOld = Node[i].newDepth;
         setNodeDepth(i, dt);
+        Xnode[i].converged = TRUE;
         if ( fabs(yOld - Node[i].newDepth) > HeadTol )
         {
             Xnode[i].converged = FALSE;
         }
     }
 }
-    // --- return FALSE if any node failed to converge
+    // --- return FALSE if any non-Outfall node failed to converge
     for (i = 0; i < Nobjects[NODE]; i++)
-      if (Xnode[i].converged == FALSE) return FALSE;
+    {
+        if (Node[i].type == OUTFALL) continue;
+        if (Xnode[i].converged == FALSE) return FALSE;
+    }
     return TRUE;
 }
 
