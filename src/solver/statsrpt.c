@@ -763,6 +763,7 @@ void writeLinkFlows()
             fprintf(Frpt.file, "  %6.2f", LinkStats[j].maxFlow / Link[j].qFull /
                 (double)Conduit[k].barrels);
         }
+        else fprintf(Frpt.file, "         %c       %c", nullValue, nullValue);
 
         // --- print max/full depth
         fullDepth = Link[j].xsect.yFull;
@@ -770,10 +771,9 @@ void writeLinkFlows()
             Orifice[k].type == BOTTOM_ORIFICE) fullDepth = 0.0;
         if (fullDepth > 0.0)
         {
-            if (Link[j].type != CONDUIT)
-                fprintf(Frpt.file, "         %c       %c", nullValue, nullValue);
             fprintf(Frpt.file, "  %6.2f", LinkStats[j].maxDepth / fullDepth);
         }
+        else fprintf(Frpt.file, "        ");
     }
     WRITE("");
 }
