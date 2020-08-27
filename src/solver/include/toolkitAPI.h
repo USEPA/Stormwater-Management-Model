@@ -403,10 +403,11 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray);
 /**
 @brief Get precipitation rates for a gage.
 @param index The index of gage
-@param[out] GageArray precipitation rates array [total, rainfall, snowfall]
+@param type The property type code (see @ref SM_GagePrecip)
+@param[out] GageArray precipitation rate
 @return Error code
 */
-int DLLEXPORT swmm_getGagePrecip(int index, double **GageArray);
+int DLLEXPORT swmm_getGagePrecip(int index, int type, double *result);
 
 /**
  @brief Get a node statistics.

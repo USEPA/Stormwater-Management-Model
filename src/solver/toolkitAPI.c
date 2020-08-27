@@ -2051,10 +2051,11 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getGagePrecip(int index, double **GageArray)
+int DLLEXPORT swmm_getGagePrecip(int index, int type, double *result)
 ///
 /// Input:   index = Index of desired ID
-/// Output:  GageArray pointer (three elements)
+///          type = Result type
+/// Output:  result = Result data (byref)
 /// Return:  API Error
 /// Purpose: Gets the precipitation value in the gage.
 {
@@ -2062,7 +2063,6 @@ int DLLEXPORT swmm_getGagePrecip(int index, double **GageArray)
     double rainfall = 0;
     double snowfall = 0;
     double total = 0;
-    double* temp;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
@@ -2074,18 +2074,20 @@ int DLLEXPORT swmm_getGagePrecip(int index, double **GageArray)
     {
         error_code_index = ERR_API_OBJECT_INDEX;
     }
-    else if (MEMCHECK(temp = newDoubleArray(3)))
-    {
-        error_code_index = ERR_MEMORY;
-    }
     // Read the rainfall value
     else
     {
         total = gage_getPrecip(index, &rainfall, &snowfall);
-        temp[0] = total * UCF(RAINFALL);
-        temp[1] = rainfall * UCF(RAINFALL);
-        temp[2] = snowfall * UCF(RAINFALL);
-        *GageArray = temp;
+        switch(type)
+        {
+            case SM_TOTALPRECIP:
+                *result = total * UCF(RAINFALL); break;
+            case SM_RAINFALL:
+                *result = rainfall * UCF(RAINFALL); break;
+            case SM_SNOWFALL:
+                *result = snowfall * UCF(RAINFALL); break;
+            default: error_code_index = ERR_API_OUTBOUNDS; break;
+        }
     }
     return error_getCode(error_code_index);
 }
