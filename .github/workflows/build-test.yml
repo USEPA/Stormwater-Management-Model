@@ -26,32 +26,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: [windows-2016, ubuntu-latest, macos-latest]
-        os: [macos-latest]
+        os: [windows-2016, ubuntu-latest, macos-latest]
         requirements: [requirements-swmm.txt]
         include:
-          # - os: windows-2016
-          #   generator: Visual Studio 15 2017 Win64
-          #   experimental: true
-          #   script_extension: cmd
-          #   artifacts_ext: zip
-          #   artifact_content_type: zip
-          #   gh_run_number: "%GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%"
-          #   defaults:
-          #     run:
-          #       shell: cmd
-          #       working-directory: ./ci-tools/windows
-          # - os: ubuntu-latest
-          #   generator: "Unix Makefiles" 
-          #   experimental: true
-          #   script_extension: sh
-          #   gh_run_number: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
-          #   artifacts_ext: tar.gz
-          #   artifact_content_type: tar
-          #   defaults:
-          #     run:
-          #       shell: bash
-          #       working-directory: ./ci-tools/linux
+          - os: windows-2016
+            generator: Visual Studio 15 2017 Win64
+            experimental: true
+            script_extension: cmd
+            artifacts_ext: zip
+            artifact_content_type: zip
+            gh_run_number: "%GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%"
+            defaults:
+              run:
+                shell: cmd
+                working-directory: ./ci-tools/windows
+          - os: ubuntu-latest
+            generator: "Unix Makefiles" 
+            experimental: true
+            script_extension: sh
+            gh_run_number: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
+            artifacts_ext: tar.gz
+            artifact_content_type: tar
+            defaults:
+              run:
+                shell: bash
+                working-directory: ./ci-tools/linux
           - os: macos-latest
             generator: Xcode
             experimental: true
@@ -99,7 +98,7 @@ jobs:
           python -m pip install -r ${{ matrix.requirements }}
       
       - name: Install Darwin requirements
-        if: ${{ matrix.os == 'macos-latest'}}
+        if: ${{ contains(matrix.os, 'macos') }}
         run: |
           brew install libomp
 
