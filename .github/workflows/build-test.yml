@@ -30,28 +30,28 @@ jobs:
         os: [macos-latest]
         requirements: [requirements-swmm.txt]
         include:
-          - os: windows-2016
-            generator: Visual Studio 15 2017 Win64
-            experimental: true
-            script_extension: cmd
-            artifacts_ext: zip
-            artifact_content_type: zip
-            gh_run_number: "%GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%"
-            defaults:
-              run:
-                shell: cmd
-                working-directory: ./ci-tools/windows
-          - os: ubuntu-latest
-            generator: "Unix Makefiles" 
-            experimental: true
-            script_extension: sh
-            gh_run_number: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
-            artifacts_ext: tar.gz
-            artifact_content_type: tar
-            defaults:
-              run:
-                shell: bash
-                working-directory: ./ci-tools/linux
+          # - os: windows-2016
+          #   generator: Visual Studio 15 2017 Win64
+          #   experimental: true
+          #   script_extension: cmd
+          #   artifacts_ext: zip
+          #   artifact_content_type: zip
+          #   gh_run_number: "%GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%"
+          #   defaults:
+          #     run:
+          #       shell: cmd
+          #       working-directory: ./ci-tools/windows
+          # - os: ubuntu-latest
+          #   generator: "Unix Makefiles" 
+          #   experimental: true
+          #   script_extension: sh
+          #   gh_run_number: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
+          #   artifacts_ext: tar.gz
+          #   artifact_content_type: tar
+          #   defaults:
+          #     run:
+          #       shell: bash
+          #       working-directory: ./ci-tools/linux
           - os: macos-latest
             generator: Xcode
             experimental: true
