@@ -2098,9 +2098,8 @@ int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats)
 /// Return:  API Error
 /// Purpose: Gets Node Stats and Converts Units
 {
-    TNodeStats *tmp = (TNodeStats *)calloc(1, sizeof(TNodeStats));
-    int error_code_index = stats_getNodeStat(index, tmp);
-    nodeStats = (SM_NodeStats *)tmp;
+    int error_code_index = stats_getNodeStat(index, (TNodeStats *)nodeStats);
+    nodeStats = (SM_NodeStats *) nodeStats;
     
     if (error_code_index == 0)
     {
