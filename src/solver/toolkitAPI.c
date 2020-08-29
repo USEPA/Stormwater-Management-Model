@@ -2092,38 +2092,38 @@ int DLLEXPORT swmm_getGagePrecip(int index, int type, double *result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats)
+int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats **nodeStats)
 ///
 /// Output:  Node Stats Structure (SM_NodeStats)
 /// Return:  API Error
 /// Purpose: Gets Node Stats and Converts Units
 {
-    nodeStats = (SM_NodeStats *)malloc(sizeof(SM_NodeStats));
-    int error_code_index = stats_getNodeStat(index, nodeStats);
+    *nodeStats = (SM_NodeStats *)malloc(sizeof(SM_NodeStats));
+    int error_code_index = stats_getNodeStat(index, *nodeStats);
     if (error_code_index == 0)
     {
         // Current Average Depth
-        nodeStats->avgDepth *= (UCF(LENGTH) / (double)StepCount);
+        (*nodeStats)->avgDepth *= (UCF(LENGTH) / (double)StepCount);
         // Current Maximum Depth
-        nodeStats->maxDepth *= UCF(LENGTH);
+        (*nodeStats)->maxDepth *= UCF(LENGTH);
         // Current Maximum Lateral Inflow
-        nodeStats->maxLatFlow *= UCF(FLOW);
+        (*nodeStats)->maxLatFlow *= UCF(FLOW);
         // Current Maximum Inflow
-        nodeStats->maxInflow *= UCF(FLOW);
+        (*nodeStats)->maxInflow *= UCF(FLOW);
         // Cumulative Lateral Inflow
-        nodeStats->totLatFlow *= UCF(VOLUME);
+        (*nodeStats)->totLatFlow *= UCF(VOLUME);
         // Time Courant Critical (hrs)
-        nodeStats->timeCourantCritical /= 3600.0;
+        (*nodeStats)->timeCourantCritical /= 3600.0;
         // Cumulative Flooded Volume
-        nodeStats->volFlooded *= UCF(VOLUME);
+        (*nodeStats)->volFlooded *= UCF(VOLUME);
         // Time Flooded (hrs)
-        nodeStats->timeFlooded /= 3600.0;
+        (*nodeStats)->timeFlooded /= 3600.0;
         // Current Maximum Overflow
-        nodeStats->maxOverflow *= UCF(FLOW);
+        (*nodeStats)->maxOverflow *= UCF(FLOW);
         // Current Maximum Ponding Volume
-        nodeStats->maxPondedVol *= UCF(VOLUME);
+        (*nodeStats)->maxPondedVol *= UCF(VOLUME);
         // Time Surcharged
-        nodeStats->timeSurcharged /= 3600.0;
+        (*nodeStats)->timeSurcharged /= 3600.0;
     }
 
     return error_getCode(error_code_index);

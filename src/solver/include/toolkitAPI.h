@@ -416,7 +416,7 @@ int DLLEXPORT swmm_getGagePrecip(int index, int type, double *result);
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats);
+int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats **nodeStats);
 
 /**
  @brief Get the cumulative inflow for a node.
