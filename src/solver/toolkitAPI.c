@@ -28,7 +28,7 @@ int     massbal_getRunoffTotal(SM_RunoffTotals *runoffTot);
 double  massbal_getTotalArea(void);
 int     massbal_getNodeTotalInflow(int index, double *value);
 
-int  stats_getNodeStat(int index, SM_NodeStats *nodeStats);
+int  stats_getNodeStat(int index, TNodeStats *nodeStats);
 int  stats_getStorageStat(int index, SM_StorageStats *storageStats);
 int  stats_getOutfallStat(int index, SM_OutfallStats *outfallStats);
 int  stats_getLinkStat(int index, SM_LinkStats *linkStats);
@@ -2098,8 +2098,10 @@ int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats)
 /// Return:  API Error
 /// Purpose: Gets Node Stats and Converts Units
 {
-    int error_code_index = stats_getNodeStat(index, nodeStats);
-
+    TNodeStats *tmp = (TNodeStats *)calloc(1, sizeof(TNodeStats));
+    int error_code_index = stats_getNodeStat(index, tmp);
+    nodeStats = (SM_NodeStats *)tmp;
+    
     if (error_code_index == 0)
     {
         // Current Average Depth
@@ -2125,6 +2127,7 @@ int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats)
         // Time Surcharged
         nodeStats->timeSurcharged /= 3600.0;
     }
+
     return error_getCode(error_code_index);
 }
 
@@ -2819,17 +2822,20 @@ void DLLEXPORT freeArray(void** array)
 /// Helper function used to free array allocated memory by API.
 ///
 {
-    if (array != NULL) {
-        FREE(*array);
+    if (array) {
+        free(*array);
         *array = NULL;
     }
 }
 
 
-void DLLEXPORT freeMemory(void *array)
+void DLLEXPORT swmm_freeMemory(void *array)
 //
 //  Purpose: Frees memory allocated by API calls
 //
 {
-    free(array);
+    if (array){
+        free(array);
+        array = NULL;
+    }
 }
