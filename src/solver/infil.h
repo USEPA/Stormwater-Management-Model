@@ -20,6 +20,7 @@
 //
 //   Build 5.1.015:
 //   - Support added for multiple infiltration methods within a project.
+//   - Fixed max. infiltration feature for modified Horton method.
 //-----------------------------------------------------------------------------
 
 #ifndef INFIL_H
@@ -49,6 +50,7 @@ typedef struct
    //-----------------------------
    double        tp;              // present time on infiltration curve (sec)
    double        Fe;              // cumulative infiltration (ft)
+   double        Fmh;             // mod Horton cumulative infiltration (ft)   //(5.1.015)
 }  THorton;
 
 

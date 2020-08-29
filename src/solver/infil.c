@@ -38,6 +38,7 @@
 //   Build 5.1.015:
 //   - Support added for multiple infiltration methods within a project.
 //   - Conversion of runon to ponded depth fixed for Curve Number infiltration.
+//   - Fixed max. infiltration feature for modified Horton method.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -371,6 +372,7 @@ void horton_initState(THorton *infil)
 {
     infil->tp = 0.0;
     infil->Fe = 0.0;
+    infil->Fmh  = 0.0;                                                         //(5.1.015)
 }
 
 //=============================================================================
@@ -501,6 +503,7 @@ double horton_getInfil(THorton *infil, double tstep, double irate, double depth)
 
 //=============================================================================
 
+////  --------  Modified for release 5.1.015  --------  ////                   //(5.1.015)
 double modHorton_getInfil(THorton *infil, double tstep, double irate,
                           double depth)
 //
@@ -516,8 +519,8 @@ double modHorton_getInfil(THorton *infil, double tstep, double irate,
     // --- assign local variables
     double f  = 0.0;
     double fp, fa;
-    double f0 = infil->f0 * InfilFactor;                                       //(5.1.013)
-    double fmin = infil->fmin * InfilFactor;                                   //(5.1.013)
+    double f0 = infil->f0 * InfilFactor;
+    double fmin = infil->fmin * InfilFactor;
     double df = f0 - fmin;
     double kd = infil->decay;
     double kr = infil->regen * Evap.recoveryFactor;
@@ -538,9 +541,6 @@ double modHorton_getInfil(THorton *infil, double tstep, double irate,
     // --- case where there is water to infiltrate
     if ( fa > ZERO )
     {
-        // --- saturated condition
-        if ( infil->Fmax > 0.0 && infil->Fe >= infil->Fmax ) return 0.0;
-
         // --- potential infiltration
         fp = f0 - kd * infil->Fe;
         fp = MAX(fp, fmin);
@@ -548,16 +548,27 @@ double modHorton_getInfil(THorton *infil, double tstep, double irate,
         // --- actual infiltration
         f = MIN(fa, fp);
 
+        // --- limit cumulative infiltration to Fmax
+        if (infil->Fmax > 0.0)
+        {
+            if (infil->Fmh + f * tstep > infil->Fmax)
+                f = (infil->Fmax - infil->Fmh) / tstep;
+            f = MAX(f, 0.0);
+            infil->Fmh += f * tstep;
+        }
+
         // --- new cumulative infiltration minus seepage
         infil->Fe += MAX((f - fmin), 0.0) * tstep;
-        if ( infil->Fmax > 0.0 ) infil->Fe = MAX(infil->Fe, infil->Fmax);
     }
 
     // --- reduce cumulative infiltration for dry condition
     else if (kr > 0.0)
     {
-        infil->Fe *= exp(-kr * tstep);
+        df = exp(-kr * tstep);
+        infil->Fe *= df;
         infil->Fe = MAX(infil->Fe, 0.0);
+        infil->Fmh *= df;
+        infil->Fmh = MAX(infil->Fmh, 0.0);
     }
     return f;
 }
