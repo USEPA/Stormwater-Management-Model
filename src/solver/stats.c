@@ -798,31 +798,31 @@ int stats_getNodeStat(int index, TNodeStats *nodeStats)
 // Purpose:  Gets a Node Stat for toolkitAPI
 //
 {
-	int errorcode = 0;
-
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE)
-	{
-		errorcode = ERR_API_INPUTNOTOPEN;
-	}
-
-	// Check if Simulation is Running
-	else if (swmm_IsStartedFlag() == FALSE)
-	{
-		errorcode = ERR_API_SIM_NRUNNING;
-	}
-
-	// Check if object index is within bounds
-	else if (index < 0 || index >= Nobjects[NODE])
-	{
-		errorcode = ERR_API_OBJECT_INDEX;
-	}
-
-	else
-	{
-		memcpy(nodeStats, &NodeStats[index], sizeof(TNodeStats));
-	}
-	return errorcode;
+    int errorcode = 0;
+    
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+        errorcode = ERR_API_INPUTNOTOPEN;
+    }
+    
+    // Check if Simulation is Running
+    else if (swmm_IsStartedFlag() == FALSE)
+    {
+        errorcode = ERR_API_SIM_NRUNNING;
+    }
+    
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[NODE])
+    {
+        errorcode = ERR_API_OBJECT_INDEX;
+    }
+    
+    else
+    {
+        memcpy(nodeStats, &NodeStats[index], sizeof(TNodeStats));
+    }
+    return errorcode;
 }
 
 int stats_getStorageStat(int index, TStorageStats *storageStats)

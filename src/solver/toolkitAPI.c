@@ -28,7 +28,7 @@ int     massbal_getRunoffTotal(SM_RunoffTotals *runoffTot);
 double  massbal_getTotalArea(void);
 int     massbal_getNodeTotalInflow(int index, double *value);
 
-int  stats_getNodeStat(int index, TNodeStats *nodeStats);
+int  stats_getNodeStat(int index, SM_NodeStats *nodeStats);
 int  stats_getStorageStat(int index, SM_StorageStats *storageStats);
 int  stats_getOutfallStat(int index, SM_OutfallStats *outfallStats);
 int  stats_getLinkStat(int index, SM_LinkStats *linkStats);
@@ -2098,9 +2098,7 @@ int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats)
 /// Return:  API Error
 /// Purpose: Gets Node Stats and Converts Units
 {
-    int error_code_index = stats_getNodeStat(index, (TNodeStats *)nodeStats);
-    nodeStats = (SM_NodeStats *) nodeStats;
-    
+    int error_code_index = stats_getNodeStat(index, nodeStats);
     if (error_code_index == 0)
     {
         // Current Average Depth
