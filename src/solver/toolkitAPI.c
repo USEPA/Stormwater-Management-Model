@@ -2147,28 +2147,29 @@ int DLLEXPORT swmm_getNodeTotalInflow(int index, double *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats *storageStats)
+int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats **storageStats)
 ///
 /// Output:  Storage Node Stats Structure (SM_StorageStats)
 /// Return:  API Error
 /// Purpose: Gets Storage Node Stats and Converts Units
 {
-    int error_code_index = stats_getStorageStat(index, storageStats);
+    *storageStats = (SM_StorageStats *)malloc(sizeof(SM_StorageStats));
+    int error_code_index = stats_getStorageStat(index, *storageStats);
 
     if (error_code_index == 0)
     {
         // Initial Volume
-        storageStats->initVol *= UCF(VOLUME);
+        (*storageStats)->initVol *= UCF(VOLUME);
         // Current Average Volume
-        storageStats->avgVol *= (UCF(VOLUME) / (double)StepCount);
+        (*storageStats)->avgVol *= (UCF(VOLUME) / (double)StepCount);
         // Current Maximum Volume
-        storageStats->maxVol *= UCF(VOLUME);
+        (*storageStats)->maxVol *= UCF(VOLUME);
         // Current Maximum Flow
-        storageStats->maxFlow *= UCF(FLOW);
+        (*storageStats)->maxFlow *= UCF(FLOW);
         // Current Evaporation Volume
-        storageStats->evapLosses *= UCF(VOLUME);
+        (*storageStats)->evapLosses *= UCF(VOLUME);
         // Current Exfiltration Volume
-        storageStats->exfilLosses *= UCF(VOLUME);
+        (*storageStats)->exfilLosses *= UCF(VOLUME);
     }
 
     return error_getCode(error_code_index);

@@ -433,7 +433,7 @@ int DLLEXPORT swmm_getNodeTotalInflow(int index, double *value);
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats *storageStats);
+int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats **storageStats);
 
 /**
  @brief Get outfall statistics.
