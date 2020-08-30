@@ -2098,8 +2098,10 @@ int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats **nodeStats)
 /// Return:  API Error
 /// Purpose: Gets Node Stats and Converts Units
 {
+    int error_code_index;
     *nodeStats = (SM_NodeStats *)malloc(sizeof(SM_NodeStats));
-    int error_code_index = stats_getNodeStat(index, *nodeStats);
+    error_code_index = stats_getNodeStat(index, *nodeStats);
+    
     if (error_code_index == 0)
     {
         // Current Average Depth
@@ -2153,8 +2155,9 @@ int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats **storageStats)
 /// Return:  API Error
 /// Purpose: Gets Storage Node Stats and Converts Units
 {
+    int error_code_index;
     *storageStats = (SM_StorageStats *)malloc(sizeof(SM_StorageStats));
-    int error_code_index = stats_getStorageStat(index, *storageStats);
+    error_code_index = stats_getStorageStat(index, *storageStats);
 
     if (error_code_index == 0)
     {
@@ -2175,7 +2178,7 @@ int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats **storageStats)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats *outfallStats)
+int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats **outfallStats)
 ///
 /// Output:  Outfall Stats Structure (SM_OutfallStats)
 /// Return:  API Error
@@ -2183,30 +2186,31 @@ int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats *outfallStats)
 /// Note:    Caller is responsible for calling swmm_freeOutfallStats
 ///          to free the pollutants array.
 {
-    int p;
-    int error_code_index = stats_getOutfallStat(index, outfallStats);
+    int error_code_index, p;
+    *outfallStats = (SM_OutfallStats *)malloc(sizeof(SM_OutfallStats));
+    error_code_index = stats_getOutfallStat(index, *outfallStats);
 
     if (error_code_index == 0)
     {
         // Current Average Flow
-        if ( outfallStats->totalPeriods > 0 )
+        if ((*outfallStats)->totalPeriods > 0 )
         {
-            outfallStats->avgFlow *= (UCF(FLOW) / (double)outfallStats->totalPeriods);
+            (*outfallStats)->avgFlow *= (UCF(FLOW) / (double) (*outfallStats)->totalPeriods);
         }
         else
         {
-            outfallStats->avgFlow *= 0.0;
+            (*outfallStats)->avgFlow *= 0.0;
         }
         // Current Maximum Flow
-        outfallStats->maxFlow *= UCF(FLOW);
+        (*outfallStats)->maxFlow *= UCF(FLOW);
         // Convert Mass Units
         if (Nobjects[POLLUT] > 0)
         {
             for (p = 0; p < Nobjects[POLLUT]; p++)
-                outfallStats->totalLoad[p] *= (LperFT3 * Pollut[p].mcf);
+                (*outfallStats)->totalLoad[p] *= (LperFT3 * Pollut[p].mcf);
                 if (Pollut[p].units == COUNT)
                 {
-                    outfallStats->totalLoad[p] = LOG10(outfallStats->totalLoad[p]);
+                    (*outfallStats)->totalLoad[p] = LOG10((*outfallStats)->totalLoad[p]);
                 }
         }
     }
@@ -2226,69 +2230,73 @@ void DLLEXPORT swmm_freeOutfallStats(SM_OutfallStats *outfallStats)
 
 
 
-int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats)
+int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats **linkStats)
 ///
 /// Output:  Link Stats Structure (SM_LinkStats)
 /// Return:  API Error
 /// Purpose: Gets Link Stats and Converts Units
 {
-    int error_code_index = stats_getLinkStat(index, linkStats);
+    int error_code_index;
+    *linkStats = (SM_LinkStats *)malloc(sizeof(SM_LinkStats));
+    error_code_index = stats_getLinkStat(index, *linkStats);
 
     if (error_code_index == 0)
     {
         // Cumulative Maximum Flowrate
-        linkStats->maxFlow *= UCF(FLOW);
+        (*linkStats)->maxFlow *= UCF(FLOW);
         // Cumulative Maximum Velocity
-        linkStats->maxVeloc *= UCF(LENGTH);
+        (*linkStats)->maxVeloc *= UCF(LENGTH);
         // Cumulative Maximum Depth
-        linkStats->maxDepth *= UCF(LENGTH);
+        (*linkStats)->maxDepth *= UCF(LENGTH);
         // Cumulative Time Normal Flow
-        linkStats->timeNormalFlow /= 3600.0;
+        (*linkStats)->timeNormalFlow /= 3600.0;
         // Cumulative Time Inlet Control
-        linkStats->timeInletControl /= 3600.0;
+        (*linkStats)->timeInletControl /= 3600.0;
         // Cumulative Time Surcharged
-        linkStats->timeSurcharged /= 3600.0;
+        (*linkStats)->timeSurcharged /= 3600.0;
         // Cumulative Time Upstream Full
-        linkStats->timeFullUpstream /= 3600.0;
+        (*linkStats)->timeFullUpstream /= 3600.0;
         // Cumulative Time Downstream Full
-        linkStats->timeFullDnstream /= 3600.0;
+        (*linkStats)->timeFullDnstream /= 3600.0;
         // Cumulative Time Full Flow
-        linkStats->timeFullFlow /= 3600.0;
+        (*linkStats)->timeFullFlow /= 3600.0;
         // Cumulative Time Capacity limited
-        linkStats->timeCapacityLimited /= 3600.0;
+        (*linkStats)->timeCapacityLimited /= 3600.0;
         // Cumulative Time Courant Critical Flow
-        linkStats->timeCourantCritical /= 3600.0;
+        (*linkStats)->timeCourantCritical /= 3600.0;
     }
 
     return error_getCode(error_code_index);
 }
 
 
-int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats)
+int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats **pumpStats)
 ///
 /// Output:  Pump Link Stats Structure (SM_PumpStats)
 /// Return:  API Error
 /// Purpose: Gets Pump Link Stats and Converts Units
 {
-    int error_code_index = stats_getPumpStat(index, pumpStats);
+    int error_code_index;
+    *pumpStats = (SM_PumpStats *)malloc(sizeof(SM_PumpStats));
+    error_code_index = stats_getPumpStat(index, *pumpStats);
 
     if (error_code_index == 0)
     {
         // Cumulative Minimum Flow
-        pumpStats->minFlow *= UCF(FLOW);
+        (*pumpStats)->minFlow *= UCF(FLOW);
         // Cumulative Average Flow
-        if (pumpStats->totalPeriods > 0)
+        if ((*pumpStats)->totalPeriods > 0)
         {
-            pumpStats->avgFlow *= (UCF(FLOW) / (double)pumpStats->totalPeriods);
+            (*pumpStats)->avgFlow *= (UCF(FLOW) / (double) (*pumpStats)->totalPeriods);
         }
         else
         {
-            pumpStats->avgFlow *= 0.0;
+            (*pumpStats)->avgFlow *= 0.0;
         }
         // Cumulative Maximum Flow
-        pumpStats->maxFlow *= UCF(FLOW);
+        (*pumpStats)->maxFlow *= UCF(FLOW);
         // Cumulative Pumping Volume
-        pumpStats->volume *= UCF(VOLUME);
+        (*pumpStats)->volume *= UCF(VOLUME);
     }
 
     return error_getCode(error_code_index);
@@ -2822,7 +2830,7 @@ void DLLEXPORT freeArray(void** array)
 ///
 {
     if (array) {
-        free(*array);
+        FREE(*array);
         *array = NULL;
     }
 }
@@ -2834,7 +2842,7 @@ void DLLEXPORT swmm_freeMemory(void *array)
 //
 {
     if (array){
-        free(array);
+        FREE(array);
         array = NULL;
     }
 }

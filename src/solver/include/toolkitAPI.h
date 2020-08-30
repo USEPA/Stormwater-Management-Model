@@ -444,7 +444,7 @@ int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats **storageStats);
  pollutants array.
  @return Error code
 */
-int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats *outfallStats);
+int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats **outfallStats);
 
 /**
  @brief Free outfall statistics structure.
@@ -461,7 +461,7 @@ void DLLEXPORT swmm_freeOutfallStats(SM_OutfallStats *outfallStats);
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats);
+int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats **linkStats);
 
 /**
  @brief Get pump statistics.
@@ -470,7 +470,7 @@ int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats);
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
+int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats **pumpStats);
 
 /**
  @brief Get subcatchment statistics.

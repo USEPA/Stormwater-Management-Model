@@ -833,40 +833,40 @@ int stats_getStorageStat(int index, TStorageStats *storageStats)
 // Purpose:  Gets a Storage Stat for toolkitAPI
 //
 {
-	int errorcode = 0;
-
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE)
-	{
-		errorcode = ERR_API_INPUTNOTOPEN;
-	}
-
-	// Check if Simulation is Running
-	else if (swmm_IsStartedFlag() == FALSE)
-	{
-		errorcode = ERR_API_SIM_NRUNNING;
-	}
-
-	// Check if object index is within bounds
-	else if (index < 0 || index >= Nobjects[NODE])
-	{
-		errorcode = ERR_API_OBJECT_INDEX;
-	}
-
-	// Check Node Type is storage
-	else if (Node[index].type != STORAGE)
-	{
-		errorcode = ERR_API_WRONG_TYPE;
-	}
-
-	else
-	{
-		// fetch sub index
-		int k = Node[index].subIndex;
-		// Copy Structure
-		memcpy(storageStats, &StorageStats[k], sizeof(TStorageStats));
-	}
-	return errorcode;
+    int errorcode = 0;
+    
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+        errorcode = ERR_API_INPUTNOTOPEN;
+    }
+    
+    // Check if Simulation is Running
+    else if (swmm_IsStartedFlag() == FALSE)
+    {
+        errorcode = ERR_API_SIM_NRUNNING;
+    }
+    
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[NODE])
+    {
+        errorcode = ERR_API_OBJECT_INDEX;
+    }
+    
+    // Check Node Type is storage
+    else if (Node[index].type != STORAGE)
+    {
+        errorcode = ERR_API_WRONG_TYPE;
+    }
+    
+    else
+    {
+        // fetch sub index
+        int k = Node[index].subIndex;
+        // Copy Structure
+        memcpy(storageStats, &StorageStats[k], sizeof(TStorageStats));
+    }
+    return errorcode;
 }
 
 int stats_getOutfallStat(int index, TOutfallStats *outfallStats)
@@ -877,41 +877,41 @@ int stats_getOutfallStat(int index, TOutfallStats *outfallStats)
 // Purpose:  Gets a Outfall Stat for toolkitAPI
 //
 {
-	int errorcode = 0;
+    int errorcode = 0;
     int p;
-
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE)
-	{
-		errorcode = ERR_API_INPUTNOTOPEN;
-	}
-
-	// Check if Simulation is Running
-	else if (swmm_IsStartedFlag() == FALSE)
-	{
-		errorcode = ERR_API_SIM_NRUNNING;
-	}
-
-	// Check if object index is within bounds
-	else if (index < 0 || index >= Nobjects[NODE])
-	{
-		errorcode = ERR_API_OBJECT_INDEX;
-	}
-
-	// Check Node Type is outfall
-	else if (Node[index].type != OUTFALL)
-	{
-		errorcode = ERR_API_WRONG_TYPE;
-	}
-
-	else
-	{
-		// fetch sub index
-		int k = Node[index].subIndex;
-		// Copy Structure
-		memcpy(outfallStats, &OutfallStats[k], sizeof(TOutfallStats));
-
-		// Perform Deep Copy of Pollutants Results
+    
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+    {
+        errorcode = ERR_API_INPUTNOTOPEN;
+    }
+    
+    // Check if Simulation is Running
+    else if (swmm_IsStartedFlag() == FALSE)
+    {
+        errorcode = ERR_API_SIM_NRUNNING;
+    }
+    
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[NODE])
+    {
+        errorcode = ERR_API_OBJECT_INDEX;
+    }
+    
+    // Check Node Type is outfall
+    else if (Node[index].type != OUTFALL)
+    {
+        errorcode = ERR_API_WRONG_TYPE;
+    }
+    
+    else
+    {
+        // fetch sub index
+        int k = Node[index].subIndex;
+        // Copy Structure
+        memcpy(outfallStats, &OutfallStats[k], sizeof(TOutfallStats));
+    
+        // Perform Deep Copy of Pollutants Results
         if (Nobjects[POLLUT] > 0)
         {
             outfallStats->totalLoad =
