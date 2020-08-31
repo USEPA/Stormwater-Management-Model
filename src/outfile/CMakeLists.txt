@@ -52,6 +52,7 @@ install(TARGETS swmm-output
         DESTINATION "${LIBRARY_DIST}"
     FRAMEWORK
         DESTINATION "${TOOL_DIST}"
+
 )
 
 install(
@@ -63,7 +64,12 @@ install(
         swmm-output-config.cmake
 )
 
-install(FILES ${SWMM_OUT_PUBLIC_HEADERS} DESTINATION "${INCLUDE_DIST}")
+install(
+    FILES
+        ${SWMM_OUT_PUBLIC_HEADERS}
+    DESTINATION
+        "${INCLUDE_DIST}"
+)
 
 
 # copy epanet-output to build tree for testing

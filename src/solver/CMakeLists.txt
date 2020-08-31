@@ -31,7 +31,7 @@ if(BUILD_DEF)
     add_library(swmm5
         SHARED
             ${SWMM_SOURCES}
-            ${PROJECT_SOURCE_DIR/bindings/swmm5.def}
+            ${PROJECT_SOURCE_DIR}/bindings/swmm5.def
     )
 
 else()
@@ -71,11 +71,16 @@ target_include_directories(swmm5
         $<INSTALL_INTERFACE:${INCLUDE_DIST}>
 )
 
-install(TARGETS swmm5 EXPORT swmm5Targets
-    RUNTIME    DESTINATION "${TOOL_DIST}"
-    LIBRARY    DESTINATION "${TOOL_DIST}"
-    ARCHIVE    DESTINATION "${LIBRARY_DIST}"
-    FRAMEWORK  DESTINATION "${TOOL_DIST}"
+install(TARGETS swmm5
+    EXPORT swmm5Targets
+    RUNTIME
+        DESTINATION "${TOOL_DIST}"
+    LIBRARY
+        DESTINATION "${TOOL_DIST}"
+    ARCHIVE
+        DESTINATION "${LIBRARY_DIST}"
+    FRAMEWORK
+        DESTINATION "${TOOL_DIST}"
 )
 
 install(
@@ -87,7 +92,9 @@ install(
         swmm5-config.cmake
 )
 
-install(FILES ${SWMM_PUBLIC_HEADERS} DESTINATION "${INCLUDE_DIST}")
+install(FILES ${SWMM_PUBLIC_HEADERS}
+    DESTINATION "${INCLUDE_DIST}"
+)
 
 
 # copy swmm5 to build tree for testing
