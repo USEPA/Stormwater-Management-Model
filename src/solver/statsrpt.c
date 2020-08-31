@@ -29,7 +29,9 @@
 //   - Pervious and impervious runoff added to Subcatchment Runoff Summary.
 //
 //   Build 5.1.015:
-//   - Fixes bug in summary statistics when Report Start date > Start Date.
+//   - Fixes bug in summary statistics when Report Start Date > Start Date.
+//   - Insures that flow values listed in tables are separated by a space.
+//   - Adds a '-' entry to blank columns in the Link Flow Summary table.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -87,8 +89,8 @@ void statsrpt_writeReport()
 //
 {
     // --- set number of decimal places for reporting flow values
-    if ( FlowUnits == MGD || FlowUnits == CMS ) strcpy(FlowFmt, "%9.3f");
-    else strcpy(FlowFmt, "%9.2f");
+    if ( FlowUnits == MGD || FlowUnits == CMS ) strcpy(FlowFmt, " %8.3f");     //(5.1.015)
+    else strcpy(FlowFmt, " %8.2f");                                            //(5.1.015)
 
     // --- volume conversion factor from ft3 to Mgal or Mliters
     if (UnitSystem == US) Vcf = 7.48 / 1.0e6;
@@ -699,6 +701,7 @@ void writeLinkFlows()
 {
     int    j, k, days, hrs, mins;
     double v, fullDepth;
+    char   nullValue = ' ';
 
     if (Nobjects[LINK] == 0) return;
     WRITE("");
@@ -739,7 +742,7 @@ void writeLinkFlows()
         // --- print max flow / flow capacity for pumps
         if (Link[j].type == PUMP && Link[j].qFull > 0.0)
         {
-            fprintf(Frpt.file, "          ");
+            fprintf(Frpt.file, "         %c", nullValue);
             fprintf(Frpt.file, "  %6.2f",
                 LinkStats[j].maxFlow / Link[j].qFull);
             continue;
@@ -760,7 +763,7 @@ void writeLinkFlows()
             fprintf(Frpt.file, "  %6.2f", LinkStats[j].maxFlow / Link[j].qFull /
                 (double)Conduit[k].barrels);
         }
-        else fprintf(Frpt.file, "                  ");
+        else fprintf(Frpt.file, "         %c       %c", nullValue, nullValue);
 
         // --- print max/full depth
         fullDepth = Link[j].xsect.yFull;
