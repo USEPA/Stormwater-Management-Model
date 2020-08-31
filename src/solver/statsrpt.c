@@ -96,7 +96,7 @@ void statsrpt_writeReport()
     if (UnitSystem == US) Vcf = 7.48 / 1.0e6;
     else                  Vcf = 28.317 / 1.0e6;
 
-    // --- report summary results for subcatchment runoff 
+    // --- report summary results for subcatchment runoff
     if ( Nobjects[SUBCATCH] > 0 )
     {
         if ( !IgnoreRainfall ||
@@ -165,11 +165,11 @@ void writeSubcatchRunoff()
         fprintf(Frpt.file, "\n  %-20s", Subcatch[j].ID);
         x = SubcatchStats[j].precip * UCF(RAINDEPTH);
         fprintf(Frpt.file, " %10.2f", x/a);
-        x = SubcatchStats[j].runon * UCF(RAINDEPTH); 
+        x = SubcatchStats[j].runon * UCF(RAINDEPTH);
         fprintf(Frpt.file, " %10.2f", x/a);
         x = SubcatchStats[j].evap * UCF(RAINDEPTH);
         fprintf(Frpt.file, " %10.2f", x/a);
-        x = SubcatchStats[j].infil * UCF(RAINDEPTH); 
+        x = SubcatchStats[j].infil * UCF(RAINDEPTH);
         fprintf(Frpt.file, " %10.2f", x/a);
         x = SubcatchStats[j].impervRunoff * UCF(RAINDEPTH);                    //(5.1.013)
         fprintf(Frpt.file, " %10.2f", x/a);                                    //
@@ -249,7 +249,7 @@ void writeSubcatchLoads()
 {
     int i, j, p;
     double x;
-    double* totals; 
+    double* totals;
     char  units[15];
     char  subcatchLine[] = "--------------------";
     char  pollutLine[]   = "--------------";
@@ -258,7 +258,7 @@ void writeSubcatchLoads()
     totals = (double *) calloc(Nobjects[POLLUT], sizeof(double));
     if ( totals )
     {
-        // --- print the table headings 
+        // --- print the table headings
         WRITE("");
         WRITE("****************************");
         WRITE("Subcatchment Washoff Summary");
@@ -289,7 +289,7 @@ void writeSubcatchLoads()
                 x = Subcatch[j].totalLoad[p];
                 totals[p] += x;
                 if ( Pollut[p].units == COUNT ) x = LOG10(x);
-                fprintf(Frpt.file, "%14.3f", x); 
+                fprintf(Frpt.file, "%14.3f", x);
             }
         }
 
@@ -301,7 +301,7 @@ void writeSubcatchLoads()
         {
             x = totals[p];
             if ( Pollut[p].units == COUNT ) x = LOG10(x);
-            fprintf(Frpt.file, "%14.3f", x); 
+            fprintf(Frpt.file, "%14.3f", x);
         }
         free(totals);
         WRITE("");
@@ -396,7 +396,7 @@ void writeNodeFlows()
                 VolUnitsWords2[UnitSystem]);
         else
             fprintf(Frpt.file, "%12.3f", (NodeInflow[j]-NodeOutflow[j]) /
-                                          NodeOutflow[j]*100.); 
+                                          NodeOutflow[j]*100.);
     }
     WRITE("");
 }
@@ -422,7 +422,7 @@ void writeNodeSurcharge()
         if ( n == 0 )
         {
             WRITE("Surcharging occurs when water rises above the top of the highest conduit.");
-            fprintf(Frpt.file, 
+            fprintf(Frpt.file,
 "\n  ---------------------------------------------------------------------"
 "\n                                               Max. Height   Min. Depth"
 "\n                                   Hours       Above Crown    Below Rim");
@@ -470,14 +470,14 @@ void writeNodeFlooding()
         if ( n == 0 )
         {
             WRITE("Flooding refers to all water that overflows a node, whether it ponds or not.");
-            fprintf(Frpt.file, 
+            fprintf(Frpt.file,
 "\n  --------------------------------------------------------------------------"
 "\n                                                             Total   Maximum"
 "\n                                 Maximum   Time of Max       Flood    Ponded"
 "\n                        Hours       Rate    Occurrence      Volume");
             if ( RouteModel == DW ) fprintf(Frpt.file, "     Depth");
             else                    fprintf(Frpt.file, "    Volume");
-            fprintf(Frpt.file, 
+            fprintf(Frpt.file,
 "\n  Node                 Flooded       %3s   days hr:min    %8s",
                 FlowUnitWords[FlowUnits], VolUnitsWords[UnitSystem]);
             if ( RouteModel == DW )      fprintf(Frpt.file, "    %6s",
@@ -608,7 +608,7 @@ void writeOutfallLoads()
 
         // --- print table column headers
         fprintf(Frpt.file,
- "\n  -----------------------------------------------------------"); 
+ "\n  -----------------------------------------------------------");
         for (p = 0; p < Nobjects[POLLUT]; p++) fprintf(Frpt.file, "--------------");
         fprintf(Frpt.file,
  "\n                         Flow       Avg       Max       Total");
@@ -662,14 +662,14 @@ void writeOutfallLoads()
                 x = OutfallStats[k].totalLoad[p] * LperFT3 * Pollut[p].mcf;
                 totals[p] += x;
                 if ( Pollut[p].units == COUNT ) x = LOG10(x);
-                fprintf(Frpt.file, "%14.3f", x); 
+                fprintf(Frpt.file, "%14.3f", x);
             }
         }
 
         // --- print total outfall loads
         outfallCount = Nnodes[OUTFALL];
         fprintf(Frpt.file,
- "\n  -----------------------------------------------------------"); 
+ "\n  -----------------------------------------------------------");
         for (p = 0; p < Nobjects[POLLUT]; p++) fprintf(Frpt.file, "--------------");
 
         fprintf(Frpt.file, "\n  System              %7.2f ",
@@ -683,11 +683,11 @@ void writeOutfallLoads()
         {
             x = totals[p];
             if ( Pollut[p].units == COUNT ) x = LOG10(x);
-            fprintf(Frpt.file, "%14.3f", x); 
+            fprintf(Frpt.file, "%14.3f", x);
         }
         WRITE("");
         free(totals);
-    } 
+    }
 }
 
 //=============================================================================
@@ -701,7 +701,7 @@ void writeLinkFlows()
 {
     int    j, k, days, hrs, mins;
     double v, fullDepth;
-    char   nullValue = ' ';
+    char   nullValue = '-';
 
     if (Nobjects[LINK] == 0) return;
     WRITE("");
@@ -816,7 +816,7 @@ void writeFlowClass()
         fprintf(Frpt.file, "  %4.2f", LinkStats[j].timeNormalFlow /
                                       (NewRoutingTime/1000.0));
         fprintf(Frpt.file, "  %4.2f", LinkStats[j].timeInletControl /
-                                      (NewRoutingTime/1000.0)); 
+                                      (NewRoutingTime/1000.0));
     }
     WRITE("");
 }
@@ -836,7 +836,7 @@ void writeLinkSurcharge()
     for ( j = 0; j < Nobjects[LINK]; j++ )
     {
         if ( Link[j].type != CONDUIT ||
-             Link[j].xsect.type == DUMMY ) continue; 
+             Link[j].xsect.type == DUMMY ) continue;
         t[0] = LinkStats[j].timeSurcharged / 3600.0;
         t[1] = LinkStats[j].timeFullUpstream / 3600.0;
         t[2] = LinkStats[j].timeFullDnstream / 3600.0;
@@ -846,7 +846,7 @@ void writeLinkSurcharge()
         for (i=0; i<5; i++) t[i] = MAX(0.01, t[i]);
         if (n == 0)
         {
-            fprintf(Frpt.file, 
+            fprintf(Frpt.file,
 "\n  ----------------------------------------------------------------------------"
 "\n                                                           Hours        Hours "
 "\n                         --------- Hours Full --------   Above Full   Capacity"
@@ -902,7 +902,7 @@ void writePumpFlows()
             avgFlow /=  PumpStats[k].totalPeriods;
         fprintf(Frpt.file, " %8.2f  %10d %9.2f %9.2f %9.2f %9.3f %9.2f",
             pctUtilized, PumpStats[k].startUps, PumpStats[k].minFlow*UCF(FLOW),
-            avgFlow*UCF(FLOW), PumpStats[k].maxFlow*UCF(FLOW), 
+            avgFlow*UCF(FLOW), PumpStats[k].maxFlow*UCF(FLOW),
             PumpStats[k].volume*Vcf, PumpStats[k].energy);
         pctOffCurve1 = PumpStats[k].offCurveLow;
         pctOffCurve2 = PumpStats[k].offCurveHigh;
@@ -911,7 +911,7 @@ void writePumpFlows()
             pctOffCurve1 = pctOffCurve1 / PumpStats[k].utilized * 100.0;
             pctOffCurve2 = pctOffCurve2 / PumpStats[k].utilized * 100.0;
         }
-        fprintf(Frpt.file, " %6.1f %6.1f", pctOffCurve1, pctOffCurve2); 
+        fprintf(Frpt.file, " %6.1f %6.1f", pctOffCurve1, pctOffCurve2);
     }
     WRITE("");
 }
@@ -926,7 +926,7 @@ void writeLinkLoads()
     char  linkLine[] = "--------------------";
     char  pollutLine[]   = "--------------";
 
-    // --- print the table headings 
+    // --- print the table headings
     WRITE("");
     WRITE("***************************");
     WRITE("Link Pollutant Load Summary");
