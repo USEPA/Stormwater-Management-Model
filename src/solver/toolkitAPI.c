@@ -2833,10 +2833,8 @@ void DLLEXPORT freeArray(void** array)
 /// Helper function used to free array allocated memory by API.
 ///
 {
-    if (array) {
-        FREE(*array);
-        *array = NULL;
-    }
+    FREE(*array);
+    *array = NULL;
 }
 
 
@@ -2845,8 +2843,6 @@ void DLLEXPORT swmm_freeMemory(void *array)
 //  Purpose: Frees memory allocated by API calls
 //
 {
-    if (array){
-        FREE(array);
-        array = NULL;
-    }
+    FREE(array);
+    array = NULL;
 }
