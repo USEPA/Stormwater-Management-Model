@@ -21,7 +21,8 @@ env:
     - TEST_HOME=nrtestsuite
     - SWMM_VERSION=""
     - GIT_RELEASE_DIR=GIT_RELEASE
-
+    - NRTESTS_URL=https://github.com/OpenWaterAnalytics/%PROJECT%-nrtestsuite
+    
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew update ;

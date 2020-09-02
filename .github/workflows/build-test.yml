@@ -2,79 +2,147 @@
 #  build-and-test.yml - GitHub Actions CI for swmm-solver
 #
 #  Created: May 19, 2020
-#  Updated: Jul 8, 2020
+#  Updated: Aug 13, 2020
 #
 #  Author: Michael E. Tryby
 #          US EPA - ORD/CESER
+#
+#          Caleb A. Buahin
+#          Xylem Inc.
 #
 
 name: Build and Test
 
 on:
   push:
-    branches: [ develop ]
+    branches: [develop]
+    tags:
+      - 'v*.*.*'
   pull_request:
-    branches: [ develop ]
+    branches: [develop]
 
 jobs:
-  win_build:
-    runs-on: windows-2016
-    continue-on-error: ${{ matrix.experimental }}
-
-    defaults:
-      run:
-        shell: cmd
-
+  build:
     strategy:
       fail-fast: false
       matrix:
-        generator: [Visual Studio 15 2017]
-        experimental: [false]
+        os: [windows-2016, ubuntu-latest, macos-latest]
+        requirements: [requirements-swmm.txt]
         include:
-          - generator: Visual Studio 15 2017 Win64
+          - os: windows-2016
+            generator: Visual Studio 15 2017 Win64
             experimental: true
+            script_extension: cmd
+            artifacts_ext: zip
+            artifact_content_type: zip
+            gh_run_number: "%GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%"
+            defaults:
+              run:
+                shell: cmd
+                working-directory: ./ci-tools/windows
+          - os: ubuntu-latest
+            generator: "Unix Makefiles" 
+            experimental: true
+            script_extension: sh
+            gh_run_number: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
+            artifacts_ext: tar.gz
+            artifact_content_type: tar
+            defaults:
+              run:
+                shell: bash
+                working-directory: ./ci-tools/linux
+          - os: macos-latest
+            generator: Xcode
+            experimental: true
+            ci_tools_path: ci-tools/darwin
+            script_extension: zsh
+            gh_run_number: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
+            artifacts_ext: tar.gz
+            artifact_content_type: tar
+            defaults:
+              run:
+                shell: zsh {0}
+                working-directory: ./ci-tools/darwin
 
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    defaults:
+      run:
+        shell: ${{ matrix.defaults.run.shell }}
+        working-directory: ${{ matrix.defaults.run.working-directory }}
     env:
       OMP_NUM_THREADS: 1
       PROJECT: swmm
       BUILD_HOME: build
-      TEST_HOME: nrtests
+      TEST_HOME: nrtests 
+      NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v2
 
-    - name: Checkout submodule
-      uses: actions/checkout@v2
-      with:
-        repository: OpenWaterAnalytics/ci-tools
-        path: ci-tools
+      - name: Checkout submodule
+        uses: actions/checkout@v2
+        with:
+          repository: OpenWaterAnalytics/ci-tools
+          path: ci-tools
 
-    - name: Setup python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7'
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
 
-    - name: Install requirements
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install -r ci-tools/windows/requirements-swmm.txt
+      - name: Install requirements
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r ${{ matrix.requirements }}
+      
+      - name: Install Darwin requirements
+        if: ${{ contains(matrix.os, 'macos') }}
+        run: |
+          brew install libomp
 
-    - name: Build and unit test
-      run: ci-tools/windows/make.cmd /t /g "${{ matrix.generator }}"
+      - name: Build and unit test
+        run: |
+          ./make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
 
-    - name: Build for reg test
-      run: ci-tools/windows/make.cmd /g "${{ matrix.generator }}"
+      - name: Build for reg test
+        run: |
+          ./make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
+ 
+      - name: Before reg test
+        run: |
+          ./before-nrtest.${{ matrix.script_extension }}
 
-    - name: Before reg test
-      run: ci-tools/windows/before-nrtest.cmd
+      - name: Run reg test
+        run: |
+          ./run-nrtests.${{ matrix.script_extension }} ${{ matrix.gh_run_number }}
+      
+      - name: Upload artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-test-artifacts
+          path: upload/*.*
+          
+      # - name: Create release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ github.ref }}
+      #     release_name: Release ${{ github.ref }}
+      #     draft: true
+      #     prerelease: true
 
-    - name: Run reg test
-      run: ci-tools/windows/run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
-
-    - name: Upload artifacts
-      if: ${{ always() }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: build-test-artifacts
-        path: upload/*.*
+      # - name: Upload release assets
+      #   id: upload-release-asset 
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: upload/${PROJECT}*.${{ matrix.artifacts_ext }}
+      #     asset_name: owa-${PROJECT}-${{ matrix.os }}-${{ github.ref }}.${{ matrix.artifacts_ext }}
+      #     asset_content_type: application/${{ matrix.artifact_content_type }}
