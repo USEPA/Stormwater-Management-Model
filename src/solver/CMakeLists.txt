@@ -31,7 +31,7 @@ if(BUILD_DEF)
     add_library(swmm5
         SHARED
             ${SWMM_SOURCES}
-            ${PROJECT_SOURCE_DIR/bindings/swmm5.def}
+            ${PROJECT_SOURCE_DIR}/bindings/swmm5.def
         )
 
 else()
