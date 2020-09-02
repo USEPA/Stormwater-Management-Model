@@ -78,6 +78,16 @@ install(TARGETS swmm5 EXPORT swmm5Targets
     FRAMEWORK  DESTINATION "${TOOL_DIST}"
     )
 
+# Create target import scripts so other cmake projects can use swmm libraries
+install(
+    EXPORT
+        swmm5Targets
+    DESTINATION
+        "${CONFIG_DIST}"
+    FILE
+        swmm5-config.cmake
+    )
+
 install(FILES ${SWMM_PUBLIC_HEADERS} DESTINATION "${INCLUDE_DIST}")
 
 

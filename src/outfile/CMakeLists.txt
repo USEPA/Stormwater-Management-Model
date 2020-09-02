@@ -48,6 +48,15 @@ install(TARGETS swmm-output EXPORT swmm-outputTargets
     FRAMEWORK  DESTINATION "${TOOL_DIST}"
     )
 
+install(
+    EXPORT
+        swmm-outputTargets
+    DESTINATION
+        "${CONFIG_DIST}"
+    FILE
+        swmm-output-config.cmake
+    )
+
 install(FILES ${SWMM_OUT_PUBLIC_HEADERS} DESTINATION "${INCLUDE_DIST}")
 
 

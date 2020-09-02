@@ -54,26 +54,6 @@ if(BUILD_TESTS)
 endif()
 
 
-# Create target import scripts so other cmake projects can use swmm libraries
-install(
-    EXPORT
-        swmm5Targets
-    DESTINATION
-        "${CONFIG_DIST}"
-    FILE
-        swmm5-config.cmake
-    )
-
-install(
-    EXPORT
-        swmm-outputTargets
-    DESTINATION
-        "${CONFIG_DIST}"
-    FILE
-        swmm-output-config.cmake
-    )
-
-
 # Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
 set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)
