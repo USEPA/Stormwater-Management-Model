@@ -22,6 +22,8 @@ jobs:
     defaults:
       run:
         shell: cmd
+        working-directory: ci-tools/windows
+
     env:
       OMP_NUM_THREADS: 1
       PROJECT: swmm
@@ -29,8 +31,14 @@ jobs:
       TEST_HOME: nrtests
 
     steps:
-    - name: Checkout
+    - name: Checkout repo
       uses: actions/checkout@v2
+
+    - name: Checkout submodule
+      uses: actions/checkout@v2
+      with:
+        repository: michaeltryby/ci-tools
+        path: ci-tools
 
     - name: Setup python
       uses: actions/setup-python@v2
@@ -40,19 +48,19 @@ jobs:
     - name: Install requirements
       run: |
         python -m pip install --upgrade pip
-        python -m pip install -r tools/requirements-win.txt
+        python -m pip install -r requirements-swmm.txt
 
     - name: Build and unit test
-      run: tools/make.cmd /t
+      run: make.cmd /t
 
     - name: Build for reg test
-      run: tools/make.cmd
+      run: make.cmd
 
     - name: Before reg test
-      run: tools/before-nrtest.cmd
+      run: before-nrtest.cmd
 
     - name: Run reg test
-      run: tools/run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+      run: run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
     - name: Upload artifacts
       if: ${{ always() }}
