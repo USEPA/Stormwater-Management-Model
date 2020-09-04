@@ -31,7 +31,7 @@ if(BUILD_DEF)
     add_library(swmm5
         SHARED
             ${SWMM_SOURCES}
-            ${PROJECT_SOURCE_DIR/bindings/swmm5.def}
+            ${PROJECT_SOURCE_DIR}/bindings/swmm5.def
         )
 
 else()
@@ -76,6 +76,16 @@ install(TARGETS swmm5 EXPORT swmm5Targets
     LIBRARY    DESTINATION "${TOOL_DIST}"
     ARCHIVE    DESTINATION "${LIBRARY_DIST}"
     FRAMEWORK  DESTINATION "${TOOL_DIST}"
+    )
+
+# Create target import scripts so other cmake projects can use swmm libraries
+install(
+    EXPORT
+        swmm5Targets
+    DESTINATION
+        "${CONFIG_DIST}"
+    FILE
+        swmm5-config.cmake
     )
 
 install(FILES ${SWMM_PUBLIC_HEADERS} DESTINATION "${INCLUDE_DIST}")

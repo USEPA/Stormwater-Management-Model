@@ -1,7 +1,16 @@
 
-# Eclipse Stuff
-.metadata/
-.settings/
+
+
+.DS_Store
+
+build*/
+nrtest*/
+
+*_export.h
+
+src/outfile/include/*_export.h
+src/solver/include/*_export.h
 
 build/
 nrtests/
+upload/

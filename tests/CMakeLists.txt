@@ -1,18 +1,16 @@
 #
-# CMakeLists.txt - CMake configuration file for epanet/tests
+# CMakeLists.txt - CMake configuration file for swmm-solver/tests
+#
+# Created: Mar 4, 2020
+# Updated: May 21, 2020
+#
+# Author: Michael E. Tryby
+#         US EPA ORD/CESER
 #
 
 
 #Prep ourselves for compiling with boost
-if(WIN32)
-    set(Boost_USE_STATIC_LIBS       ON)
-else()
-    set(Boost_USE_STATIC_LIBS       OFF)
-    add_definitions(-DBOOST_ALL_DYN_LINK)
-endif()
-
-find_package(Boost COMPONENTS unit_test_framework system thread filesystem)
-include_directories (${Boost_INCLUDE_DIRS})
+include(../extern/boost.cmake)
 
 
 add_subdirectory(outfile)

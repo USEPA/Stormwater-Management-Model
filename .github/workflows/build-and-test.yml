@@ -1,0 +1,71 @@
+#
+#  build-and-test.yml - GitHub Actions CI for swmm-solver
+#
+#  Created: May 19, 2020
+#  Updated: May 31, 2020
+#
+#  Author: Michael E. Tryby
+#          US EPA - ORD/CESER
+#
+
+name: Build and Test
+
+on:
+  push:
+    branches: [ master, develop, release, codedrop ]
+  pull_request:
+    branches: [ master, develop, release, codedrop ]
+
+jobs:
+  win_build:
+    runs-on: windows-2016
+    defaults:
+      run:
+        shell: cmd
+        working-directory: ci-tools/windows
+
+    env:
+      OMP_NUM_THREADS: 1
+      PROJECT: swmm
+      BUILD_HOME: build
+      TEST_HOME: nrtests
+      NRTESTS_URL: https://github.com/SWMM-Project/swmm-nrtestsuite
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Checkout submodule
+      uses: actions/checkout@v2
+      with:
+        repository: michaeltryby/ci-tools
+        path: ci-tools
+
+    - name: Setup python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+
+    - name: Install requirements
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -r requirements-swmm.txt
+
+    - name: Build and unit test
+      run: make.cmd /t
+
+    - name: Build for reg test
+      run: make.cmd
+
+    - name: Before reg test
+      run: before-nrtest.cmd
+
+    - name: Run reg test
+      run: run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+
+    - name: Upload artifacts
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: nrtest-artifacts
+        path: upload/
