@@ -29,6 +29,7 @@ jobs:
       PROJECT: swmm
       BUILD_HOME: build
       TEST_HOME: nrtests
+      NRTESTS_URL: https://github.com/michaeltryby/swmm-nrtestsuite
 
     steps:
     - name: Checkout repo
