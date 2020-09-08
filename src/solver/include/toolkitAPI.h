@@ -539,7 +539,7 @@ int DLLEXPORT swmm_setGagePrecip(int index, double total_precip);
  @param array The pointer to the array
  @return Void.
 */
-void DLLEXPORT freeArray(void** array);
+void DLLEXPORT swmm_freeMemory(void *memory);
 
 #ifdef __cplusplus
 }    // matches the linkage specification from above */

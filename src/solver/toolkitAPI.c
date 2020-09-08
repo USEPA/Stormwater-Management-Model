@@ -61,7 +61,7 @@ int DLLEXPORT swmm_project_findObject(int type, char *id, int *index)
     int error_code_index = 0;
 
     int idx = project_findObject(type, id);
- 
+
     if (idx == -1) {
         index = NULL;
         error_code_index = ERR_API_OBJECT_INDEX;
@@ -368,7 +368,7 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char **id)
 {
     int error_code_index = 0;
     TLidProc*  lidProc;
-    
+
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
@@ -1169,7 +1169,7 @@ int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, int *condition)
     {
         lidProc = lid_getLidProc(lidControlIndex);
         if(lidProc != NULL)
-        {   
+        {
             *condition = (int) lidProc->surface.canOverflow;
 
         }
@@ -2043,8 +2043,8 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double** PollutArray)
                     }
                 } *PollutArray = result;
             } break;
-            
-            
+
+
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         }
     }
@@ -2101,7 +2101,7 @@ int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats** nodeStats)
     int error_code_index;
     *nodeStats = (SM_NodeStats *)malloc(sizeof(SM_NodeStats));
     error_code_index = stats_getNodeStat(index, *nodeStats);
-    
+
     if (error_code_index == 0)
     {
         // Current Average Depth
@@ -2828,21 +2828,20 @@ double* newDoubleArray(int n)
 }
 
 
-void DLLEXPORT freeArray(void** array)
+//void DLLEXPORT freeArray(void** array)
 ///
 /// Helper function used to free array allocated memory by API.
 ///
-{
-    FREE(*array);
-    *array = NULL;
-}
+//{
+//    FREE(*array);
+//    *array = NULL;
+//}
 
 
-void DLLEXPORT swmm_freeMemory(void *array)
+void DLLEXPORT swmm_freeMemory(void *memory)
 //
 //  Purpose: Frees memory allocated by API calls
 //
 {
-    FREE(array);
-    array = NULL;
+    free(memory);
 }

@@ -57,6 +57,12 @@ if(BUILD_TESTS)
 endif()
 
 
+# Pass var up the project tree
+if(APPLE)
+    set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
+endif()
+
+
 # Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
 set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)

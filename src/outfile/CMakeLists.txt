@@ -49,7 +49,7 @@ install(TARGETS swmm-output
             "${TOOL_DIST}"
     LIBRARY
         DESTINATION
-            "${TOOL_DIST}"
+            "${LIBRARY_DIST}"
     ARCHIVE
         DESTINATION
             "${LIBRARY_DIST}"
