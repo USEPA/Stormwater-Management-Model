@@ -8,6 +8,10 @@
 **  LAST UPDATE:   03/20/14
 ******************************************************************************/
 
+#ifndef MATHEXPR_H
+#define MATHEXPR_H
+
+
 //  Node in a tokenized math expression list
 struct ExprNode
 {
@@ -27,3 +31,6 @@ double mathexpr_eval(MathExpr* expr, double (*getVal) (int));
 
 //  Deletes a tokenized math expression
 void  mathexpr_delete(MathExpr* expr);
+
+
+#endif //MATHEXPR_H

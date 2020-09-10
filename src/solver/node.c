@@ -9,6 +9,7 @@
 //             08/05/15   (Build 5.1.010)
 //             05/10/18   (Build 5.1.013)
 //             03/01/20   (Build 5.1.014)
+//             04/14/20   (Build 5.1.015)
 //   Author:   L. Rossman
 //
 //   Conveyance system node functions.
@@ -31,6 +32,10 @@
 //
 //   Build 5.1.014:
 //   - Fixed bug in storage_losses() that affected storage exfiltration.
+//
+//   Build 5.1.015:
+//   - Fatal error issued if a storage node's area curve produces a negative
+//     volume when extrapolated to the node's full depth.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -210,6 +215,11 @@ void  node_validate(int j)
     // --- check that initial depth does not exceed max. depth
     if ( Node[j].initDepth > Node[j].fullDepth + Node[j].surDepth )
         report_writeErrorMsg(ERR_NODE_DEPTH, Node[j].ID);
+
+    // --- check for negative volume for storage node at full depth            //(5.1.015)
+    if (Node[j].type == STORAGE)                                               //
+        if (node_getVolume(j, Node[j].fullDepth) < 0.0)                        //
+            report_writeErrorMsg(ERR_STORAGE_VOLUME, Node[j].ID);              //
 
     if ( Node[j].type == DIVIDER ) divider_validate(j);
 
@@ -795,7 +805,7 @@ void  storage_getVolDiff(double y, double* f, double* df, void* p)
     int    k;
     double e, v;
     TStorageVol* storageVol;
-		
+
     // ... cast void pointer p to a TStorageVol object
     storageVol = (TStorageVol *)p;
     k = storageVol->k;
@@ -831,7 +841,7 @@ double storage_getVolume(int j, double d)
 
     // --- use table integration if area v. depth table exists
     if ( i >= 0 )
-        return table_getArea(&Curve[i], d*UCF(LENGTH)) / UCF(VOLUME);
+      return table_getArea(&Curve[i], d*UCF(LENGTH)) / UCF(VOLUME);
 
     // --- otherwise use functional area v. depth relation
     else
@@ -841,6 +851,7 @@ double storage_getVolume(int j, double d)
         v += Storage[k].aCoeff / (Storage[k].aExpon+1.0) *
              pow(d, Storage[k].aExpon+1.0);
         return v / UCF(VOLUME);
+
     }
 }
 

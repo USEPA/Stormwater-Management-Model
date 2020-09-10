@@ -640,9 +640,9 @@ void setNewNodeState(int j, double dt)
 
     // --- update terminal storage nodes
     if ( Node[j].type == STORAGE )
-    {	
-	if ( Node[j].updated == FALSE )
-	    updateStorageState(j, Nobjects[LINK], NULL, dt);
+    {
+    if ( Node[j].updated == FALSE )
+        updateStorageState(j, Nobjects[LINK], NULL, dt);
         return; 
     }
 
