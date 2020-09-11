@@ -32,6 +32,11 @@
 //   - Arguments to link_getLossRate function changed.
 //
 //-----------------------------------------------------------------------------
+
+#ifndef FUNCS_H
+#define FUNCS_H
+
+
 void     project_open(char *f1, char *f2, char *f3);
 void     project_close(void);
 
@@ -86,7 +91,7 @@ void    report_writeSysStats(TSysStats* sysStats);
 void    report_writeErrorMsg(int code, char* msg);
 void    report_writeErrorCode(void);
 void    report_writeInputErrorMsg(int k, int sect, char* line, long lineCount);
-void    report_writeWarningMsg(char* msg, char* id); 
+void    report_writeWarningMsg(char* msg, char* id);
 void    report_writeTseriesErrorMsg(int code, TTable *tseries);
 
 void    inputrpt_writeInput(void);
@@ -275,7 +280,7 @@ void    stats_report(void);
 void    stats_updateCriticalTimeCount(int node, int link);
 void    stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
         int steadyState);
-void    stats_updateSubcatchStats(int subcatch, double rainVol, 
+void    stats_updateSubcatchStats(int subcatch, double rainVol,
         double runonVol, double evapVol, double infilVol,
         double impervVol, double pervVol, double runoffVol, double runoff);    //(5.1.013)
 void    stats_updateGwaterStats(int j, double infil, double evap,
@@ -356,12 +361,12 @@ void    node_getResults(int node, double wt, float x[]);
 int     inflow_readExtInflow(char* tok[], int ntoks);
 int     inflow_readDwfInflow(char* tok[], int ntoks);
 int     inflow_readDwfPattern(char* tok[], int ntoks);
-int     inflow_setExtInflow(int j, int param, int type, 
-        int tSeries, int basePat, double cf, 
+int     inflow_setExtInflow(int j, int param, int type,
+        int tSeries, int basePat, double cf,
         double baseline, double sf);
-int     inflow_validate(int param, int type, int tSeries, 
-        int basePat, double *cf);					
-						
+int     inflow_validate(int param, int type, int tSeries,
+        int basePat, double *cf);
+
 void    inflow_initDwfInflow(TDwfInflow* inflow);
 void    inflow_initDwfPattern(int pattern);
 
@@ -471,7 +476,7 @@ int     shape_validate(TShape *shape, TTable *curve);
 int     controls_create(int n);
 void    controls_delete(void);
 int     controls_addRuleClause(int rule, int keyword, char* Tok[], int nTokens);
-int     controls_evaluate(DateTime currentTime, DateTime elapsedTime, 
+int     controls_evaluate(DateTime currentTime, DateTime elapsedTime,
         double tStep);
 
 //-----------------------------------------------------------------------------
@@ -518,3 +523,6 @@ void     writecon(char *s);                   // writes string to console
 DateTime getDateTime(double elapsedMsec);     // convert elapsed time to date
 void     getElapsedTime(DateTime aDate,       // convert elapsed date
          int* days, int* hrs, int* mins);
+
+
+#endif //FUNCS_H

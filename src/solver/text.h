@@ -15,10 +15,17 @@
 //            08/01/16  (Build 5.1.011)
 //            03/14/17  (Build 5.1.012)
 //            05/10/18  (Build 5.1.013)
+//            03/01/20  (Build 5.1.014)
+//            04/01/20  (Build 5.1.015)
+//
 //   Author:  L. Rossman
 //
 //   Text strings
 //-----------------------------------------------------------------------------
+
+#ifndef TEXT_H
+#define TEXT_H
+
 
 #define FMT01 \
  "\tswmm5 <input file> <report file> <output file>\n"
@@ -29,7 +36,7 @@
 #define FMT06 "\n o  Retrieving project data"
 #define FMT07 "\n o  Writing output report"
 #define FMT08 \
-  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build 5.1.014)"         //(5.1.014)
+  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build 5.1.015)"         //(5.1.015)
 #define FMT09 \
   "\n  --------------------------------------------------------------"
 #define FMT10 "\n"
@@ -443,3 +450,6 @@
 #define  ws_GWF              "[GWF"
 #define  ws_ADJUST           "[ADJUSTMENT"
 #define  ws_EVENT            "[EVENT"
+
+
+#endif //TEXT_H

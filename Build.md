@@ -21,12 +21,12 @@ Before the project can be built the required dependencies must be installed.
   - Build
       - Build Tools for Visual Studio 2017
       - CMake 3.13
-
+      - ci-tools repository
 
 ### Build
 
 SWMM can be built with one simple command.
 ```
 \> cd swmm
-\swmm>tools\make.cmd
+\swmm>ci-tools\windows\make.cmd
 ```

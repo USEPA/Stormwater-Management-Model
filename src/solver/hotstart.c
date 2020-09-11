@@ -8,6 +8,7 @@
 //             04/23/14  (Build 5.1.005)
 //             03/19/15  (Build 5.1.008)
 //             08/01/16  (Build 5.1.011)
+//             04/01/20  (Build 5.1.015)
 //   Author:   L. Rossman (EPA)
 //
 //   Hot Start file functions.
@@ -37,6 +38,8 @@
 //   Build 5.1.011:
 //   - Link control setting bug when reading a hot start file fixed.    
 //
+//   Build 5.1.015:
+//   - Support added for multiple infiltration methods within a project.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -378,7 +381,7 @@ void  saveRunoff(void)
 
         // Infiltration state (max. of 6 elements)
         for (j=0; j<sizeX; j++) x[j] = 0.0;
-        infil_getState(i, InfilModel, x);
+        infil_getState(i, x);                                                  //(5.1.015)
         fwrite(x, sizeof(double), 6, f);
 
         // Groundwater state (4 elements)
@@ -447,7 +450,7 @@ void  readRunoff()
 
         // Infiltration state (max. of 6 elements)
         for (j=0; j<6; j++) if ( !readDouble(&x[j], f) ) return;
-        infil_setState(i, InfilModel, x);
+        infil_setState(i, x);                                                  //(5.1.015)
 
         // Groundwater state (4 elements)
         if ( Subcatch[i].groundwater != NULL )

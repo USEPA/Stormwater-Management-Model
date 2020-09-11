@@ -7,6 +7,7 @@
 //             04/02/15   (Build 5.1.008)
 //             04/30/15   (Build 5.1.009)
 //             08/05/15   (Build 5.1.010)
+//             04/01/20   (Build 5.1.015)
 //   Author:   L. Rossman
 //
 //   Water quality routing functions.
@@ -22,6 +23,8 @@
 //   - Entire module re-written to be more compact and easier to follow.
 //   - Neglible depth limit replaced with a negligible volume limit.
 //
+//   Build 5.1.015:
+//   - Fixed mass balance issue for empty storage nodes that flood.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -443,8 +446,8 @@ void  findStorageQual(int j, double tStep)
         wIn = Node[j].newQual[p];
         c2 = getMixedQual(c1, v1, wIn, qIn, tStep);
 
-        // --- set concen. to zero if remaining volume is negligible
-        if ( Node[j].newVolume <= ZeroVolume )
+// --- set concen. to zero if remaining volume & inflow is negligible          //(5.1.015)
+        if (Node[j].newVolume <= ZeroVolume && qIn <= FLOW_TOL)                //(5.1.015)
         {
             massbal_addToFinalStorage(p, c2 * Node[j].newVolume);
             c2 = 0.0;
