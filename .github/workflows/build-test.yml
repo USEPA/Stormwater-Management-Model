@@ -101,6 +101,7 @@ jobs:
         if: ${{ contains(matrix.os, 'macos') }}
         run: |
           brew install libomp
+          brew install boost
 
       - name: Build and unit test
         run: |
