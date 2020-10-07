@@ -11,12 +11,15 @@
 # Creates the EPANET command line executable
 add_executable(runswmm
     main.c
-)
+    timer.c
+    )
 
 target_include_directories(runswmm
     PUBLIC
         include
-)
+    PRIVATE
+        {CMAKE_CURRENT_SOURCE_DIR}
+    )
 
 target_link_libraries(runswmm
     LINK_PUBLIC

@@ -11,9 +11,53 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
+#include <math.h>
 
 #include "swmm5.h"
+#include "timer.h"
+
+
+#define BAR_LEN 50l
+#define MSG_LEN 90
+
+
+static long Start;
+
+
+void writecon(char *msg)
+{
+    fprintf(stdout, "%s", msg);
+    fflush(stdout);
+}
+
+void progress_bar(double *ratio)
+{
+    char bar[BAR_LEN + 1];
+
+    // Create progress bar
+    memset(bar, '\0', (BAR_LEN + 1));
+    memset(bar, ' ', BAR_LEN);
+    long prog_len = lround(*ratio * BAR_LEN);
+    if ( *ratio < 1.0 )
+        memset(bar, '>', prog_len + 1);
+    memset(bar, '=', prog_len);
+
+    // Compute pct complete
+    double pct = *ratio * 100.0;
+
+    // Compute time remaining using naive approach
+    long t_r = 0;
+    if (*ratio > 0.0)
+        t_r = lround((1.0 - *ratio) * (current_time_millis() - Start) / *ratio);
+
+
+    char msg[MSG_LEN + 1];
+    char tmp[TIMER_LEN + 1];
+
+    sprintf(msg, "\r... Running [%50s] %4.1f%% [%8s]", bar, pct, format_time(tmp, t_r));
+    writecon(msg);
+}
+
 
 int  main(int argc, char *argv[])
 //
@@ -32,23 +76,47 @@ int  main(int argc, char *argv[])
     char *binaryFile;
     char *arg1;
     char blank[] = "";
+    char time[8];
+
     int  version, vMajor, vMinor, vRelease;
+
     char errMsg[128];
     int  msgLen = 127;
-    time_t start;
-    double runTime;
 
-    version = swmm_getVersion();
-    vMajor = version / 10000;
-    vMinor = (version - 10000 * vMajor) / 1000;
-    vRelease = (version - 10000 * vMajor - 1000 * vMinor);
-    start = time(0);
+    long stop;
+
 
     // --- check for proper number of command line arguments
-    if (argc == 1)
+    if (argc == 4)
     {
-        printf("\nNot Enough Arguments (See Help --help)\n\n");
+        // --- extract file names from command line arguments
+        inputFile = argv[1];
+        reportFile = argv[2];
+        if (argc > 3)
+            binaryFile = argv[3];
+        else
+            binaryFile = blank;
+//        printf("\n... EPA-SWMM %d.%d (Build %d.%d.%0d)\n", vMajor, vMinor,
+//            vMajor, vMinor, vRelease);
+
+        Start = current_time_millis();
+        // --- run SWMM
+        swmm_run(inputFile, reportFile, binaryFile, &progress_bar);
+
+        stop = current_time_millis();
+
+        printf("\n\n... EPA-SWMM completed in %s", format_time(time, stop - Start));
+
+        if ( swmm_getError(errMsg, msgLen) > 0 )
+            printf(" with errors.\n");
+
+        else if ( swmm_getWarnings() > 0 )
+            printf(" with warnings.\n");
+
+        else
+            printf(" successfully.\n");
     }
+
     else if (argc == 2)
     {
         // --- extract first argument
@@ -57,42 +125,33 @@ int  main(int argc, char *argv[])
         if (strcmp(arg1, "--help") == 0 || strcmp(arg1, "-h") == 0)
         {
             // Help
-            printf("\n\nSTORMWATER MANAGEMENT MODEL (SWMM5) HELP\n\n");
-            printf("COMMANDS:\n");
+            printf("\n\nEPA Stormwater Management Model (SWMM5) Help\n\n");
+            printf("Commands:\n");
             printf("\t--help (-h)       Help Docs\n");
             printf("\t--version (-v)    Build Version\n");
-            printf("\nRUNNING A SIMULATION:\n");
+            printf("\nUsage:\n");
             printf("\t swmm5 <input file> <report file> <output file>\n\n");
         }
+
         else if (strcmp(arg1, "--version") == 0 || strcmp(arg1, "-v") == 0)
         {
+            version = swmm_getVersion();
+            vMajor = version / 10000;
+            vMinor = (version - 10000 * vMajor) / 1000;
+            vRelease = (version - 10000 * vMajor - 1000 * vMinor);
+
             // Output version number
-            printf("\n%d.%d.%0d\n\n", vMajor, vMinor, vRelease);
+            printf("EPA-SWMM version %d.%d.%0d\n\n", vMajor, vMinor, vRelease);
         }
+
         else
-        {
             printf("\nUnknown Argument (See Help --help)\n\n");
-        }
     }
+
     else
     {
-        // --- extract file names from command line arguments
-        inputFile = argv[1];
-        reportFile = argv[2];
-        if (argc > 3) binaryFile = argv[3];
-        else          binaryFile = blank;
-        printf("\n... EPA-SWMM %d.%d (Build %d.%d.%0d)\n", vMajor, vMinor,
-            vMajor, vMinor, vRelease);
-
-        // --- run SWMM
-        swmm_run(inputFile, reportFile, binaryFile);
-
-        // Display closing status on console
-        runTime = difftime(time(0), start);
-        printf("\n\n... EPA-SWMM completed in %.2f seconds.", runTime);
-        if      ( swmm_getError(errMsg, msgLen) > 0 ) printf(" There are errors.\n");
-        else if ( swmm_getWarnings() > 0 ) printf(" There are warnings.\n");
-        else printf("\n");
+        printf("\nUsage:\n");
+        printf("\t swmm5 <input file> <report file> <output file>\n\n");
     }
 
 // --- Use the code below if you need to keep the console window visible

@@ -177,7 +177,8 @@ static int  xfilter(int xc, char* module, double elapsedTime, long step);
 
 //=============================================================================
 
-int DLLEXPORT  swmm_run(const char *f1, const char *f2, const char *f3)
+int DLLEXPORT  swmm_run(const char* f1, const char* f2, const char* f3,
+    void (*callback) (double *))
 //
 //  Input:   f1 = name of input file
 //           f2 = name of report file
@@ -186,14 +187,15 @@ int DLLEXPORT  swmm_run(const char *f1, const char *f2, const char *f3)
 //  Purpose: runs a SWMM simulation.
 //
 {
-    long newHour, oldHour = 0;
-    long theDay, theHour;
-    double elapsedTime = 0.0;
+    clock_t check = 0;
+    double progress, elapsedTime = 0.0;
+
 
     // --- initialize flags                                                    //(5.1.013)
     IsOpenFlag = FALSE;                                                        //
     IsStartedFlag = FALSE;                                                     //
     SaveResultsFlag = TRUE;                                                    //
+
 
     // --- open the files & read input data
     ErrorCode = 0;
@@ -208,24 +210,22 @@ int DLLEXPORT  swmm_run(const char *f1, const char *f2, const char *f3)
         // --- execute each time step until elapsed time is re-set to 0
         if ( !ErrorCode )
         {
-            writecon("\n o  Simulating day: 0     hour:  0");
             do
             {
                 swmm_step(&elapsedTime);
-                newHour = (long)(elapsedTime * 24.0);
-                if ( newHour > oldHour )
+
+                // --- callback with progress approximately twice a second
+                if ( (callback != NULL) && (clock() - check) > CLOCKS_PER_SEC )
                 {
-                    theDay = (long)elapsedTime;
-                    theHour = (long)((elapsedTime - floor(elapsedTime)) * 24.0);
-                    writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-                    sprintf(Msg, "%-5ld hour: %-2ld", theDay, theHour);        //(5.1.013)
-                    writecon(Msg);
-                    oldHour = newHour;
+                    progress = NewRoutingTime / TotalDuration;
+                    callback(&progress);
+                    check = clock();
                 }
+
             } while ( elapsedTime > 0.0 && !ErrorCode );
-            writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b"
-                     "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-            writecon("Simulation complete           ");
+
+            progress = 1.0;
+            callback(&progress);
         }
 
         // --- clean up
@@ -237,6 +237,8 @@ int DLLEXPORT  swmm_run(const char *f1, const char *f2, const char *f3)
 
     // --- close the system
     swmm_close();
+
+
     return error_getCode(ErrorCode);
 }
 

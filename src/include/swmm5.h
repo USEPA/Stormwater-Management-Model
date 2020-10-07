@@ -51,7 +51,8 @@ extern "C" {
  @param f3 pointer to name of binary output file (to be created)
  @return error code
 */
-int  DLLEXPORT   swmm_run(const char *f1, const char *f2, const char *f3);
+int  DLLEXPORT   swmm_run(const char *f1, const char *f2, const char *f3,
+    void (*callback) (double *));
 
 /**
  @brief Opens SWMM input file & reads in network data
