@@ -25,7 +25,7 @@ bool tolCheck(float a, float b, float tol)
 BOOST_AUTO_TEST_SUITE (test_swmm_auto)
 
 BOOST_AUTO_TEST_CASE(RunTest) {
-    int error = swmm_run(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);
+    int error = swmm_run(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT, NULL);
     BOOST_CHECK_EQUAL(0, error);
 }
 

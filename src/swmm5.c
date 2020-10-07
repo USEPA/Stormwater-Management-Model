@@ -224,8 +224,11 @@ int DLLEXPORT  swmm_run(const char* f1, const char* f2, const char* f3,
 
             } while ( elapsedTime > 0.0 && !ErrorCode );
 
-            progress = 1.0;
-            callback(&progress);
+            if ( callback != NULL )
+            {
+                progress = 1.0;
+                callback(&progress);
+            }
         }
 
         // --- clean up
