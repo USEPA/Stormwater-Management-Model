@@ -33,11 +33,12 @@ void writecon(char *msg)
 void progress_bar(double *ratio)
 {
     char bar[BAR_LEN + 1];
+    memset(bar, '\0', (BAR_LEN + 1));
 
     // Create progress bar
     long prog_len = lround(*ratio * BAR_LEN);
     memset(bar, ' ', BAR_LEN);
-    if ( *ratio < 1.0 )
+    if (prog_len < BAR_LEN)
         memset(bar, '>', prog_len + 1);
     memset(bar, '=', prog_len);
 
