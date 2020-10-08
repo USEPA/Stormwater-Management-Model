@@ -18,7 +18,7 @@
 
 
 #define BAR_LEN 50l
-#define MSG_LEN 90
+#define MSG_LEN 83
 
 
 static long Start;
@@ -35,9 +35,8 @@ void progress_bar(double *ratio)
     char bar[BAR_LEN + 1];
 
     // Create progress bar
-    memset(bar, '\0', (BAR_LEN + 1));
-    memset(bar, ' ', BAR_LEN);
     long prog_len = lround(*ratio * BAR_LEN);
+    memset(bar, ' ', BAR_LEN);
     if ( *ratio < 1.0 )
         memset(bar, '>', prog_len + 1);
     memset(bar, '=', prog_len);
@@ -50,11 +49,12 @@ void progress_bar(double *ratio)
     if (*ratio > 0.0)
         t_r = lround((1.0 - *ratio) * (current_time_millis() - Start) / *ratio);
 
-
+    // Format and print progress
     char msg[MSG_LEN + 1];
     char tmp[TIMER_LEN + 1];
 
-    sprintf(msg, "\r... Running [%50s] %4.1f%% [%8s]", bar, pct, format_time(tmp, t_r));
+    sprintf(msg, "\r... Running [%50s] %5.1f%% [%8s]", bar, pct, format_time(tmp, t_r));
+//    sprintf(msg, "\r... Running [%8s]", format_time(tmp, t_r));
     writecon(msg);
 }
 
@@ -96,8 +96,6 @@ int  main(int argc, char *argv[])
             binaryFile = argv[3];
         else
             binaryFile = blank;
-//        printf("\n... EPA-SWMM %d.%d (Build %d.%d.%0d)\n", vMajor, vMinor,
-//            vMajor, vMinor, vRelease);
 
         Start = current_time_millis();
         // --- run SWMM
