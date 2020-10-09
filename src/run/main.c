@@ -79,85 +79,73 @@ int  main(int argc, char *argv[])
 //  f3 = name of binary output file if saved (or blank if not saved).
 //
 {
-    char *inputFile;
-    char *reportFile;
-    char *binaryFile;
-    char *arg1;
-    char blank[] = "";
-    char time[8];
-
-    int  version, vMajor, vMinor, vRelease;
-
-    char errMsg[128];
-    int  msgLen = 127;
-
-    long stop;
-
-
     // --- check for proper number of command line arguments
-    if (argc == 4)
-    {
+    if (argc == 4) {
         // --- extract file names from command line arguments
-        inputFile = argv[1];
-        reportFile = argv[2];
+        char *inputFile = argv[1];
+        char *reportFile = argv[2];
+
+        char *binaryFile = "";
         if (argc > 3)
             binaryFile = argv[3];
-        else
-            binaryFile = blank;
 
         Start = current_time_millis();
         // --- run SWMM
         swmm_run(inputFile, reportFile, binaryFile, &progress_bar);
 
-        stop = current_time_millis();
+        long stop = current_time_millis();
+        char time[TIMER_LEN + 1];
 
-        printf("\n\n... EPA-SWMM completed in %s", format_time(time, stop - Start));
+        csio_printf("\n\n... EPA-SWMM completed in %s",
+            format_time(time, stop - Start));
+
+        char errMsg[128];
+        int  msgLen = 127;
 
         if ( swmm_getError(errMsg, msgLen) > 0 )
-            printf(" with errors.\n");
+            csio_printf(" with errors.\n");
 
         else if ( swmm_getWarnings() > 0 )
-            printf(" with warnings.\n");
+            csio_printf(" with warnings.\n");
 
         else
-            printf(" successfully.\n");
+            csio_printf(" successfully.\n");
     }
 
-    else if (argc == 2)
-    {
+    else if (argc == 2) {
         // --- extract first argument
-        arg1 = argv[1];
+        char *arg1 = argv[1];
 
-        if (strcmp(arg1, "--help") == 0 || strcmp(arg1, "-h") == 0)
-        {
+        if (strcmp(arg1, "--help") == 0 || strcmp(arg1, "-h") == 0) {
             // Help
-            printf("\n\nEPA Stormwater Management Model (SWMM5) Help\n\n");
-            printf("Commands:\n");
-            printf("\t--help (-h)       Help Docs\n");
-            printf("\t--version (-v)    Build Version\n");
-            printf("\nUsage:\n");
-            printf("\t swmm5 <input file> <report file> <output file>\n\n");
+            csio_printf("\n\nEPA Stormwater Management Model (SWMM5) Help\n\n");
+            csio_printf("Commands:\n");
+            csio_printf("\t--help (-h)       Help Docs\n");
+            csio_printf("\t--version (-v)    Build Version\n");
+            csio_printf("\nUsage:\n");
+            csio_printf("\t swmm5 <input file> <report file> <output file>\n\n");
         }
 
-        else if (strcmp(arg1, "--version") == 0 || strcmp(arg1, "-v") == 0)
-        {
-            version = swmm_getVersion();
-            vMajor = version / 10000;
-            vMinor = (version - 10000 * vMajor) / 1000;
-            vRelease = (version - 10000 * vMajor - 1000 * vMinor);
+        else if (strcmp(arg1, "--version") == 0 || strcmp(arg1, "-v") == 0) {
+            int version = swmm_getVersion();
+            int vMajor = version / 10000;
+            int vMinor = (version - 10000 * vMajor) / 1000;
+            int vRelease = (version - 10000 * vMajor - 1000 * vMinor);
 
             // Output version number
-            printf("EPA-SWMM version %d.%d.%0d\n\n", vMajor, vMinor, vRelease);
+            csio_printf("\nVersion:\n");
+            csio_printf("\tEPA-SWMM %d.%d.%0d\n\n", vMajor, vMinor, vRelease);
         }
 
-        else
-            printf("\nUnknown Argument (See Help --help)\n\n");
+        else {
+            csio_printf("\nError:\n");
+            csio_printf("\tUnknown Argument (See Help --help)\n\n");
+        }
     }
 
-    else
-    {
-        printf("\nUsage:\n");
-        printf("\t swmm5 <input file> <report file> <output file>\n\n");
+    else {
+        csio_printf("\nUsage:\n");
+        csio_printf("\trunswmm <input file> <report file> <output file>\n\n");
     }
 
 // --- Use the code below if you need to keep the console window visible

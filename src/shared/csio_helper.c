@@ -8,51 +8,18 @@
  *              US EPA - ORD/CESER
  */
 
-#include <stdarg.h>
-#include <stdio.h>
-
 #include "csio_helper.h"
 
 
 #ifdef _MSC_VER
-  #define RESTRICT __restrict
+  #define RESTRICT
 #else
   #define RESTRICT restrict
 #endif
 
 
-int csio_snprintf(char *str, size_t n, const char *format, ...)
-{
-#ifdef _MSC_VER
-  #define VSNPRINTF vsprintf_s
-#else
-  #define VSNPRINTF vsnprintf
-#endif
+extern inline int csio_snprintf(char *str, size_t n, const char *format, ...);
 
-    int error;
-    va_list args;
-    va_start(args, format);
+extern inline int csio_fprintf(FILE *RESTRICT stream, const char *RESTRICT format, ...);
 
-    error = VSNPRINTF(str, n, format, args);
-
-    va_end(args);
-    return error;
-}
-
-int csio_fprintf(FILE *RESTRICT stream, const char *RESTRICT format, ...)
-{
-#ifdef _MSC_VER
-  #define VFPRINTF vfprintf_s
-#else
-  #define VFPRINTF vfprintf
-#endif
-
-    int error;
-    va_list args;
-    va_start(args, format);
-
-    error = VFPRINTF(stream, format, args);
-
-    va_end(args);
-    return error;
-}
+extern inline int csio_printf(const char *RESTRICT format, ...);
