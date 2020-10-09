@@ -13,10 +13,11 @@
 
 
 #ifdef _MSC_VER
-  #define RESTRICT
+  #define RESTRICT __restrict
 #else
   #define RESTRICT restrict
 #endif
+
 
 #if defined(__cplusplus)
 extern "C" {

@@ -22,8 +22,6 @@
 #include "swmm5.h"
 
 
-
-
 #define BAR_LEN 50l
 #define MSG_LEN 84
 
@@ -40,7 +38,6 @@ void write_console(char *msg)
 void progress_bar(double *ratio)
 {
     char bar[BAR_LEN + 1] = {'\0'};
-//    memset(bar, '\0', (size_t)(BAR_LEN + 1));
 
     // Create progress bar
     long prog_len = lround(*ratio * BAR_LEN);

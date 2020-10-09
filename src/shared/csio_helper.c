@@ -13,8 +13,9 @@
 
 #include "csio_helper.h"
 
+
 #ifdef _MSC_VER
-  #define RESTRICT
+  #define RESTRICT __restrict
 #else
   #define RESTRICT restrict
 #endif
@@ -46,12 +47,12 @@ int csio_fprintf(FILE *RESTRICT stream, const char *RESTRICT format, ...)
   #define VFPRINTF vfprintf
 #endif
 
-        int error;
-        va_list args;
-        va_start(args, format);
+    int error;
+    va_list args;
+    va_start(args, format);
 
-        error = VFPRINTF(stream, format, args);
+    error = VFPRINTF(stream, format, args);
 
-        va_end(args);
-        return error;
+    va_end(args);
+    return error;
 }

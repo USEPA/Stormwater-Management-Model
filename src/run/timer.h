@@ -1,5 +1,12 @@
-
-
+/*
+ *  timer.h - Provides simple timer with millisec resolution
+ *
+ *  Created on: October 8, 2020
+ *  Updated on:
+ *
+ *  Author:     Michael E. Tryby
+ *              US EPA - ORD/CESER
+ */
 
 #ifndef TIMER_H
 #define TIMER_H
