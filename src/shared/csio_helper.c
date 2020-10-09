@@ -18,7 +18,7 @@
 #endif
 
 
-extern inline int csio_snprintf(char *str, size_t n, const char *format, ...);
+extern inline int csio_snprintf(char *RESTRICT str, size_t n, const char *RESTRICT format, ...);
 
 extern inline int csio_fprintf(FILE *RESTRICT stream, const char *RESTRICT format, ...);
 

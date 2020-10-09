@@ -25,7 +25,6 @@
 #define BAR_LEN 50l
 #define MSG_LEN 84
 
-
 static long Start;
 
 

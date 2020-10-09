@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 
-inline int csio_snprintf(char *str, size_t n, const char *format, ...)
+inline int csio_snprintf(char *RESTRICT str, size_t n, const char *RESTRICT format, ...)
 {
 #ifdef _MSC_VER
   #define SNPRINTF vsprintf_s
