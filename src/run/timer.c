@@ -9,7 +9,9 @@
 #endif
 #include <stdio.h>
 
+
 #include "timer.h"
+#include "shared/csio_helper.h"
 
 
 long current_time_millis(void)
@@ -36,10 +38,12 @@ char *format_time(char *time, long msec)
     long hrs, mins;
     double secs;
 
+    size_t n = (size_t)(TIMER_LEN + 1);
+
     if ( msec == 0)
-        sprintf(time, "0.00s");
+        csio_snprintf(time, n, "0.00s");
     else if ( msec < 1000 )
-        sprintf(time, "< 1.00s");
+        csio_snprintf(time, n, "< 1.00s");
     else {
         // Compute hours elapsed
         hrs = (long)secs/3600*1000;
@@ -51,11 +55,11 @@ char *format_time(char *time, long msec)
         secs = msec*0.001;
 
         if (hrs > 0)
-            sprintf(time, "%2ld:%2ld:%02.0f", hrs, mins, secs);
+            csio_snprintf(time, n, "%2ld:%2ld:%02.0f", hrs, mins, secs);
         else if (mins > 0)
-            sprintf(time, "%2ld:%02.0f", mins, secs);
+            csio_snprintf(time, n, "%2ld:%02.0f", mins, secs);
         else
-            sprintf(time, "%3.2fs", secs);
+            csio_snprintf(time, n, "%3.2fs", secs);
     }
     return time;
 }

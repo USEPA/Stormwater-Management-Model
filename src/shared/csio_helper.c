@@ -13,21 +13,45 @@
 
 #include "csio_helper.h"
 
+#ifdef _MSC_VER
+  #define RESTRICT
+#else
+  #define RESTRICT restrict
+#endif
 
-int csio_sprintf(char *str, size_t n, const char *format, ...)
+
+int csio_snprintf(char *str, size_t n, const char *format, ...)
 {
 #ifdef _MSC_VER
-  #define VSPRINTF vsprintf_s
+  #define VSNPRINTF vsprintf_s
 #else
-  #define VSPRINTF vsnprintf
+  #define VSNPRINTF vsnprintf
 #endif
 
     int error;
     va_list args;
     va_start(args, format);
 
-    error = VSPRINTF(str, n, format, args);
+    error = VSNPRINTF(str, n, format, args);
 
     va_end(args);
     return error;
+}
+
+int csio_fprintf(FILE *RESTRICT stream, const char *RESTRICT format, ...)
+{
+#ifdef _MSC_VER
+  #define VFPRINTF vfprintf_s
+#else
+  #define VFPRINTF vfprintf
+#endif
+
+        int error;
+        va_list args;
+        va_start(args, format);
+
+        error = VFPRINTF(stream, format, args);
+
+        va_end(args);
+        return error;
 }

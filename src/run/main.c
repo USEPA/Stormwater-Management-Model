@@ -33,21 +33,21 @@ static long Start;
 
 void write_console(char *msg)
 {
-    fprintf(stdout, "%s", msg);
+    csio_fprintf(stdout, "%s", msg);
     fflush(stdout);
 }
 
 void progress_bar(double *ratio)
 {
-    char bar[BAR_LEN + 1];
-    memset(bar, '\0', (BAR_LEN + 1));
+    char bar[BAR_LEN + 1] = {'\0'};
+//    memset(bar, '\0', (size_t)(BAR_LEN + 1));
 
     // Create progress bar
     long prog_len = lround(*ratio * BAR_LEN);
-    memset(bar, ' ', BAR_LEN);
+    memset(bar, ' ', (size_t)BAR_LEN);
     if (prog_len < BAR_LEN)
-        memset(bar, '>', prog_len + 1);
-    memset(bar, '=', prog_len);
+        memset(bar, '>', (size_t)(prog_len + 1));
+    memset(bar, '=', (size_t)prog_len);
 
     // Compute pct complete
     double pct = *ratio * 100.0;
@@ -64,7 +64,7 @@ void progress_bar(double *ratio)
     size_t n = (size_t)(MSG_LEN + 1);
 
     write_console("\r");
-    csio_sprintf(msg, n, "... Running [%50s] %5.1f%% [%8s]", bar, pct,
+    csio_snprintf(msg, n, "... Running [%50s] %5.1f%% [%8s]", bar, pct,
         format_time(tmp, t_r));
     write_console(msg);
 }
