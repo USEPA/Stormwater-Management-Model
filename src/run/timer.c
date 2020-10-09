@@ -8,16 +8,7 @@
  *              US EPA - ORD/CESER
  */
 
-#ifdef _WIN32
-  #include <Windows.h>
-#else
-  #include <sys/time.h>
-#endif
-#include <stdio.h>
-
-
 #include "timer.h"
-#include "shared/csio_helper.h"
 
 
 long current_time_millis(void)
@@ -39,26 +30,23 @@ long current_time_millis(void)
 #endif
 }
 
-char *format_time(char *time, long msec)
+char *format_time(char *time, long ms)
 {
-    long hrs, mins;
-    double secs;
-
     size_t n = (size_t)(TIMER_LEN + 1);
 
-    if ( msec == 0)
+    if ( ms == 0)
         csio_snprintf(time, n, "0.00s");
-    else if ( msec < 1000 )
+    else if ( ms < 1000 )
         csio_snprintf(time, n, "< 1.00s");
     else {
         // Compute hours elapsed
-        hrs = (long)secs/3600*1000;
-        secs -= hrs*3600*1000;
+        long hrs = ms/(3600*1000);
+        ms -= hrs*3600*1000;
         // Compute minutes elapsed
-        mins = (long)secs/60*1000;
-        secs -= mins*60*1000;
+        long mins = ms/(60*1000);
+        ms -= mins*60*1000;
         // Compute seconds elapsed
-        secs = msec*0.001;
+        double secs = ms*0.001;
 
         if (hrs > 0)
             csio_snprintf(time, n, "%2ld:%2ld:%02.0f", hrs, mins, secs);
@@ -67,5 +55,6 @@ char *format_time(char *time, long msec)
         else
             csio_snprintf(time, n, "%3.2fs", secs);
     }
+
     return time;
 }

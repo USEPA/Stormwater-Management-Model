@@ -6,20 +6,59 @@
  *
  *  Author:     Michael E. Tryby
  *              US EPA - ORD/CESER
+ *
  */
 
 #include "csio_helper.h"
 
 
+int csio_snprintf(char *RESTRICT str, size_t n, const char *RESTRICT format, ...)
+{
 #ifdef _MSC_VER
-  #define RESTRICT
+  #define SNPRINTF vsprintf_s
 #else
-  #define RESTRICT restrict
+  #define SNPRINTF vsnprintf
 #endif
 
+    va_list args;
+    va_start(args, format);
 
-extern inline int csio_snprintf(char *RESTRICT str, size_t n, const char *RESTRICT format, ...);
+    int error = SNPRINTF(str, n, format, args);
 
-extern inline int csio_fprintf(FILE *RESTRICT stream, const char *RESTRICT format, ...);
+    va_end(args);
+    return error;
+}
 
-extern inline int csio_printf(const char *RESTRICT format, ...);
+int csio_fprintf(FILE *RESTRICT stream, const char *RESTRICT format, ...)
+{
+#ifdef _MSC_VER
+  #define FPRINTF vfprintf_s
+#else
+  #define FPRINTF vfprintf
+#endif
+
+    va_list args;
+    va_start(args, format);
+
+    int error = FPRINTF(stream, format, args);
+
+    va_end(args);
+    return error;
+}
+
+int csio_printf(const char *RESTRICT format, ...)
+{
+#ifdef _MSC_VER
+  #define PRINTF vprintf_s
+#else
+  #define PRINTF vprintf
+#endif
+
+    va_list args;
+    va_start(args, format);
+
+    int error = PRINTF(format, args);
+
+    va_end(args);
+    return error;
+}

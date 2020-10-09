@@ -1,13 +1,13 @@
-//-----------------------------------------------------------------------------
-//   main.c
-//
-//   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     05/10/2018
-//   Author:   L. Rossman
-
-//   Main stub for the command line version of EPA SWMM 5.1
-//   to be run with swmm5.dll.
+/*
+ *  main.c - Main stub for the command line version of EPA SWMM 5.1
+ *
+ *  Created on: October 9, 2020
+ *  Updated on:
+ *
+ *  Author:     Michael E. Tryby
+ *              US EPA - ORD/CESER
+ *
+ */
 
 // System includes
 #include <stdio.h>
@@ -45,7 +45,7 @@ void progress_bar(double *ratio)
         memset(bar, '>', (size_t)(prog_len + 1));
     memset(bar, '=', (size_t)prog_len);
 
-    // Compute pct complete
+    // Compute percent complete
     double pct = *ratio * 100.0;
 
     // Compute time remaining using naive approach
@@ -124,7 +124,6 @@ int  main(int argc, char *argv[])
             csio_printf("\nUsage:\n");
             csio_printf("\t swmm5 <input file> <report file> <output file>\n\n");
         }
-
         else if (strcmp(arg1, "--version") == 0 || strcmp(arg1, "-v") == 0) {
             int version = swmm_getVersion();
             int vMajor = version / 10000;
@@ -135,23 +134,15 @@ int  main(int argc, char *argv[])
             csio_printf("\nVersion:\n");
             csio_printf("\tEPA-SWMM %d.%d.%0d\n\n", vMajor, vMinor, vRelease);
         }
-
         else {
             csio_printf("\nError:\n");
             csio_printf("\tUnknown Argument (See Help --help)\n\n");
         }
     }
-
     else {
         csio_printf("\nUsage:\n");
         csio_printf("\trunswmm <input file> <report file> <output file>\n\n");
     }
-
-// --- Use the code below if you need to keep the console window visible
-/*
-    printf("    Press Enter to continue...");
-    getchar();
-*/
 
     return 0;
 }
