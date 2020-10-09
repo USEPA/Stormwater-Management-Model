@@ -9,22 +9,29 @@
 //   Main stub for the command line version of EPA SWMM 5.1
 //   to be run with swmm5.dll.
 
+// System includes
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 
-#include "swmm5.h"
+// Private project includes
 #include "timer.h"
+#include "shared/csio_helper.h"
+
+// Public project includes
+#include "swmm5.h"
+
+
 
 
 #define BAR_LEN 50l
-#define MSG_LEN 83
+#define MSG_LEN 84
 
 
 static long Start;
 
 
-void writecon(char *msg)
+void write_console(char *msg)
 {
     fprintf(stdout, "%s", msg);
     fflush(stdout);
@@ -54,9 +61,12 @@ void progress_bar(double *ratio)
     char msg[MSG_LEN + 1];
     char tmp[TIMER_LEN + 1];
 
-    sprintf(msg, "\r... Running [%50s] %5.1f%% [%8s]", bar, pct, format_time(tmp, t_r));
-//    sprintf(msg, "\r... Running [%8s]", format_time(tmp, t_r));
-    writecon(msg);
+    size_t n = (size_t)(MSG_LEN + 1);
+
+    write_console("\r");
+    csio_sprintf(msg, n, "... Running [%50s] %5.1f%% [%8s]", bar, pct,
+        format_time(tmp, t_r));
+    write_console(msg);
 }
 
 
