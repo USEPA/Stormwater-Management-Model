@@ -21,15 +21,23 @@
 
 #include <stdio.h>
 
-// Priviate project includes
-#include "shared/csio_helper.h"
 
 #define TIMER_LEN 8
+
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 
 long current_time_millis(void);
 
 char *format_time(char *time, long msec);
+
+
+#if defined(__cplusplus)
+}
+#endif
 
 
 #endif //TIMER_H

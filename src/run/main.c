@@ -16,7 +16,6 @@
 
 // Private project includes
 #include "timer.h"
-#include "shared/csio_helper.h"
 
 // Public project includes
 #include "swmm5.h"
@@ -30,7 +29,7 @@ static long Start;
 
 void write_console(char *msg)
 {
-    csio_fprintf(stdout, "%s", msg);
+    fprintf(stdout, "%s", msg);
     fflush(stdout);
 }
 
@@ -54,14 +53,12 @@ void progress_bar(double *ratio)
         t_r = lround((1.0 - *ratio) * (current_time_millis() - Start) / *ratio);
 
     // Format and print progress
-    char msg[MSG_LEN + 1];
-    char tmp[TIMER_LEN + 1];
-
-    size_t n = (size_t)(MSG_LEN + 1);
+    char msg[MSG_LEN + 1] = {'\0'};
+    char tmp[TIMER_LEN + 1] = {'\0'};
 
     write_console("\r");
-    csio_snprintf(msg, n, "... Running [%50s] %5.1f%% [%8s]", bar, pct,
-        format_time(tmp, t_r));
+    snprintf(msg, (size_t)(MSG_LEN + 1), "... Running [%50s] %5.1f%% [%8s]", bar,
+        pct, format_time(tmp, t_r));
     write_console(msg);
 }
 
@@ -90,25 +87,24 @@ int  main(int argc, char *argv[])
 
         Start = current_time_millis();
         // --- run SWMM
-        swmm_run(inputFile, reportFile, binaryFile, &progress_bar);
+        swmm_run_cb(inputFile, reportFile, binaryFile, &progress_bar);
 
         long stop = current_time_millis();
-        char time[TIMER_LEN + 1];
+        char time[TIMER_LEN + 1] = {'\0'};
 
-        csio_printf("\n\n... EPA-SWMM completed in %s",
-            format_time(time, stop - Start));
+        printf("\n\n... EPA-SWMM completed in %s", format_time(time, stop - Start));
 
         char errMsg[128];
         int  msgLen = 127;
 
         if ( swmm_getError(errMsg, msgLen) > 0 )
-            csio_printf(" with errors.\n");
+            printf(" with errors.\n");
 
         else if ( swmm_getWarnings() > 0 )
-            csio_printf(" with warnings.\n");
+            printf(" with warnings.\n");
 
         else
-            csio_printf(" successfully.\n");
+            printf(" successfully.\n");
     }
 
     else if (argc == 2) {
@@ -117,12 +113,12 @@ int  main(int argc, char *argv[])
 
         if (strcmp(arg1, "--help") == 0 || strcmp(arg1, "-h") == 0) {
             // Help
-            csio_printf("\n\nEPA Stormwater Management Model (SWMM5) Help\n\n");
-            csio_printf("Commands:\n");
-            csio_printf("\t--help (-h)       Help Docs\n");
-            csio_printf("\t--version (-v)    Build Version\n");
-            csio_printf("\nUsage:\n");
-            csio_printf("\t swmm5 <input file> <report file> <output file>\n\n");
+            printf("\n\nEPA Stormwater Management Model (SWMM5) Help\n\n");
+            printf("Commands:\n");
+            printf("\t--help (-h)       Help Docs\n");
+            printf("\t--version (-v)    Build Version\n");
+            printf("\nUsage:\n");
+            printf("\t swmm5 <input file> <report file> <output file>\n\n");
         }
         else if (strcmp(arg1, "--version") == 0 || strcmp(arg1, "-v") == 0) {
             int version = swmm_getVersion();
@@ -131,17 +127,17 @@ int  main(int argc, char *argv[])
             int vRelease = (version - 10000 * vMajor - 1000 * vMinor);
 
             // Output version number
-            csio_printf("\nVersion:\n");
-            csio_printf("\tEPA-SWMM %d.%d.%0d\n\n", vMajor, vMinor, vRelease);
+            printf("\nVersion:\n");
+            printf("\tEPA-SWMM %d.%d.%0d\n\n", vMajor, vMinor, vRelease);
         }
         else {
-            csio_printf("\nError:\n");
-            csio_printf("\tUnknown Argument (See Help --help)\n\n");
+            printf("\nError:\n");
+            printf("\tUnknown Argument (See Help --help)\n\n");
         }
     }
     else {
-        csio_printf("\nUsage:\n");
-        csio_printf("\trunswmm <input file> <report file> <output file>\n\n");
+        printf("\nUsage:\n");
+        printf("\trunswmm <input file> <report file> <output file>\n\n");
     }
 
     return 0;

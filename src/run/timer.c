@@ -34,10 +34,10 @@ char *format_time(char *time, long ms)
 {
     size_t n = (size_t)(TIMER_LEN + 1);
 
-    if ( ms == 0)
-        csio_snprintf(time, n, "0.00s");
+    if (ms < 1)
+        snprintf(time, n, "0.00s");
     else if ( ms < 1000 )
-        csio_snprintf(time, n, "< 1.00s");
+        snprintf(time, n, "< 1.00s");
     else {
         // Compute hours elapsed
         long hrs = ms/(3600*1000);
@@ -49,11 +49,11 @@ char *format_time(char *time, long ms)
         double secs = ms*0.001;
 
         if (hrs > 0)
-            csio_snprintf(time, n, "%2ld:%2ld:%02.0f", hrs, mins, secs);
+            snprintf(time, n, "%2ld:%2ld:%02.0f", hrs, mins, secs);
         else if (mins > 0)
-            csio_snprintf(time, n, "%2ld:%02.0f", mins, secs);
+            snprintf(time, n, "%2ld:%02.0f", mins, secs);
         else
-            csio_snprintf(time, n, "%3.2fs", secs);
+            snprintf(time, n, "%3.2fs", secs);
     }
 
     return time;

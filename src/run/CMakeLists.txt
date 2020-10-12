@@ -12,8 +12,7 @@
 add_executable(runswmm
     main.c
     timer.c
-    $<TARGET_OBJECTS:shared_objs>
-    )
+)
 
 target_include_directories(runswmm
     PRIVATE
@@ -21,7 +20,7 @@ target_include_directories(runswmm
         ${CMAKE_CURRENT_SOURCE_DIR}/..
     PUBLIC
         include
-    )
+)
 
 target_link_libraries(runswmm
     LINK_PUBLIC

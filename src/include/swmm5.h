@@ -43,6 +43,16 @@
 extern "C" {
 #endif
 
+/**
+ @brief Opens SWMM input file, reads in network data, runs, and closes
+ @param f1 pointer to name of input file (must exist)
+ @param f2 pointer to name of report file (to be created)
+ @param f3 pointer to name of binary output file (to be created)
+ @param pointer to callback function (for printing progress)
+ @return error code
+*/
+int  DLLEXPORT   swmm_run_cb(const char *f1, const char *f2, const char *f3,
+    void (*callback) (double *));
 
 /**
  @brief Opens SWMM input file, reads in network data, runs, and closes
@@ -51,8 +61,7 @@ extern "C" {
  @param f3 pointer to name of binary output file (to be created)
  @return error code
 */
-int  DLLEXPORT   swmm_run(const char *f1, const char *f2, const char *f3,
-    void (*callback) (double *));
+int  DLLEXPORT   swmm_run(const char *f1, const char *f2, const char *f3);
 
 /**
  @brief Opens SWMM input file & reads in network data

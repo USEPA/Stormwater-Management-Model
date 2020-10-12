@@ -177,7 +177,20 @@ static int  xfilter(int xc, char* module, double elapsedTime, long step);
 
 //=============================================================================
 
-int DLLEXPORT  swmm_run(const char* f1, const char* f2, const char* f3,
+int DLLEXPORT swmm_run(const char* f1, const char* f2, const char* f3)
+//
+//  Input:   f1 = name of input file
+//           f2 = name of report file
+//           f3 = name of binary output file
+//           callback = pointer to callback function
+//  Output:  returns error code
+//  Purpose: runs a SWMM simulation.
+//
+{
+    return swmm_run_cb(f1, f2, f3, NULL);
+}
+
+int DLLEXPORT  swmm_run_cb(const char* f1, const char* f2, const char* f3,
     void (*callback) (double *))
 //
 //  Input:   f1 = name of input file
