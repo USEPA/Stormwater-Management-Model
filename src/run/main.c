@@ -19,6 +19,7 @@
 
 // Public project includes
 #include "swmm5.h"
+#include "toolkitAPI.h"
 
 
 #define BAR_LEN 50l

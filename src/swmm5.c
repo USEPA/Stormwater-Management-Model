@@ -134,6 +134,7 @@ const double Ucf[10][2] =
       {2.203e-6,  1.0e-6    },         // MASS (lb, kg --> mg)
       {43560.0,   3048.0    }          // GWFLOW (cfs/ac, cms/ha --> ft/sec)
       };
+
 #ifdef __cplusplus
 extern const double Qcf[6] =           // Flow Conversion Factors:
 #else
@@ -145,9 +146,9 @@ const double Qcf[6] =                  // Flow Conversion Factors:
 //-----------------------------------------------------------------------------
 //  Shared variables
 //-----------------------------------------------------------------------------
-static int  IsOpenFlag;           // TRUE if a project has been opened
-static int  IsStartedFlag;        // TRUE if a simulation has been started
-static int  SaveResultsFlag;      // TRUE if output to be saved to binary file
+//static int  IsOpenFlag;           // TRUE if a project has been opened
+//static int  IsStartedFlag;        // TRUE if a simulation has been started
+//static int  SaveResultsFlag;      // TRUE if output to be saved to binary file
 static int  ExceptionCount;       // number of exceptions handled
 static int  DoRunoff;             // TRUE if runoff is computed
 static int  DoRouting;            // TRUE if flow routing is computed
@@ -175,6 +176,7 @@ static void execRouting(void);
 static int  xfilter(int xc, char* module, double elapsedTime, long step);
 #endif
 
+
 //=============================================================================
 
 int DLLEXPORT swmm_run(const char* f1, const char* f2, const char* f3)
@@ -182,7 +184,6 @@ int DLLEXPORT swmm_run(const char* f1, const char* f2, const char* f3)
 //  Input:   f1 = name of input file
 //           f2 = name of report file
 //           f3 = name of binary output file
-//           callback = pointer to callback function
 //  Output:  returns error code
 //  Purpose: runs a SWMM simulation.
 //
@@ -190,73 +191,6 @@ int DLLEXPORT swmm_run(const char* f1, const char* f2, const char* f3)
     return swmm_run_cb(f1, f2, f3, NULL);
 }
 
-int DLLEXPORT  swmm_run_cb(const char* f1, const char* f2, const char* f3,
-    void (*callback) (double *))
-//
-//  Input:   f1 = name of input file
-//           f2 = name of report file
-//           f3 = name of binary output file
-//  Output:  returns error code
-//  Purpose: runs a SWMM simulation.
-//
-{
-    clock_t check = 0;
-    double progress, elapsedTime = 0.0;
-
-
-    // --- initialize flags                                                    //(5.1.013)
-    IsOpenFlag = FALSE;                                                        //
-    IsStartedFlag = FALSE;                                                     //
-    SaveResultsFlag = TRUE;                                                    //
-
-
-    // --- open the files & read input data
-    ErrorCode = 0;
-    swmm_open(f1, f2, f3);
-
-    // --- run the simulation if input data OK
-    if ( !ErrorCode )
-    {
-        // --- initialize values
-        swmm_start(TRUE);
-
-        // --- execute each time step until elapsed time is re-set to 0
-        if ( !ErrorCode )
-        {
-            do
-            {
-                swmm_step(&elapsedTime);
-
-                // --- callback with progress approximately twice a second
-                if ( (callback != NULL) && (clock() - check) > CLOCKS_PER_SEC )
-                {
-                    progress = NewRoutingTime / TotalDuration;
-                    callback(&progress);
-                    check = clock();
-                }
-
-            } while ( elapsedTime > 0.0 && !ErrorCode );
-
-            if ( callback != NULL )
-            {
-                progress = 1.0;
-                callback(&progress);
-            }
-        }
-
-        // --- clean up
-        swmm_end();
-    }
-
-    // --- report results
-    if ( Fout.mode == SCRATCH_FILE ) swmm_report();
-
-    // --- close the system
-    swmm_close();
-
-
-    return error_getCode(ErrorCode);
-}
 
 //=============================================================================
 
