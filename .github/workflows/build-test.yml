@@ -40,7 +40,7 @@ jobs:
               run:
                 shell: cmd
                 working-directory: ./ci-tools/windows
-          - os: ubuntu-latest
+          - os: ubuntu-18.04
             generator: "Unix Makefiles" 
             experimental: true
             script_extension: sh
