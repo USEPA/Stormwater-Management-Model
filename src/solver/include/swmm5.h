@@ -121,9 +121,9 @@ void DLLEXPORT   swmm_getSemVersion(char* semver);
  @param[out] major sematic version major number
  @param[out] minor sematic version minor number
  @param[out] patch sematic version patch number
+ @return error code
 */
-void DLLEXPORT   swmm_getVersionInfo(char* major, char* minor, char* patch);
-
+int  DLLEXPORT   swmm_getVersionInfo(char** major, char** minor, char** patch);
 int  DLLEXPORT   swmm_getError(char* errMsg, int msgLen);                      //(5.1.011)
 int  DLLEXPORT   swmm_getWarnings(void);                                       //(5.1.011)
 int  swmm_IsOpenFlag(void);
