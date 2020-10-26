@@ -72,13 +72,13 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
             // Gage
             error = swmm_getGagePrecip(rg_ind, SM_RAINFALL, &rainfall);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_SMALL(rainfall - start_rainfall_rate, 0.0001);
+            BOOST_CHECK_SMALL(rainfall - new_rainfall_rate, 0.0001);
             error = swmm_getGagePrecip(rg_ind, SM_SNOWFALL, &snowfall);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(snowfall - 0.0, 0.0001);
             error = swmm_getGagePrecip(rg_ind, SM_TOTALPRECIP, &total_precipitation);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_SMALL(total_precipitation - start_rainfall_rate, 0.0001);
+            BOOST_CHECK_SMALL(total_precipitation - new_rainfall_rate, 0.0001);
 
             // Subcatchment
             error = swmm_getSubcatchResult(subc_ind, SM_SUBCRAIN, &rain);
