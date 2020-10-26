@@ -22,7 +22,7 @@
 #include "swmm_output.h"
 
 // NOTE: Reference data for the unit tests is currently tied to SWMM 5.1.7
-#define DATA_PATH "./test_Example1.out"
+#define DATA_PATH "./test_example1.out"
 
 using namespace std;
 
@@ -41,7 +41,8 @@ boost::test_tools::predicate_result check_cdd_float(std::vector<float>& test,
         (test_it < test.end()) && (ref_it < ref.end());
         ++test_it, ++ref_it)
     {
-        if (*test_it != *ref_it) {
+        if (*test_it != *ref_it) 
+        {
             // Compute log absolute error
             tmp = abs(*test_it - *ref_it);
             if (tmp < 1.0e-7f)
@@ -93,7 +94,7 @@ BOOST_AUTO_TEST_CASE(CloseTest) {
 
 BOOST_AUTO_TEST_CASE(InitOpenCloseTest) {
     std::string path     = std::string(DATA_PATH);
-    SMO_Handle  p_handle = NULL;
+    SMO_Handle p_handle = NULL;
     SMO_init(&p_handle);
 
     int error = SMO_open(p_handle, path.c_str());
