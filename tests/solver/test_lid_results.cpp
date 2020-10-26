@@ -22,7 +22,6 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         double elapsed_time = 0.0;
         int int_value = 0;
         double db_value = 0.0;
-        char chr_value;
 
         vector<double> revised_subcatchment_runoff;
 
@@ -212,9 +211,9 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_ALPHA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(db_value - 1.49, 0.0001);
-            error = swmm_getLidCOverflow(lid_index, &chr_value);
+            error = swmm_getLidCOverflow(lid_index, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, 0);
+            BOOST_CHECK_EQUAL(int_value, 0);
 
             error = swmm_getLidCParam(lid_index, SM_SOIL, SM_THICKNESS, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
@@ -313,7 +312,6 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         double elapsed_time = 0.0;
         int int_value = 0;
         double db_value = 0.0;
-        char chr_value;
         vector<double> revised_subcatchment_runoff;
 
         string lid = string("GR");
@@ -467,9 +465,9 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_ALPHA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(db_value - 1.49, 0.0001);
-            error = swmm_getLidCOverflow(lid_index, &chr_value);
+            error = swmm_getLidCOverflow(lid_index, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, 0);
+            BOOST_CHECK_EQUAL(int_value, 0);
 
             error = swmm_getLidCParam(lid_index, SM_SOIL, SM_THICKNESS, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
@@ -550,7 +548,6 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         double elapsed_time = 0.0;
         int int_value = 0;
         double db_value = 0.0;
-        char chr_value;
         vector<double> revised_subcatchment_runoff;
 
         string lid = string("IT");
@@ -701,9 +698,9 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_ALPHA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(db_value - 1.49, 0.0001);
-            error = swmm_getLidCOverflow(lid_index, &chr_value);
+            error = swmm_getLidCOverflow(lid_index, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, 0);
+            BOOST_CHECK_EQUAL(int_value, 0);
 
             error = swmm_getLidCParam(lid_index, SM_STOR, SM_THICKNESS, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
@@ -781,7 +778,6 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         double elapsed_time = 0.0;
         int int_value = 0;
         double db_value = 0.0;
-        char chr_value;
         vector<double> revised_subcatchment_runoff;
 
         string lid = string("PP");
@@ -1008,9 +1004,9 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_ALPHA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(db_value - 1.49, 0.0001);
-            error = swmm_getLidCOverflow(lid_index, &chr_value);
+            error = swmm_getLidCOverflow(lid_index, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, 0);
+            BOOST_CHECK_EQUAL(int_value, 0);
 
             error = swmm_getLidCParam(lid_index, SM_PAVE, SM_THICKNESS, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
@@ -1317,7 +1313,6 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         double elapsed_time = 0.0;
         int int_value = 0;
         double db_value = 0.0;
-        char chr_value;
         vector<double> revised_subcatchment_runoff;
 
         string lid = string("RG");
@@ -1475,9 +1470,9 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_ALPHA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(db_value - 1.49, 0.0001);
-            error = swmm_getLidCOverflow(lid_index, &chr_value);
+            error = swmm_getLidCOverflow(lid_index, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, 0);
+            BOOST_CHECK_EQUAL(int_value, 0);
 
             error = swmm_getLidCParam(lid_index, SM_SOIL, SM_THICKNESS, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
@@ -1560,7 +1555,6 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         double elapsed_time = 0.0;
         int int_value = 0;
         double db_value = 0.0;
-        char chr_value;
         vector<double> revised_subcatchment_runoff;
 
         string lid = string("SWALE");
@@ -1664,9 +1658,9 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(db_value - 1.49, 0.0001);
             // always true for veg. swale
-            error = swmm_getLidCOverflow(lid_index, &chr_value);
+            error = swmm_getLidCOverflow(lid_index, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, 1);
+            BOOST_CHECK_EQUAL(int_value, 1);
 
             error = swmm_getLidUOption(sub_index, 0, SM_NUMBER, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
@@ -1712,7 +1706,6 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         double elapsed_time = 0.0;
         int int_value = 0;
         double db_value = 0.0;
-        char chr_value;
         vector<double> revised_subcatchment_runoff;
 
         string lid = string("RD");
@@ -1843,9 +1836,9 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
             error = swmm_getLidCParam(lid_index, SM_SURFACE, SM_ALPHA, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(db_value - 1.49, 0.0001);
-            error = swmm_getLidCOverflow(lid_index, &chr_value);
+            error = swmm_getLidCOverflow(lid_index, &int_value);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_EQUAL(chr_value, 0);
+            BOOST_CHECK_EQUAL(int_value, 0);
 
             error = swmm_getLidCParam(lid_index, SM_DRAIN, SM_COEFF, &db_value);
             BOOST_REQUIRE(error == ERR_NONE);

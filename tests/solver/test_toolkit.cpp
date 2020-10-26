@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
     //Gage
-    error = swmm_getGagePrecip(0, &result_array);
+    error = swmm_getGagePrecip(0, SM_TOTALPRECIP, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
     error = swmm_setGagePrecip(0, input_val);
@@ -168,7 +168,7 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
     double *result_array;
 
     //Gage
-    error = swmm_getGagePrecip(100, &result_array);
+    error = swmm_getGagePrecip(100, SM_TOTALPRECIP, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
 
@@ -218,7 +218,7 @@ BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose) {
     char* error_msg=new char[256];
 
     //Error codes
-    swmm_getAPIError(341, error_msg);
+    swmm_getAPIError(341, &error_msg);
     BOOST_CHECK_EQUAL(error_msg, "\n  ERROR 341: cannot open scratch RDII interface file.");
     delete[] error_msg;
 
@@ -983,7 +983,7 @@ BOOST_FIXTURE_TEST_CASE(get_results_after_sim, FixtureBeforeEnd){
     BOOST_CHECK_SMALL(subc_stats->precip - 2.65, 0.0001);
     BOOST_CHECK_SMALL(subc_stats->evap - 0.0, 0.0001);
 
-    freeArray((void**)&subc_stats);
+    swmm_freeMemory(subc_stats);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

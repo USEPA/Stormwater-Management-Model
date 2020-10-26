@@ -22,7 +22,6 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
     int error, step_ind;
     int rg_ind, subc_ind;
     double rain, rainfall, snowfall, total_precipitation;
-    double* precip_array;
     double elapsedTime = 0.0;
 
     double start_rainfall_rate = 0;     // in/hr
@@ -109,8 +108,7 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
     // Time to call FEMA!
     BOOST_CHECK_SMALL(subc_stats->precip - total_rainfall_volume, 0.0001);
 
-    freeArray((void**)&precip_array);
-    freeArray((void**)&subc_stats);
+    swmm_freeMemory(subc_stats);
 
     swmm_end();
 }
