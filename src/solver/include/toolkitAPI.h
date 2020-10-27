@@ -362,7 +362,7 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result);
  @param[out] PollutArray result array
  @return Error code
 */
-int DLLEXPORT swmm_getNodePollut(int index, int type, double **PollutArray);
+int DLLEXPORT swmm_getNodePollut(int index, int type, double **PollutArray, int *length);
 
 /**
  @brief Get a result value for specified link.
@@ -380,7 +380,7 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
  @param[out] PollutArray result array
  @return Error code
 */
-int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray);
+int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray, int *length);
 
 /**
  @brief Get a result value for specified subcatchment.
@@ -398,7 +398,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
  @param[out] PollutArray result array
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray);
+int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray, int *length);
 
 /**
 @brief Get precipitation rates for a gage.

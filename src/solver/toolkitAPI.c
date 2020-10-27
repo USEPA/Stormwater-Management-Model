@@ -1788,7 +1788,7 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getNodePollut(int index, int type, double **PollutArray)
+int DLLEXPORT swmm_getNodePollut(int index, int type, double **PollutArray, int *length)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_NodePollut)
@@ -1824,7 +1824,9 @@ int DLLEXPORT swmm_getNodePollut(int index, int type, double **PollutArray)
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
                     result[p] = Node[index].newQual[p];
-                } *PollutArray = result;
+                } 
+                *PollutArray = result;
+                *length = Nobjects[POLLUT];
             } break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         }
@@ -1879,7 +1881,7 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray)
+int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray, int *length)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_LinkPollut)
@@ -1915,7 +1917,9 @@ int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray)
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
                     result[p] = Link[index].newQual[p];
-                } *PollutArray = result;
+                } 
+                *PollutArray = result;
+                *length = Nobjects[POLLUT];
             } break;
             case SM_TOTALLOAD:
             {
@@ -1926,10 +1930,12 @@ int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray)
                     {
                         result[p] = LOG10(result[p]);
                     }
-                } *PollutArray = result;
+                } 
+                *PollutArray = result;
+                *length = Nobjects[POLLUT];
             } break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
-        }
+        } 
     }
     return error_getCode(error_code_index);
 }
@@ -1977,7 +1983,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double* result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double** PollutArray)
+int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray, int *length)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_SubcPollut)
@@ -2016,21 +2022,27 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double** PollutArray)
                 {
                     result[p] = Subcatch[index].surfaceBuildup[p] /
                         (a * UCF(LANDAREA));
-                } *PollutArray = result;
+                } 
+                *PollutArray = result;
+                *length = Nobjects[POLLUT];
             } break;
             case SM_CPONDED:
             {
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
                     result[p] = Subcatch[index].concPonded[p] / LperFT3;
-                } *PollutArray = result;
+                } 
+                *PollutArray = result;
+                *length = Nobjects[POLLUT];
             } break;
             case SM_SUBCQUAL:
             {
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
                     result[p] = Subcatch[index].newQual[p];
-                } *PollutArray = result;
+                } 
+                *PollutArray = result;
+                *length = Nobjects[POLLUT];
             } break;
             case SM_SUBCTOTALLOAD:
             {
@@ -2041,9 +2053,10 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double** PollutArray)
                     {
                         result[p] = LOG10(result[p]);
                     }
-                } *PollutArray = result;
+                } 
+                *PollutArray = result;
+                *length = Nobjects[POLLUT];
             } break;
-
 
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         }
