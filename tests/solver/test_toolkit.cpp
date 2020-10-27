@@ -50,6 +50,7 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     double val;
     double input_val = 0;
     double *result_array;
+    int length;
     char id[] = "test";
 
     //Project
@@ -107,13 +108,13 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
 
 
     //Pollutant
-    error = swmm_getSubcatchPollut(0, 0, &result_array);
+    error = swmm_getSubcatchPollut(0, 0, &result_array, &length);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
-    error = swmm_getLinkPollut(0, 0, &result_array);
+    error = swmm_getLinkPollut(0, 0, &result_array, &length);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
-    error = swmm_getNodePollut(0, 0, &result_array);
+    error = swmm_getNodePollut(0, 0, &result_array, &length);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 }
 
@@ -166,7 +167,8 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
     double val;
     double input_val = 0;
     double *result_array;
-
+    int length;
+    
     //Gage
     error = swmm_getGagePrecip(100, SM_TOTALPRECIP, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
@@ -200,13 +202,13 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
 
 
     //Pollutant
-    error = swmm_getSubcatchPollut(100, 0, &result_array);
+    error = swmm_getSubcatchPollut(100, 0, &result_array, &length);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
-    error = swmm_getLinkPollut(100, 0, &result_array);
+    error = swmm_getLinkPollut(100, 0, &result_array, &length);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
-    error = swmm_getNodePollut(100, 0, &result_array);
+    error = swmm_getNodePollut(100, 0, &result_array, &length);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 }
 
