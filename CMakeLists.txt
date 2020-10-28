@@ -60,6 +60,18 @@ set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)
 
 
+# Relocate external libs into install package
+if(APPLE)
+    install(CODE "execute_process(
+        COMMAND
+            ${PROJECT_SOURCE_DIR}/tools/relocate.zsh ${EXTERN_LIB_PATH}
+        WORKING_DIRECTORY
+            ${CMAKE_INSTALL_PREFIX}
+        )"
+    )
+endif()
+
+
 # Configure CPack driven installer package
 set(CPACK_GENERATOR "ZIP;TGZ")
 set(CPACK_PACKAGE_VENDOR "US_EPA")
