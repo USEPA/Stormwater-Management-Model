@@ -18,7 +18,7 @@ endif()
 
 
 project(swmm-solver
-    VERSION 5.1.14
+    VERSION 5.1.3
     LANGUAGES C CXX
     )
 
@@ -58,18 +58,6 @@ endif()
 # Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
 set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)
-
-
-# Relocate external libs into install package
-if(APPLE)
-    install(CODE "execute_process(
-        COMMAND
-            ${PROJECT_SOURCE_DIR}/tools/relocate.zsh ${EXTERN_LIB_PATH}
-        WORKING_DIRECTORY
-            ${CMAKE_INSTALL_PREFIX}
-        )"
-    )
-endif()
 
 
 # Configure CPack driven installer package
