@@ -14,11 +14,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 #include "headers.h"
 #include "swmm5.h"                     // declaration of exportable functions
 #include "toolkitAPI.h"
 #include "hash.h"
+
 
 // Function Declarations for API
 int     massbal_getRoutingFlowTotal(SM_RoutingTotals *routingTot);
@@ -33,12 +35,84 @@ int  stats_getLinkStat(int index, SM_LinkStats *linkStats);
 int  stats_getPumpStat(int index, SM_PumpStats *pumpStats);
 TSubcatchStats *stats_getSubcatchStat(int index);
 
+
 // Utilty Function Declarations
 double* newDoubleArray(int n);
+
 
 //-----------------------------------------------------------------------------
 //  Extended API Functions
 //-----------------------------------------------------------------------------
+
+int DLLEXPORT  swmm_run_cb(const char* f1, const char* f2, const char* f3,
+    void (*callback) (double *))
+//
+//  Input:   f1 = name of input file
+//           f2 = name of report file
+//           f3 = name of binary output file
+//  Output:  returns error code
+//  Purpose: runs a SWMM simulation.
+//
+{
+    clock_t check = 0;
+    double progress, elapsedTime = 0.0;
+
+
+    // --- initialize flags
+    IsOpenFlag = FALSE;
+    IsStartedFlag = FALSE;
+    SaveResultsFlag = TRUE;
+
+
+    // --- open the files & read input data
+    ErrorCode = 0;
+    swmm_open(f1, f2, f3);
+
+    // --- run the simulation if input data OK
+    if ( !ErrorCode )
+    {
+        // --- initialize values
+        swmm_start(TRUE);
+
+        // --- execute each time step until elapsed time is re-set to 0
+        if ( !ErrorCode )
+        {
+            do
+            {
+                swmm_step(&elapsedTime);
+
+                // --- callback with progress approximately twice a second
+                if ( (callback != NULL) && (clock() - check) > CLOCKS_PER_SEC )
+                {
+                    progress = NewRoutingTime / TotalDuration;
+                    callback(&progress);
+                    check = clock();
+                }
+
+            } while ( elapsedTime > 0.0 && !ErrorCode );
+
+            if ( callback != NULL )
+            {
+                progress = 1.0;
+                callback(&progress);
+            }
+        }
+
+        // --- clean up
+        swmm_end();
+    }
+
+    // --- report results
+    if ( Fout.mode == SCRATCH_FILE ) swmm_report();
+
+    // --- close the system
+    swmm_close();
+
+
+    return error_getCode(ErrorCode);
+}
+
+
 void DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char *s)
 ///
 /// Input:   ErrorCodeAPI = error code
@@ -2043,8 +2117,8 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray)
                     }
                 } *PollutArray = result;
             } break;
-            
-            
+
+
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         }
     }
