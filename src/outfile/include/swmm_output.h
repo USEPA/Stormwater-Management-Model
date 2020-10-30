@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
  * swmm_output.h - SWMM Output API
-=======
- * swmm_output.c - SWMM Output API
->>>>>>> mac-port
  *
  *      Author: Colleen Barr
  *           US EPA - ORD/NHEERL

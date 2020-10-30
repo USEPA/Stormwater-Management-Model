@@ -136,6 +136,7 @@ const double Ucf[10][2] =
       {2.203e-6,  1.0e-6    },         // MASS (lb, kg --> mg)
       {43560.0,   3048.0    }          // GWFLOW (cfs/ac, cms/ha --> ft/sec)
       };
+
 #ifdef __cplusplus
 extern const double Qcf[6] =           // Flow Conversion Factors:
 #else
@@ -147,9 +148,9 @@ const double Qcf[6] =                  // Flow Conversion Factors:
 //-----------------------------------------------------------------------------
 //  Shared variables
 //-----------------------------------------------------------------------------
-static int  IsOpenFlag;           // TRUE if a project has been opened
-static int  IsStartedFlag;        // TRUE if a simulation has been started
-static int  SaveResultsFlag;      // TRUE if output to be saved to binary file
+//static int  IsOpenFlag;           // TRUE if a project has been opened
+//static int  IsStartedFlag;        // TRUE if a simulation has been started
+//static int  SaveResultsFlag;      // TRUE if output to be saved to binary file
 static int  ExceptionCount;       // number of exceptions handled
 static int  DoRunoff;             // TRUE if runoff is computed
 static int  DoRouting;            // TRUE if flow routing is computed
@@ -177,9 +178,10 @@ static void execRouting(void);
 static int  xfilter(int xc, char* module, double elapsedTime, long step);
 #endif
 
+
 //=============================================================================
 
-int DLLEXPORT  swmm_run(const char *f1, const char *f2, const char *f3)
+int DLLEXPORT swmm_run(const char* f1, const char* f2, const char* f3)
 //
 //  Input:   f1 = name of input file
 //           f2 = name of report file
@@ -188,59 +190,9 @@ int DLLEXPORT  swmm_run(const char *f1, const char *f2, const char *f3)
 //  Purpose: runs a SWMM simulation.
 //
 {
-    long newHour, oldHour = 0;
-    long theDay, theHour;
-    double elapsedTime = 0.0;
-
-    // --- initialize flags                                                    //(5.1.013)
-    IsOpenFlag = FALSE;                                                        //
-    IsStartedFlag = FALSE;                                                     //
-    SaveResultsFlag = TRUE;                                                    //
-
-    // --- open the files & read input data
-    ErrorCode = 0;
-    swmm_open(f1, f2, f3);
-
-    // --- run the simulation if input data OK
-    if ( !ErrorCode )
-    {
-        // --- initialize values
-        swmm_start(TRUE);
-
-        // --- execute each time step until elapsed time is re-set to 0
-        if ( !ErrorCode )
-        {
-            writecon("\n o  Simulating day: 0     hour:  0");
-            do
-            {
-                swmm_step(&elapsedTime);
-                newHour = (long)(elapsedTime * 24.0);
-                if ( newHour > oldHour )
-                {
-                    theDay = (long)elapsedTime;
-                    theHour = (long)((elapsedTime - floor(elapsedTime)) * 24.0);
-                    writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-                    sprintf(Msg, "%-5ld hour: %-2ld", theDay, theHour);        //(5.1.013)
-                    writecon(Msg);
-                    oldHour = newHour;
-                }
-            } while ( elapsedTime > 0.0 && !ErrorCode );
-            writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b"
-                     "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-            writecon("Simulation complete           ");
-        }
-
-        // --- clean up
-        swmm_end();
-    }
-
-    // --- report results
-    if ( Fout.mode == SCRATCH_FILE ) swmm_report();
-
-    // --- close the system
-    swmm_close();
-    return error_getCode(ErrorCode);
+    return swmm_run_cb(f1, f2, f3, NULL);
 }
+
 
 //=============================================================================
 
