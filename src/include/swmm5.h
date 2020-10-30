@@ -37,6 +37,15 @@
 #endif
 //#endif
 
+
+//-----------------------------------------------------------------------------
+//  Shared variables
+//-----------------------------------------------------------------------------
+static int  IsOpenFlag;           // TRUE if a project has been opened
+static int  IsStartedFlag;        // TRUE if a simulation has been started
+static int  SaveResultsFlag;      // TRUE if output to be saved to binary file
+
+
 // --- use "C" linkage for C++ programs
 
 #ifdef __cplusplus

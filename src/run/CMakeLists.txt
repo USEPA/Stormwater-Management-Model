@@ -21,9 +21,13 @@ set(PACKAGE_RPATH "${RPATH_ROOT}/../lib;${RPATH_ROOT}/../extern")
 # Creates the EPANET command line executable
 add_executable(runswmm
     main.c
+    timer.c
 )
 
 target_include_directories(runswmm
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/..
     PUBLIC
         include
 )

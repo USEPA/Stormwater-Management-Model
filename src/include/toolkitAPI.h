@@ -614,6 +614,18 @@ typedef struct
    double        pctError;
 }  SM_RunoffTotals;
 
+
+/**
+ @brief Opens SWMM input file, reads in network data, runs, and closes
+ @param f1 pointer to name of input file (must exist)
+ @param f2 pointer to name of report file (to be created)
+ @param f3 pointer to name of binary output file (to be created)
+ @param pointer to callback function (for printing progress)
+ @return error code
+*/
+int  DLLEXPORT   swmm_run_cb(const char *f1, const char *f2, const char *f3,
+    void (*callback) (double *));
+
 /**
  @brief Get the text of an error code.
  @param errcode The error code
