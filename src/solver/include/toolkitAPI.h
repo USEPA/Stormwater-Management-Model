@@ -65,7 +65,7 @@ int DLLEXPORT swmm_project_findObject(int type, char *id, int *index);
 @param[out] value Option value
 @return Error code
 */
-int DLLEXPORT swmm_getSimulationUnit(int type, int *value);
+int DLLEXPORT swmm_getSimulationUnit(SM_Units type, int *value);
 
 /**
  @brief Gets Simulation Analysis Setting
@@ -73,7 +73,7 @@ int DLLEXPORT swmm_getSimulationUnit(int type, int *value);
  @param[out] value Option value
  @return Error code
  */
-int DLLEXPORT swmm_getSimulationAnalysisSetting(int type, int *value);
+int DLLEXPORT swmm_getSimulationAnalysisSetting(SM_SimOption type, int *value);
 
 /**
  @brief Gets Simulation Analysis Setting
@@ -81,7 +81,7 @@ int DLLEXPORT swmm_getSimulationAnalysisSetting(int type, int *value);
  @param[out] value Option value
  @return Error code
  */
-int DLLEXPORT swmm_getSimulationParam(int type, double *value);
+int DLLEXPORT swmm_getSimulationParam(SM_SimSetting type, double *value);
 
 /**
  @brief Gets Object Count
@@ -89,7 +89,7 @@ int DLLEXPORT swmm_getSimulationParam(int type, double *value);
  @param[out] count Option value
  @return Error code
  */
-int DLLEXPORT swmm_countObjects(int type, int *count);
+int DLLEXPORT swmm_countObjects(SM_ObjectType type, int *count);
 
 /**
  @brief Gets Object ID
@@ -98,7 +98,7 @@ int DLLEXPORT swmm_countObjects(int type, int *count);
  @param[out] id The string ID of object.
  @return Error code
  */
-int DLLEXPORT swmm_getObjectId(int type, int index, char **id);
+int DLLEXPORT swmm_getObjectId(SM_ObjectType type, int index, char **id);
 
 /**
  @brief Gets Object Index

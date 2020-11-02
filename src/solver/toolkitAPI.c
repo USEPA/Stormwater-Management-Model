@@ -114,15 +114,15 @@ int DLLEXPORT  swmm_run_cb(const char* f1, const char* f2, const char* f3,
 }
 
 
-int DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char **errorMsg)
+int DLLEXPORT swmm_getAPIError(int errorCode, char **errorMsg)
 ///
-/// Input:   ErrorCodeAPI = error code
+/// Input:   errorCode = error code
 /// Output:  errmessage String
 /// Return:  API Error
 /// Purpose: Get an error message
 {
-    int ErrorIndex = error_getErrorIndex(ErrorCodeAPI);
-    cstr_duplicate(errorMsg, error_getMsg(ErrorIndex));
+    int errorIndex = error_getErrorIndex(errorCode);
+    cstr_duplicate(errorMsg, error_getMsg(errorIndex));
     return 0;
 }
 
@@ -245,7 +245,7 @@ int DLLEXPORT swmm_setSimulationDateTime(SM_TimePropety type, int year, int mont
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT  swmm_getSimulationUnit(int type, int *value)
+int DLLEXPORT  swmm_getSimulationUnit(SM_Units type, int *value)
 ///
 /// Input:   type = simulation unit type
 /// Output:  enum representation of units
@@ -277,7 +277,7 @@ int DLLEXPORT  swmm_getSimulationUnit(int type, int *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT  swmm_getSimulationAnalysisSetting(int type, int *value)
+int DLLEXPORT  swmm_getSimulationAnalysisSetting(SM_SimOption type, int *value)
 ///
 /// Input:   type = analysis type
 /// Output:  setting True or False
@@ -318,7 +318,7 @@ int DLLEXPORT  swmm_getSimulationAnalysisSetting(int type, int *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT  swmm_getSimulationParam(int type, double *value)
+int DLLEXPORT  swmm_getSimulationParam(SM_SimSetting type, double *value)
 ///
 /// Input:   type = analysis type
 /// Output:  Simulation Parameter
@@ -390,7 +390,7 @@ int DLLEXPORT  swmm_getSimulationParam(int type, double *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT  swmm_countObjects(int type, int *count)
+int DLLEXPORT  swmm_countObjects(SM_ObjectType type, int *count)
 ///
 /// Input:   type = object type (Based on SM_ObjectType enum)
 /// Output:  count = pointer to integer
@@ -429,7 +429,7 @@ int DLLEXPORT swmm_getObjectIndex(SM_ObjectType type, char *id, int *index)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getObjectId(int type, int index, char **id)
+int DLLEXPORT swmm_getObjectId(SM_ObjectType type, int index, char **id)
 ///
 /// Input:   type = object type (Based on SM_ObjectType enum)
 ///          index = Index of desired ID
@@ -495,7 +495,7 @@ int DLLEXPORT swmm_getObjectId(int type, int index, char **id)
    return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getNodeType(int index, int *Ntype)
+int DLLEXPORT swmm_getNodeType(SM_ObjectType index, int *Ntype)
 ///
 /// Input:   index = Index of desired ID
 ///          Ntype = Node type (Based on enum SM_NodeType)
