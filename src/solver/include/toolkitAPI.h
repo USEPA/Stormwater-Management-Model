@@ -47,7 +47,7 @@ int  DLLEXPORT   swmm_run_cb(const char *f1, const char *f2, const char *f3,
  @param[out] errorMsg The error string represented by the code
  @return Error code
 */
-int DLLEXPORT swmm_getAPIError(int ErrorCodeAPI, char **errorMsg);
+int DLLEXPORT swmm_getAPIError(int errorCode, char **errorMsg);
 
 /**
  @brief Finds the index of an object given its ID.
@@ -317,7 +317,7 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value);
 
 /**
  @brief Get the current simulation datetime information.
- @param timetype The property type code (See @ref SM_TimePropety)
+ @param type The property type code (See @ref SM_TimePropety)
  @param[out] year The year
  @param[out] month The month
  @param[out] day The day
@@ -326,13 +326,13 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value);
  @param[out] second The seconds
  @return Error code
 */
-int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month,
+int DLLEXPORT swmm_getSimulationDateTime(SM_TimePropety type, int *year, int *month,
                                          int *day, int *hour, int *minute,
                                          int *second);
 
 /**
  @brief Set simulation datetime information.
- @param timetype The property type code (See @ref SM_TimePropety)
+ @param type The property type code (See @ref SM_TimePropety)
  @param year The year
  @param month The month
  @param day The day
@@ -341,7 +341,7 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month,
  @param second The second
  @return Error code
 */
-int DLLEXPORT swmm_setSimulationDateTime(int timetype, int year, int month,
+int DLLEXPORT swmm_setSimulationDateTime(SM_TimePropety type, int year, int month,
                                          int day, int hour, int minute,
                                          int second);
 
