@@ -18,7 +18,7 @@ endif()
 
 
 project(swmm-solver
-    VERSION 5.1.14
+    VERSION 5.1.13
     LANGUAGES C CXX
     )
 

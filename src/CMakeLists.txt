@@ -82,7 +82,7 @@ target_include_directories(swmm5
 
 install(TARGETS swmm5 EXPORT swmm5Targets
     RUNTIME    DESTINATION "${TOOL_DIST}"
-    LIBRARY    DESTINATION "${TOOL_DIST}"
+    LIBRARY    DESTINATION "${LIBRARY_DIST}"
     ARCHIVE    DESTINATION "${LIBRARY_DIST}"
     FRAMEWORK  DESTINATION "${TOOL_DIST}"
 )
@@ -102,6 +102,23 @@ install(
     DESTINATION
         "${INCLUDE_DIST}"
 )
+
+
+# TODO: Figure out why this doesn't work for package target
+# When building on MacOS relocate libomp to install package
+if(APPLE)
+    get_filename_component(EXTERN_LIB_PATH ${OpenMP_libomp_LIBRARY} REALPATH)
+
+    install(
+        FILES
+            ${EXTERN_LIB_PATH}
+        DESTINATION
+            ${CMAKE_INSTALL_PREFIX}/extern
+    )
+
+    # Pass the var up the project tree
+    set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
+endif()
 
 
 # copy swmm5 to build tree for testing
