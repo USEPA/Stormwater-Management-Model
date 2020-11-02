@@ -142,10 +142,10 @@ int DLLEXPORT swmm_project_findObject(int type, char *id, int *index)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month, int *day,
+int DLLEXPORT swmm_getSimulationDateTime(SM_TimePropety type, int *year, int *month, int *day,
                                          int *hour, int *minute, int *second)
 ///
-/// Input:   timetype = time type to return
+/// Input:   type = time type to return
 /// Output:  year, month, day, hours, minutes, seconds = int
 /// Return:  API Error
 /// Purpose: Get the simulation start, end and report date times
@@ -166,7 +166,7 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month, in
     else
     {
         DateTime _dtime;
-        switch (timetype)
+        switch (type)
         {
         //StartDateTime (globals.h)
         case SM_STARTDATE: _dtime = StartDateTime; break;
@@ -183,11 +183,11 @@ int DLLEXPORT swmm_getSimulationDateTime(int timetype, int *year, int *month, in
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setSimulationDateTime(int timetype, int year, int month,
+int DLLEXPORT swmm_setSimulationDateTime(SM_TimePropety type, int year, int month,
                                          int day, int hour, int minute,
                                          int second)
 ///
-/// Input:   timetype = time type to set
+/// Input:   type = time type to set
 ///          year, month, day, hours, minutes, seconds = int
 /// Return:  API Error
 /// Purpose: Get the simulation start, end and report date times
@@ -212,7 +212,7 @@ int DLLEXPORT swmm_setSimulationDateTime(int timetype, int year, int month,
         theDate = datetime_encodeDate(year, month, day);
         theTime = datetime_encodeTime(hour, minute, second);
 
-        switch(timetype)
+        switch(type)
         {
             //StartDateTime (globals.h)
             case SM_STARTDATE:
