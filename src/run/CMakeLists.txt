@@ -8,6 +8,16 @@
 #
 
 
+# Location of libs runswmm uses at runtime on MacOS/Linux
+if(APPLE)
+    set(RPATH_ROOT "@loader_path")
+else()
+    set(RPATH_ROOT "$ORIGIN")
+endif()
+
+set(PACKAGE_RPATH "${RPATH_ROOT}/../lib;${RPATH_ROOT}/../extern")
+
+
 # Creates the EPANET command line executable
 add_executable(runswmm
     main.c
@@ -27,6 +37,15 @@ target_link_libraries(runswmm
         swmm5
 )
 
+# Set up rpath for runswmm inside install package
+set_target_properties(runswmm
+    PROPERTIES
+        MACOSX_RPATH TRUE
+        SKIP_BUILD_RPATH FALSE
+        BUILD_WITH_INSTALL_RPATH FALSE
+        INSTALL_RPATH "${PACKAGE_RPATH}"
+        INSTALL_RPATH_USE_LINK_PATH TRUE
+)
 
 install(TARGETS runswmm
     DESTINATION "${TOOL_DIST}"
