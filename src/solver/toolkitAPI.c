@@ -495,7 +495,7 @@ int DLLEXPORT swmm_getObjectId(SM_ObjectType type, int index, char **id)
    return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getNodeType(SM_ObjectType index, int *Ntype)
+int DLLEXPORT swmm_getNodeType(SM_NodeType index, int *Ntype)
 ///
 /// Input:   index = Index of desired ID
 ///          Ntype = Node type (Based on enum SM_NodeType)
@@ -519,7 +519,7 @@ int DLLEXPORT swmm_getNodeType(SM_ObjectType index, int *Ntype)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLinkType(int index, int *Ltype)
+int DLLEXPORT swmm_getLinkType(SM_LinkType index, int *Ltype)
 ///
 /// Input:   index = Index of desired ID
 ///          Ltype = Link type (Based on enum SM_LinkType)
@@ -597,7 +597,7 @@ int DLLEXPORT swmm_getLinkDirection(int index, signed char *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value)
+int DLLEXPORT swmm_getNodeParam(SM_NodeProperty index, int param, double *value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_NodeProperty)
@@ -619,7 +619,7 @@ int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value)
     }
     else
     {
-        switch(Param)
+        switch(param)
         {
             case SM_INVERTEL:
                 *value = Node[index].invertElev * UCF(LENGTH); break;
@@ -637,7 +637,7 @@ int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setNodeParam(int index, int Param, double value)
+int DLLEXPORT swmm_setNodeParam(SM_NodeProperty index, int param, double value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_NodeProperty)
@@ -663,7 +663,7 @@ int DLLEXPORT swmm_setNodeParam(int index, int Param, double value)
     }
     else
     {
-        switch(Param)
+        switch(param)
         {
             case SM_INVERTEL:
                 Node[index].invertElev = value / UCF(LENGTH); break;
@@ -683,7 +683,7 @@ int DLLEXPORT swmm_setNodeParam(int index, int Param, double value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
+int DLLEXPORT swmm_getLinkParam(SM_LinkProperty index, int param, double *value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_LinkProperty)
@@ -705,7 +705,7 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
     }
     else
     {
-        switch(Param)
+        switch(param)
         {
             case SM_OFFSET1:
                 *value = Link[index].offset1 * UCF(LENGTH); break;
@@ -727,7 +727,7 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setLinkParam(int index, int Param, double value)
+int DLLEXPORT swmm_setLinkParam(SM_LinkProperty index, int param, double value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_LinkProperty)
@@ -748,7 +748,7 @@ int DLLEXPORT swmm_setLinkParam(int index, int Param, double value)
     }
     else
     {
-        switch(Param)
+        switch(param)
         {
             // offset1
             case SM_OFFSET1:
@@ -785,7 +785,7 @@ int DLLEXPORT swmm_setLinkParam(int index, int Param, double value)
 }
 
 
-int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value)
+int DLLEXPORT swmm_getSubcatchParam(SM_SubcProperty index, int param, double *value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_SubcProperty)
@@ -807,7 +807,7 @@ int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value)
     }
     else
     {
-        switch(Param)
+        switch(param)
         {
             case SM_WIDTH:
                 *value = Subcatch[index].width * UCF(LENGTH); break;
@@ -825,7 +825,7 @@ int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
+int DLLEXPORT swmm_setSubcatchParam(SM_SubcProperty index, int param, double value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_SubcProperty)
@@ -851,7 +851,7 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
     }
     else
     {
-        switch(Param)
+        switch(param)
         {
             case SM_WIDTH:
                 Subcatch[index].width = value / UCF(LENGTH); break;
@@ -876,7 +876,7 @@ int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *out_index)
+int DLLEXPORT swmm_getSubcatchOutConnection(int index, ObjectType *type, int *out_index)
 ///
 /// Input:   index = Index of desired ID
 ///         (Subcatchments can load to Node or another Subcatchment)
@@ -947,7 +947,7 @@ int DLLEXPORT swmm_getLidUCount(int index, int *value)
 }
 
 
-int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int param, double *value)
+int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, SM_LidUProperty param, double *value)
 //
 // Input:   index = Index of desired subcatchment
 //          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
@@ -1001,7 +1001,7 @@ int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int param, double *valu
 }
 
 
-int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value)
+int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, SM_LidUProperty param, double value)
 //
 // Input:   index = Index of desired subcatchment
 //          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
@@ -1035,7 +1035,7 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
         // There are no Lid Units defined for the subcatchments
         if(lidUnit)
         {
-            switch(Param)
+            switch(param)
             {
                 case SM_UNITAREA:
                     lidUnit->area = value / SQR(UCF(LENGTH));
@@ -1066,7 +1066,7 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
 }
 
 
-int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int param, int *value)
+int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, SM_LidUOptions param, int *value)
 //
 // Input:   index = Index of desired subcatchment
 //          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
@@ -1118,7 +1118,7 @@ int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int param, int *value)
 }
 
 
-int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int param, int value)
+int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, SM_LidUOptions param, int value)
 //
 // Input:   index = Index of desired subcatchment
 //          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
@@ -1248,7 +1248,7 @@ int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, int *condition)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int param, double *value)
+int DLLEXPORT swmm_getLidCParam(int lidControlIndex, SM_LidLayers layerIndex, SM_LidLayersProperty param, double *value)
 //
 // Input:   lidControlIndex = Index of desired lid control
 //          layerIndex = Index of desired lid control layer (Based on enum SM_LidLayers)
@@ -1431,7 +1431,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int param, 
 }
 
 
-int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int param, double value)
+int DLLEXPORT swmm_setLidCParam(int lidControlIndex, SM_LidLayers layerIndex, SM_LidLayersProperty param, double value)
 //
 // Input:   lidControlIndex = Index of desired lid control
 //          layerIndex = Index of desired lid control layer (Based on enum SM_LidLayers)
@@ -1811,7 +1811,7 @@ int DLLEXPORT swmm_getCurrentDateTime(int *year, int *month, int *day,
 }
 
 
-int DLLEXPORT swmm_getNodeResult(int index, int type, double *result)
+int DLLEXPORT swmm_getNodeResult(int index, SM_NodeResult type, double *result)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_NodeResult)
@@ -1859,7 +1859,7 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getNodePollut(int index, int type, double **PollutArray, int *length)
+int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **PollutArray, int *length)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_NodePollut)
@@ -1905,7 +1905,7 @@ int DLLEXPORT swmm_getNodePollut(int index, int type, double **PollutArray, int 
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
+int DLLEXPORT swmm_getLinkResult(int index, SM_LinkResult type, double *result)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_LinkResult)
@@ -1952,7 +1952,7 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray, int *length)
+int DLLEXPORT swmm_getLinkPollut(int index, SM_LinkPollut type, double **PollutArray, int *length)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_LinkPollut)
@@ -2011,7 +2011,7 @@ int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray, int 
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getSubcatchResult(int index, int type, double* result)
+int DLLEXPORT swmm_getSubcatchResult(int index, SM_SubcResult type, double* result)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_SubcResult)
@@ -2054,7 +2054,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double* result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray, int *length)
+int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **PollutArray, int *length)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_SubcPollut)
@@ -2135,7 +2135,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray, 
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getGagePrecip(int index, int type, double* result)
+int DLLEXPORT swmm_getGagePrecip(int index, SM_GagePrecip type, double* result)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result type
@@ -2301,6 +2301,7 @@ int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats** outfallStats)
 
     return error_getCode(error_code_index);
 }
+
 
 void DLLEXPORT swmm_freeOutfallStats(SM_OutfallStats *outfallStats)
 ///
@@ -2519,7 +2520,7 @@ int DLLEXPORT swmm_getSystemRunoffStats(SM_RunoffTotals** runoffTot)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, int layerIndex, double* result)
+int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, SM_LidLayer layerIndex, double* result)
 //
 // Input:   index = Index of desired subcatchment
 //          lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
@@ -2570,7 +2571,7 @@ int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, int layerIndex, dou
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLidGResult(int index, int type, double* result)
+int DLLEXPORT swmm_getLidGResult(int index, SM_LidResult type, double* result)
 //
 // Input:   index = index of desired subcatchment
 //          type = type of result data desired
@@ -2619,7 +2620,7 @@ int DLLEXPORT swmm_getLidGResult(int index, int type, double* result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, int type, double* result)
+int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, SM_LidResult type, double* result)
 //
 // Input:   index = Index of desired subcatchment
 //          lidIndex = Index of desired lid control (subcatchment allow for multiple lids)

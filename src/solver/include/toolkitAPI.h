@@ -116,7 +116,7 @@ int DLLEXPORT swmm_getObjectIndex(SM_ObjectType type, char *id, int *index);
  id must be pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getNodeType(int index, int *Ntype);
+int DLLEXPORT swmm_getNodeType(SM_NodeType index, int *Ntype);
 
 /**
  @brief Get the type of link with specified index.
@@ -124,7 +124,7 @@ int DLLEXPORT swmm_getNodeType(int index, int *Ntype);
  @param[out] Ltype The type code for the link (@ref SM_LinkType).
  @return Error code
 */
-int DLLEXPORT swmm_getLinkType(int index, int *Ltype);
+int DLLEXPORT swmm_getLinkType(SM_LinkType index, int *Ltype);
 
 /**
  @brief Get the link Connection Node Indeces. If the conduit has a
@@ -135,7 +135,7 @@ int DLLEXPORT swmm_getLinkType(int index, int *Ltype);
  @param[out] Node2 The downstream node index.
  @return Error code
 */
-int DLLEXPORT swmm_getLinkConnections(int index, int *Node1, int *Node2);
+int DLLEXPORT swmm_getLinkConnections(int index, int *node1, int *node2);
 
 /**
  @brief Get the link flow direction (see @ref swmm_getLinkType() for notes.
@@ -149,11 +149,11 @@ int DLLEXPORT swmm_getLinkDirection(int index, signed char *value);
  @brief Get the Subcatchment connection. Subcatchments can load to a
  node, another subcatchment, or itself.
  @param index The index of a Subcatchment
- @param[out] type The type of object loading (See @ref SM_ObjectType)
+ @param[out] type The type of object loading (See @ref ObjectType)
  @param[out] out_index The object index
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *out_index);
+int DLLEXPORT swmm_getSubcatchOutConnection(int index, ObjectType *type, int *out_index);
 
 /**
  @brief Get the number of lid units on a subcatchment.
@@ -171,7 +171,7 @@ int DLLEXPORT swmm_getLidUCount(int index, int *value);
  @param[out] value The value of the lid unit's property
  @return Error code
 */
-int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int Param, double *value);
+int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, SM_LidUProperty param, double *value);
 
 /**
  @brief Set a property value for a specified lid unit on a specified subcatchment
@@ -181,7 +181,7 @@ int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, int Param, double *valu
  @param value The new value of the lid unit's property
  @return Error code
 */
-int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value);
+int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, SM_LidUProperty param, double value);
 
 /**
  @brief Get the lid option for a specified lid unit on a specified subcatchment
@@ -191,7 +191,7 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, int Param, double value
  @param[out] value The value of the option for the lid unit
  @return Error code
 */
-int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int Param, int *value);
+int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, SM_LidUOptions param, int *value);
 
 /**
  @brief Set the lid option for a specified lid unit on a specified subcatchment
@@ -201,7 +201,7 @@ int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, int Param, int *value)
  @param value The new value of the option for the lid unit
  @return Error code
 */
-int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, int Param, int value);
+int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, SM_LidUOptions param, int value);
 
 /**
  @brief Get the lid control surface immediate overflow condition
@@ -219,7 +219,7 @@ int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, int *condition);
  @param[out] value The value of lid control's property
  @return Error code
 */
-int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, double *value);
+int DLLEXPORT swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_LidLayerProperty param, double *value);
 
 /**
  @brief Set a property value for specified lid control
@@ -229,7 +229,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, int layerIndex, int Param, 
  @param value The new value for the lid control's property
  @return Error code
 */
-int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, double value);
+int DLLEXPORT swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_LidLayerProperty param, double value);
 
 /**
  @brief Get the lid unit water balance simulated value at current time
@@ -240,7 +240,7 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, int layerIndex, int Param, 
  @param[out] result The result for the specified lid unit
  @return Error code
 */
-int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, int layerIndex, double *result);
+int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, SM_LidLayer layerIndex, double *result);
 
 /**
  @brief Get the lid group of a specified subcatchment result at current time
@@ -249,7 +249,7 @@ int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, int layerIndex, dou
  @param[out] result The result for the specified lid group
  @return Error code
 */
-int DLLEXPORT swmm_getLidGResult(int index, int type, double *result);
+int DLLEXPORT swmm_getLidGResult(int index, SM_LidResult type, double *result);
 
 /**
  @brief Get the lid unit of a specified subcatchment result at current time
@@ -259,7 +259,7 @@ int DLLEXPORT swmm_getLidGResult(int index, int type, double *result);
  @param[out] result The result for the specified lid unit
  @return Error code
 */
-int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, int type, double *result);
+int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, SM_LidResult type, double *result);
 
 /**
  @brief Get a property value for specified node.
@@ -268,7 +268,7 @@ int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, int type, double *resu
  @param[out] value The value of the node's property
  @return Error code
 */
-int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value);
+int DLLEXPORT swmm_getNodeParam(int index, SM_NodeProperty param, double *value);
 
 /**
  @brief Set a property value for specified node.
@@ -277,7 +277,7 @@ int DLLEXPORT swmm_getNodeParam(int index, int Param, double *value);
  @param value The new value of the node's property
  @return Error code
 */
-int DLLEXPORT swmm_setNodeParam(int index, int Param, double value);
+int DLLEXPORT swmm_setNodeParam(int index, SM_NodeProperty param, double value);
 
 /**
  @brief Get a property value for specified link.
@@ -286,7 +286,7 @@ int DLLEXPORT swmm_setNodeParam(int index, int Param, double value);
  @param[out] value The value of the link's property
  @return Error code
 */
-int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value);
+int DLLEXPORT swmm_getLinkParam(int index, SM_LinkProperty param, double *value);
 
 /**
  @brief Set a property value for specified link.
@@ -295,7 +295,7 @@ int DLLEXPORT swmm_getLinkParam(int index, int Param, double *value);
  @param value The new value of the link's property
  @return Error code
 */
-int DLLEXPORT swmm_setLinkParam(int index, int Param, double value);
+int DLLEXPORT swmm_setLinkParam(int index, SM_LinkProperty param, double value);
 
 /**
  @brief Get a property value for specified subcatchment.
@@ -304,7 +304,7 @@ int DLLEXPORT swmm_setLinkParam(int index, int Param, double value);
  @param[out] value The value of the subcatchment's property
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value);
+int DLLEXPORT swmm_getSubcatchParam(int index, SM_SubcProperty param, double *value);
 
 /**
  @brief Set a property value for specified subcatchment.
@@ -313,7 +313,7 @@ int DLLEXPORT swmm_getSubcatchParam(int index, int Param, double *value);
  @param value The new value of the subcatchment's property
  @return Error code
 */
-int DLLEXPORT swmm_setSubcatchParam(int index, int Param, double value);
+int DLLEXPORT swmm_setSubcatchParam(int index, SM_SubcProperty param, double value);
 
 /**
  @brief Get the current simulation datetime information.
@@ -365,7 +365,7 @@ int DLLEXPORT swmm_getCurrentDateTime(int *year, int *month, int *day,
  @param[out] result The result of the node's property
  @return Error code
 */
-int DLLEXPORT swmm_getNodeResult(int index, int type, double *result);
+int DLLEXPORT swmm_getNodeResult(int index, SM_NodeResult type, double *result);
 
 /**
  @brief Gets pollutant values for a specified node.
@@ -374,7 +374,7 @@ int DLLEXPORT swmm_getNodeResult(int index, int type, double *result);
  @param[out] PollutArray result array
  @return Error code
 */
-int DLLEXPORT swmm_getNodePollut(int index, int type, double **PollutArray, int *length);
+int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **PollutArray, int *length);
 
 /**
  @brief Get a result value for specified link.
@@ -383,7 +383,7 @@ int DLLEXPORT swmm_getNodePollut(int index, int type, double **PollutArray, int 
  @param[out] result The result of the link's property
  @return Error code
 */
-int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
+int DLLEXPORT swmm_getLinkResult(int index, SM_LinkResult type, double *result);
 
 /**
  @brief Gets pollutant values for a specified link.
@@ -392,7 +392,7 @@ int DLLEXPORT swmm_getLinkResult(int index, int type, double *result);
  @param[out] PollutArray result array
  @return Error code
 */
-int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray, int *length);
+int DLLEXPORT swmm_getLinkPollut(int index, SM_LinkPollut type, double **PollutArray, int *length);
 
 /**
  @brief Get a result value for specified subcatchment.
@@ -401,7 +401,7 @@ int DLLEXPORT swmm_getLinkPollut(int index, int type, double **PollutArray, int 
  @param[out] result The result of the subcatchment's property
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
+int DLLEXPORT swmm_getSubcatchResult(int index, SM_SubcResult type, double *result);
 
 /**
  @brief Gets pollutant values for a specified subcatchment.
@@ -410,7 +410,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, int type, double *result);
  @param[out] PollutArray result array
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray, int *length);
+int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **PollutArray, int *length);
 
 /**
 @brief Get precipitation rates for a gage.
@@ -419,7 +419,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, int type, double **PollutArray, 
 @param[out] GageArray precipitation rate
 @return Error code
 */
-int DLLEXPORT swmm_getGagePrecip(int index, int type, double *result);
+int DLLEXPORT swmm_getGagePrecip(int index, SM_GagePrecip type, double *result);
 
 /**
  @brief Get a node statistics.
