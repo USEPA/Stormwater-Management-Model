@@ -1248,10 +1248,10 @@ int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, int *condition)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLidCParam(int lidControlIndex, SM_LidLayers layerIndex, SM_LidLayersProperty param, double *value)
+int DLLEXPORT swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_LidLayersProperty param, double *value)
 //
 // Input:   lidControlIndex = Index of desired lid control
-//          layerIndex = Index of desired lid control layer (Based on enum SM_LidLayers)
+//          layerIndex = Index of desired lid control layer (Based on enum SM_LidLayer)
 //          param = Parameter desired (Based on enum SM_LidLayersProperty)
 // Output:  value = value to be output
 // Return:  API Error
@@ -1431,7 +1431,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, SM_LidLayers layerIndex, SM
 }
 
 
-int DLLEXPORT swmm_setLidCParam(int lidControlIndex, SM_LidLayers layerIndex, SM_LidLayersProperty param, double value)
+int DLLEXPORT swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_LidLayersProperty param, double value)
 //
 // Input:   lidControlIndex = Index of desired lid control
 //          layerIndex = Index of desired lid control layer (Based on enum SM_LidLayers)

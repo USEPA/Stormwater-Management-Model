@@ -153,7 +153,7 @@ int DLLEXPORT swmm_getLinkDirection(int index, signed char *value);
  @param[out] out_index The object index
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchOutConnection(int index, ObjectType *type, int *out_index);
+int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *out_index);
 
 /**
  @brief Get the number of lid units on a subcatchment.
