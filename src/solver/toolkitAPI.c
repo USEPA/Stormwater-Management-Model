@@ -597,7 +597,7 @@ int DLLEXPORT swmm_getLinkDirection(int index, signed char *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getNodeParam(SM_NodeProperty index, int param, double *value)
+int DLLEXPORT swmm_getNodeParam(int index, SM_NodeProperty param, double *value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_NodeProperty)
@@ -637,7 +637,7 @@ int DLLEXPORT swmm_getNodeParam(SM_NodeProperty index, int param, double *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setNodeParam(SM_NodeProperty index, int param, double value)
+int DLLEXPORT swmm_setNodeParam(int index, SM_NodeProperty param, double value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_NodeProperty)
@@ -683,7 +683,7 @@ int DLLEXPORT swmm_setNodeParam(SM_NodeProperty index, int param, double value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLinkParam(SM_LinkProperty index, int param, double *value)
+int DLLEXPORT swmm_getLinkParam(int index, SM_LinkProperty param, double *value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_LinkProperty)
@@ -727,7 +727,7 @@ int DLLEXPORT swmm_getLinkParam(SM_LinkProperty index, int param, double *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setLinkParam(SM_LinkProperty index, int param, double value)
+int DLLEXPORT swmm_setLinkParam(int index, SM_LinkProperty param, double value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_LinkProperty)
@@ -785,7 +785,7 @@ int DLLEXPORT swmm_setLinkParam(SM_LinkProperty index, int param, double value)
 }
 
 
-int DLLEXPORT swmm_getSubcatchParam(SM_SubcProperty index, int param, double *value)
+int DLLEXPORT swmm_getSubcatchParam(int index, SM_SubcProperty param, double *value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_SubcProperty)
@@ -825,7 +825,7 @@ int DLLEXPORT swmm_getSubcatchParam(SM_SubcProperty index, int param, double *va
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setSubcatchParam(SM_SubcProperty index, int param, double value)
+int DLLEXPORT swmm_setSubcatchParam(int index, SM_SubcProperty param, double value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_SubcProperty)
@@ -1248,11 +1248,11 @@ int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, int *condition)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_LidLayersProperty param, double *value)
+int DLLEXPORT swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_LidLayerProperty param, double *value)
 //
 // Input:   lidControlIndex = Index of desired lid control
 //          layerIndex = Index of desired lid control layer (Based on enum SM_LidLayer)
-//          param = Parameter desired (Based on enum SM_LidLayersProperty)
+//          param = Parameter desired (Based on enum SM_LidLayerProperty)
 // Output:  value = value to be output
 // Return:  API Error
 // Purpose: Gets Lid Control Layer Parameter
@@ -1431,7 +1431,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_
 }
 
 
-int DLLEXPORT swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_LidLayersProperty param, double value)
+int DLLEXPORT swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_LidLayerProperty param, double value)
 //
 // Input:   lidControlIndex = Index of desired lid control
 //          layerIndex = Index of desired lid control layer (Based on enum SM_LidLayers)
