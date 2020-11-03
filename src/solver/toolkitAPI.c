@@ -876,7 +876,7 @@ int DLLEXPORT swmm_setSubcatchParam(SM_SubcProperty index, int param, double val
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getSubcatchOutConnection(int index, ObjectType *type, int *out_index)
+int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *out_index)
 ///
 /// Input:   index = Index of desired ID
 ///         (Subcatchments can load to Node or another Subcatchment)
