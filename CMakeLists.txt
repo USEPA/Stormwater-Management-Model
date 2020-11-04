@@ -46,12 +46,20 @@ option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
 
 # Add project subdirectories
 add_subdirectory(src/outfile)
+add_subdirectory(src/solver)
 add_subdirectory(src/run)
-add_subdirectory(src)
+add_subdirectory(src/shared)
+
 
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+
+# Pass var up the project tree
+if(APPLE)
+    set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
 endif()
 
 

@@ -24,6 +24,8 @@ endif()
 # configure file groups
 set(SWMM_PUBLIC_HEADERS
     include/swmm5.h
+    include/toolkitAPI.h
+    include/toolkitAPI_enums.h
 )
 
 file(GLOB
@@ -41,6 +43,7 @@ if(BUILD_DEF)
         SHARED
             ${SWMM_SOURCES}
             ${PROJECT_SOURCE_DIR/bindings/swmm5.def}
+            $<TARGET_OBJECTS:shared_objs>
     )
 
 else()
@@ -48,6 +51,7 @@ else()
     add_library(swmm5
         SHARED
             ${SWMM_SOURCES}
+            $<TARGET_OBJECTS:shared_objs>
     )
 
 endif()
@@ -78,6 +82,8 @@ target_include_directories(swmm5
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${INCLUDE_DIST}>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
 install(TARGETS swmm5 EXPORT swmm5Targets

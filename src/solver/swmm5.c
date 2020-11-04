@@ -115,6 +115,8 @@
 
 #include "swmm5.h"                     // declaration of exportable functions
 #include "toolkitAPI.h"
+#include "shared/cstr_helper.h"
+
                                        //   callable from other programs
 #define  MAX_EXCEPTIONS 100            // max. number of exceptions handled
 
@@ -625,16 +627,17 @@ void DLLEXPORT swmm_getSemVersion(char* semver)
     getSemVersion(semver);
 }
 
-void DLLEXPORT swmm_getVersionInfo(char* major, char* minor, char* patch)
+int DLLEXPORT swmm_getVersionInfo(char** major, char** minor, char** patch)
 //
 //  Output: Returns Semantic Version Info
 //  Purpose: retrieves the current semantic version
 //
 //  NOTE: Each New Release should be updated in consts.h
 {
-    strncpy(major, SEMVERSION_MAJOR, sizeof SEMVERSION_MAJOR);
-    strncpy(minor, SEMVERSION_MINOR, sizeof SEMVERSION_MINOR);
-    strncpy(patch, SEMVERSION_PATCH, sizeof SEMVERSION_PATCH);
+    cstr_duplicate(major, SEMVERSION_MAJOR);
+    cstr_duplicate(minor, SEMVERSION_MINOR);
+    cstr_duplicate(patch, SEMVERSION_PATCH);
+    return 0;
 }
 
 //=============================================================================

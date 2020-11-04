@@ -50,6 +50,7 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     double val;
     double input_val = 0;
     double *result_array;
+    int length;
     char id[] = "test";
 
     //Project
@@ -57,7 +58,7 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
     //Gage
-    error = swmm_getGagePrecip(0, &result_array);
+    error = swmm_getGagePrecip(0, SM_TOTALPRECIP, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
     error = swmm_setGagePrecip(0, input_val);
@@ -65,27 +66,27 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
 
 
     //Subcatchment
-    error = swmm_getSubcatchParam(0, 0, &val);
+    error = swmm_getSubcatchParam(0, SM_WIDTH, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
-    error = swmm_setSubcatchParam(0, 0, val);
+    error = swmm_setSubcatchParam(0, SM_WIDTH, val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
-    error = swmm_getSubcatchResult(0, 0, &val);
+    error = swmm_getSubcatchResult(0, SM_SUBCRAIN, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
 
     //Node
-    error = swmm_getNodeParam(0, 0, &val);
+    error = swmm_getNodeParam(0, SM_INVERTEL, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
-    error = swmm_setNodeParam(0, 0, val);
+    error = swmm_setNodeParam(0, SM_INVERTEL, val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
     error = swmm_setNodeInflow(0, input_val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
-    error = swmm_getNodeResult(0, 0, &val);
+    error = swmm_getNodeResult(0, SM_TOTALINFLOW, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
     error = swmm_setOutfallStage(0, input_val);
@@ -93,13 +94,13 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
 
 
     //Link
-    error = swmm_getLinkParam(0, 0, &val);
+    error = swmm_getLinkParam(0, SM_OFFSET1, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
-    error = swmm_setLinkParam(0, 0, val);
+    error = swmm_setLinkParam(0, SM_OFFSET1, val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
-    error = swmm_getLinkResult(0, 0, &val);
+    error = swmm_getLinkResult(0, SM_LINKFLOW, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
     error = swmm_setLinkSetting(0, input_val);
@@ -107,13 +108,13 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
 
 
     //Pollutant
-    error = swmm_getSubcatchPollut(0, 0, &result_array);
+    error = swmm_getSubcatchPollut(0, SM_BUILDUP, &result_array, &length);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
-    error = swmm_getLinkPollut(0, 0, &result_array);
+    error = swmm_getLinkPollut(0, SM_LINKQUAL, &result_array, &length);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 
-    error = swmm_getNodePollut(0, 0, &result_array);
+    error = swmm_getNodePollut(0, SM_NODEQUAL, &result_array, &length);
     BOOST_CHECK_EQUAL(error, ERR_API_INPUTNOTOPEN);
 }
 
@@ -127,12 +128,12 @@ BOOST_FIXTURE_TEST_CASE(sim_started_check, FixtureBeforeStep) {
     int error;
 
     //Subcatchment
-    error = swmm_setSubcatchParam(0, 0, 1);
+    error = swmm_setSubcatchParam(0, SM_WIDTH, 1);
     BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
 
 
     //Node
-    error = swmm_setNodeParam(0, 0, 1);
+    error = swmm_setNodeParam(0, SM_INVERTEL, 1);
     BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);
 
 
@@ -166,25 +167,26 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
     double val;
     double input_val = 0;
     double *result_array;
-
+    int length;
+    
     //Gage
-    error = swmm_getGagePrecip(100, &result_array);
+    error = swmm_getGagePrecip(100, SM_TOTALPRECIP, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
 
     //Subcatchment
-    error = swmm_getSubcatchParam(100, 0, &val);
+    error = swmm_getSubcatchParam(100, SM_WIDTH, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
-    error = swmm_setSubcatchParam(100, 0, 1);
+    error = swmm_setSubcatchParam(100, SM_WIDTH, 1);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
 
     //Node
-    error = swmm_getNodeParam(100, 0, &val);
+    error = swmm_getNodeParam(100, SM_INVERTEL, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
-    error = swmm_setNodeParam(100, 0, 1);
+    error = swmm_setNodeParam(100, SM_INVERTEL, 1);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
     error = swmm_setOutfallStage(100, input_val);
@@ -192,21 +194,21 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
 
 
     //Link
-    error = swmm_getLinkParam(100, 0, &val);
+    error = swmm_getLinkParam(100, SM_OFFSET1, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
-    error = swmm_setLinkParam(100, 0, 1);
+    error = swmm_setLinkParam(100, SM_OFFSET1, 1);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
 
     //Pollutant
-    error = swmm_getSubcatchPollut(100, 0, &result_array);
+    error = swmm_getSubcatchPollut(100, SM_BUILDUP, &result_array, &length);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
-    error = swmm_getLinkPollut(100, 0, &result_array);
+    error = swmm_getLinkPollut(100, SM_LINKQUAL, &result_array, &length);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
-    error = swmm_getNodePollut(100, 0, &result_array);
+    error = swmm_getNodePollut(100, SM_NODEQUAL, &result_array, &length);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 }
 
@@ -218,31 +220,31 @@ BOOST_FIXTURE_TEST_CASE(key_bounds_check, FixtureOpenClose) {
     char* error_msg=new char[256];
 
     //Error codes
-    swmm_getAPIError(341, error_msg);
+    swmm_getAPIError(341, &error_msg);
     BOOST_CHECK_EQUAL(error_msg, "\n  ERROR 341: cannot open scratch RDII interface file.");
     delete[] error_msg;
 
     //Subcatchment
-    error = swmm_getSubcatchParam(0, 100, &val);
+    error = swmm_getSubcatchParam(0, static_cast<SM_SubcProperty>(100), &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
 
-    error = swmm_setSubcatchParam(0, 100, 1);
+    error = swmm_setSubcatchParam(0, static_cast<SM_SubcProperty>(100), 1);
     BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
 
 
     //Node
-    error = swmm_getNodeParam(0, 100, &val);
+    error = swmm_getNodeParam(0, static_cast<SM_NodeProperty>(100), &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
 
-    error = swmm_setNodeParam(0, 100, 1);
+    error = swmm_setNodeParam(0, static_cast<SM_NodeProperty>(100), 1);
     BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
 
 
     //Link
-    error = swmm_getLinkParam(0, 100, &val);
+    error = swmm_getLinkParam(0, static_cast<SM_LinkProperty>(100), &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
 
-    error = swmm_setLinkParam(0, 100, 1);
+    error = swmm_setLinkParam(0, static_cast<SM_LinkProperty>(100), 1);
     BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
 }
 
@@ -559,7 +561,7 @@ BOOST_FIXTURE_TEST_CASE(count_objects, FixtureOpenClose){
     BOOST_CHECK_EQUAL(count, 0);
 
     //return error
-    error = swmm_countObjects(999, &count);
+    error = swmm_countObjects(static_cast<SM_ObjectType>(999), &count);
     BOOST_REQUIRE(error == ERR_API_OUTBOUNDS);
 }
 
@@ -829,18 +831,18 @@ BOOST_FIXTURE_TEST_CASE(sim_after_start_check, FixtureBeforeStep){
     input_val = 0;
 
     // Subcatchment
-    error = swmm_getSubcatchResult(100, 0, &val);
+    error = swmm_getSubcatchResult(100, SM_SUBCRAIN, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
-    error = swmm_getSubcatchResult(0, 100, &val);
+    error = swmm_getSubcatchResult(0, static_cast<SM_SubcResult>(100), &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
 
 
     // Node
-    error = swmm_getNodeResult(100, 0, &val);
+    error = swmm_getNodeResult(100, SM_TOTALINFLOW, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
-    error = swmm_getNodeResult(0, 100, &val);
+    error = swmm_getNodeResult(0, static_cast<SM_NodeResult>(100), &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
 
     error = swmm_setNodeInflow(100, input_val);
@@ -848,10 +850,10 @@ BOOST_FIXTURE_TEST_CASE(sim_after_start_check, FixtureBeforeStep){
 
 
     //Link
-    error = swmm_getLinkResult(100, 0, &val);
+    error = swmm_getLinkResult(100, SM_LINKFLOW, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);
 
-    error = swmm_getLinkResult(0, 100, &val);
+    error = swmm_getLinkResult(0, static_cast<SM_LinkResult>(100), &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OUTBOUNDS);
 
     error = swmm_setLinkSetting(100, input_val);
@@ -983,7 +985,7 @@ BOOST_FIXTURE_TEST_CASE(get_results_after_sim, FixtureBeforeEnd){
     BOOST_CHECK_SMALL(subc_stats->precip - 2.65, 0.0001);
     BOOST_CHECK_SMALL(subc_stats->evap - 0.0, 0.0001);
 
-    freeArray((void**)&subc_stats);
+    swmm_freeMemory(subc_stats);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
