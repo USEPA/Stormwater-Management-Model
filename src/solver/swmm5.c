@@ -617,29 +617,6 @@ int  DLLEXPORT swmm_getVersion(void)
     return VERSION;
 }
 
-void DLLEXPORT swmm_getSemVersion(char* semver)
-//
-//  Output: Returns Semantic Version
-//  Purpose: retrieves the current semantic version
-//
-//  NOTE: Each New Release should be updated in consts.h
-{
-    getSemVersion(semver);
-}
-
-int DLLEXPORT swmm_getVersionInfo(char** major, char** minor, char** patch)
-//
-//  Output: Returns Semantic Version Info
-//  Purpose: retrieves the current semantic version
-//
-//  NOTE: Each New Release should be updated in consts.h
-{
-    cstr_duplicate(major, SEMVERSION_MAJOR);
-    cstr_duplicate(minor, SEMVERSION_MINOR);
-    cstr_duplicate(patch, SEMVERSION_PATCH);
-    return 0;
-}
-
 //=============================================================================
 
 int DLLEXPORT swmm_getWarnings(void)

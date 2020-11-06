@@ -23,6 +23,7 @@
 
 #include "shared/cstr_helper.h"
 
+
 // Function Declarations for API
 int     massbal_getRoutingFlowTotal(SM_RoutingTotals *routingTot);
 int     massbal_getRunoffTotal(SM_RunoffTotals *runoffTot);
@@ -40,6 +41,30 @@ TSubcatchStats *stats_getSubcatchStat(int index);
 // Utilty Function Declarations
 double* newDoubleArray(int n);
 
+
+
+// void DLLEXPORT swmm_getSemVersion(char* semver)
+// //
+// //  Output: Returns Semantic Version
+// //  Purpose: retrieves the current semantic version
+// //
+// //  NOTE: Each New Release should be updated in consts.h
+// {
+//     getSemVersion(semver);
+// }
+
+int DLLEXPORT swmm_getVersionInfo(char** major, char** minor, char** patch)
+//
+//  Output: Returns Semantic Version Info
+//  Purpose: retrieves the current semantic version
+//
+//  NOTE: Each New Release should be updated in consts.h
+{
+    cstr_duplicate(major, SEMVERSION_MAJOR);
+    cstr_duplicate(minor, SEMVERSION_MINOR);
+    cstr_duplicate(patch, SEMVERSION_PATCH);
+    return 0;
+}
 
 //-----------------------------------------------------------------------------
 //  Extended API Functions
@@ -1859,7 +1884,7 @@ int DLLEXPORT swmm_getNodeResult(int index, SM_NodeResult type, double *result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **PollutArray, int *length)
+int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **pollutArray, int *length)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_NodePollut)
@@ -1896,7 +1921,7 @@ int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **PollutA
                 {
                     result[p] = Node[index].newQual[p];
                 } 
-                *PollutArray = result;
+                *pollutArray = result;
                 *length = Nobjects[POLLUT];
             } break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
@@ -1952,7 +1977,7 @@ int DLLEXPORT swmm_getLinkResult(int index, SM_LinkResult type, double *result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLinkPollut(int index, SM_LinkPollut type, double **PollutArray, int *length)
+int DLLEXPORT swmm_getLinkPollut(int index, SM_LinkPollut type, double **pollutArray, int *length)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_LinkPollut)
@@ -1989,7 +2014,7 @@ int DLLEXPORT swmm_getLinkPollut(int index, SM_LinkPollut type, double **PollutA
                 {
                     result[p] = Link[index].newQual[p];
                 } 
-                *PollutArray = result;
+                *pollutArray = result;
                 *length = Nobjects[POLLUT];
             } break;
             case SM_TOTALLOAD:
@@ -2002,7 +2027,7 @@ int DLLEXPORT swmm_getLinkPollut(int index, SM_LinkPollut type, double **PollutA
                         result[p] = LOG10(result[p]);
                     }
                 } 
-                *PollutArray = result;
+                *pollutArray = result;
                 *length = Nobjects[POLLUT];
             } break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
@@ -2054,7 +2079,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, SM_SubcResult type, double* resu
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **PollutArray, int *length)
+int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **pollutArray, int *length)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_SubcPollut)
@@ -2094,7 +2119,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **Pol
                     result[p] = Subcatch[index].surfaceBuildup[p] /
                         (a * UCF(LANDAREA));
                 } 
-                *PollutArray = result;
+                *pollutArray = result;
                 *length = Nobjects[POLLUT];
             } break;
             case SM_CPONDED:
@@ -2103,7 +2128,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **Pol
                 {
                     result[p] = Subcatch[index].concPonded[p] / LperFT3;
                 } 
-                *PollutArray = result;
+                *pollutArray = result;
                 *length = Nobjects[POLLUT];
             } break;
             case SM_SUBCQUAL:
@@ -2112,7 +2137,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **Pol
                 {
                     result[p] = Subcatch[index].newQual[p];
                 } 
-                *PollutArray = result;
+                *pollutArray = result;
                 *length = Nobjects[POLLUT];
             } break;
             case SM_SUBCTOTALLOAD:
@@ -2125,7 +2150,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **Pol
                         result[p] = LOG10(result[p]);
                     }
                 } 
-                *PollutArray = result;
+                *pollutArray = result;
                 *length = Nobjects[POLLUT];
             } break;
 

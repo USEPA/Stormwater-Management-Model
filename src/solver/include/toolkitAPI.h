@@ -29,6 +29,20 @@ extern "C" {
 
 #include "toolkitAPI_enums.h"
 
+// /**
+//  @brief Get full semantic version number
+//  @param[out] semver sematic version (char array)
+// */
+// void DLLEXPORT   swmm_getSemVersion(char* semver);
+
+/**
+ @brief Get full semantic version number info
+ @param[out] major sematic version major number
+ @param[out] minor sematic version minor number
+ @param[out] patch sematic version patch number
+ @return error code
+*/
+int  DLLEXPORT   swmm_getVersionInfo(char **major, char **minor, char **patch);
 
 /**
  @brief Opens SWMM input file, reads in network data, runs, and closes
@@ -374,7 +388,7 @@ int DLLEXPORT swmm_getNodeResult(int index, SM_NodeResult type, double *result);
  @param[out] PollutArray result array
  @return Error code
 */
-int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **PollutArray, int *length);
+int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **pollutArray, int *length);
 
 /**
  @brief Get a result value for specified link.
@@ -392,7 +406,7 @@ int DLLEXPORT swmm_getLinkResult(int index, SM_LinkResult type, double *result);
  @param[out] PollutArray result array
  @return Error code
 */
-int DLLEXPORT swmm_getLinkPollut(int index, SM_LinkPollut type, double **PollutArray, int *length);
+int DLLEXPORT swmm_getLinkPollut(int index, SM_LinkPollut type, double **pollutArray, int *length);
 
 /**
  @brief Get a result value for specified subcatchment.
@@ -410,7 +424,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, SM_SubcResult type, double *resu
  @param[out] PollutArray result array
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **PollutArray, int *length);
+int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **pollutArray, int *length);
 
 /**
 @brief Get precipitation rates for a gage.

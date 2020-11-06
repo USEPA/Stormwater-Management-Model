@@ -6,7 +6,8 @@
  @date 03/24/14  (Build 5.1.001)
  @date 08/01/16  (Build 5.1.011)
  @version 5.1
- @authors L. Rossman, OpenWaterAnalytics members: see <a href="https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/AUTHORS">AUTHORS</a>.
+ @authors L. Rossman, OpenWaterAnalytics members: 
+ see <a href="https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/AUTHORS">AUTHORS</a>.
 */
 
 #ifndef SWMM5_H
@@ -41,13 +42,15 @@
 //-----------------------------------------------------------------------------
 //  Shared variables
 //-----------------------------------------------------------------------------
-static int  IsOpenFlag;           // TRUE if a project has been opened
-static int  IsStartedFlag;        // TRUE if a simulation has been started
-static int  SaveResultsFlag;      // TRUE if output to be saved to binary file
+static int IsOpenFlag;           // TRUE if a project has been opened
+static int IsStartedFlag;        // TRUE if a simulation has been started
+static int SaveResultsFlag;      // TRUE if output to be saved to binary file
+
+int swmm_IsOpenFlag(void);
+int swmm_IsStartedFlag(void);
 
 
 // --- use "C" linkage for C++ programs
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -60,7 +63,7 @@ extern "C" {
  @param f3 pointer to name of binary output file (to be created)
  @return error code
 */
-int  DLLEXPORT   swmm_run(const char *f1, const char *f2, const char *f3);
+int DLLEXPORT swmm_run(const char *f1, const char *f2, const char *f3);
 
 /**
  @brief Opens SWMM input file & reads in network data
@@ -69,33 +72,33 @@ int  DLLEXPORT   swmm_run(const char *f1, const char *f2, const char *f3);
  @param f3 pointer to name of binary output file (to be created)
  @return error code
 */
-int  DLLEXPORT   swmm_open(const char *f1, const char *f2, const char *f3);
+int DLLEXPORT swmm_open(const char *f1, const char *f2, const char *f3);
 
 /**
  @brief Start SWMM simulation
  @param saveFlag TRUE or FALSE to save timeseries to report file
  @return error code
 */
-int  DLLEXPORT   swmm_start(int saveFlag);
+int DLLEXPORT swmm_start(int saveFlag);
 
 /**
  @brief Step SWMM simulation forward
  @param[out] elapsedTime elapsed simulation time [milliseconds]
  @return error code
 */
-int  DLLEXPORT   swmm_step(double* elapsedTime);
+int DLLEXPORT swmm_step(double* elapsedTime);
 
 /**
  @brief End SWMM simulation
  @return error code
 */
-int  DLLEXPORT   swmm_end(void);
+int DLLEXPORT swmm_end(void);
 
 /**
  @brief Write text report file
  @return error code
 */
-int  DLLEXPORT   swmm_report(void);
+int DLLEXPORT swmm_report(void);
 
 /**
  @brief Get routing errors
@@ -104,39 +107,25 @@ int  DLLEXPORT   swmm_report(void);
  @param[out] qualErr Quality routing error
  @return error code
 */
-int  DLLEXPORT   swmm_getMassBalErr(float* runoffErr, float* flowErr,
-                 float* qualErr);
+int DLLEXPORT swmm_getMassBalErr(float* runoffErr, float* flowErr, float* qualErr);
 
 /**
  @brief Frees all memory and files used by SWMM
  @return Error code
 */
-int  DLLEXPORT   swmm_close(void);
+int DLLEXPORT swmm_close(void);
 
 /**
  @brief Get Legacy SWMM version number
  @return Version
 */
-int  DLLEXPORT   swmm_getVersion(void);
+int DLLEXPORT swmm_getVersion(void);
 
-/**
- @brief Get full semantic version number
- @param[out] semver sematic version (char array)
-*/
-void DLLEXPORT   swmm_getSemVersion(char* semver);
 
-/**
- @brief Get full semantic version number info
- @param[out] major sematic version major number
- @param[out] minor sematic version minor number
- @param[out] patch sematic version patch number
- @return error code
-*/
-int  DLLEXPORT   swmm_getVersionInfo(char** major, char** minor, char** patch);
-int  DLLEXPORT   swmm_getError(char* errMsg, int msgLen);                      //(5.1.011)
-int  DLLEXPORT   swmm_getWarnings(void);                                       //(5.1.011)
-int  swmm_IsOpenFlag(void);
-int  swmm_IsStartedFlag(void);
+int DLLEXPORT swmm_getError(char* errMsg, int msgLen);
+
+int DLLEXPORT swmm_getWarnings(void);
+
 
 #ifdef __cplusplus
 }   // matches the linkage specification from above */
