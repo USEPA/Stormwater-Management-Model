@@ -152,7 +152,7 @@ int DLLEXPORT swmm_getAPIError(int errorCode, char **errorMsg)
 }
 
 
-int DLLEXPORT swmm_project_findObject(int type, char *id, int *index)
+int DLLEXPORT swmm_project_findObject(SM_ObjectType type, char *id, int *index)
 {
     int error_code_index = 0;
 
@@ -520,7 +520,7 @@ int DLLEXPORT swmm_getObjectId(SM_ObjectType type, int index, char **id)
    return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getNodeType(SM_NodeType index, int *Ntype)
+int DLLEXPORT swmm_getNodeType(int index, SM_NodeType *Ntype)
 ///
 /// Input:   index = Index of desired ID
 ///          Ntype = Node type (Based on enum SM_NodeType)
@@ -544,7 +544,7 @@ int DLLEXPORT swmm_getNodeType(SM_NodeType index, int *Ntype)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLinkType(SM_LinkType index, int *Ltype)
+int DLLEXPORT swmm_getLinkType(int index, SM_LinkType *Ltype)
 ///
 /// Input:   index = Index of desired ID
 ///          Ltype = Link type (Based on enum SM_LinkType)
@@ -901,7 +901,7 @@ int DLLEXPORT swmm_setSubcatchParam(int index, SM_SubcProperty param, double val
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *out_index)
+int DLLEXPORT swmm_getSubcatchOutConnection(int index, SM_ObjectType *type, int *out_index)
 ///
 /// Input:   index = Index of desired ID
 ///         (Subcatchments can load to Node or another Subcatchment)
@@ -928,17 +928,17 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *out_index
         if (Subcatch[index].outNode == -1 && Subcatch[index].outSubcatch == -1)
         {
             *out_index = index; // Case of self Loading subcatchment
-            *type = SUBCATCH;
+            *type = (SM_ObjectType)SUBCATCH;
         }
         if (Subcatch[index].outNode >= 0)
         {
             *out_index = Subcatch[index].outNode;
-            *type = NODE;
+            *type = (SM_ObjectType)NODE;
         }
         if (Subcatch[index].outSubcatch >= 0)
         {
             *out_index = Subcatch[index].outSubcatch;
-            *type = SUBCATCH;
+            *type = (SM_ObjectType)SUBCATCH;
         }
     }
     return error_getCode(error_code_index);

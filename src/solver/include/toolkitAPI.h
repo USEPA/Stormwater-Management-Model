@@ -65,13 +65,12 @@ int DLLEXPORT swmm_getAPIError(int errorCode, char **errorMsg);
 
 /**
  @brief Finds the index of an object given its ID.
- @param type An object type
+ @param type An object type (see @ref SM_ObjectType)
  @param id The object ID
-
  @param[out] index The objects index
  @return Error code
 */
-int DLLEXPORT swmm_project_findObject(int type, char *id, int *index);
+int DLLEXPORT swmm_project_findObject(SM_ObjectType type, char *id, int *index);
 
 /**
 @brief Gets Simulation Unit
@@ -130,7 +129,7 @@ int DLLEXPORT swmm_getObjectIndex(SM_ObjectType type, char *id, int *index);
  id must be pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getNodeType(SM_NodeType index, int *Ntype);
+int DLLEXPORT swmm_getNodeType(int index, SM_NodeType *Ntype);
 
 /**
  @brief Get the type of link with specified index.
@@ -138,7 +137,7 @@ int DLLEXPORT swmm_getNodeType(SM_NodeType index, int *Ntype);
  @param[out] Ltype The type code for the link (@ref SM_LinkType).
  @return Error code
 */
-int DLLEXPORT swmm_getLinkType(SM_LinkType index, int *Ltype);
+int DLLEXPORT swmm_getLinkType(int index, SM_LinkType *Ltype);
 
 /**
  @brief Get the link Connection Node Indeces. If the conduit has a
@@ -163,11 +162,11 @@ int DLLEXPORT swmm_getLinkDirection(int index, signed char *value);
  @brief Get the Subcatchment connection. Subcatchments can load to a
  node, another subcatchment, or itself.
  @param index The index of a Subcatchment
- @param[out] type The type of object loading (See @ref ObjectType)
+ @param[out] type The type of object loading (See @ref SM_ObjectType)
  @param[out] out_index The object index
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *out_index);
+int DLLEXPORT swmm_getSubcatchOutConnection(int index, SM_ObjectType *type, int *out_index);
 
 /**
  @brief Get the number of lid units on a subcatchment.
