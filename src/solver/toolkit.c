@@ -10,18 +10,15 @@
 */
 #define _CRT_SECURE_NO_DEPRECATE
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 #include <math.h>
 #include <time.h>
 
 #include "headers.h"
-#include "swmm5.h"                     // declaration of exportable functions
-#include "toolkit.h"
-#include "hash.h"
-
 #include "shared/cstr_helper.h"
+
+#include "swmm5.h"
+#include "toolkit.h"
 
 
 // Function Declarations for API
