@@ -15,7 +15,7 @@
 
 #define ERR_NONE 0
 
-BOOST_AUTO_TEST_SUITE(test_toolkitapi_gage_fixture)
+BOOST_AUTO_TEST_SUITE(test_toolkitapi_gage)
 
 // Testing Rain Gage Setter
 BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){

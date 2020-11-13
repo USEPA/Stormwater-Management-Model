@@ -12,7 +12,7 @@
 using namespace std;
 
 
-BOOST_AUTO_TEST_SUITE()
+BOOST_AUTO_TEST_SUITE(test_toolkit_stats)
 
 
 // Testing Results Getters (Before End Simulation)
