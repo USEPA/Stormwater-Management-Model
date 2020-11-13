@@ -99,16 +99,15 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
 
 
     // Final Checks from Subcatchment Stats Totalizers
-    SM_SubcatchStats *subc_stats = NULL;
+    SM_SubcatchStats subc_stats;
 
     error = swmm_getSubcatchStats(subc_ind, &subc_stats);
     BOOST_CHECK_EQUAL(error, ERR_NONE);
     // 4.2 in/hr * 6hrs = 25.2 inches
     total_rainfall_volume = new_rainfall_rate * 6;
-    // Time to call FEMA!
-    BOOST_CHECK_SMALL(subc_stats->precip - total_rainfall_volume, 0.0001);
 
-    swmm_freeMemory(subc_stats);
+    // Time to call FEMA!
+    BOOST_CHECK_SMALL(subc_stats.precip - total_rainfall_volume, 0.0001);
 
     swmm_end();
 }

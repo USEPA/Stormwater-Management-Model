@@ -444,7 +444,7 @@ int DLLEXPORT swmm_getGagePrecip(int index, SM_GagePrecip type, double *result);
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats **nodeStats);
+int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats);
 
 /**
  @brief Get the cumulative inflow for a node.
@@ -461,7 +461,7 @@ int DLLEXPORT swmm_getNodeTotalInflow(int index, double *value);
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats **storageStats);
+int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats *storageStats);
 
 /**
  @brief Get outfall statistics.
@@ -489,7 +489,7 @@ int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats *outfallStats);
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats **linkStats);
+int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats);
 
 /**
  @brief Get pump statistics.
@@ -498,7 +498,7 @@ int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats **linkStats);
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats **pumpStats);
+int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
 
 /**
  @brief Get subcatchment statistics.
@@ -509,7 +509,7 @@ int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats **pumpStats);
  pollutants array.
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats **subcatchStats);
+int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats);
 
 /**
  @brief Get system routing statistics.

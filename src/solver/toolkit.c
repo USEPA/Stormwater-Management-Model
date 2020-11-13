@@ -27,12 +27,12 @@ int     massbal_getRunoffTotal(SM_RunoffTotals *runoffTot);
 double  massbal_getTotalArea(void);
 int     massbal_getNodeTotalInflow(int index, double *value);
 
-int  stats_getNodeStat(int index, SM_NodeStats *nodeStats);
-int  stats_getStorageStat(int index, SM_StorageStats *storageStats);
+int  stats_getNodeStat(int index, TNodeStats **nodeStats);
+int  stats_getStorageStat(int index, TStorageStats **storageStats);
 int  stats_getOutfallStat(int index, TOutfallStats **outfallStats);
-int  stats_getLinkStat(int index, SM_LinkStats *linkStats);
-int  stats_getPumpStat(int index, SM_PumpStats *pumpStats);
-TSubcatchStats *stats_getSubcatchStat(int index);
+int  stats_getLinkStat(int index, TLinkStats **linkStats);
+int  stats_getPumpStat(int index, TPumpStats **pumpStats);
+int stats_getSubcatchStat(int index, TSubcatchStats **subcatchStats);
 
 
 // Utilty Function Declarations
@@ -2198,43 +2198,34 @@ int DLLEXPORT swmm_getGagePrecip(int index, SM_GagePrecip type, double* result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats** nodeStats)
+
+int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats)
 ///
 /// Output:  Node Stats Structure (SM_NodeStats)
 /// Return:  API Error
 /// Purpose: Gets Node Stats and Converts Units
 {
-    int error_code_index;
-    *nodeStats = (SM_NodeStats *)malloc(sizeof(SM_NodeStats));
-    error_code_index = stats_getNodeStat(index, *nodeStats);
+    int error_index = 0;
+    
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+        error_index = ERR_API_INPUTNOTOPEN;
+    
+    // Check if Simulation is Running
+    else if (swmm_IsStartedFlag() == FALSE)
+        error_index = ERR_API_SIM_NRUNNING;
+    
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[NODE])
+        error_index = ERR_API_OBJECT_INDEX;
 
-    if (error_code_index == 0)
-    {
-        // Current Average Depth
-        (*nodeStats)->avgDepth *= (UCF(LENGTH) / (double)StepCount);
-        // Current Maximum Depth
-        (*nodeStats)->maxDepth *= UCF(LENGTH);
-        // Current Maximum Lateral Inflow
-        (*nodeStats)->maxLatFlow *= UCF(FLOW);
-        // Current Maximum Inflow
-        (*nodeStats)->maxInflow *= UCF(FLOW);
-        // Cumulative Lateral Inflow
-        (*nodeStats)->totLatFlow *= UCF(VOLUME);
-        // Time Courant Critical (hrs)
-        (*nodeStats)->timeCourantCritical /= 3600.0;
-        // Cumulative Flooded Volume
-        (*nodeStats)->volFlooded *= UCF(VOLUME);
-        // Time Flooded (hrs)
-        (*nodeStats)->timeFlooded /= 3600.0;
-        // Current Maximum Overflow
-        (*nodeStats)->maxOverflow *= UCF(FLOW);
-        // Current Maximum Ponding Volume
-        (*nodeStats)->maxPondedVol *= UCF(VOLUME);
-        // Time Surcharged
-        (*nodeStats)->timeSurcharged /= 3600.0;
-    }
+    else if (nodeStats == NULL)
+        error_index = ERR_API_MEMORY;
 
-    return error_getCode(error_code_index);
+    else
+        stats_getNodeStat(index, (TNodeStats **)&nodeStats);
+
+    return error_getCode(error_index);
 }
 
 int DLLEXPORT swmm_getNodeTotalInflow(int index, double* value)
@@ -2255,201 +2246,160 @@ int DLLEXPORT swmm_getNodeTotalInflow(int index, double* value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats** storageStats)
+int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats *storageStats)
 ///
 /// Output:  Storage Node Stats Structure (SM_StorageStats)
 /// Return:  API Error
 /// Purpose: Gets Storage Node Stats and Converts Units
 {
-    int error_code_index;
-    *storageStats = (SM_StorageStats *)malloc(sizeof(SM_StorageStats));
-    error_code_index = stats_getStorageStat(index, *storageStats);
-
-    if (error_code_index == 0)
-    {
-        // Initial Volume
-        (*storageStats)->initVol *= UCF(VOLUME);
-        // Current Average Volume
-        (*storageStats)->avgVol *= (UCF(VOLUME) / (double)StepCount);
-        // Current Maximum Volume
-        (*storageStats)->maxVol *= UCF(VOLUME);
-        // Current Maximum Flow
-        (*storageStats)->maxFlow *= UCF(FLOW);
-        // Current Evaporation Volume
-        (*storageStats)->evapLosses *= UCF(VOLUME);
-        // Current Exfiltration Volume
-        (*storageStats)->exfilLosses *= UCF(VOLUME);
-    }
-
-    return error_getCode(error_code_index);
-}
-
-int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats *s)
-{
-    int errorcode = 0;
+    int error_index = 0;
     
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
-        errorcode = ERR_API_INPUTNOTOPEN;
+        error_index = ERR_API_INPUTNOTOPEN;
     
     // Check if Simulation is Running
     else if (swmm_IsStartedFlag() == FALSE)
-        errorcode = ERR_API_SIM_NRUNNING;
+        error_index = ERR_API_SIM_NRUNNING;
     
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[NODE])
-        errorcode = ERR_API_OBJECT_INDEX;
+        error_index = ERR_API_OBJECT_INDEX;
+    
+    // Check Node Type is storage
+    else if (Node[index].type != STORAGE)
+        error_index = ERR_API_WRONG_TYPE;
+    
+    else if (storageStats == NULL)
+        error_index = ERR_API_MEMORY;
+
+    else
+        stats_getStorageStat(index, (TStorageStats **)&storageStats);
+
+    return error_getCode(error_index);
+}
+
+int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats *outfallStats)
+{
+    int error_index = 0;
+    
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+        error_index = ERR_API_INPUTNOTOPEN;
+    
+    // Check if Simulation is Running
+    else if (swmm_IsStartedFlag() == FALSE)
+        error_index = ERR_API_SIM_NRUNNING;
+    
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[NODE])
+        error_index = ERR_API_OBJECT_INDEX;
     
     // Check Node Type is outfall
     else if (Node[index].type != OUTFALL)
-        errorcode = ERR_API_WRONG_TYPE;
+        error_index = ERR_API_WRONG_TYPE;
     
-    else if (s == NULL)
-        errorcode = ERR_API_MEMORY;
+    else if (outfallStats == NULL)
+        error_index = ERR_API_MEMORY;
 
-    else if (errorcode == 0)
-        errorcode = stats_getOutfallStat(index, (TOutfallStats **)&s);
+    else
+        stats_getOutfallStat(index, (TOutfallStats **)&outfallStats);
 
-    return errorcode;
+    return error_getCode(error_index);
 }
 
 
-
-// void DLLEXPORT swmm_freeOutfallStats(SM_OutfallStats *outfallStats)
-// ///
-// /// Return:  API Error
-// /// Purpose: Frees Outfall Node Stats and Converts Units
-// /// Note:    API user is responsible for calling swmm_freeOutfallStats
-// ///          since this function performs a memory allocation.
-// {
-//     FREE(outfallStats->totalLoad);
-// }
-
-
-
-int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats** linkStats)
+int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats)
 ///
 /// Output:  Link Stats Structure (SM_LinkStats)
 /// Return:  API Error
 /// Purpose: Gets Link Stats and Converts Units
 {
-    int error_code_index;
-    *linkStats = (SM_LinkStats *)malloc(sizeof(SM_LinkStats));
-    error_code_index = stats_getLinkStat(index, *linkStats);
+    int error_index = 0;
 
-    if (error_code_index == 0)
-    {
-        // Cumulative Maximum Flowrate
-        (*linkStats)->maxFlow *= UCF(FLOW);
-        // Cumulative Maximum Velocity
-        (*linkStats)->maxVeloc *= UCF(LENGTH);
-        // Cumulative Maximum Depth
-        (*linkStats)->maxDepth *= UCF(LENGTH);
-        // Cumulative Time Normal Flow
-        (*linkStats)->timeNormalFlow /= 3600.0;
-        // Cumulative Time Inlet Control
-        (*linkStats)->timeInletControl /= 3600.0;
-        // Cumulative Time Surcharged
-        (*linkStats)->timeSurcharged /= 3600.0;
-        // Cumulative Time Upstream Full
-        (*linkStats)->timeFullUpstream /= 3600.0;
-        // Cumulative Time Downstream Full
-        (*linkStats)->timeFullDnstream /= 3600.0;
-        // Cumulative Time Full Flow
-        (*linkStats)->timeFullFlow /= 3600.0;
-        // Cumulative Time Capacity limited
-        (*linkStats)->timeCapacityLimited /= 3600.0;
-        // Cumulative Time Courant Critical Flow
-        (*linkStats)->timeCourantCritical /= 3600.0;
-    }
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+		error_index = ERR_API_INPUTNOTOPEN;
 
-    return error_getCode(error_code_index);
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+		error_index = ERR_API_SIM_NRUNNING;
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[LINK])
+		error_index = ERR_API_OBJECT_INDEX;
+
+    else if (linkStats == NULL)
+        error_index = ERR_API_MEMORY;
+
+    else
+        stats_getLinkStat(index, (TLinkStats **)&linkStats);
+
+    return error_getCode(error_index);
 }
 
 
-int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats** pumpStats)
+int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats)
 ///
 /// Output:  Pump Link Stats Structure (SM_PumpStats)
 /// Return:  API Error
 /// Purpose: Gets Pump Link Stats and Converts Units
 {
-    int error_code_index;
-    *pumpStats = (SM_PumpStats *)malloc(sizeof(SM_PumpStats));
-    error_code_index = stats_getPumpStat(index, *pumpStats);
+    int error_index = 0;
 
-    if (error_code_index == 0)
-    {
-        // Cumulative Minimum Flow
-        (*pumpStats)->minFlow *= UCF(FLOW);
-        // Cumulative Average Flow
-        if ((*pumpStats)->totalPeriods > 0)
-        {
-            (*pumpStats)->avgFlow *= (UCF(FLOW) / (double) (*pumpStats)->totalPeriods);
-        }
-        else
-        {
-            (*pumpStats)->avgFlow *= 0.0;
-        }
-        // Cumulative Maximum Flow
-        (*pumpStats)->maxFlow *= UCF(FLOW);
-        // Cumulative Pumping Volume
-        (*pumpStats)->volume *= UCF(VOLUME);
-    }
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+		error_index = ERR_API_INPUTNOTOPEN;
 
-    return error_getCode(error_code_index);
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+		error_index = ERR_API_SIM_NRUNNING;
+
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[LINK])
+		error_index = ERR_API_OBJECT_INDEX;
+
+	// Check if pump
+	else if (Link[index].type != PUMP)
+		error_index = ERR_API_WRONG_TYPE;
+
+	else if (pumpStats == NULL)
+        error_index = ERR_API_MEMORY;
+
+    else
+        stats_getPumpStat(index, (TPumpStats **)&pumpStats);
+
+    return error_getCode(error_index);
 }
 
 
-int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats** subcatchStats)
+int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats)
 ///
 /// Output:  Subcatchment Stats Structure (SM_SubcatchStats)
 /// Return:  API Error
 /// Purpose: Gets Subcatchment Stats and Converts Units
 {
-  int error_code_index = 0;
-  double a;
-  TSubcatchStats *tmp = (TSubcatchStats *)calloc(1, sizeof(TSubcatchStats));
+    int error_index = 0;
 
-  // Check if Open
-  if (swmm_IsOpenFlag() == FALSE)
-  {
-    error_code_index = ERR_API_INPUTNOTOPEN;
-  }
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+        error_index = ERR_API_INPUTNOTOPEN;
 
-  // Check if Simulation is Running
-  else if (swmm_IsStartedFlag() == FALSE)
-  {
-    error_code_index = ERR_API_SIM_NRUNNING;
-  }
+    // Check if Simulation is Running
+    else if (swmm_IsStartedFlag() == FALSE)
+        error_index = ERR_API_SIM_NRUNNING;
 
-  // Check if object index is within bounds
-  else if (index < 0 || index >= Nobjects[SUBCATCH])
-  {
-    error_code_index = ERR_API_OBJECT_INDEX;
-  }
-    // Copy Structure
-  else
-  {
-    memcpy(tmp, stats_getSubcatchStat(index), sizeof(TSubcatchStats));
-    *subcatchStats = (SM_SubcatchStats *)tmp;
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[SUBCATCH])
+        error_index = ERR_API_OBJECT_INDEX;
 
-    a = Subcatch[index].area;
+    else if (subcatchStats == NULL)
+        error_index = ERR_API_MEMORY;
 
-    // Cumulative Runon Volume
-    (*subcatchStats)->runon *= UCF(VOLUME);
-    // Cumulative Infiltration Volume
-    (*subcatchStats)->infil *= UCF(VOLUME);
-    // Cumulative Runoff Volume
-    (*subcatchStats)->runoff *= UCF(VOLUME);
-    // Maximum Runoff Rate
-    (*subcatchStats)->maxFlow *= UCF(FLOW);
-    // Cumulative Rainfall Depth
-    (*subcatchStats)->precip *= (UCF(RAINDEPTH) / a);
-    // Cumulative Evaporation Volume
-    (*subcatchStats)->evap *= UCF(VOLUME);
-  }
+    else
+        stats_getSubcatchStat(index, (TSubcatchStats **)&subcatchStats);
 
-    return error_getCode(error_code_index);
+    return error_getCode(error_index);
 }
 
 

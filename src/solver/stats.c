@@ -789,8 +789,9 @@ void  stats_updateMaxStats(TMaxStats maxStats[], int i, int j, double x)
         }
     }
 }
-//
-int stats_getNodeStat(int index, TNodeStats *nodeStats)
+
+
+int stats_getNodeStat(int index, TNodeStats **nodeStats)
 //
 // Input:    index
 //           element = element to return
@@ -798,34 +799,37 @@ int stats_getNodeStat(int index, TNodeStats *nodeStats)
 // Purpose:  Gets a Node Stat for toolkitAPI
 //
 {
-    int errorcode = 0;
-    
-    // Check if Open
-    if (swmm_IsOpenFlag() == FALSE)
-    {
-        errorcode = ERR_API_INPUTNOTOPEN;
-    }
-    
-    // Check if Simulation is Running
-    else if (swmm_IsStartedFlag() == FALSE)
-    {
-        errorcode = ERR_API_SIM_NRUNNING;
-    }
-    
-    // Check if object index is within bounds
-    else if (index < 0 || index >= Nobjects[NODE])
-    {
-        errorcode = ERR_API_OBJECT_INDEX;
-    }
-    
-    else
-    {
-        memcpy(nodeStats, &NodeStats[index], sizeof(TNodeStats));
-    }
-    return errorcode;
+    // Perform memcopy
+    memcpy(*nodeStats, &NodeStats[index], sizeof(TNodeStats));
+
+    // Convert units 
+    // Current Average Depth
+    (*nodeStats)->avgDepth *= (UCF(LENGTH) / (double)StepCount);
+    // Current Maximum Depth
+    (*nodeStats)->maxDepth *= UCF(LENGTH);
+    // Current Maximum Lateral Inflow
+    (*nodeStats)->maxLatFlow *= UCF(FLOW);
+    // Current Maximum Inflow
+    (*nodeStats)->maxInflow *= UCF(FLOW);
+    // Cumulative Lateral Inflow
+    (*nodeStats)->totLatFlow *= UCF(VOLUME);
+    // Time Courant Critical (hrs)
+    (*nodeStats)->timeCourantCritical /= 3600.0;
+    // Cumulative Flooded Volume
+    (*nodeStats)->volFlooded *= UCF(VOLUME);
+    // Time Flooded (hrs)
+    (*nodeStats)->timeFlooded /= 3600.0;
+    // Current Maximum Overflow
+    (*nodeStats)->maxOverflow *= UCF(FLOW);
+    // Current Maximum Ponding Volume
+    (*nodeStats)->maxPondedVol *= UCF(VOLUME);
+    // Time Surcharged
+    (*nodeStats)->timeSurcharged /= 3600.0;
+
+    return 0;
 }
 
-int stats_getStorageStat(int index, TStorageStats *storageStats)
+int stats_getStorageStat(int index, TStorageStats **storageStats)
 //
 // Input:    subindex
 //           element = element to return
@@ -833,40 +837,26 @@ int stats_getStorageStat(int index, TStorageStats *storageStats)
 // Purpose:  Gets a Storage Stat for toolkitAPI
 //
 {
-    int errorcode = 0;
+    // Fetch sub index
+    int k = Node[index].subIndex;
+    // Copy Structure
+    memcpy(*storageStats, &StorageStats[k], sizeof(TStorageStats));
     
-    // Check if Open
-    if (swmm_IsOpenFlag() == FALSE)
-    {
-        errorcode = ERR_API_INPUTNOTOPEN;
-    }
-    
-    // Check if Simulation is Running
-    else if (swmm_IsStartedFlag() == FALSE)
-    {
-        errorcode = ERR_API_SIM_NRUNNING;
-    }
-    
-    // Check if object index is within bounds
-    else if (index < 0 || index >= Nobjects[NODE])
-    {
-        errorcode = ERR_API_OBJECT_INDEX;
-    }
-    
-    // Check Node Type is storage
-    else if (Node[index].type != STORAGE)
-    {
-        errorcode = ERR_API_WRONG_TYPE;
-    }
-    
-    else
-    {
-        // fetch sub index
-        int k = Node[index].subIndex;
-        // Copy Structure
-        memcpy(storageStats, &StorageStats[k], sizeof(TStorageStats));
-    }
-    return errorcode;
+    // Convert units
+    // Initial Volume
+    (*storageStats)->initVol *= UCF(VOLUME);
+    // Current Average Volume
+    (*storageStats)->avgVol *= (UCF(VOLUME) / (double)StepCount);
+    // Current Maximum Volume
+    (*storageStats)->maxVol *= UCF(VOLUME);
+    // Current Maximum Flow
+    (*storageStats)->maxFlow *= UCF(FLOW);
+    // Current Evaporation Volume
+    (*storageStats)->evapLosses *= UCF(VOLUME);
+    // Current Exfiltration Volume
+    (*storageStats)->exfilLosses *= UCF(VOLUME);
+
+    return 0;
 }
 
 int stats_getOutfallStat(int index, TOutfallStats **outfallStats)
@@ -883,8 +873,8 @@ int stats_getOutfallStat(int index, TOutfallStats **outfallStats)
     // fetch sub index
     k = Node[index].subIndex;
     
-    temp = (*outfallStats)->totalLoad;
     // Copy Structure
+    temp = (*outfallStats)->totalLoad;
     memcpy(*outfallStats, &(OutfallStats[k]), sizeof(TOutfallStats));
     (*outfallStats)->totalLoad = temp;
 
@@ -904,17 +894,17 @@ int stats_getOutfallStat(int index, TOutfallStats **outfallStats)
     // Convert Mass Units
     if (Nobjects[POLLUT] > 0)
     {
-        for (p = 0; p < Nobjects[POLLUT]; p++)
-            (*outfallStats)->totalLoad[p] *= (LperFT3 * Pollut[p].mcf);
+        for (p = 0; p < Nobjects[POLLUT]; p++) {
             if (Pollut[p].units == COUNT)
-            {
                 (*outfallStats)->totalLoad[p] = LOG10((*outfallStats)->totalLoad[p]);
-            }
+            else
+                (*outfallStats)->totalLoad[p] *= (LperFT3 * Pollut[p].mcf);
+        }
     }
     return 0;
 }
 
-int stats_getLinkStat(int index, TLinkStats *linkStats)
+int stats_getLinkStat(int index, TLinkStats **linkStats)
 //
 // Input:    index
 //           element = element to return
@@ -922,35 +912,36 @@ int stats_getLinkStat(int index, TLinkStats *linkStats)
 // Purpose:  Gets a Link Stat for toolkitAPI
 //
 {
-	int errorcode = 0;
+    // Copy Structure
+    memcpy(*linkStats, &LinkStats[index], sizeof(TLinkStats));
 
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE)
-	{
-		errorcode = ERR_API_INPUTNOTOPEN;
-	}
-
-	// Check if Simulation is Running
-	else if (swmm_IsStartedFlag() == FALSE)
-	{
-		errorcode = ERR_API_SIM_NRUNNING;
-	}
-
-	// Check if object index is within bounds
-	else if (index < 0 || index >= Nobjects[LINK])
-	{
-		errorcode = ERR_API_OBJECT_INDEX;
-	}
-
-	else
-	{
-		// Copy Structure
-		memcpy(linkStats, &LinkStats[index], sizeof(TLinkStats));
-	}
-	return errorcode;
+    // Cumulative Maximum Flowrate
+    (*linkStats)->maxFlow *= UCF(FLOW);
+    // Cumulative Maximum Velocity
+    (*linkStats)->maxVeloc *= UCF(LENGTH);
+    // Cumulative Maximum Depth
+    (*linkStats)->maxDepth *= UCF(LENGTH);
+    // Cumulative Time Normal Flow
+    (*linkStats)->timeNormalFlow /= 3600.0;
+    // Cumulative Time Inlet Control
+    (*linkStats)->timeInletControl /= 3600.0;
+    // Cumulative Time Surcharged
+    (*linkStats)->timeSurcharged /= 3600.0;
+    // Cumulative Time Upstream Full
+    (*linkStats)->timeFullUpstream /= 3600.0;
+    // Cumulative Time Downstream Full
+    (*linkStats)->timeFullDnstream /= 3600.0;
+    // Cumulative Time Full Flow
+    (*linkStats)->timeFullFlow /= 3600.0;
+    // Cumulative Time Capacity limited
+    (*linkStats)->timeCapacityLimited /= 3600.0;
+    // Cumulative Time Courant Critical Flow
+    (*linkStats)->timeCourantCritical /= 3600.0;
+    
+	return 0;
 }
 
-int stats_getPumpStat(int index, TPumpStats *pumpStats)
+int stats_getPumpStat(int index, TPumpStats **pumpStats)
 //
 // Input:    subindex
 //           element = element to return
@@ -958,43 +949,33 @@ int stats_getPumpStat(int index, TPumpStats *pumpStats)
 // Purpose:  Gets a Pump Stat for toolkitAPI
 //
 {
-	int errorcode = 0;
 
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE)
-	{
-		errorcode = ERR_API_INPUTNOTOPEN;
-	}
+    // fetch sub index
+    int k = Link[index].subIndex;
+    // Copy Structure
+    memcpy(*pumpStats, &PumpStats[k], sizeof(TPumpStats));
 
-	// Check if Simulation is Running
-	else if (swmm_IsStartedFlag() == FALSE)
-	{
-		errorcode = ERR_API_SIM_NRUNNING;
-	}
+    // Convert units
+    // Cumulative Minimum Flow
+    (*pumpStats)->minFlow *= UCF(FLOW);
+    // Cumulative Average Flow
+    if ((*pumpStats)->totalPeriods > 0)
+    {
+        (*pumpStats)->avgFlow *= (UCF(FLOW) / (double) (*pumpStats)->totalPeriods);
+    }
+    else
+    {
+        (*pumpStats)->avgFlow *= 0.0;
+    }
+    // Cumulative Maximum Flow
+    (*pumpStats)->maxFlow *= UCF(FLOW);
+    // Cumulative Pumping Volume
+    (*pumpStats)->volume *= UCF(VOLUME);
 
-	// Check if object index is within bounds
-	else if (index < 0 || index >= Nobjects[LINK])
-	{
-		errorcode = ERR_API_OBJECT_INDEX;
-	}
-
-	// Check if pump
-	else if (Link[index].type != PUMP)
-	{
-		errorcode = ERR_API_WRONG_TYPE;
-	}
-
-	else
-	{
-		// fetch sub index
-		int k = Link[index].subIndex;
-		// Copy Structure
-		memcpy(pumpStats, &PumpStats[k], sizeof(TPumpStats));
-	}
-	return errorcode;
+	return 0;
 }
 
-TSubcatchStats *stats_getSubcatchStat(int index)
+int stats_getSubcatchStat(int index, TSubcatchStats **subcatchStats)
 //
 // Input:    index
 //           element = element to return
@@ -1002,5 +983,22 @@ TSubcatchStats *stats_getSubcatchStat(int index)
 // Purpose:  Gets a Subcatchment Stat for toolkitAPI
 //
 {
-    return &SubcatchStats[index];
+    double a = Subcatch[index].area;
+
+    memcpy(*subcatchStats, &SubcatchStats[index],  sizeof(TSubcatchStats));
+
+    // Cumulative Runon Volume
+    (*subcatchStats)->runon *= UCF(VOLUME);
+    // Cumulative Infiltration Volume
+    (*subcatchStats)->infil *= UCF(VOLUME);
+    // Cumulative Runoff Volume
+    (*subcatchStats)->runoff *= UCF(VOLUME);
+    // Maximum Runoff Rate
+    (*subcatchStats)->maxFlow *= UCF(FLOW);
+    // Cumulative Rainfall Depth
+    (*subcatchStats)->precip *= (UCF(RAINDEPTH) / a);
+    // Cumulative Evaporation Volume
+    (*subcatchStats)->evap *= UCF(VOLUME);
+
+    return 0;
 }
