@@ -11,7 +11,7 @@
 #define TEST_SOLVER_HPP
 
 #include "swmm5.h"
-#include "toolkitAPI.h"
+#include "toolkit.h"
 
 
 // Add shared data paths here

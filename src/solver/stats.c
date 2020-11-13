@@ -869,7 +869,7 @@ int stats_getStorageStat(int index, TStorageStats *storageStats)
     return errorcode;
 }
 
-int stats_getOutfallStat(int index, TOutfallStats *outfallStats)
+int stats_getOutfallStat(int index, TOutfallStats **outfallStats)
 //
 // Input:    subindex
 //           element = element to return
@@ -877,58 +877,41 @@ int stats_getOutfallStat(int index, TOutfallStats *outfallStats)
 // Purpose:  Gets a Outfall Stat for toolkitAPI
 //
 {
-    int errorcode = 0;
-    int p;
+    int k, p;
+    double *temp;
+
+    // fetch sub index
+    k = Node[index].subIndex;
     
-    // Check if Open
-    if (swmm_IsOpenFlag() == FALSE)
-    {
-        errorcode = ERR_API_INPUTNOTOPEN;
-    }
-    
-    // Check if Simulation is Running
-    else if (swmm_IsStartedFlag() == FALSE)
-    {
-        errorcode = ERR_API_SIM_NRUNNING;
-    }
-    
-    // Check if object index is within bounds
-    else if (index < 0 || index >= Nobjects[NODE])
-    {
-        errorcode = ERR_API_OBJECT_INDEX;
-    }
-    
-    // Check Node Type is outfall
-    else if (Node[index].type != OUTFALL)
-    {
-        errorcode = ERR_API_WRONG_TYPE;
-    }
-    
+    temp = (*outfallStats)->totalLoad;
+    // Copy Structure
+    memcpy(*outfallStats, &(OutfallStats[k]), sizeof(TOutfallStats));
+    (*outfallStats)->totalLoad = temp;
+
+    // Perform Deep Copy of Pollutants Results
+    if (Nobjects[POLLUT] > 0)
+        memcpy((*outfallStats)->totalLoad, OutfallStats[k].totalLoad, sizeof(double)*Nobjects[POLLUT]);
+
+    // Perform unit conversions
+    if ((*outfallStats)->totalPeriods > 0 )
+        (*outfallStats)->avgFlow *= (UCF(FLOW) / (double) (*outfallStats)->totalPeriods);
     else
+        (*outfallStats)->avgFlow *= 0.0;
+
+    // Current Maximum Flow
+    (*outfallStats)->maxFlow *= UCF(FLOW);
+
+    // Convert Mass Units
+    if (Nobjects[POLLUT] > 0)
     {
-        // fetch sub index
-        int k = Node[index].subIndex;
-        // Copy Structure
-        memcpy(outfallStats, &OutfallStats[k], sizeof(TOutfallStats));
-    
-        // Perform Deep Copy of Pollutants Results
-        if (Nobjects[POLLUT] > 0)
-        {
-            outfallStats->totalLoad =
-                (double *)calloc(Nobjects[POLLUT], sizeof(double));
-            if (!outfallStats->totalLoad)
+        for (p = 0; p < Nobjects[POLLUT]; p++)
+            (*outfallStats)->totalLoad[p] *= (LperFT3 * Pollut[p].mcf);
+            if (Pollut[p].units == COUNT)
             {
-                errorcode = ERR_MEMORY;
+                (*outfallStats)->totalLoad[p] = LOG10((*outfallStats)->totalLoad[p]);
             }
-            if (errorcode == 0)
-            {
-                for (p = 0; p < Nobjects[POLLUT]; p++)
-                    outfallStats->totalLoad[p] = OutfallStats[k].totalLoad[p];
-            }
-        }
-        else outfallStats->totalLoad = NULL;
     }
-    return errorcode;
+    return 0;
 }
 
 int stats_getLinkStat(int index, TLinkStats *linkStats)

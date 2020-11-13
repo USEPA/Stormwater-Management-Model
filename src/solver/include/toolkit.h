@@ -1,7 +1,7 @@
-/** @file toolkitAPI.h
+/** @file toolkit.h
  @see http://github.com/openwateranalytics/stormwater-management-model
 
- toolkitAPI.h
+ toolkit.h
  @brief Exportable Functions for Toolkit API.
  @date 08/30/2016 (First Contribution)
  @authors B. McDonnell (EmNet LLC), OpenWaterAnalytics members: see <a href="https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/AUTHORS">AUTHORS</a>.
@@ -27,7 +27,10 @@ extern "C" {
 
 #define _CRT_SECURE_NO_DEPRECATE
 
-#include "toolkitAPI_enums.h"
+
+#include "toolkit_enums.h"
+#include "toolkit_structs.h"
+
 
 // /**
 //  @brief Get full semantic version number
@@ -469,15 +472,15 @@ int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats **storageStats);
  pollutants array.
  @return Error code
 */
-int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats **outfallStats);
+int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats *outfallStats);
 
-/**
- @brief Free outfall statistics structure.
- @param[out] outfallStats The outfall Stats struct. This frees any allocated
- pollutants array.
- @return Error code
-*/
-void DLLEXPORT swmm_freeOutfallStats(SM_OutfallStats *outfallStats);
+// /**
+//  @brief Free outfall statistics structure.
+//  @param[out] outfallStats The outfall Stats struct. This frees any allocated
+//  pollutants array.
+//  @return Error code
+// */
+// void DLLEXPORT swmm_freeOutfallStats(SM_OutfallStats *outfallStats);
 
 /**
  @brief Get link statistics.

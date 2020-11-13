@@ -36,6 +36,7 @@ set(solver_test_srcs
     test_pollut.cpp
     test_toolkit.cpp
     test_solver.cpp
+    test_stats.cpp
     # ADD NEW TEST SUITES TO EXISTING TOOLKIT TEST MODULE
 )
 

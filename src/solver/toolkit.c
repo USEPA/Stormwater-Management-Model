@@ -1,7 +1,7 @@
-/** @file toolkitAPI.c
+/** @file toolkit.c
  @see http://github.com/openwateranalytics/stormwater-management-model
 
- toolkitAPI.c
+ toolkit.c
  @brief Exportable Functions for Toolkit API.
  @date 08/30/2016 (First Contribution)
  @authors B. McDonnell (EmNet LLC), OpenWaterAnalytics members: see <a href="https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/AUTHORS">AUTHORS</a>.
@@ -18,7 +18,7 @@
 
 #include "headers.h"
 #include "swmm5.h"                     // declaration of exportable functions
-#include "toolkitAPI.h"
+#include "toolkit.h"
 #include "hash.h"
 
 #include "shared/cstr_helper.h"
@@ -32,7 +32,7 @@ int     massbal_getNodeTotalInflow(int index, double *value);
 
 int  stats_getNodeStat(int index, SM_NodeStats *nodeStats);
 int  stats_getStorageStat(int index, SM_StorageStats *storageStats);
-int  stats_getOutfallStat(int index, SM_OutfallStats *outfallStats);
+int  stats_getOutfallStat(int index, TOutfallStats **outfallStats);
 int  stats_getLinkStat(int index, SM_LinkStats *linkStats);
 int  stats_getPumpStat(int index, SM_PumpStats *pumpStats);
 TSubcatchStats *stats_getSubcatchStat(int index);
@@ -2287,56 +2287,46 @@ int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats** storageStats)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats** outfallStats)
-///
-/// Output:  Outfall Stats Structure (SM_OutfallStats)
-/// Return:  API Error
-/// Purpose: Gets Outfall Node Stats and Converts Units
-/// Note:    Caller is responsible for calling swmm_freeOutfallStats
-///          to free the pollutants array.
+int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats *s)
 {
-    int error_code_index, p;
-    *outfallStats = (SM_OutfallStats *)malloc(sizeof(SM_OutfallStats));
-    error_code_index = stats_getOutfallStat(index, *outfallStats);
+    int errorcode = 0;
+    
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+        errorcode = ERR_API_INPUTNOTOPEN;
+    
+    // Check if Simulation is Running
+    else if (swmm_IsStartedFlag() == FALSE)
+        errorcode = ERR_API_SIM_NRUNNING;
+    
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[NODE])
+        errorcode = ERR_API_OBJECT_INDEX;
+    
+    // Check Node Type is outfall
+    else if (Node[index].type != OUTFALL)
+        errorcode = ERR_API_WRONG_TYPE;
+    
+    else if (s == NULL)
+        errorcode = ERR_API_MEMORY;
 
-    if (error_code_index == 0)
-    {
-        // Current Average Flow
-        if ((*outfallStats)->totalPeriods > 0 )
-        {
-            (*outfallStats)->avgFlow *= (UCF(FLOW) / (double) (*outfallStats)->totalPeriods);
-        }
-        else
-        {
-            (*outfallStats)->avgFlow *= 0.0;
-        }
-        // Current Maximum Flow
-        (*outfallStats)->maxFlow *= UCF(FLOW);
-        // Convert Mass Units
-        if (Nobjects[POLLUT] > 0)
-        {
-            for (p = 0; p < Nobjects[POLLUT]; p++)
-                (*outfallStats)->totalLoad[p] *= (LperFT3 * Pollut[p].mcf);
-                if (Pollut[p].units == COUNT)
-                {
-                    (*outfallStats)->totalLoad[p] = LOG10((*outfallStats)->totalLoad[p]);
-                }
-        }
-    }
+    else if (errorcode == 0)
+        errorcode = stats_getOutfallStat(index, (TOutfallStats **)&s);
 
-    return error_getCode(error_code_index);
+    return errorcode;
 }
 
 
-void DLLEXPORT swmm_freeOutfallStats(SM_OutfallStats *outfallStats)
-///
-/// Return:  API Error
-/// Purpose: Frees Outfall Node Stats and Converts Units
-/// Note:    API user is responsible for calling swmm_freeOutfallStats
-///          since this function performs a memory allocation.
-{
-    FREE(outfallStats->totalLoad);
-}
+
+// void DLLEXPORT swmm_freeOutfallStats(SM_OutfallStats *outfallStats)
+// ///
+// /// Return:  API Error
+// /// Purpose: Frees Outfall Node Stats and Converts Units
+// /// Note:    API user is responsible for calling swmm_freeOutfallStats
+// ///          since this function performs a memory allocation.
+// {
+//     FREE(outfallStats->totalLoad);
+// }
 
 
 

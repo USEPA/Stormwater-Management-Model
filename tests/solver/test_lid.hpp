@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "swmm5.h"
-#include "toolkitAPI.h"
+#include "toolkit.h"
 
 #define ERR_NONE 0
 
