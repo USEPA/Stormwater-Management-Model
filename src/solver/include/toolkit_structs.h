@@ -247,6 +247,8 @@ typedef struct
     double       infil;
     double       runoff;
     double       maxFlow;
+    double       impervRunoff;
+    double       pervRunoff;
 }  SM_SubcatchStats;
 
 /** @struct SM_RoutingTotals

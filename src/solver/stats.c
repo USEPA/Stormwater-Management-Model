@@ -983,22 +983,24 @@ int stats_getSubcatchStat(int index, TSubcatchStats **subcatchStats)
 // Purpose:  Gets a Subcatchment Stat for toolkitAPI
 //
 {
-    double a = Subcatch[index].area;
+    memcpy(*subcatchStats, &(SubcatchStats[index]),  sizeof(TSubcatchStats));
 
-    memcpy(*subcatchStats, &SubcatchStats[index],  sizeof(TSubcatchStats));
-
+    // Cumulative Rainfall Depth
+    (*subcatchStats)->precip *= (UCF(RAINDEPTH) / Subcatch[index].area);
     // Cumulative Runon Volume
     (*subcatchStats)->runon *= UCF(VOLUME);
+    // Cumulative Evaporation Volume
+    (*subcatchStats)->evap *= UCF(VOLUME);
     // Cumulative Infiltration Volume
     (*subcatchStats)->infil *= UCF(VOLUME);
     // Cumulative Runoff Volume
     (*subcatchStats)->runoff *= UCF(VOLUME);
     // Maximum Runoff Rate
     (*subcatchStats)->maxFlow *= UCF(FLOW);
-    // Cumulative Rainfall Depth
-    (*subcatchStats)->precip *= (UCF(RAINDEPTH) / a);
-    // Cumulative Evaporation Volume
-    (*subcatchStats)->evap *= UCF(VOLUME);
+    // Impervious Runoff
+    (*subcatchStats)->impervRunoff *= UCF(VOLUME);
+    // Pervious Runoff
+    (*subcatchStats)->pervRunoff *= UCF(VOLUME);
 
     return 0;
 }
