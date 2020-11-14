@@ -223,6 +223,7 @@ typedef struct
    int          totalPeriods;
 }  SM_PumpStats;
 
+
 /** @struct SM_SubcatchStats
  *  @brief Subcatchment Statistics
  *
@@ -250,6 +251,7 @@ typedef struct
     double       impervRunoff;
     double       pervRunoff;
 }  SM_SubcatchStats;
+
 
 /** @struct SM_RoutingTotals
  *  @brief System Flow Routing Statistics
