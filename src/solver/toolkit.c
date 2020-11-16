@@ -2407,7 +2407,7 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats)
 }
 
 
-int DLLEXPORT swmm_getSystemRoutingTotal(SM_RoutingTotals *routingTot)
+int DLLEXPORT swmm_getSystemRoutingTotals(SM_RoutingTotals *routingTotals)
 ///
 /// Output:  System Routing Totals Structure (SM_RoutingTotals)
 /// Return:  API Error
@@ -2423,16 +2423,16 @@ int DLLEXPORT swmm_getSystemRoutingTotal(SM_RoutingTotals *routingTot)
 	else if (swmm_IsStartedFlag() == FALSE)
 		error_index = ERR_API_SIM_NRUNNING;
 
-    else if (routingTot == NULL)
+    else if (routingTotals == NULL)
         error_index = ERR_API_MEMORY;
     
     else
-        massbal_getRoutingTotal((TRoutingTotals **)&routingTot);
+        massbal_getRoutingTotal((TRoutingTotals **)&routingTotals);
 
     return error_getCode(error_index);
 }
 
-int DLLEXPORT swmm_getSystemRunoffTotal(SM_RunoffTotals *runoffTot)
+int DLLEXPORT swmm_getSystemRunoffTotals(SM_RunoffTotals *runoffTotals)
 ///
 /// Output:  System Runoff Totals Structure (SM_RunoffTotals)
 /// Return:  API Error
@@ -2448,11 +2448,11 @@ int DLLEXPORT swmm_getSystemRunoffTotal(SM_RunoffTotals *runoffTot)
 	else if (swmm_IsStartedFlag() == FALSE)
 		error_index = ERR_API_SIM_NRUNNING;
 
-	else if (runoffTot == NULL)
+	else if (runoffTotals == NULL)
         error_index = ERR_API_MEMORY;
     
     else
-        massbal_getRunoffTotal((TRunoffTotals **)&runoffTot);
+        massbal_getRunoffTotal((TRunoffTotals **)&runoffTotals);
 
     return error_getCode(error_index);
 }

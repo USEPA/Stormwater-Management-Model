@@ -1062,7 +1062,7 @@ int massbal_getRoutingTotal(TRoutingTotals **routingTotal)
 // Purpose:  Gets the routing total for toolkitAPI
 //
 {
-	memcpy(routingTotal, &FlowTotals, sizeof(TRoutingTotals));
+	memcpy(*routingTotal, &FlowTotals, sizeof(TRoutingTotals));
 
     // Cumulative Dry Weather Inflow Volume
     (*routingTotal)->dwInflow *= UCF(VOLUME);
@@ -1096,7 +1096,7 @@ int massbal_getRunoffTotal(TRunoffTotals **runoffTotal)
 //
 {
 	
-	memcpy(runoffTotal, &RunoffTotals, sizeof(TRunoffTotals));
+	memcpy(*runoffTotal, &RunoffTotals, sizeof(TRunoffTotals));
 	
     // Cumulative Rainfall Depth
     (*runoffTotal)->rainfall *= (UCF(RAINDEPTH) / TotalArea);

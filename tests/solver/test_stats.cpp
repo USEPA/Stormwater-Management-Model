@@ -146,5 +146,35 @@ BOOST_FIXTURE_TEST_CASE(get_subcatch_stats, FixtureBeforeEnd){
     // BOOST_CHECK_SMALL(subc_stats->evap - 0.0, 0.0001);
 }
 
+BOOST_FIXTURE_TEST_CASE(get_routing_totals, FixtureBeforeEnd){
+    int error;
+
+    // Subcatchment
+    SM_RoutingTotals *s = NULL;
+
+    error = swmm_getSystemRoutingTotals(s);
+    BOOST_CHECK_EQUAL(error, ERR_API_MEMORY);
+
+    SM_RoutingTotals __rtots;
+    SM_RoutingTotals *_rtots = &__rtots;
+
+    error = swmm_getSystemRoutingTotals(_rtots);
+}
+
+
+BOOST_FIXTURE_TEST_CASE(get_runoff_totals, FixtureBeforeEnd){
+    int error;
+
+    // Subcatchment
+    SM_RunoffTotals *s = NULL;
+
+    error = swmm_getSystemRunoffTotals(s);
+    BOOST_CHECK_EQUAL(error, ERR_API_MEMORY);
+
+    SM_RunoffTotals __rtots;
+    SM_RunoffTotals *_rtots = &__rtots;
+
+    error = swmm_getSystemRunoffTotals(_rtots);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
