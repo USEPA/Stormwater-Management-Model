@@ -512,20 +512,20 @@ int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
 int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats);
 
 /**
- @brief Get system routing statistics.
+ @brief Get system routing totals.
  @param[out] routingTot The system Routing Stats struct (see @ref SM_RoutingTotals).
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getSystemRoutingStats(SM_RoutingTotals **routingTot);
+int DLLEXPORT swmm_getSystemRoutingTotal(SM_RoutingTotals *routingTotals);
 
 /**
- @brief Get system runoff statistics.
+ @brief Get system runoff totals.
  @param[out] runoffTot The system Runoff Stats struct (see @ref SM_RunoffTotals).
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getSystemRunoffStats(SM_RunoffTotals **runoffTot);
+int DLLEXPORT swmm_getSystemRunoffTotal(SM_RunoffTotals *runoffTotals);
 
 /**
  @brief Set a link setting (pump, orifice, or weir). Setting for an orifice

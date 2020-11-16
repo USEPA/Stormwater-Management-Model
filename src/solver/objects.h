@@ -60,7 +60,8 @@
 #include "infil.h"
 #include "exfil.h"
 
-#include "toolkit_structs.h"
+#include "toolkit_structs.h"  // Declaration of public structs
+
 
 //-----------------
 // FILE INFORMATION

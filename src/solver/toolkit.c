@@ -22,9 +22,8 @@
 
 
 // Function Declarations for API
-int     massbal_getRoutingFlowTotal(SM_RoutingTotals *routingTot);
-int     massbal_getRunoffTotal(SM_RunoffTotals *runoffTot);
-double  massbal_getTotalArea(void);
+int     massbal_getRoutingTotal(SM_RoutingTotals **routingTot);
+int     massbal_getRunoffTotal(SM_RunoffTotals **runoffTot);
 int     massbal_getNodeTotalInflow(int index, double *value);
 
 int  stats_getNodeStat(int index, TNodeStats **nodeStats);
@@ -2235,15 +2234,20 @@ int DLLEXPORT swmm_getNodeTotalInflow(int index, double* value)
 /// Return:  API Error
 /// Purpose: Get Node Total Inflow Volume.
 {
-    //*value = 0;
-    int error_code_index = massbal_getNodeTotalInflow(index, value);
+    int error_index = 0;
 
-    if (error_code_index == 0)
-    {
-        *value *= UCF(VOLUME);
-    }
+    // Check if Open
+    if (swmm_IsOpenFlag() == FALSE)
+        error_index = ERR_API_INPUTNOTOPEN;
 
-    return error_getCode(error_code_index);
+	// Check if Simulation is Running
+    else if (swmm_IsStartedFlag() == FALSE)
+        error_index = ERR_API_SIM_NRUNNING;
+
+    else
+        massbal_getNodeTotalInflow(index, value);
+
+    return error_getCode(error_index);
 }
 
 int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats *storageStats)
@@ -2403,83 +2407,54 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats)
 }
 
 
-int DLLEXPORT swmm_getSystemRoutingStats(SM_RoutingTotals** routingTot)
+int DLLEXPORT swmm_getSystemRoutingTotal(SM_RoutingTotals *routingTot)
 ///
 /// Output:  System Routing Totals Structure (SM_RoutingTotals)
 /// Return:  API Error
 /// Purpose: Gets System Flow Routing Totals and Converts Units
 {
-    int error_code_index;
-    *routingTot = (SM_RoutingTotals *)malloc(sizeof(SM_RoutingTotals));
-    error_code_index = massbal_getRoutingFlowTotal(*routingTot);
+    int error_index;
 
-    if (error_code_index == 0)
-    {
-        // Cumulative Dry Weather Inflow Volume
-        (*routingTot)->dwInflow *= UCF(VOLUME);
-        // Cumulative Wet Weather Inflow Volume
-        (*routingTot)->wwInflow *= UCF(VOLUME);
-        // Cumulative Groundwater Inflow Volume
-        (*routingTot)->gwInflow *= UCF(VOLUME);
-        // Cumulative I&I Inflow Volume
-        (*routingTot)->iiInflow *= UCF(VOLUME);
-        // Cumulative External Inflow Volume
-        (*routingTot)->exInflow *= UCF(VOLUME);
-        // Cumulative Flooding Volume
-        (*routingTot)->flooding *= UCF(VOLUME);
-        // Cumulative Outflow Volume
-        (*routingTot)->outflow  *= UCF(VOLUME);
-        // Cumulative Evaporation Loss
-        (*routingTot)->evapLoss *= UCF(VOLUME);
-        // Cumulative Seepage Loss
-        (*routingTot)->seepLoss *= UCF(VOLUME);
-        // Continuity Error
-        (*routingTot)->pctError *= 100;
-    }
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+		error_index = ERR_API_INPUTNOTOPEN;
 
-    return error_getCode(error_code_index);
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+		error_index = ERR_API_SIM_NRUNNING;
+
+    else if (routingTot == NULL)
+        error_index = ERR_API_MEMORY;
+    
+    else
+        massbal_getRoutingTotal((TRoutingTotals **)&routingTot);
+
+    return error_getCode(error_index);
 }
 
-int DLLEXPORT swmm_getSystemRunoffStats(SM_RunoffTotals** runoffTot)
+int DLLEXPORT swmm_getSystemRunoffTotal(SM_RunoffTotals *runoffTot)
 ///
 /// Output:  System Runoff Totals Structure (SM_RunoffTotals)
 /// Return:  API Error
 /// Purpose: Gets System Runoff Totals and Converts Units
 {
-    int error_code_index;
-    *runoffTot = (SM_RunoffTotals *)malloc(sizeof(SM_RunoffTotals));
-    error_code_index =  massbal_getRunoffTotal(*runoffTot);
+    int error_index;
 
-    if (error_code_index == 0)
-    {
-        double TotalArea = massbal_getTotalArea();
-        // Cumulative Rainfall Depth
-        (*runoffTot)->rainfall *= (UCF(RAINDEPTH) / TotalArea);
-        // Cumulative Evaporation Volume
-        (*runoffTot)->evap *= UCF(VOLUME);
-        // Cumulative Infiltration Volume
-        (*runoffTot)->infil *= UCF(VOLUME);
-        // Cumulative Runoff Volume
-        (*runoffTot)->runoff *= UCF(VOLUME);
-        // Cumulative Runon Volume
-        (*runoffTot)->runon *= UCF(VOLUME);
-        // Cumulative Drain Volume
-        (*runoffTot)->drains *= UCF(VOLUME);
-        // Cumulative Snow Removed Volume
-        (*runoffTot)->snowRemoved *= (UCF(RAINDEPTH) / TotalArea);
-        // Initial Storage Volume
-        (*runoffTot)->initStorage *= (UCF(RAINDEPTH) / TotalArea);
-        // Final Storage Volume
-        (*runoffTot)->finalStorage *= (UCF(RAINDEPTH) / TotalArea);
-        // Initial Snow Cover Volume
-        (*runoffTot)->initSnowCover *= (UCF(RAINDEPTH) / TotalArea);
-        // Final Snow Cover Volume
-        (*runoffTot)->finalSnowCover *= (UCF(RAINDEPTH) / TotalArea);
-        // Continuity Error
-        (*runoffTot)->pctError *= 100;
-    }
+	// Check if Open
+	if (swmm_IsOpenFlag() == FALSE)
+		error_index = ERR_API_INPUTNOTOPEN;
 
-    return error_getCode(error_code_index);
+	// Check if Simulation is Running
+	else if (swmm_IsStartedFlag() == FALSE)
+		error_index = ERR_API_SIM_NRUNNING;
+
+	else if (runoffTot == NULL)
+        error_index = ERR_API_MEMORY;
+    
+    else
+        massbal_getRunoffTotal((TRunoffTotals **)&runoffTot);
+
+    return error_getCode(error_index);
 }
 
 int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, SM_LidLayer layerIndex, double* result)
