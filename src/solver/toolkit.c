@@ -2413,7 +2413,7 @@ int DLLEXPORT swmm_getSystemRoutingTotals(SM_RoutingTotals *routingTotals)
 /// Return:  API Error
 /// Purpose: Gets System Flow Routing Totals and Converts Units
 {
-    int error_index;
+    int error_index = 0;
 
 	// Check if Open
 	if (swmm_IsOpenFlag() == FALSE)
@@ -2438,7 +2438,7 @@ int DLLEXPORT swmm_getSystemRunoffTotals(SM_RunoffTotals *runoffTotals)
 /// Return:  API Error
 /// Purpose: Gets System Runoff Totals and Converts Units
 {
-    int error_index;
+    int error_index = 0;
 
 	// Check if Open
 	if (swmm_IsOpenFlag() == FALSE)

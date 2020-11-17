@@ -159,6 +159,9 @@ BOOST_FIXTURE_TEST_CASE(get_routing_totals, FixtureBeforeEnd){
     SM_RoutingTotals *_rtots = &__rtots;
 
     error = swmm_getSystemRoutingTotals(_rtots);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    BOOST_CHECK(_rtots != NULL);
 }
 
 
@@ -175,6 +178,9 @@ BOOST_FIXTURE_TEST_CASE(get_runoff_totals, FixtureBeforeEnd){
     SM_RunoffTotals *_rtots = &__rtots;
 
     error = swmm_getSystemRunoffTotals(_rtots);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    BOOST_CHECK(_rtots != NULL);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
