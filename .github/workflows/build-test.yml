@@ -86,7 +86,11 @@ jobs:
         with:
           repository: OpenWaterAnalytics/ci-tools
           path: ci-tools
-
+      
+      - name: Initialize submodule
+        run: |
+          git submodule update --init --recursive
+      
       - name: Setup python
         uses: actions/setup-python@v2
         with:
