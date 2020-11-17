@@ -76,7 +76,8 @@ jobs:
       BUILD_HOME: build
       TEST_HOME: nrtests 
       NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
-
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
