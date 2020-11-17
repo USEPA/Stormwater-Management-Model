@@ -80,13 +80,9 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-
-      - name: Checkout submodule
-        uses: actions/checkout@v2
         with:
-          repository: OpenWaterAnalytics/ci-tools
-          path: ci-tools
-      
+          submodules: recursive
+
       - name: Initialize submodule
         run: |
           git submodule update --init --recursive
