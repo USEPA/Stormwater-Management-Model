@@ -22,16 +22,16 @@
 
 
 // Function Declarations for API
-int     massbal_getRoutingTotal(SM_RoutingTotals **routingTot);
-int     massbal_getRunoffTotal(SM_RunoffTotals **runoffTot);
-int     massbal_getNodeTotalInflow(int index, double *value);
+int  massbal_getRoutingTotal(SM_RoutingTotals **routingTot);
+int  massbal_getRunoffTotal(SM_RunoffTotals **runoffTot);
+int  massbal_getNodeTotalInflow(int index, double *value);
 
 int  stats_getNodeStat(int index, TNodeStats **nodeStats);
 int  stats_getStorageStat(int index, TStorageStats **storageStats);
 int  stats_getOutfallStat(int index, TOutfallStats **outfallStats);
 int  stats_getLinkStat(int index, TLinkStats **linkStats);
 int  stats_getPumpStat(int index, TPumpStats **pumpStats);
-int stats_getSubcatchStat(int index, TSubcatchStats **subcatchStats);
+int  stats_getSubcatchStat(int index, TSubcatchStats **subcatchStats);
 
 
 // Utilty Function Declarations

@@ -16,7 +16,7 @@
 #define MAXELENAME 31      // Max characters in element name
 
 // This is an opaque pointer to struct. Do not access variables.
-typedef void *SMO_Handle;
+typedef struct Handle *SMO_Handle;
 
 
 #include "swmm_output_enums.h"
