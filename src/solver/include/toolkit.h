@@ -1,7 +1,7 @@
-/** @file toolkitAPI.h
+/** @file toolkit.h
  @see http://github.com/openwateranalytics/stormwater-management-model
 
- toolkitAPI.h
+ toolkit.h
  @brief Exportable Functions for Toolkit API.
  @date 08/30/2016 (First Contribution)
  @authors B. McDonnell (EmNet LLC), OpenWaterAnalytics members: see <a href="https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/AUTHORS">AUTHORS</a>.
@@ -27,8 +27,25 @@ extern "C" {
 
 #define _CRT_SECURE_NO_DEPRECATE
 
-#include "toolkitAPI_enums.h"
 
+#include "toolkit_enums.h"
+#include "toolkit_structs.h"
+
+
+// /**
+//  @brief Get full semantic version number
+//  @param[out] semver sematic version (char array)
+// */
+// void DLLEXPORT   swmm_getSemVersion(char* semver);
+
+/**
+ @brief Get full semantic version number info
+ @param[out] major sematic version major number
+ @param[out] minor sematic version minor number
+ @param[out] patch sematic version patch number
+ @return error code
+*/
+int  DLLEXPORT   swmm_getVersionInfo(char **major, char **minor, char **patch);
 
 /**
  @brief Opens SWMM input file, reads in network data, runs, and closes
@@ -51,13 +68,12 @@ int DLLEXPORT swmm_getAPIError(int errorCode, char **errorMsg);
 
 /**
  @brief Finds the index of an object given its ID.
- @param type An object type
+ @param type An object type (see @ref SM_ObjectType)
  @param id The object ID
-
  @param[out] index The objects index
  @return Error code
 */
-int DLLEXPORT swmm_project_findObject(int type, char *id, int *index);
+int DLLEXPORT swmm_project_findObject(SM_ObjectType type, char *id, int *index);
 
 /**
 @brief Gets Simulation Unit
@@ -116,7 +132,7 @@ int DLLEXPORT swmm_getObjectIndex(SM_ObjectType type, char *id, int *index);
  id must be pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getNodeType(SM_NodeType index, int *Ntype);
+int DLLEXPORT swmm_getNodeType(int index, SM_NodeType *Ntype);
 
 /**
  @brief Get the type of link with specified index.
@@ -124,7 +140,7 @@ int DLLEXPORT swmm_getNodeType(SM_NodeType index, int *Ntype);
  @param[out] Ltype The type code for the link (@ref SM_LinkType).
  @return Error code
 */
-int DLLEXPORT swmm_getLinkType(SM_LinkType index, int *Ltype);
+int DLLEXPORT swmm_getLinkType(int index, SM_LinkType *Ltype);
 
 /**
  @brief Get the link Connection Node Indeces. If the conduit has a
@@ -149,11 +165,11 @@ int DLLEXPORT swmm_getLinkDirection(int index, signed char *value);
  @brief Get the Subcatchment connection. Subcatchments can load to a
  node, another subcatchment, or itself.
  @param index The index of a Subcatchment
- @param[out] type The type of object loading (See @ref ObjectType)
+ @param[out] type The type of object loading (See @ref SM_ObjectType)
  @param[out] out_index The object index
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchOutConnection(int index, int *type, int *out_index);
+int DLLEXPORT swmm_getSubcatchOutConnection(int index, SM_ObjectType *type, int *out_index);
 
 /**
  @brief Get the number of lid units on a subcatchment.
@@ -374,7 +390,7 @@ int DLLEXPORT swmm_getNodeResult(int index, SM_NodeResult type, double *result);
  @param[out] PollutArray result array
  @return Error code
 */
-int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **PollutArray, int *length);
+int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **pollutArray, int *length);
 
 /**
  @brief Get a result value for specified link.
@@ -392,7 +408,7 @@ int DLLEXPORT swmm_getLinkResult(int index, SM_LinkResult type, double *result);
  @param[out] PollutArray result array
  @return Error code
 */
-int DLLEXPORT swmm_getLinkPollut(int index, SM_LinkPollut type, double **PollutArray, int *length);
+int DLLEXPORT swmm_getLinkPollut(int index, SM_LinkPollut type, double **pollutArray, int *length);
 
 /**
  @brief Get a result value for specified subcatchment.
@@ -410,7 +426,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, SM_SubcResult type, double *resu
  @param[out] PollutArray result array
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **PollutArray, int *length);
+int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **pollutArray, int *length);
 
 /**
 @brief Get precipitation rates for a gage.
@@ -428,7 +444,7 @@ int DLLEXPORT swmm_getGagePrecip(int index, SM_GagePrecip type, double *result);
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats **nodeStats);
+int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats);
 
 /**
  @brief Get the cumulative inflow for a node.
@@ -445,7 +461,7 @@ int DLLEXPORT swmm_getNodeTotalInflow(int index, double *value);
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats **storageStats);
+int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats *storageStats);
 
 /**
  @brief Get outfall statistics.
@@ -456,15 +472,15 @@ int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats **storageStats);
  pollutants array.
  @return Error code
 */
-int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats **outfallStats);
+int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats *outfallStats);
 
-/**
- @brief Free outfall statistics structure.
- @param[out] outfallStats The outfall Stats struct. This frees any allocated
- pollutants array.
- @return Error code
-*/
-void DLLEXPORT swmm_freeOutfallStats(SM_OutfallStats *outfallStats);
+// /**
+//  @brief Free outfall statistics structure.
+//  @param[out] outfallStats The outfall Stats struct. This frees any allocated
+//  pollutants array.
+//  @return Error code
+// */
+// void DLLEXPORT swmm_freeOutfallStats(SM_OutfallStats *outfallStats);
 
 /**
  @brief Get link statistics.
@@ -473,7 +489,7 @@ void DLLEXPORT swmm_freeOutfallStats(SM_OutfallStats *outfallStats);
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats **linkStats);
+int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats);
 
 /**
  @brief Get pump statistics.
@@ -482,7 +498,7 @@ int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats **linkStats);
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats **pumpStats);
+int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats);
 
 /**
  @brief Get subcatchment statistics.
@@ -493,23 +509,23 @@ int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats **pumpStats);
  pollutants array.
  @return Error code
 */
-int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats **subcatchStats);
+int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats);
 
 /**
- @brief Get system routing statistics.
+ @brief Get system routing totals.
  @param[out] routingTot The system Routing Stats struct (see @ref SM_RoutingTotals).
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getSystemRoutingStats(SM_RoutingTotals **routingTot);
+int DLLEXPORT swmm_getSystemRoutingTotals(SM_RoutingTotals *routingTotals);
 
 /**
- @brief Get system runoff statistics.
+ @brief Get system runoff totals.
  @param[out] runoffTot The system Runoff Stats struct (see @ref SM_RunoffTotals).
  pre-allocated by the caller.
  @return Error code
 */
-int DLLEXPORT swmm_getSystemRunoffStats(SM_RunoffTotals **runoffTot);
+int DLLEXPORT swmm_getSystemRunoffTotals(SM_RunoffTotals *runoffTotals);
 
 /**
  @brief Set a link setting (pump, orifice, or weir). Setting for an orifice

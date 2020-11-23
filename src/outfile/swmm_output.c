@@ -15,18 +15,19 @@
 #include <string.h>
 
 #include "errormanager.h"
-
 #include "messages.h"
+
 #include "swmm_output.h"
 
 
 // NOTE: These depend on machine data model and may change when porting
 // F_OFF Must be a 8 byte / 64 bit integer for large file support
 #ifdef _WIN32    // Windows (32-bit and 64-bit)
-#define F_OFF __int64
+  #define F_OFF __int64
 #else    // Other platforms
-#define F_OFF off_t
+  #define F_OFF off_t
 #endif
+
 #define INT4 int      // Must be a 4 byte / 32 bit integer type
 #define REAL4 float   // Must be a 4 byte / 32 bit real type
 
@@ -34,8 +35,8 @@
 #define DATESIZE 8    // Dates are stored as 8 byte word size
 
 #define NELEMENTTYPES 5    // Number of element types
-
 #define MEMCHECK(x) (((x) == NULL) ? 414 : 0)
+
 
 struct IDentry {
     char* IDname;
@@ -43,11 +44,12 @@ struct IDentry {
 };
 typedef struct IDentry idEntry;
 
+
 //-----------------------------------------------------------------------------
 //  Shared variables
 //-----------------------------------------------------------------------------
 
-typedef struct {
+typedef struct Handle {
     char  name[MAXFILENAME + 1];    // file path/name
     FILE* file;                     // FILE structure pointer
 
@@ -75,7 +77,8 @@ typedef struct {
     F_OFF BytesPerPeriod;    // bytes used for results in each period
 
     error_handle_t* error_handle;
-} data_t;
+} data_t, *SMO_Handle;
+
 
 //-----------------------------------------------------------------------------
 //   Local functions
@@ -97,6 +100,7 @@ F_OFF _ftell(FILE *stream);
 float *newFloatArray(int n);
 int   *newIntArray(int n);
 char  *newCharArray(int n);
+
 
 int EXPORT_OUT_API SMO_init(SMO_Handle *p_handle)
 //  Purpose: Initialized pointer for the opaque SMO_Handle.
