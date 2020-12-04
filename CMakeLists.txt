@@ -1,132 +1,76 @@
-# SWMM LIBRARY
-cmake_minimum_required (VERSION 3.0.2)
+#
+# CMakeLists.txt - CMake configuration file for swmm-solver
+#
+# Created: July 11, 2019
+# Updated: May 29, 2020
+#
+# Author: Michael E. Tryby
+#         US EPA ORD/CESER
+#
 
 
-project(SWMM)
+cmake_minimum_required (VERSION 3.13)
+
+# Disable in-source builds (they are messy)
+if("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
+    message(FATAL_ERROR "In-source builds are disabled.")
+endif()
+
+
+project(swmm-solver
+    VERSION 5.1.13
+    LANGUAGES C CXX
+    )
 
 # Append local dir to module search path
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+# list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-option(BUILD_TESTS "Build unit tests (requires Boost test)" OFF)
-option(BUILD_COVERAGE "Build library for coverage" OFF)
-
-
-# Adds a subdirectory to the build. Paths are relative to the directory
-# containing root CMakeLists.txt file.
-add_subdirectory(tools/swmm-output)
-
-IF (BUILD_TESTS)
-    add_subdirectory(tests)
-ENDIF (BUILD_TESTS)
-
-
-# Sets for output directory for executables and libraries.
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-
-# Sets the position independent code property for all targets.
+# Sets the position independent code property for all targets
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-
-# Sets compiler flags when building with Visual Studio.
-if(MSVC)
-    set(CMAKE_C_FLAGS "/fp:fast /fp:except- /EHsc ")
-    set(CMAKE_C_FLAGS_DEBUG "/ZI /Od /Gm  /RTC1")
-    set(CMAKE_C_FLAGS_RELEASE "/Zi /O2 /Oi /GL /MT /Gy")
-
-    set(CMAKE_SHARED_LINKER_FLAGS "/LTCG")
-    set(CMAKE_EXE_LINKER_FLAGS "/LTCG")
-endif(MSVC)
+# Sets default install prefix when cmakecache is initialized for first time
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "..." FORCE)
+endif()
 
 
-# Set compiler flags when building on UNIX.
-if(UNIX AND NOT APPLE)
-	set(CMAKE_C_FLAGS "-fopenmp")
-	set(CMAKE_CXX_FLAGS "-std=c++11 -fopenmp -Wno-write-strings")
-    # add_definitions(-std=c99)
-endif(UNIX AND NOT APPLE)
+# Define install locations (will be prepended by install prefix)
+set(TOOL_DIST "bin")
+set(INCLUDE_DIST "include")
+set(LIBRARY_DIST "lib")
+set(CONFIG_DIST  "cmake")
 
-# Set compiler flags when building on Apple
-# adapted from https://github.com/CLIUtils/cmake/blob/master/PatchOpenMPApple.cmake
+
+option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
+
+
+# Add project subdirectories
+add_subdirectory(src/outfile)
+add_subdirectory(src/solver)
+add_subdirectory(src/run)
+add_subdirectory(src/shared)
+
+
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
+
+# Pass var up the project tree
 if(APPLE)
-	find_program(BREW NAMES brew)
-    if(BREW)
-    	execute_process(COMMAND ${BREW} ls libomp RESULT_VARIABLE BREW_RESULT_CODE OUTPUT_QUIET ERROR_QUIET)
-    	if(BREW_RESULT_CODE)
-    		message(STATUS "This program supports OpenMP on Mac through Brew. Please run \"brew install libomp\"")
-		else()
-    		execute_process(COMMAND ${BREW} --prefix libomp OUTPUT_VARIABLE BREW_LIBOMP_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
-       	 	set(OpenMP_C_FLAGS "-Ofast -Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
-        	set(OpenMP_C_LIB_NAMES "omp")
-			set(OpenMP_CXX_FLAGS "-Ofast -Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
-        	set(OpenMP_CXX_LIB_NAMES "omp")
-        	set(OpenMP_omp_LIBRARY "${BREW_LIBOMP_PREFIX}/lib/libomp.dylib")
-        	include_directories("${BREW_LIBOMP_PREFIX}/include")
-		    link_directories("${BREW_LIBOMP_PREFIX}/lib/")
-        	message(STATUS "Using Homebrew libomp from ${BREW_LIBOMP_PREFIX}")
-		endif()
-    else()
-    	message(STATUS "This program supports OpenMP on Mac through Homebrew, installing Homebrew recommmended https://brew.sh")
-    endif()
-endif(APPLE)
+    set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
+endif()
 
 
-# Loads settings for OpenMP and append any OpenMP compiler flags.
-FIND_PACKAGE(OpenMP)
-if(OPENMP_FOUND)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-endif(OPENMP_FOUND)
+# Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
+set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
+include(InstallRequiredSystemLibraries)
 
 
-# Set up file groups for exe and lib targets
-file(GLOB SWMM_SOURCES RELATIVE ${PROJECT_SOURCE_DIR} src/*.c)
-list(REMOVE_ITEM SWMM_SOURCES "src/swmm5.c")
-set(SWMM_API_HEADERS include/swmm5.h; include/toolkitAPI.h)
-include_directories(include)
+# Configure CPack driven installer package
+set(CPACK_GENERATOR "ZIP;TGZ")
+set(CPACK_PACKAGE_VENDOR "US_EPA")
+set(CPACK_ARCHIVE_FILE_NAME "swmm")
 
-
-
-# Build target for coverage configuration
-IF (BUILD_COVERAGE)
-
-include(CodeCoverage)
-set(CMAKE_BUILD_TYPE "Debug")
-APPEND_COVERAGE_COMPILER_FLAGS()
-set(CMAKE_C_FLAGS_DEBUG "-O0")
-
-# Creates swmm5 shared library
-add_library(swmm_objs OBJECT ${SWMM_SOURCES})
-add_library(swmm5 SHARED src/swmm5.c $<TARGET_OBJECTS:swmm_objs>)
-target_include_directories(swmm5 PUBLIC ${PROJECT_SOURCE_DIR}/include)
-
-
-# Build target for default library configuration
-ELSE (BUILD_COVERAGE)
-
-# Creates swmm5 shared library
-add_library(swmm_objs OBJECT ${SWMM_SOURCES})
-add_library(swmm5 SHARED src/swmm5.c $<TARGET_OBJECTS:swmm_objs>)
-
-# Add includes and libraries to use when linking the swmm5 library
-target_include_directories(swmm5 PUBLIC ${PROJECT_SOURCE_DIR}/include)
-
-# Create export headers for use when linking with MSVC
-#include(GenerateExportHeader)
-#GENERATE_EXPORT_HEADER(swmm5
-#    BASE_NAME swmm5
-#    EXPORT_MACRO_NAME DLLEXPORT
-#    EXPORT_FILE_NAME swmm5_exports.h
-#    STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC)
-
-ENDIF (BUILD_COVERAGE)
-
-
-# Creates the swmm5 command line executable
-add_executable(run-swmm src/swmm5.c $<TARGET_OBJECTS:swmm_objs> ${SWMM_API_HEADERS})
-target_compile_definitions(run-swmm PRIVATE CLE=TRUE)
-if(NOT WIN32)
-    target_link_libraries(run-swmm PUBLIC m pthread)
-endif(NOT WIN32)
+include(CPack)

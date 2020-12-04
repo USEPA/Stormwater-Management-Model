@@ -21,10 +21,10 @@
 
 
 # Build files
-buildprod*/
-/build/
+build/
 *.o
 /Debug/
+/build-linux/
 
 
 # Git merge files
@@ -33,11 +33,19 @@ buildprod*/
 
 # Testing
 nrtests/
+<<<<<<< HEAD
 nrtestsuite/
+=======
+upload/
+>>>>>>> c99f166db32857fd89c1ac1c30ec8117e6f1024d
 performance.json
 stderr.log
 stdout.log
-tests/data/*_test.*
+
+tests/solver/data/*.rpt
+tests/solver/data/**/*.rpt
+tests/solver/data/**/*.out
+tests/solver/data/feng*
 
 # Generated files
 *_export.h

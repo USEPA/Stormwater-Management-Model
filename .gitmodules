@@ -1,0 +1,3 @@
+[submodule "ci-tools"]
+	path = ci-tools
+	url = https://github.com/OpenWaterAnalytics/ci-tools.git
