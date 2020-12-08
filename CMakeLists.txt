@@ -47,7 +47,7 @@ option(BUILD_DOCS "Build toolkit docs (requires Doxygen)" OFF)
 
 # Add project subdirectories
 if(BUILD_DOCS)
-  add_subdirectory(doc)
+  add_subdirectory(docs)
 endif()
 
 add_subdirectory(src/outfile)

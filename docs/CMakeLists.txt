@@ -18,6 +18,7 @@ endif()
 
 
 set(DOXY_SOURCES
+    ./
     ../src/outfile/include/swmm_output.h
     ../src/outfile/include/swmm_output_enums.h
 
@@ -57,5 +58,5 @@ install(
     DIRECTORY
         ${CMAKE_CURRENT_BINARY_DIR}/html
     DESTINATION
-        "./doc"
+        "./docs"
 )
