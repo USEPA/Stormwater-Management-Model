@@ -13,13 +13,13 @@
 
 name: Build and Test
 
-on:
-  push:
-    branches: [master release develop]
-    tags:
-      - 'v*.*.*'
-  pull_request:
-    branches: [master release develop]
+on: [push, pull_request]
+#  push:
+#    branches: [master release develop]
+#    tags:
+#      - 'v*.*.*'
+#  pull_request:
+#    branches: [master release develop]
 
 jobs:
   build:
