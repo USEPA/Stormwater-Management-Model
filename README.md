@@ -11,7 +11,6 @@ ORD Stormwater Management Model (aka "SWMM")
 ## Build Status
 ![build](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/workflows/Build%20and%20Test/badge.svg?branch=master)
 
-
 # Introduction
 This is the open source SWMM source code repository maintained by the Open
 Water Analytics group.
