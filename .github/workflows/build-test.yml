@@ -15,11 +15,11 @@ name: Build and Test
 
 on:
   push:
-    branches: [master develop]
+    branches: [master release develop]
     tags:
       - 'v*.*.*'
   pull_request:
-    branches: [master develop]
+    branches: [master release develop]
 
 jobs:
   build:
