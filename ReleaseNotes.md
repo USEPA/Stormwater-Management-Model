@@ -1,7 +1,8 @@
 # OWA SWMM v5.1.13: Release Notes
 
-OWA is a community lead effort to create a Toolkit API for SWMM. A number of new
-API calls have been added that aren't part of the official USEPA SWMM release.
+OWA is a community lead effort to develop and maintain SWMM. As part of that
+effort a number of new API calls have been added that aren't part of the
+official USEPA SWMM release.
 
 See the AUTHORS file for a list of contributors.
 
