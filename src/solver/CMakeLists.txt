@@ -9,21 +9,15 @@
 #
 
 
-find_package(OpenMP)
+find_package(OpenMP REQUIRED)
 
-find_package(OpenMP REQUIRED) 
-if(NOT TARGET OpenMP::OpenMP_CXX) 
-    add_library(OpenMP_TARGET INTERFACE) 
-    add_library(OpenMP::OpenMP_CXX ALIAS OpenMP_TARGET) 
-    target_compile_options(OpenMP_TARGET INTERFACE ${OpenMP_CXX_FLAGS}) 
-    find_package(Threads REQUIRED) 
-    target_link_libraries(OpenMP_TARGET INTERFACE Threads::Threads) 
-    target_link_libraries(OpenMP_TARGET INTERFACE ${OpenMP_CXX_FLAGS}) 
-endif()
 
 # configure file groups
 set(SWMM_PUBLIC_HEADERS
     include/swmm5.h
+    include/toolkit.h
+    include/toolkit_enums.h
+    include/toolkit_structs.h
 )
 
 file(GLOB
@@ -41,6 +35,7 @@ if(BUILD_DEF)
         SHARED
             ${SWMM_SOURCES}
             ${PROJECT_SOURCE_DIR/bindings/swmm5.def}
+            $<TARGET_OBJECTS:shared_objs>
     )
 
 else()
@@ -48,6 +43,7 @@ else()
     add_library(swmm5
         SHARED
             ${SWMM_SOURCES}
+            $<TARGET_OBJECTS:shared_objs>
     )
 
 endif()
@@ -78,6 +74,8 @@ target_include_directories(swmm5
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${INCLUDE_DIST}>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
 install(TARGETS swmm5 EXPORT swmm5Targets
@@ -104,6 +102,7 @@ install(
 )
 
 
+# TODO: Figure out why this doesn't work for package target
 # When building on MacOS relocate libomp to install package
 if(APPLE)
     get_filename_component(EXTERN_LIB_PATH ${OpenMP_libomp_LIBRARY} REALPATH)

@@ -18,7 +18,7 @@ endif()
 
 
 project(swmm-solver
-    VERSION 5.1.14
+    VERSION 5.1.13
     LANGUAGES C CXX
     )
 
@@ -42,12 +42,18 @@ set(CONFIG_DIST  "cmake")
 
 
 option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
+option(BUILD_DOCS "Build toolkit docs (requires Doxygen)" OFF)
 
 
 # Add project subdirectories
+if(BUILD_DOCS)
+  add_subdirectory(docs)
+endif()
+
 add_subdirectory(src/outfile)
+add_subdirectory(src/solver)
 add_subdirectory(src/run)
-add_subdirectory(src)
+add_subdirectory(src/shared)
 
 if(BUILD_TESTS)
     enable_testing()
@@ -55,21 +61,15 @@ if(BUILD_TESTS)
 endif()
 
 
+# Pass var up the project tree
+if(APPLE)
+    set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
+endif()
+
+
 # Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
 set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)
-
-
-# Relocate external libs into install package
-if(APPLE)
-    install(CODE "execute_process(
-        COMMAND
-            ${PROJECT_SOURCE_DIR}/tools/relocate.zsh ${EXTERN_LIB_PATH}
-        WORKING_DIRECTORY
-            ${CMAKE_INSTALL_PREFIX}
-        )"
-    )
-endif()
 
 
 # Configure CPack driven installer package

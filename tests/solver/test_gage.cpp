@@ -15,14 +15,13 @@
 
 #define ERR_NONE 0
 
-BOOST_AUTO_TEST_SUITE(test_toolkitapi_gage_fixture)
+BOOST_AUTO_TEST_SUITE(test_toolkitapi_gage)
 
 // Testing Rain Gage Setter
 BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
     int error, step_ind;
     int rg_ind, subc_ind;
-    double rain;
-    double* precip_array;
+    double rain, rainfall, snowfall, total_precipitation;
     double elapsedTime = 0.0;
 
     double start_rainfall_rate = 0;     // in/hr
@@ -48,11 +47,15 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
         if (step_ind == 360) // (Jan 1, 1998 6:00am)
         {
             // Gage
-            error = swmm_getGagePrecip(rg_ind, &precip_array);
+            error = swmm_getGagePrecip(rg_ind, SM_RAINFALL, &rainfall);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_SMALL(precip_array[SM_RAINFALL] - start_rainfall_rate, 0.0001);
-            BOOST_CHECK_SMALL(precip_array[SM_SNOWFALL] - 0.0, 0.0001);
-            BOOST_CHECK_SMALL(precip_array[SM_TOTALPRECIP] - start_rainfall_rate, 0.0001);
+            BOOST_CHECK_SMALL(rainfall - start_rainfall_rate, 0.0001);
+            error = swmm_getGagePrecip(rg_ind, SM_SNOWFALL, &snowfall);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(snowfall - 0.0, 0.0001);
+            error = swmm_getGagePrecip(rg_ind, SM_TOTALPRECIP, &total_precipitation);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(total_precipitation - start_rainfall_rate, 0.0001);
 
             // Subcatchment
             error = swmm_getSubcatchResult(subc_ind, SM_SUBCRAIN, &rain);
@@ -67,11 +70,15 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
         if (step_ind == 720) // (Jan 1, 1998 12:00pm)
         {
             // Gage
-            error = swmm_getGagePrecip(rg_ind, &precip_array);
+            error = swmm_getGagePrecip(rg_ind, SM_RAINFALL, &rainfall);
             BOOST_REQUIRE(error == ERR_NONE);
-            BOOST_CHECK_SMALL(precip_array[SM_RAINFALL] - new_rainfall_rate, 0.0001);
-            BOOST_CHECK_SMALL(precip_array[SM_SNOWFALL] - 0.0, 0.0001);
-            BOOST_CHECK_SMALL(precip_array[SM_TOTALPRECIP] - new_rainfall_rate, 0.0001);
+            BOOST_CHECK_SMALL(rainfall - new_rainfall_rate, 0.0001);
+            error = swmm_getGagePrecip(rg_ind, SM_SNOWFALL, &snowfall);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(snowfall - 0.0, 0.0001);
+            error = swmm_getGagePrecip(rg_ind, SM_TOTALPRECIP, &total_precipitation);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_SMALL(total_precipitation - new_rainfall_rate, 0.0001);
 
             // Subcatchment
             error = swmm_getSubcatchResult(subc_ind, SM_SUBCRAIN, &rain);
@@ -92,17 +99,16 @@ BOOST_FIXTURE_TEST_CASE(get_set_gage_rate, FixtureBeforeStep){
 
 
     // Final Checks from Subcatchment Stats Totalizers
-    SM_SubcatchStats *subc_stats = NULL;
+    SM_SubcatchStats __subc_stats;
+    SM_SubcatchStats *_subc_stats = &__subc_stats;
 
-    error = swmm_getSubcatchStats(subc_ind, &subc_stats);
+    error = swmm_getSubcatchStats(subc_ind, _subc_stats);
     BOOST_CHECK_EQUAL(error, ERR_NONE);
     // 4.2 in/hr * 6hrs = 25.2 inches
     total_rainfall_volume = new_rainfall_rate * 6;
-    // Time to call FEMA!
-    BOOST_CHECK_SMALL(subc_stats->precip - total_rainfall_volume, 0.0001);
 
-    freeArray((void**)&precip_array);
-    freeArray((void**)&subc_stats);
+    // Time to call FEMA!
+    BOOST_CHECK_SMALL(_subc_stats->precip - total_rainfall_volume, 0.0001);
 
     swmm_end();
 }

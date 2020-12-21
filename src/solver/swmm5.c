@@ -114,7 +114,6 @@
 #include "globals.h"                   // declaration of all global variables
 
 #include "swmm5.h"                     // declaration of exportable functions
-#include "toolkitAPI.h"
                                        //   callable from other programs
 #define  MAX_EXCEPTIONS 100            // max. number of exceptions handled
 
@@ -176,6 +175,9 @@ static void execRouting(void);
 static int  xfilter(int xc, char* module, double elapsedTime, long step);
 #endif
 
+// Forward declaration, defined in toolkit.h
+extern int swmm_run_cb(const char *f1, const char *f2, const char *f3,
+    void (*callback) (double *));
 
 //=============================================================================
 
@@ -613,28 +615,6 @@ int  DLLEXPORT swmm_getVersion(void)
 //        THIS FUNCTION WILL EVENTUALLY BE DEPRECATED
 {
     return VERSION;
-}
-
-void DLLEXPORT swmm_getSemVersion(char* semver)
-//
-//  Output: Returns Semantic Version
-//  Purpose: retrieves the current semantic version
-//
-//  NOTE: Each New Release should be updated in consts.h
-{
-    getSemVersion(semver);
-}
-
-void DLLEXPORT swmm_getVersionInfo(char* major, char* minor, char* patch)
-//
-//  Output: Returns Semantic Version Info
-//  Purpose: retrieves the current semantic version
-//
-//  NOTE: Each New Release should be updated in consts.h
-{
-    strncpy(major, SEMVERSION_MAJOR, sizeof SEMVERSION_MAJOR);
-    strncpy(minor, SEMVERSION_MINOR, sizeof SEMVERSION_MINOR);
-    strncpy(patch, SEMVERSION_PATCH, sizeof SEMVERSION_PATCH);
 }
 
 //=============================================================================

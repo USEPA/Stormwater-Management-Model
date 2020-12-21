@@ -1055,70 +1055,77 @@ double massbal_getStoredMass(int p)
     return storedMass;
 }
 
-int massbal_getRoutingFlowTotal(TRoutingTotals *RoutingTotal)
+int massbal_getRoutingTotal(TRoutingTotals **routingTotal)
 //
 // Input:    element = element to return
 // Return:   value
 // Purpose:  Gets the routing total for toolkitAPI
 //
 {
-	int errorcode = 0;
+	memcpy(*routingTotal, &FlowTotals, sizeof(TRoutingTotals));
 
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE)
-	{
-		errorcode = ERR_API_INPUTNOTOPEN;
-	}
+    // Cumulative Dry Weather Inflow Volume
+    (*routingTotal)->dwInflow *= UCF(VOLUME);
+    // Cumulative Wet Weather Inflow Volume
+    (*routingTotal)->wwInflow *= UCF(VOLUME);
+    // Cumulative Groundwater Inflow Volume
+    (*routingTotal)->gwInflow *= UCF(VOLUME);
+    // Cumulative I&I Inflow Volume
+    (*routingTotal)->iiInflow *= UCF(VOLUME);
+    // Cumulative External Inflow Volume
+    (*routingTotal)->exInflow *= UCF(VOLUME);
+    // Cumulative Flooding Volume
+    (*routingTotal)->flooding *= UCF(VOLUME);
+    // Cumulative Outflow Volume
+    (*routingTotal)->outflow  *= UCF(VOLUME);
+    // Cumulative Evaporation Loss
+    (*routingTotal)->evapLoss *= UCF(VOLUME);
+    // Cumulative Seepage Loss
+    (*routingTotal)->seepLoss *= UCF(VOLUME);
+    // Continuity Error
+    (*routingTotal)->pctError *= 100;
 
-	// Check if Simulation is Running
-	else if (swmm_IsStartedFlag() == FALSE)
-	{
-		errorcode = ERR_API_SIM_NRUNNING;
-	}
-
-	else
-	{
-		memcpy(RoutingTotal, &FlowTotals, sizeof(TRoutingTotals));
-	}
-
-	return errorcode;
+	return 0;
 }
 
-int massbal_getRunoffTotal(TRunoffTotals *runoffTot)
+int massbal_getRunoffTotal(TRunoffTotals **runoffTotal)
 //
 // Input:    element = element to return
 // Return:   value
 // Purpose:  Gets the runoff total for toolkitAPI
 //
 {
-	int errorcode = 0;
+	
+	memcpy(*runoffTotal, &RunoffTotals, sizeof(TRunoffTotals));
+	
+    // Cumulative Rainfall Depth
+    (*runoffTotal)->rainfall *= (UCF(RAINDEPTH) / TotalArea);
+    // Cumulative Evaporation Volume
+    (*runoffTotal)->evap *= UCF(VOLUME);
+    // Cumulative Infiltration Volume
+    (*runoffTotal)->infil *= UCF(VOLUME);
+    // Cumulative Runoff Volume
+    (*runoffTotal)->runoff *= UCF(VOLUME);
+    // Cumulative Runon Volume
+    (*runoffTotal)->runon *= UCF(VOLUME);
+    // Cumulative Drain Volume
+    (*runoffTotal)->drains *= UCF(VOLUME);
+    // Cumulative Snow Removed Volume
+    (*runoffTotal)->snowRemoved *= (UCF(RAINDEPTH) / TotalArea);
+    // Initial Storage Volume
+    (*runoffTotal)->initStorage *= (UCF(RAINDEPTH) / TotalArea);
+    // Final Storage Volume
+    (*runoffTotal)->finalStorage *= (UCF(RAINDEPTH) / TotalArea);
+    // Initial Snow Cover Volume
+    (*runoffTotal)->initSnowCover *= (UCF(RAINDEPTH) / TotalArea);
+    // Final Snow Cover Volume
+    (*runoffTotal)->finalSnowCover *= (UCF(RAINDEPTH) / TotalArea);
+    // Continuity Error
+    (*runoffTotal)->pctError *= 100;
 
-	// Check if Open
-	if (swmm_IsOpenFlag() == FALSE)
-	{
-		errorcode = ERR_API_INPUTNOTOPEN;
-	}
-
-	// Check if Simulation is Running
-	else if (swmm_IsStartedFlag() == FALSE)
-	{
-		errorcode = ERR_API_SIM_NRUNNING;
-	}
-
-	else
-	{
-		memcpy(runoffTot, &RunoffTotals, sizeof(TRunoffTotals));
-	}
-	return errorcode;
+	return 0;
 }
 
-double massbal_getTotalArea(void)
-//
-// Return: Total Area for Runoff Surface
-// Purpose: Used for Toolkit API Unit Conversion
-{
-	return TotalArea;
-}
 
 int massbal_getNodeTotalInflow(int index, double *value)
 //
@@ -1127,21 +1134,7 @@ int massbal_getNodeTotalInflow(int index, double *value)
 // Return: Error
 // Purpose: Used for ToolkitAPI to pull total Node Inflow.
 {
-    int errorcode = 0;
+	*value = NodeInflow[index] * UCF(VOLUME);
 
-    // Check if Open
-    if (swmm_IsOpenFlag() == FALSE)
-    {
-        errorcode = ERR_API_INPUTNOTOPEN;
-    }
-	// Check if Simulation is Running
-    else if (swmm_IsStartedFlag() == FALSE)
-    {
-        errorcode = ERR_API_SIM_NRUNNING;
-    }
-    else
-    {
-		*value = NodeInflow[index];
-    }
-    return errorcode;
+    return 0;
 }

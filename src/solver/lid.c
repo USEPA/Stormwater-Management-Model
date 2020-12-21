@@ -2120,7 +2120,6 @@ TLidGroup lid_getLidGroup(int index)
 {
     TLidGroup ptr;
     ptr = LidGroups[index];
-
     return ptr;
 }
 

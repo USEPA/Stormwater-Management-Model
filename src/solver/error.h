@@ -172,6 +172,7 @@ enum  ErrorType {
       ERR_API_PATTERN_INDEX,    //509  112
       ERR_API_LIDUNIT_INDEX,    //510  113
       ERR_API_UNDEFINED_LID,    //511  114
+      ERR_API_MEMORY,           //512  115
       MAXERRMSG};
 
 char* error_getMsg(int i);

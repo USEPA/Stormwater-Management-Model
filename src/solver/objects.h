@@ -60,6 +60,9 @@
 #include "infil.h"
 #include "exfil.h"
 
+#include "toolkit_structs.h"  // Declaration of public structs
+
+
 //-----------------
 // FILE INFORMATION
 //-----------------
@@ -833,21 +836,23 @@ typedef struct
 //-------------------------------
 // CUMULATIVE RUNOFF TOTALS
 //-------------------------------
-typedef struct
-{                                 // All volume totals are in ft3.
-   double        rainfall;        // rainfall volume 
-   double        evap;            // evaporation loss
-   double        infil;           // infiltration loss
-   double        runoff;          // runoff volume
-   double        drains;          // LID drains
-   double        runon;           // runon from outfalls
-   double        initStorage;     // inital surface storage
-   double        finalStorage;    // final surface storage
-   double        initSnowCover;   // initial snow cover
-   double        finalSnowCover;  // final snow cover
-   double        snowRemoved;     // snow removal
-   double        pctError;        // continuity error (%)
-}  TRunoffTotals;
+// typedef struct
+// {                                 // All volume totals are in ft3.
+//    double        rainfall;        // rainfall volume 
+//    double        evap;            // evaporation loss
+//    double        infil;           // infiltration loss
+//    double        runoff;          // runoff volume
+//    double        drains;          // LID drains
+//    double        runon;           // runon from outfalls
+//    double        initStorage;     // inital surface storage
+//    double        finalStorage;    // final surface storage
+//    double        initSnowCover;   // initial snow cover
+//    double        finalSnowCover;  // final snow cover
+//    double        snowRemoved;     // snow removal
+//    double        pctError;        // continuity error (%)
+// }  TRunoffTotals;
+
+typedef SM_RunoffTotals TRunoffTotals;
 
 //--------------------------
 // CUMULATIVE LOADING TOTALS
@@ -883,22 +888,24 @@ typedef struct
 //----------------------------
 // CUMULATIVE ROUTING TOTALS
 //----------------------------
-typedef struct
-{                                  // All routing totals are in ft3.
-   double        dwInflow;         // dry weather inflow
-   double        wwInflow;         // wet weather inflow
-   double        gwInflow;         // groundwater inflow
-   double        iiInflow;         // RDII inflow
-   double        exInflow;         // direct inflow
-   double        flooding;         // internal flooding
-   double        outflow;          // external outflow
-   double        evapLoss;         // evaporation loss
-   double        seepLoss;         // seepage loss
-   double        reacted;          // reaction losses
-   double        initStorage;      // initial storage volume
-   double        finalStorage;     // final storage volume
-   double        pctError;         // continuity error
-}  TRoutingTotals;
+// typedef struct
+// {                                  // All routing totals are in ft3.
+//    double        dwInflow;         // dry weather inflow
+//    double        wwInflow;         // wet weather inflow
+//    double        gwInflow;         // groundwater inflow
+//    double        iiInflow;         // RDII inflow
+//    double        exInflow;         // direct inflow
+//    double        flooding;         // internal flooding
+//    double        outflow;          // external outflow
+//    double        evapLoss;         // evaporation loss
+//    double        seepLoss;         // seepage loss
+//    double        reacted;          // reaction losses
+//    double        initStorage;      // initial storage volume
+//    double        finalStorage;     // final storage volume
+//    double        pctError;         // continuity error
+// }  TRoutingTotals;
+
+typedef SM_RoutingTotals TRoutingTotals;
 
 //-----------------------
 // SYSTEM-WIDE STATISTICS
@@ -927,104 +934,115 @@ typedef struct
 //------------------------
 // SUBCATCHMENT STATISTICS
 //------------------------
-typedef struct
-{
-    double       precip;
-    double       runon;
-    double       evap;
-    double       infil;
-    double       runoff;
-    double       maxFlow;         
-	double       impervRunoff;                                                 //(5.1.013)
-	double       pervRunoff;                                                   //
-}  TSubcatchStats;
+// typedef struct
+// {
+//     double       precip;
+//     double       runon;
+//     double       evap;
+//     double       infil;
+//     double       runoff;
+//     double       maxFlow;         
+// 	double       impervRunoff;                                                 //(5.1.013)
+// 	double       pervRunoff;                                                   //
+// }  TSubcatchStats;
 
+ typedef SM_SubcatchStats TSubcatchStats;
 
 //----------------
 // NODE STATISTICS
 //----------------
-typedef struct
-{
-   double        avgDepth;
-   double        maxDepth;
-   DateTime      maxDepthDate;
-   double        maxRptDepth;
-   double        volFlooded;
-   double        timeFlooded;
-   double        timeSurcharged;
-   double        timeCourantCritical;
-   double        totLatFlow;
-   double        maxLatFlow;
-   double        maxInflow;
-   double        maxOverflow;
-   double        maxPondedVol;
-   DateTime      maxInflowDate;
-   DateTime      maxOverflowDate;
-}  TNodeStats;
+// typedef struct
+// {
+//    double        avgDepth;
+//    double        maxDepth;
+//    DateTime      maxDepthDate;
+//    double        maxRptDepth;
+//    double        volFlooded;
+//    double        timeFlooded;
+//    double        timeSurcharged;
+//    double        timeCourantCritical;
+//    double        totLatFlow;
+//    double        maxLatFlow;
+//    double        maxInflow;
+//    double        maxOverflow;
+//    double        maxPondedVol;
+//    DateTime      maxInflowDate;
+//    DateTime      maxOverflowDate;
+// }  TNodeStats;
+
+typedef SM_NodeStats TNodeStats;
 
 //-------------------
 // STORAGE STATISTICS
 //-------------------
-typedef struct
-{
-   double        initVol;
-   double        avgVol;
-   double        maxVol;
-   double        maxFlow;
-   double        evapLosses;
-   double        exfilLosses;
-   DateTime      maxVolDate;
-}  TStorageStats;
+// typedef struct
+// {
+//    double        initVol;
+//    double        avgVol;
+//    double        maxVol;
+//    double        maxFlow;
+//    double        evapLosses;
+//    double        exfilLosses;
+//    DateTime      maxVolDate;
+// }  TStorageStats;
+
+typedef SM_StorageStats TStorageStats;
 
 //-------------------
 // OUTFALL STATISTICS
 //-------------------
-typedef struct
-{
-   double       avgFlow;
-   double       maxFlow;
-   double*      totalLoad;   
-   int          totalPeriods;
-}  TOutfallStats;
+// typedef struct
+// {
+//    double       avgFlow;
+//    double       maxFlow;
+//    double*      totalLoad;   
+//    int          totalPeriods;
+// }  TOutfallStats;
+
+typedef SM_OutfallStats TOutfallStats;
 
 //---------------- 
 // PUMP STATISTICS
 //----------------
-typedef struct
-{
-   double       utilized;
-   double       minFlow;
-   double       avgFlow;
-   double       maxFlow;
-   double       volume;
-   double       energy;
-   double       offCurveLow;
-   double       offCurveHigh;
-   int          startUps;
-   int          totalPeriods;
-}  TPumpStats;
+// typedef struct
+// {
+//    double       utilized;
+//    double       minFlow;
+//    double       avgFlow;
+//    double       maxFlow;
+//    double       volume;
+//    double       energy;
+//    double       offCurveLow;
+//    double       offCurveHigh;
+//    int          startUps;
+//    int          totalPeriods;
+// }  TPumpStats;
+
+typedef SM_PumpStats TPumpStats;
 
 //----------------
 // LINK STATISTICS
 //----------------
-typedef struct
-{
-   double        maxFlow;
-   DateTime      maxFlowDate;
-   double        maxVeloc;
-   double        maxDepth;
-   double        timeNormalFlow;
-   double        timeInletControl;
-   double        timeSurcharged;
-   double        timeFullUpstream;
-   double        timeFullDnstream;
-   double        timeFullFlow;
-   double        timeCapacityLimited;
-   double        timeInFlowClass[MAX_FLOW_CLASSES];
-   double        timeCourantCritical;
-   long          flowTurns;
-   int           flowTurnSign;
-}  TLinkStats;
+// typedef struct
+// {
+//    double        maxFlow;
+//    DateTime      maxFlowDate;
+//    double        maxVeloc;
+//    double        maxDepth;
+//    double        timeNormalFlow;
+//    double        timeInletControl;
+//    double        timeSurcharged;
+//    double        timeFullUpstream;
+//    double        timeFullDnstream;
+//    double        timeFullFlow;
+//    double        timeCapacityLimited;
+//    double        timeInFlowClass[MAX_FLOW_CLASSES];
+//    double        timeCourantCritical;
+//    long          flowTurns;
+//    int           flowTurnSign;
+// }  TLinkStats;
+
+typedef SM_LinkStats TLinkStats;
 
 //-------------------------
 // MAXIMUM VALUE STATISTICS

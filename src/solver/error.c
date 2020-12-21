@@ -180,6 +180,7 @@
 #define ERR509 "\n API Key Error: Invalid Pattern Index"
 #define ERR510 "\n API Key Error: Invalid Lid Unit Index"
 #define ERR511 "\n API Key Error: Undefined Subcatchment Lid"
+#define ERR512 "\n API Key Error: No memory allocated for return value"
 
 ////////////////////////////////////////////////////////////////////////////
 //  NOTE: Need to update ErrorMsgs[], ErrorCodes[], and ErrorType
@@ -199,7 +200,7 @@ char* ErrorMsgs[] =
       ERR327, ERR329, ERR330, ERR331, ERR333, ERR335, ERR336, ERR337, ERR338,
       ERR339, ERR341, ERR343, ERR345, ERR351, ERR353, ERR355, ERR357, ERR361,
       ERR363, ERR401, ERR402, ERR403, ERR405, ERR501, ERR502, ERR503, ERR504,
-      ERR505, ERR506, ERR507, ERR508, ERR509, ERR510, ERR511};
+      ERR505, ERR506, ERR507, ERR508, ERR509, ERR510, ERR511, ERR512};
 
 int ErrorCodes[] =
     { 0,      101,    103,    105,    107,    108,    109,    110,    111,
@@ -214,7 +215,7 @@ int ErrorCodes[] =
       327,    329,    330,    331,    333,    335,    336,    337,    338,
       339,    341,    343,    345,    351,    353,    355,    357,    361,
       363,    401,    402,    403,    405,    501,    502,    503,    504,
-      505,    506,    507,    508,    509,    510,    511};
+      505,    506,    507,    508,    509,    510,    511,    512};
 
 char  ErrString[256];
 
