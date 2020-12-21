@@ -1,0 +1,26 @@
+/**
+
+@defgroup tkfuncs Toolkit Functions
+
+
+@addtogroup tkfuncs
+@{
+@fn int swmm_getCurrentDateTimeStr(char *dtimestr)
+@fn int swmm_getNodeResult (int index, int type, double *result)
+@fn int swmm_getLinkResult (int index, int type, double *result)
+@fn int swmm_getSubcatchResult (int index, int type, double *result)
+@fn int swmm_getNodeStats (int index, SM_NodeStats *nodeStats)
+@fn int swmm_getNodeTotalInflow (int index, double *value)
+@fn int swmm_getStorageStats (int index, SM_StorageStats *storageStats)
+@fn int swmm_getOutfallStats (int index, SM_OutfallStats *outfallStats)
+@fn int swmm_freeOutfallStats (SM_OutfallStats *outfallStats)
+@fn int swmm_getLinkStats (int index, SM_LinkStats *linkStats)
+@fn int swmm_getPumpStats (int index, SM_PumpStats *pumpStats)
+@fn int swmm_getSubcatchStats (int index, SM_SubcatchStats *subcatchStats)
+@fn int swmm_getSystemRoutingStats (SM_RoutingTotals *routingTot)
+@fn int swmm_getSystemRunoffStats (SM_RunoffTotals *runoffTot)
+@fn int swmm_setLinkSetting (int index, double setting)
+@fn int swmm_setNodeInflow (int index, double flowrate)
+@fn int swmm_setOutfallStage (int index, double stage)
+@}
+*/

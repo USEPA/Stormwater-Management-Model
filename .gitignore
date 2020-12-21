@@ -1,0 +1,47 @@
+
+# Eclipse Stuff
+.metadata/
+.settings/
+.cproject
+.project
+.pydevproject
+
+
+# Mac Stuff
+.DS_Store
+
+/build/VC2010-DLL/Debug/VC2010-DLL.tlog/VC2010-DLL.lastbuildstate
+/build/VC2010-DLL/Debug/VC2010-DLL.tlog/unsuccessfulbuild
+/build/VC2010-DLL/Debug/VC2010-DLL.tlog
+/build/VC2010-DLL/Debug
+/documentation
+/Makefile_LINUX_WORKS_openmp.txt
+/target
+*.zip
+
+
+# Build files
+build/
+*.o
+/Debug/
+/build-linux/
+
+
+# Git merge files
+*.orig
+
+
+# Testing
+nrtests/
+upload/
+performance.json
+stderr.log
+stdout.log
+
+tests/solver/data/*.rpt
+tests/solver/data/**/*.rpt
+tests/solver/data/**/*.out
+tests/solver/data/feng*
+
+# Generated files
+*_export.h

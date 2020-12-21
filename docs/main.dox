@@ -1,0 +1,15 @@
+/** 
+@mainpage Open Water Analytics Stormwater Management Model
+
+The OWA-SWMM Open-Source Library is a hydraulic, hydrologic, and water quality analysis model, originally developed by USEPA, written in C. 
+
+If you are interested in extending OWA-SWMM for academic, personal, or commercial use, then you've come to the right place. For community discussion and contributions you might have that could benefit a larger base of developers and users, please raise some issues over at [SWMM Issues](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/issues)
+
+We welcome discussion of all kinds!  The OWA community of developers is excited to work with you! SERIOUSLY!!! If you like coding, join in on the discussions and share some ideas and code!
+
+The OWA-SWMM project builds on top of the contributions put forward by Lew Rossman with his original work on delivering EPA-SWMM5. We are grateful for all the work that has been put into SWMM5 and we are committed to delivering advances to the engine in a community driven approach. 
+
+- @subpage toolkit-overview "Toolkit Overview"
+- @subpage MIT-License
+- @subpage AUTHORS
+*/

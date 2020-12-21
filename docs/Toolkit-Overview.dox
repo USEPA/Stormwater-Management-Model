@@ -1,0 +1,21 @@
+/** 
+@page toolkit-overview Toolkit Overview
+
+
+The Programmer's Toolkit application programming interface (API) is an extension of the SWMM simulation package. Through the API, a developer can programmatically talk to SWMM before, during, and after a simulation. The API exposes SWMM's data model which enables new possibility.  When a hydraulic network is initialized, a network is most generally comprised of nodes, link, and runoff surfaces.  Nodes and Links are normally manholes and conduits, and runoff surfaces are a hydrologic representation of rainfall catchment surfaces that send flow into the hydraulic network.
+
+The Toolkit API provides a series of functions that allow programmers to customize the use of SWMM's hydraulic and water quality solution engine to their own applications. Before using the Toolkit one should become familiar with the way that SWMM represents the hydrologic surfaces and hydraulic network and the design and operating information it requires to perform a simulation. This information can be obtained from reading SWMM's Users Manuals [USEPA Link](https://www.epa.gov/water-research/storm-water-management-model-swmm).
+
+A typical usage of the Toolkit functions to analyze a stormwater network might look as follows:
+
+1. Use the @ref swmm_open function to open the Toolkit system, along with a SWMM [Input file](Input-File).
+2. Use the `swmm_setxxxParam` to update parameters before beginning a simulation
+3. Use the @ref swmm_start function to start the simulation.
+4. Iterator over the simlation using @ref swmm_step function and exit the loop when a 0 is returned. While the simlation is running, use the `swmm_getxxxResult` or swmm_getxxxStats` to read results.
+5. Use the @ref swmm_end function to end a simulation and save the results.
+6. Use the @ref swmm_close function to close the simulation and free the memory allocated from the simulation.
+
+
+- @subpage how-to-use
+
+*/

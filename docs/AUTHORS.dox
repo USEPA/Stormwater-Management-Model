@@ -1,0 +1,21 @@
+/** 
+@defgroup AUTHORS Authors at Open Water Analytics
+
+The OWA-SWMM project builds on top of the contributions put forward by Lew Rossman with his original work on delivering EPA-SWMM5. We are grateful for all the work that has been put into SWMM5 and we are committed to delivering advances to the engine in a community driven approach. 
+
+- Lewis Rossman <LRossman@cinci.rr.com>*
+- Robert Dickinson <robert.dickinson@gmail.com>*
+- Michael Tryby <tryby.michael@epa.gov>*
+- Bryant E. McDonnell <bemcdonnell@gmail.com>
+- Adam Erispaha <aerispaha@gmail.com>
+- Sam Hatchett <samhatchett@gmail.com>
+- Gonzalo Peña-Castellanos <goanpeca@gmail.com>
+- Katherine Ratliff <ratliff.katherine@epa.gov>*
+- Abhiram Mullapudi <abhiramm@umich.edu>
+- Jennifer Wu <jennifer.wu@live.com>
+- Hsi-Nien Tan <hsi-nien.tan@mail.hyd.ncku.edu.tw>
+
+Authors ordered by first contribution. Author contributions are made under the @subpage MIT-License, except for authors whose contributions are made in the public domain, who are denoted with *.
+
+Stand on the shoulders of Giants! For a list of all the contributors over time (SWMM5 and before), please see [Acknowledgements](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/wiki/Acknowledgements)
+*/
