@@ -1,15 +1,15 @@
 /*
- *   test_output.cpp
- *
- *   Created: 11/2/2017
- *   Author: Michael E. Tryby
- *           US EPA - ORD/NRMRL
- *
- *   Unit testing for SWMM outputapi using Boost Test.
+ ******************************************************************************
+ Project:      OWA SWMM
+ Version:      5.1.13
+ Module:       test_output.cpp
+ Description:  tests for output library functions
+ Authors:      see AUTHORS
+ Copyright:    see AUTHORS
+ License:      see LICENSE
+ Last Updated: 12/21/2020
+ ******************************************************************************
  */
-
-// NOTE: Travis installs libboost test version 1.5.4
-//#define BOOST_TEST_DYN_LINK
 
 #define BOOST_TEST_MODULE "output"
 #include <boost/test/included/unit_test.hpp>
@@ -41,7 +41,7 @@ boost::test_tools::predicate_result check_cdd_float(std::vector<float>& test,
         (test_it < test.end()) && (ref_it < ref.end());
         ++test_it, ++ref_it)
     {
-        if (*test_it != *ref_it) 
+        if (*test_it != *ref_it)
         {
             // Compute log absolute error
             tmp = abs(*test_it - *ref_it);

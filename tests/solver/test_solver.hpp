@@ -1,11 +1,15 @@
-//
-//  test_solver.hpp
-//
-//  Created: July 7, 2020
-//
-//  Author: Michael E. Tryby
-//         US EPA ORD/CESER
-//
+/*
+ ******************************************************************************
+ Project:      OWA SWMM
+ Version:      5.1.13
+ Module:       test_solver.hpp
+ Description:  tests for SWMM solver library API functions
+ Authors:      see AUTHORS
+ Copyright:    see AUTHORS
+ License:      see LICENSE
+ Last Updated: 12/21/2020
+ ******************************************************************************
+*/
 
 #ifndef TEST_SOLVER_HPP
 #define TEST_SOLVER_HPP

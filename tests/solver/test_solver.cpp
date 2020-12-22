@@ -1,11 +1,15 @@
-//
-//  test_solver.cpp
-//
-//  Created: July 7, 2020
-//
-//  Author: Michael E. Tryby
-//         US EPA ORD/CESER
-//
+/*
+ ******************************************************************************
+ Project:      OWA SWMM
+ Version:      5.1.13
+ Module:       test_solver.cpp
+ Description:  tests for SWMM solver library API functions
+ Authors:      see AUTHORS
+ Copyright:    see AUTHORS
+ License:      see LICENSE
+ Last Updated: 12/21/2020
+ ******************************************************************************
+*/
 
 #define BOOST_TEST_MODULE solver
 

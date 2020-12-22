@@ -1,4 +1,15 @@
-
+/*
+ ******************************************************************************
+ Project:      OWA SWMM
+ Version:      5.1.13
+ Module:       test_lid_results.cpp
+ Description:  tests for SWMM LID API functions
+ Authors:      see AUTHORS
+ Copyright:    see AUTHORS
+ License:      see LICENSE
+ Last Updated: 12/21/2020
+ ******************************************************************************
+*/
 
 
 

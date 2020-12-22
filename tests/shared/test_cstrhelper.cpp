@@ -1,7 +1,7 @@
 /*
  ******************************************************************************
- Project:      OWA EPANET
- Version:      2.2
+ Project:      OWA SWMM
+ Version:      5.1.13
  Module:       test_cstrhelper.cpp
  Description:  tests for C string helper functions
  Authors:      see AUTHORS

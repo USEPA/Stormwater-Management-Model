@@ -72,6 +72,16 @@ set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)
 
 
+# Create install target for License and Authors files
+install(
+    FILES
+        "LICENSE"
+        "AUTHORS"
+    DESTINATION
+        "."
+)
+
+
 # Configure CPack driven installer package
 set(CPACK_GENERATOR "ZIP;TGZ")
 set(CPACK_PACKAGE_VENDOR "US_EPA")
