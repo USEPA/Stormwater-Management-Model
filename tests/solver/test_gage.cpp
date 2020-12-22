@@ -1,12 +1,15 @@
 /*
- *   test_toolkitAPI_gage.cpp
- *
- *   Created: 03/10/2018
- *   Author: Bryant E. McDonnell
- *           EmNet LLC
- *
- *   Unit testing mechanics for the gage API using Boost Test.
- */
+ ******************************************************************************
+ Project:      OWA SWMM
+ Version:      5.1.13
+ Module:       test_gage.cpp
+ Description:  tests for SWMM rain gage API functions
+ Authors:      see AUTHORS
+ Copyright:    see AUTHORS
+ License:      see LICENSE
+ Last Updated: 12/21/2020
+ ******************************************************************************
+*/
 
  #include <boost/test/unit_test.hpp>
 

@@ -1,8 +1,34 @@
+This project contains original material released as part of USEPA SWMM v5.1.13.
+Original material residing in the public domain is unclaimable.
+
+This project also contains new material prepared by the United States
+Government for which domestic copyright protection is not available under 17
+USC § 105.
+
+
+Public Domain
+
+Material original to USEPA SWMM v5.1.13 No Copyright Restrictions
+
+Output library, shared objects, CLI, build and test systems No Copyright
+Restrictions 2020 U.S. Federal Government
+
+===============================================================================
+
+This project contains material from https://github.com/OpenWaterAnalytics/
+Stormwater-Management-Model. All material created by the AUTHORS is released
+under the MIT License.
+
+OWA SWMM may also includes third-party software libraries which have separate
+licensing policies.
+
+
+
 MIT License
 
-Contains public domain works.  Other works copyright the AUTHORS
+Copyright (c) 2020 see AUTHORS, excluding material in the public
+domain.
 
-Copyright (c) 2016 (see AUTHORS.txt).
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,3 +47,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
+
+Third-Party Libraries
+
+OpenMP

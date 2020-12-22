@@ -1,4 +1,15 @@
-
+/*
+ ******************************************************************************
+ Project:      OWA SWMM
+ Version:      5.1.13
+ Module:       test_errormanager.cpp
+ Description:  tests for error manager
+ Authors:      see AUTHORS
+ Copyright:    see AUTHORS
+ License:      see LICENSE
+ Last Updated: 12/21/2020
+ ******************************************************************************
+ */
 
 #define BOOST_TEST_MODULE errormanager
 

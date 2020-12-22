@@ -1,7 +1,15 @@
-
-
-
-
+/*
+ ******************************************************************************
+ Project:      OWA SWMM
+ Version:      5.1.13
+ Module:       test_lid.cpp
+ Description:  tests for SWMM LID API functions
+ Authors:      see AUTHORS
+ Copyright:    see AUTHORS
+ License:      see LICENSE
+ Last Updated: 12/21/2020
+ ******************************************************************************
+*/
 
 
 #define BOOST_TEST_MODULE "lid"
@@ -150,7 +158,7 @@ BOOST_AUTO_TEST_SUITE(test_lid_toolkitapi_fixture)
         BOOST_CHECK_EQUAL(error, ERR_NONE);
         error = swmm_getLidCParam(0, SM_SURFACE, SM_THICKNESS, &db_value);
         BOOST_CHECK_EQUAL(error, ERR_NONE);
-        
+
         //Lid Surface
         error = swmm_setLidCParam(0, SM_SURFACE, SM_THICKNESS, db_value);
         BOOST_CHECK_EQUAL(error, ERR_API_SIM_NRUNNING);

@@ -1,4 +1,15 @@
-
+/*
+ ******************************************************************************
+ Project:      OWA SWMM
+ Version:      5.1.13
+ Module:       test_stats.cpp
+ Description:  tests for SWMM stats access functions
+ Authors:      see AUTHORS
+ Copyright:    see AUTHORS
+ License:      see LICENSE
+ Last Updated: 12/21/2020
+ ******************************************************************************
+*/
 
 
 #include <boost/test/unit_test.hpp>
@@ -17,7 +28,7 @@ BOOST_AUTO_TEST_SUITE(test_toolkit_stats)
 
 // Testing Results Getters (Before End Simulation)
 BOOST_FIXTURE_TEST_CASE(get_node_stats, FixtureBeforeEnd){
-    
+
     int error, index;
     char id[] = "24";
 
@@ -81,7 +92,7 @@ BOOST_FIXTURE_TEST_CASE(get_outfall_stats, FixtureBeforeEnd){
 
     // Free memory allocated for SM_OutfallStats
     if (s != NULL)
-        free(s->totalLoad);     
+        free(s->totalLoad);
     free(s);
 }
 

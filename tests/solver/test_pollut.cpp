@@ -1,11 +1,15 @@
 /*
- *   test_toolkitAPI_pollut.cpp
- *
- *   Created: 07/20/2018
- *   Author: Katherine M. Ratliff
- *
- *   Unit testing mechanics for the pollutant API using Boost Test.
- */
+ ******************************************************************************
+ Project:      OWA SWMM
+ Version:      5.1.13
+ Module:       test_pollut.cpp
+ Description:  tests for SWMM pollutant API functions
+ Authors:      see AUTHORS
+ Copyright:    see AUTHORS
+ License:      see LICENSE
+ Last Updated: 12/21/2020
+ ******************************************************************************
+*/
 
  #include <boost/test/unit_test.hpp>
 
