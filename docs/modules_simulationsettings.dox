@@ -1,0 +1,15 @@
+/**
+
+@defgroup SimulationSettings Simulation Options
+
+
+@addtogroup SimulationSettings
+@{
+@fn void swmm_getAPIError (int errcode, char *s)
+@fn int swmm_getSimulationUnit (int type, int *value)
+@fn int swmm_getSimulationAnalysisSetting (int type, int *value)
+@fn int swmm_getSimulationParam (int type, double *value)
+@fn int swmm_getSimulationDateTime (int timetype, int *year, int *month, int *day, int *hour, int *minute, int *seconds)
+@fn swmm_setSimulationDateTime (int timetype, char *dtimestr)
+@}
+*/

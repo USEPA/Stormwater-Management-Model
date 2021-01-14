@@ -1,15 +1,15 @@
 /*
- *   test_output.cpp
- *
- *   Created: 11/2/2017
- *   Author: Michael E. Tryby
- *           US EPA - ORD/NRMRL
- *
- *   Unit testing for SWMM outputapi using Boost Test.
+ ******************************************************************************
+ Project:      OWA SWMM
+ Version:      5.1.14
+ Module:       test_output.cpp
+ Description:  tests for output library functions
+ Authors:      see AUTHORS
+ Copyright:    see AUTHORS
+ License:      see LICENSE
+ Last Updated: 12/21/2020
+ ******************************************************************************
  */
-
-// NOTE: Travis installs libboost test version 1.5.4
-//#define BOOST_TEST_DYN_LINK
 
 #define BOOST_TEST_MODULE "output"
 #include <boost/test/included/unit_test.hpp>
@@ -22,7 +22,7 @@
 #include "swmm_output.h"
 
 // NOTE: Reference data for the unit tests is currently tied to SWMM 5.1.7
-#define DATA_PATH "./Example1.out"
+#define DATA_PATH "./test_example1.out"
 
 using namespace std;
 
@@ -41,7 +41,8 @@ boost::test_tools::predicate_result check_cdd_float(std::vector<float>& test,
         (test_it < test.end()) && (ref_it < ref.end());
         ++test_it, ++ref_it)
     {
-        if (*test_it != *ref_it) {
+        if (*test_it != *ref_it)
+        {
             // Compute log absolute error
             tmp = abs(*test_it - *ref_it);
             if (tmp < 1.0e-7f)
@@ -79,27 +80,27 @@ BOOST_AUTO_TEST_CASE(InitTest) {
     BOOST_REQUIRE(error == 0);
     BOOST_CHECK(p_handle != NULL);
 
-    SMO_close(&p_handle);
+    SMO_close(p_handle);
+
 }
 
 BOOST_AUTO_TEST_CASE(CloseTest) {
     SMO_Handle p_handle = NULL;
     SMO_init(&p_handle);
 
-    int error = SMO_close(&p_handle);
+    int error = SMO_close(p_handle);
     BOOST_REQUIRE(error == 0);
-    BOOST_CHECK(p_handle == NULL);
 }
 
 BOOST_AUTO_TEST_CASE(InitOpenCloseTest) {
     std::string path     = std::string(DATA_PATH);
-    SMO_Handle  p_handle = NULL;
+    SMO_Handle p_handle = NULL;
     SMO_init(&p_handle);
 
     int error = SMO_open(p_handle, path.c_str());
     BOOST_REQUIRE(error == 0);
 
-    SMO_close(&p_handle);
+    SMO_close(p_handle);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -116,8 +117,8 @@ struct Fixture {
         array_dim = 0;
     }
     ~Fixture() {
-        SMO_free((void**)&array);
-        error = SMO_close(&p_handle);
+        SMO_freeMemory((void*)array);
+        error = SMO_close(p_handle);
     }
 
     std::string path;
@@ -155,10 +156,9 @@ BOOST_FIXTURE_TEST_CASE(test_getProjectSize, Fixture) {
     std::vector<int> ref;
     ref.assign(ref_array, ref_array + ref_dim);
 
-    BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(),
-                                  test.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(), test.end());
 
-    SMO_free((void**)&i_array);
+    SMO_freeMemory((void*)i_array);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getUnits, Fixture) {
@@ -167,51 +167,50 @@ BOOST_FIXTURE_TEST_CASE(test_getUnits, Fixture) {
     error = SMO_getUnits(p_handle, &i_array, &array_dim);
     BOOST_REQUIRE(error == 0);
 
-	std::vector<int> test;
-    test.assign(i_array, i_array + array_dim);
-
-	// unit system, flow units, pollut units
-	const int        ref_dim            = 4;
-    const int        ref_array[ref_dim] = {SMO_US, SMO_CFS, SMO_MG, SMO_UG};
-
-	std::vector<int> ref;
-    ref.assign(ref_array, ref_array + ref_dim);
-
-    BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(),
-                                  test.end());
-
-    SMO_free((void**)&i_array);
-}
-
-BOOST_FIXTURE_TEST_CASE(test_getFlowUnits, Fixture) {
-    int units = -1;
-
-    error = SMO_getFlowUnits(p_handle, &units);
-    BOOST_REQUIRE(error == 0);
-    BOOST_CHECK_EQUAL(0, units);
-}
-
-BOOST_FIXTURE_TEST_CASE(test_getPollutantUnits, Fixture) {
-    int* i_array = NULL;
-
-    error = SMO_getPollutantUnits(p_handle, &i_array, &array_dim);
-    BOOST_REQUIRE(error == 0);
-
     std::vector<int> test;
     test.assign(i_array, i_array + array_dim);
 
-    const int ref_dim            = 2;
-    int       ref_array[ref_dim] = {0, 1};
+    // unit system, flow units, pollut units
+    const int        ref_dim            = 4;
+    const int        ref_array[ref_dim] = {SMO_US, SMO_CFS, SMO_MG, SMO_UG};
 
     std::vector<int> ref;
     ref.assign(ref_array, ref_array + ref_dim);
 
-    BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(),
-                                  test.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(), test.end());
 
-    SMO_free((void**)&i_array);
-    BOOST_CHECK(i_array == NULL);
+    SMO_freeMemory((void*)i_array);
 }
+
+// BOOST_FIXTURE_TEST_CASE(test_getFlowUnits, Fixture) {
+//     int units = -1;
+//
+//     error = SMO_getFlowUnits(p_handle, &units);
+//     BOOST_REQUIRE(error == 0);
+//     BOOST_CHECK_EQUAL(0, units);
+// }
+//
+// BOOST_FIXTURE_TEST_CASE(test_getPollutantUnits, Fixture) {
+//     int* i_array = NULL;
+//
+//     error = SMO_getPollutantUnits(p_handle, &i_array, &array_dim);
+//     BOOST_REQUIRE(error == 0);
+//
+//     std::vector<int> test;
+//     test.assign(i_array, i_array + array_dim);
+//
+//     const int ref_dim            = 2;
+//     int       ref_array[ref_dim] = {0, 1};
+//
+//     std::vector<int> ref;
+//     ref.assign(ref_array, ref_array + ref_dim);
+//
+//     BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(),
+//                                   test.end());
+//
+//     SMO_freeMemory((void**)&i_array);
+//     BOOST_CHECK(i_array == NULL);
+// }
 
 BOOST_FIXTURE_TEST_CASE(test_getStartDate, Fixture) {
     double date = -1;
@@ -247,7 +246,7 @@ BOOST_FIXTURE_TEST_CASE(test_getElementName, Fixture) {
     std::string ref("10");
     BOOST_CHECK(check_string(test, ref));
 
-    SMO_free((void**)&c_array);
+    SMO_freeMemory((void*)c_array);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {

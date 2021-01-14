@@ -64,13 +64,13 @@
 #include <math.h>
 
 #if defined(_OPENMP)                                                           //(5.1.013)
-  #include <omp.h>                                                             //     
+  #include <omp.h>                                                             //
 #else                                                                          //
   int omp_get_num_threads(void) { return 1;}                                   //
 #endif                                                                         //
 
 #include "headers.h"
-#include "lid.h" 
+#include "lid.h"
 #include "hash.h"
 #include "mempool.h"
 
@@ -78,7 +78,7 @@
 //  Shared variables
 //-----------------------------------------------------------------------------
 static HTtable* Htable[MAX_OBJ_TYPES]; // Hash tables for object ID names
-static char     MemPoolAllocated;      // TRUE if memory pool allocated 
+static char     MemPoolAllocated;      // TRUE if memory pool allocated
 
 //-----------------------------------------------------------------------------
 //  External Functions (declared in funcs.h)
@@ -161,7 +161,9 @@ void project_readInput()
     else
     {
         // --- compute total duration of simulation in seconds
-        TotalDuration = floor((EndDateTime - StartDateTime) * SECperDAY);
+        double durationDate = EndDate - StartDate;
+        double durationTime = EndTime - StartTime;
+        TotalDuration = floor(durationDate * SECperDAY + durationTime * SECperDAY);
 
         // --- reporting step must be <= total duration
         if ( (double)ReportStep > TotalDuration )
@@ -289,7 +291,7 @@ int  project_init(void)
 //  Input:   none
 //  Output:  returns an error code
 //  Purpose: initializes the internal state of all objects.
-// 
+//
 {
     int j;
     climate_initState();
@@ -345,6 +347,9 @@ int project_findObject(int type, char *id)
     return HTfind(Htable[type], id);
 }
 
+
+
+
 //=============================================================================
 
 char  *project_findID(int type, char *id)
@@ -374,7 +379,7 @@ double ** project_createMatrix(int nrows, int ncols)
     // --- allocate pointers to rows
     a = (double **) malloc(nrows * sizeof(double *));
     if ( !a ) return NULL;
-    
+
     // --- allocate rows and set pointers to them
     a[0] = (double *) malloc (nrows * ncols * sizeof(double));
     if ( !a[0] ) return NULL;
@@ -384,7 +389,7 @@ double ** project_createMatrix(int nrows, int ncols)
     {
         for ( j = 0; j < ncols; j++) a[i][j] = 0.0;
     }
-    
+
     // --- return pointer to array of pointers to rows
     return a;
 }
@@ -472,7 +477,7 @@ int project_readOption(char* s1, char* s2)
 
       // --- simulation ending date
       case END_DATE:
-        if ( !datetime_strToDate(s2, &EndDate) ) 
+        if ( !datetime_strToDate(s2, &EndDate) )
         {
             return error_setInpError(ERR_DATETIME, s2);
         }
@@ -542,7 +547,7 @@ int project_readOption(char* s1, char* s2)
         s = s + 60*m + 3600*h;
 
         // --- RuleStep allowed to be 0 while other time steps must be > 0     //(5.1.013)
-        if (k == RULE_STEP)                                                    //      
+        if (k == RULE_STEP)                                                    //
         {                                                                      //
             if (s < 0) return error_setInpError(ERR_NUMBER, s2);               //
         }                                                                      //
@@ -590,8 +595,8 @@ int project_readOption(char* s1, char* s2)
         }
         break;
 
-      case NORMAL_FLOW_LTD: 
-        m = findmatch(s2, NormalFlowWords); 
+      case NORMAL_FLOW_LTD:
+        m = findmatch(s2, NormalFlowWords);
         if ( m < 0 ) return error_setInpError(ERR_KEYWORD, s2);
         NormalFlowLtd = m;
         break;
@@ -668,7 +673,7 @@ int project_readOption(char* s1, char* s2)
         break;
 
       // --- minimum surface area (ft2 or sq. meters) associated with nodes
-      //     under dynamic wave flow routing 
+      //     under dynamic wave flow routing
       case MIN_SURFAREA:
         if (!getDouble(s2, &MinSurfArea))                                      //(5.1.013)
             return error_setInpError(ERR_NUMBER, s2);                          //(5.1.013)
@@ -785,7 +790,7 @@ void setDefaults()
 
    // Interface files
    Frain.mode      = SCRATCH_FILE;     // Use scratch rainfall file
-   Fclimate.mode   = NO_FILE; 
+   Fclimate.mode   = NO_FILE;
    Frunoff.mode    = NO_FILE;
    Frdii.mode      = NO_FILE;
    Fhotstart1.mode = NO_FILE;
@@ -816,14 +821,14 @@ void setDefaults()
    ForceMainEqn    = H_W;              // Hazen-Williams eqn. for force mains
    LinkOffsets     = DEPTH_OFFSET;     // Use depth for link offsets
    LengtheningStep = 0;                // No lengthening of conduits
-   CourantFactor   = 0.0;              // No variable time step 
+   CourantFactor   = 0.0;              // No variable time step
    MinSurfArea     = 0.0;              // Force use of default min. surface area
    MinSlope        = 0.0;              // No user supplied minimum conduit slope
-   SkipSteadyState = FALSE;            // Do flow routing in steady state periods 
+   SkipSteadyState = FALSE;            // Do flow routing in steady state periods
    IgnoreRainfall  = FALSE;            // Analyze rainfall/runoff
    IgnoreRDII      = FALSE;            // Analyze RDII
-   IgnoreSnowmelt  = FALSE;            // Analyze snowmelt 
-   IgnoreGwater    = FALSE;            // Analyze groundwater 
+   IgnoreSnowmelt  = FALSE;            // Analyze snowmelt
+   IgnoreGwater    = FALSE;            // Analyze groundwater
    IgnoreRouting   = FALSE;            // Analyze flow routing
    IgnoreQuality   = FALSE;            // Analyze water quality
    WetStep         = 300;              // Runoff wet time step (secs)
@@ -833,7 +838,7 @@ void setDefaults()
    MinRouteStep    = 0.5;              // Minimum variable time step (sec)
    ReportStep      = 900;              // Reporting time step (secs)
    StartDryDays    = 0.0;              // Antecedent dry days
-   MaxTrials       = 0;                // Force use of default max. trials 
+   MaxTrials       = 0;                // Force use of default max. trials
    HeadTol         = 0.0;              // Force use of default head tolerance
    SysFlowTol      = 0.05;             // System flow tolerance for steady state
    LatFlowTol      = 0.05;             // Lateral flow tolerance for steady state
@@ -841,7 +846,7 @@ void setDefaults()
    NumEvents       = 0;                // Number of detailed routing events
 
    // Deprecated options
-   SlopeWeighting  = TRUE;             // Use slope weighting 
+   SlopeWeighting  = TRUE;             // Use slope weighting
    Compatibility   = SWMM4;            // Use SWMM 4 up/dn weighting method
 
    // Starting & ending date/time
@@ -898,7 +903,7 @@ void setDefaults()
        Evap.panCoeff[i]    = 1.0;
    }
    Evap.recoveryPattern = -1;
-   Evap.recoveryFactor  = 1.0; 
+   Evap.recoveryFactor  = 1.0;
    Evap.tSeries = -1;
    Evap.dryOnly = FALSE;
 
@@ -1024,7 +1029,9 @@ void createObjects()
         Subcatch[j].oldQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
         Subcatch[j].newQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
         Subcatch[j].pondedQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
+        Subcatch[j].concPonded = (double *) calloc(Nobjects[POLLUT], sizeof(double));
         Subcatch[j].totalLoad  = (double *) calloc(Nobjects[POLLUT], sizeof(double));
+        Subcatch[j].surfaceBuildup = (double *) calloc(Nobjects[POLLUT], sizeof(double));
     }
     for (j = 0; j < Nobjects[NODE]; j++)
     {

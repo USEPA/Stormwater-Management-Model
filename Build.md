@@ -2,12 +2,13 @@
    Build.md
 
    Created: Dec 2, 2019
-   Updated:
+   Updated: Jan 14, 2020
 
    Author: Michael E. Tryby
-           US EPA - ORD/CESER
---->
+           US EPA - ORD/CESE
 
+   Modified by: Caleb Buahin
+--->
 
 ## Building SWMM Locally on Windows
 
@@ -16,7 +17,7 @@
 
 Before the project can be built the required dependencies must be installed.
 
-**Summary of Build Dependencies: Windows**
+** Summary of Build Dependencies: Windows
 
   - Build
       - Build Tools for Visual Studio 2017

@@ -15,18 +15,19 @@
 #include <string.h>
 
 #include "errormanager.h"
-
 #include "messages.h"
+
 #include "swmm_output.h"
 
 
 // NOTE: These depend on machine data model and may change when porting
 // F_OFF Must be a 8 byte / 64 bit integer for large file support
 #ifdef _WIN32    // Windows (32-bit and 64-bit)
-#define F_OFF __int64
+  #define F_OFF __int64
 #else    // Other platforms
-#define F_OFF off_t
+  #define F_OFF off_t
 #endif
+
 #define INT4 int      // Must be a 4 byte / 32 bit integer type
 #define REAL4 float   // Must be a 4 byte / 32 bit real type
 
@@ -34,8 +35,8 @@
 #define DATESIZE 8    // Dates are stored as 8 byte word size
 
 #define NELEMENTTYPES 5    // Number of element types
-
 #define MEMCHECK(x) (((x) == NULL) ? 414 : 0)
+
 
 struct IDentry {
     char* IDname;
@@ -47,7 +48,7 @@ typedef struct IDentry idEntry;
 //  Shared variables
 //-----------------------------------------------------------------------------
 
-typedef struct {
+typedef struct Handle {
     char  name[MAXFILENAME + 1];    // file path/name
     FILE* file;                     // FILE structure pointer
 
@@ -75,7 +76,8 @@ typedef struct {
     F_OFF BytesPerPeriod;    // bytes used for results in each period
 
     error_handle_t* error_handle;
-} data_t;
+} data_t, *SMO_Handle;
+
 
 //-----------------------------------------------------------------------------
 //   Local functions
@@ -116,14 +118,16 @@ int EXPORT_OUT_API SMO_init(SMO_Handle *p_handle)
     if (priv_data != NULL) {
         priv_data->error_handle = new_errormanager(&errorLookup);
         *p_handle = priv_data;
-    } else
+    } 
+    else
         errorcode = -1;
 
     // TODO: Need to handle errors during initialization better.
     return errorcode;
 }
 
-int EXPORT_OUT_API SMO_close(SMO_Handle* p_handle)
+int EXPORT_OUT_API SMO_close(SMO_Handle p_handle)
+
 //
 //   Purpose: Clean up after and close Output API
 //
@@ -131,7 +135,7 @@ int EXPORT_OUT_API SMO_close(SMO_Handle* p_handle)
     data_t *p_data;
     int i, n, errorcode = 0;
 
-    p_data = (data_t *)*p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -153,8 +157,6 @@ int EXPORT_OUT_API SMO_close(SMO_Handle* p_handle)
             fclose(p_data->file);
 
         free(p_data);
-
-        *p_handle = NULL;
     }
 
     return errorcode;
@@ -239,7 +241,7 @@ int EXPORT_OUT_API SMO_open(SMO_Handle p_handle, const char *path)
     // If error close the binary file
     if (errorcode > 400) {
         set_error(p_data->error_handle, errorcode);
-        SMO_close(&p_handle);
+        SMO_close(p_handle);
     }
 
     return errorcode;
@@ -346,73 +348,6 @@ int EXPORT_OUT_API SMO_getUnits(SMO_Handle p_handle, int **unitFlag, int *length
             fread(&temp[2], RECORDSIZE, p_data->Npolluts, p_data->file);
         }
         *unitFlag = temp;
-    }
-
-    return set_error(p_data->error_handle, errorcode);
-}
-
-int EXPORT_OUT_API SMO_getFlowUnits(SMO_Handle p_handle, int *unitFlag)
-//
-//   Purpose: Returns unit flag for flow.
-//
-//   Returns:
-//            0: CFS  (cubic feet per second)
-//            1: GPM  (gallons per minute)
-//            2: MGD  (million gallons per day)
-//            3: CMS  (cubic meters per second)
-//            4: LPS  (liters per second)
-//            5: MLD  (million liters per day)
-//
-{
-    int     errorcode = 0;
-    data_t* p_data;
-
-    *unitFlag = -1;
-
-    p_data = (data_t*)p_handle;
-
-    if (p_data == NULL)
-        return -1;
-    else {
-        fseek(p_data->file, 2 * RECORDSIZE, SEEK_SET);
-        fread(unitFlag, RECORDSIZE, 1, p_data->file);
-    }
-
-    return set_error(p_data->error_handle, errorcode);
-}
-
-int EXPORT_OUT_API SMO_getPollutantUnits(SMO_Handle p_handle, int **unitFlag, int *length)
-//
-//   Purpose:
-//     Return integer flag representing the units that the given pollutant is
-//     measured in. Concentration units are located after the pollutant ID
-//     names and before the object properties start, and are stored for each
-//     pollutant.  They're stored as 4-byte integers with the following codes:
-//       0: mg/L
-//       1: ug/L
-//       2: count/L
-//
-//   Args:
-//     pollutantIndex: valid values are 0 to Npolluts-1
-{
-    int    errorcode = 0;
-    int    *temp;
-    F_OFF  offset;
-    data_t *p_data;
-
-    p_data = (data_t *)p_handle;
-
-    if (p_data == NULL)
-        errorcode = -1;
-    else if (MEMCHECK(temp = newIntArray(p_data->Npolluts)))
-        errorcode = 414;
-    else {
-        offset = p_data->ObjPropPos - (p_data->Npolluts * RECORDSIZE);
-        _fseek(p_data->file, offset, SEEK_SET);
-        fread(temp, RECORDSIZE, p_data->Npolluts, p_data->file);
-
-        *unitFlag = temp;
-        *length   = p_data->Npolluts;
     }
 
     return set_error(p_data->error_handle, errorcode);
@@ -670,7 +605,7 @@ int EXPORT_OUT_API SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute 
     errorcode = 411;
     else {
         // loop over and build time series
-        for (k = 0; k < length; k++)
+        for (k = 0; k < len; k++)
             temp[k] = getSystemValue(p_data, startPeriod + k, attr);
 
         *outValueArray = temp;
@@ -959,15 +894,12 @@ int EXPORT_OUT_API SMO_getSystemResult(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-void EXPORT_OUT_API SMO_free(void **array)
+void EXPORT_OUT_API SMO_freeMemory(void *array)
 //
 //  Purpose: Frees memory allocated by API calls
 //
 {
-    if (array != NULL) {
-        free(*array);
-        *array = NULL;
-    }
+    free(array);
 }
 
 void EXPORT_OUT_API SMO_clearError(SMO_Handle p_handle) {

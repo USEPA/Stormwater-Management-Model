@@ -61,14 +61,14 @@ static double          SysOutfallFlow;
 //-----------------------------------------------------------------------------
 //  Exportable variables (shared with statsrpt.c)
 //-----------------------------------------------------------------------------
-TSubcatchStats* SubcatchStats;
-TNodeStats*     NodeStats;
-TLinkStats*     LinkStats;
-TStorageStats*  StorageStats;
-TOutfallStats*  OutfallStats;
-TPumpStats*     PumpStats;
-double          MaxOutfallFlow;
-double          MaxRunoffFlow;
+TSubcatchStats*     SubcatchStats;
+TNodeStats*         NodeStats;
+TLinkStats*         LinkStats;
+TStorageStats*      StorageStats;
+TOutfallStats*      OutfallStats;
+TPumpStats*         PumpStats;
+double              MaxOutfallFlow;
+double              MaxRunoffFlow;
 
 //-----------------------------------------------------------------------------
 //  Imported variables
@@ -256,10 +256,10 @@ int  stats_open()
     }
 
     // --- allocate memory & initialize pumping statistics
-    if ( Nlinks[PUMP] > 0 ) 
-    { 
+    if ( Nlinks[PUMP] > 0 )
+    {
         PumpStats = (TPumpStats *) calloc(Nlinks[PUMP], sizeof(TPumpStats));
-        if ( !PumpStats ) 
+        if ( !PumpStats )
         {
             report_writeErrorMsg(ERR_MEMORY, "");
             return ErrorCode;
@@ -269,14 +269,14 @@ int  stats_open()
             PumpStats[j].utilized = 0.0;
             PumpStats[j].minFlow  = 0.0;
             PumpStats[j].avgFlow  = 0.0;
-            PumpStats[j].maxFlow  = 0.0; 
+            PumpStats[j].maxFlow  = 0.0;
             PumpStats[j].volume   = 0.0;
             PumpStats[j].energy   = 0.0;
             PumpStats[j].startUps = 0;
-            PumpStats[j].offCurveLow = 0.0; 
+            PumpStats[j].offCurveLow = 0.0;
             PumpStats[j].offCurveHigh = 0.0;
-        } 
-    } 
+        }
+    }
 
     // --- initialize system stats
     MaxRunoffFlow = 0.0;
@@ -294,7 +294,7 @@ int  stats_open()
 void  stats_close()
 //
 //  Input:   none
-//  Output:  
+//  Output:
 //  Purpose: closes the simulation statistics system.
 //
 {
@@ -303,7 +303,7 @@ void  stats_close()
     FREE(SubcatchStats);
     FREE(NodeStats);
     FREE(LinkStats);
-    FREE(StorageStats); 
+    FREE(StorageStats);
     if ( OutfallStats )
     {
         for ( j=0; j<Nnodes[OUTFALL]; j++ )
@@ -396,10 +396,10 @@ void  stats_updateMaxRunoff()
 {
     int j;
     double sysRunoff = 0.0;
-    
+
     for (j=0; j<Nobjects[SUBCATCH]; j++) sysRunoff += Subcatch[j].newRunoff;
     MaxRunoffFlow = MAX(MaxRunoffFlow, sysRunoff);
-}    
+}
 
 //=============================================================================
 
@@ -468,7 +468,7 @@ void   stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
 }
 
 //=============================================================================
-   
+
 void stats_updateCriticalTimeCount(int node, int link)
 //
 //  Input:   node = node index
@@ -505,7 +505,7 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
         NodeStats[j].maxDepth = newDepth;
         NodeStats[j].maxDepthDate = aDate;
     }
-    
+
     // --- update flooding, ponding, and surcharge statistics
     if ( Node[j].type != OUTFALL )
     {
@@ -535,10 +535,10 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
     {
         k = Node[j].subIndex;
         StorageStats[k].avgVol += newVolume;
-        StorageStats[k].evapLosses += 
-            Storage[Node[j].subIndex].evapLoss; 
+        StorageStats[k].evapLosses +=
+            Storage[Node[j].subIndex].evapLoss;
         StorageStats[k].exfilLosses +=
-            Storage[Node[j].subIndex].exfilLoss; 
+            Storage[Node[j].subIndex].exfilLoss;
 
         newVolume = MIN(newVolume, Node[j].fullVolume);
         if ( newVolume > StorageStats[k].maxVol )
@@ -550,7 +550,7 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
     }
 
     // --- update outfall statistics
-    if ( Node[j].type == OUTFALL ) 
+    if ( Node[j].type == OUTFALL )
     {
         k = Node[j].subIndex;
         if ( Node[j].inflow >= MIN_RUNOFF_FLOW )
@@ -561,14 +561,14 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
         }
         for (p=0; p<Nobjects[POLLUT]; p++)
         {
-            OutfallStats[k].totalLoad[p] += Node[j].inflow * 
+            OutfallStats[k].totalLoad[p] += Node[j].inflow *
             Node[j].newQual[p] * tStep;
         }
         SysOutfallFlow += Node[j].inflow;
     }
 
     // --- update inflow statistics
-    NodeStats[j].totLatFlow += ( (Node[j].oldLatFlow + Node[j].newLatFlow) * 
+    NodeStats[j].totLatFlow += ( (Node[j].oldLatFlow + Node[j].newLatFlow) *
                                  0.5 * tStep );
     if ( fabs(Node[j].newLatFlow) > fabs(NodeStats[j].maxLatFlow) )
         NodeStats[j].maxLatFlow = Node[j].newLatFlow;
@@ -651,10 +651,10 @@ void  stats_updateLinkStats(int j, double tStep, DateTime aDate)
     else if ( Link[j].type == CONDUIT )
     {
 
-        // --- update time under normal flow & inlet control 
+        // --- update time under normal flow & inlet control
         if ( Link[j].normalFlow ) LinkStats[j].timeNormalFlow += tStep;
         if ( Link[j].inletControl ) LinkStats[j].timeInletControl += tStep;
-    
+
         // --- update flow classification distribution
         k = Link[j].flowClass;
         if ( k >= 0 && k < MAX_FLOW_CLASSES )
@@ -665,7 +665,7 @@ void  stats_updateLinkStats(int j, double tStep, DateTime aDate)
         // --- update time conduit is full
         k = Link[j].subIndex;
         if ( q >= Link[j].qFull * (double)Conduit[k].barrels )
-            LinkStats[j].timeFullFlow += tStep; 
+            LinkStats[j].timeFullFlow += tStep;
         if ( Conduit[k].capacityLimited )
             LinkStats[j].timeCapacityLimited += tStep;
 
@@ -712,11 +712,11 @@ void  stats_findMaxStats()
         MaxMassBalErrs[j].value   = -1.0;
         MaxCourantCrit[j].index   = -1;
         MaxCourantCrit[j].value   = -1.0;
-        MaxFlowTurns[j].index     = -1; 
+        MaxFlowTurns[j].index     = -1;
         MaxFlowTurns[j].value     = -1.0;
     }
 
-    // --- find links with most flow turns 
+    // --- find links with most flow turns
     if ( StepCount > 2 )
     {
         for (j=0; j<Nobjects[LINK]; j++)
@@ -788,4 +788,219 @@ void  stats_updateMaxStats(TMaxStats maxStats[], int i, int j, double x)
             maxStats1 = maxStats2;
         }
     }
+}
+
+
+int stats_getNodeStat(int index, TNodeStats **nodeStats)
+//
+// Input:    index
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Node Stat for toolkitAPI
+//
+{
+    // Perform memcopy
+    memcpy(*nodeStats, &NodeStats[index], sizeof(TNodeStats));
+
+    // Convert units 
+    // Current Average Depth
+    (*nodeStats)->avgDepth *= (UCF(LENGTH) / (double)StepCount);
+    // Current Maximum Depth
+    (*nodeStats)->maxDepth *= UCF(LENGTH);
+    // Current Maximum Lateral Inflow
+    (*nodeStats)->maxLatFlow *= UCF(FLOW);
+    // Current Maximum Inflow
+    (*nodeStats)->maxInflow *= UCF(FLOW);
+    // Cumulative Lateral Inflow
+    (*nodeStats)->totLatFlow *= UCF(VOLUME);
+    // Time Courant Critical (hrs)
+    (*nodeStats)->timeCourantCritical /= 3600.0;
+    // Cumulative Flooded Volume
+    (*nodeStats)->volFlooded *= UCF(VOLUME);
+    // Time Flooded (hrs)
+    (*nodeStats)->timeFlooded /= 3600.0;
+    // Current Maximum Overflow
+    (*nodeStats)->maxOverflow *= UCF(FLOW);
+    // Current Maximum Ponding Volume
+    (*nodeStats)->maxPondedVol *= UCF(VOLUME);
+    // Time Surcharged
+    (*nodeStats)->timeSurcharged /= 3600.0;
+
+    return 0;
+}
+
+int stats_getStorageStat(int index, TStorageStats **storageStats)
+//
+// Input:    subindex
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Storage Stat for toolkitAPI
+//
+{
+    // Fetch sub index
+    int k = Node[index].subIndex;
+    // Copy Structure
+    memcpy(*storageStats, &StorageStats[k], sizeof(TStorageStats));
+    
+    // Convert units
+    // Initial Volume
+    (*storageStats)->initVol *= UCF(VOLUME);
+    // Current Average Volume
+    (*storageStats)->avgVol *= (UCF(VOLUME) / (double)StepCount);
+    // Current Maximum Volume
+    (*storageStats)->maxVol *= UCF(VOLUME);
+    // Current Maximum Flow
+    (*storageStats)->maxFlow *= UCF(FLOW);
+    // Current Evaporation Volume
+    (*storageStats)->evapLosses *= UCF(VOLUME);
+    // Current Exfiltration Volume
+    (*storageStats)->exfilLosses *= UCF(VOLUME);
+
+    return 0;
+}
+
+int stats_getOutfallStat(int index, TOutfallStats **outfallStats)
+//
+// Input:    subindex
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Outfall Stat for toolkitAPI
+//
+{
+    int k, p;
+    double *temp;
+
+    // fetch sub index
+    k = Node[index].subIndex;
+    
+    // Copy Structure
+    temp = (*outfallStats)->totalLoad;
+    memcpy(*outfallStats, &(OutfallStats[k]), sizeof(TOutfallStats));
+    (*outfallStats)->totalLoad = temp;
+
+    // Perform Deep Copy of Pollutants Results
+    if (Nobjects[POLLUT] > 0)
+        memcpy((*outfallStats)->totalLoad, OutfallStats[k].totalLoad, sizeof(double)*Nobjects[POLLUT]);
+
+    // Perform unit conversions
+    if ((*outfallStats)->totalPeriods > 0 )
+        (*outfallStats)->avgFlow *= (UCF(FLOW) / (double) (*outfallStats)->totalPeriods);
+    else
+        (*outfallStats)->avgFlow *= 0.0;
+
+    // Current Maximum Flow
+    (*outfallStats)->maxFlow *= UCF(FLOW);
+
+    // Convert Mass Units
+    if (Nobjects[POLLUT] > 0)
+    {
+        for (p = 0; p < Nobjects[POLLUT]; p++) {
+            if (Pollut[p].units == COUNT)
+                (*outfallStats)->totalLoad[p] = LOG10((*outfallStats)->totalLoad[p]);
+            else
+                (*outfallStats)->totalLoad[p] *= (LperFT3 * Pollut[p].mcf);
+        }
+    }
+    return 0;
+}
+
+int stats_getLinkStat(int index, TLinkStats **linkStats)
+//
+// Input:    index
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Link Stat for toolkitAPI
+//
+{
+    // Copy Structure
+    memcpy(*linkStats, &LinkStats[index], sizeof(TLinkStats));
+
+    // Cumulative Maximum Flowrate
+    (*linkStats)->maxFlow *= UCF(FLOW);
+    // Cumulative Maximum Velocity
+    (*linkStats)->maxVeloc *= UCF(LENGTH);
+    // Cumulative Maximum Depth
+    (*linkStats)->maxDepth *= UCF(LENGTH);
+    // Cumulative Time Normal Flow
+    (*linkStats)->timeNormalFlow /= 3600.0;
+    // Cumulative Time Inlet Control
+    (*linkStats)->timeInletControl /= 3600.0;
+    // Cumulative Time Surcharged
+    (*linkStats)->timeSurcharged /= 3600.0;
+    // Cumulative Time Upstream Full
+    (*linkStats)->timeFullUpstream /= 3600.0;
+    // Cumulative Time Downstream Full
+    (*linkStats)->timeFullDnstream /= 3600.0;
+    // Cumulative Time Full Flow
+    (*linkStats)->timeFullFlow /= 3600.0;
+    // Cumulative Time Capacity limited
+    (*linkStats)->timeCapacityLimited /= 3600.0;
+    // Cumulative Time Courant Critical Flow
+    (*linkStats)->timeCourantCritical /= 3600.0;
+    
+	return 0;
+}
+
+int stats_getPumpStat(int index, TPumpStats **pumpStats)
+//
+// Input:    subindex
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Pump Stat for toolkitAPI
+//
+{
+
+    // fetch sub index
+    int k = Link[index].subIndex;
+    // Copy Structure
+    memcpy(*pumpStats, &PumpStats[k], sizeof(TPumpStats));
+
+    // Convert units
+    // Cumulative Minimum Flow
+    (*pumpStats)->minFlow *= UCF(FLOW);
+    // Cumulative Average Flow
+    if ((*pumpStats)->totalPeriods > 0)
+    {
+        (*pumpStats)->avgFlow *= (UCF(FLOW) / (double) (*pumpStats)->totalPeriods);
+    }
+    else
+    {
+        (*pumpStats)->avgFlow *= 0.0;
+    }
+    // Cumulative Maximum Flow
+    (*pumpStats)->maxFlow *= UCF(FLOW);
+    // Cumulative Pumping Volume
+    (*pumpStats)->volume *= UCF(VOLUME);
+
+	return 0;
+}
+
+int stats_getSubcatchStat(int index, TSubcatchStats **subcatchStats)
+//
+// Input:    index
+//           element = element to return
+// Return:   value
+// Purpose:  Gets a Subcatchment Stat for toolkitAPI
+//
+{
+    memcpy(*subcatchStats, &(SubcatchStats[index]),  sizeof(TSubcatchStats));
+
+    // Cumulative Rainfall Depth
+    (*subcatchStats)->precip *= (UCF(RAINDEPTH) / Subcatch[index].area);
+    // Cumulative Runon Volume
+    (*subcatchStats)->runon *= UCF(VOLUME);
+    // Cumulative Evaporation Volume
+    (*subcatchStats)->evap *= UCF(VOLUME);
+    // Cumulative Infiltration Volume
+    (*subcatchStats)->infil *= UCF(VOLUME);
+    // Cumulative Runoff Volume
+    (*subcatchStats)->runoff *= UCF(VOLUME);
+    // Maximum Runoff Rate
+    (*subcatchStats)->maxFlow *= UCF(FLOW);
+    // Impervious Runoff
+    (*subcatchStats)->impervRunoff *= UCF(VOLUME);
+    // Pervious Runoff
+    (*subcatchStats)->pervRunoff *= UCF(VOLUME);
+
+    return 0;
 }

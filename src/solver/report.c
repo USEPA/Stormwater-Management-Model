@@ -153,7 +153,7 @@ int report_readOptions(char* tok[], int ntoks)
 
       default: return error_setInpError(ERR_KEYWORD, tok[1]);
     }
-
+    
     if (strcomp(tok[1], w_NONE))
         k = NONE;
     else if (strcomp(tok[1], w_ALL))
@@ -240,7 +240,13 @@ void report_writeLogo()
 //  Purpose: writes report header lines to report file.
 //
 {
-    fprintf(Frpt.file, FMT08);
+	char SEMVERSION[SEMVERSION_LEN];
+	getSemVersion(SEMVERSION);
+
+	sprintf(Msg, \
+		"\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build %s)", SEMVERSION);
+
+    fprintf(Frpt.file, "%s", Msg);
     fprintf(Frpt.file, FMT09);
     fprintf(Frpt.file, FMT10);
     time(&SysTime);                    // Save starting wall clock time

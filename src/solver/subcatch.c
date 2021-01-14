@@ -105,6 +105,7 @@ static  char *RunoffRoutingWords[] = { w_OUTLET,  w_IMPERV, w_PERV, NULL};
 //  subcatch_getFracPerv       (called from gwater_initState)
 //  subcatch_getStorage        (called from massbal_getRunoffError)
 //  subcatch_getDepth          (called from findPondedLoads in surfqual.c)
+//  subcatch_getBuildup        (called from surfqual_getWashoff)
 
 //  subcatch_getWtdOutflow     (called from addWetWeatherInflows in routing.c)
 //  subcatch_getResults        (called from output_saveSubcatchResults)
@@ -801,6 +802,27 @@ void getNetPrecip(int j, double* netPrecip, double tStep)
     {
         for (i=IMPERV0; i<=PERV; i++) netPrecip[i] = rainfall + snowfall;
     }
+}
+
+//=============================================================================
+
+double subcatch_getBuildup(int j, int p)
+//
+// Input:   j = subcatchment index
+//          p = pollutant index
+// Output:  returns total buildup of each pollutant on subcatchment surface (lbs or kg)
+// Purpose: computes current mass of buildup remaining on subcatchment surface
+//
+{
+    int i;
+    double load = 0.0;
+
+    for (i = 0; i < Nobjects[LANDUSE]; i++)
+    {
+        load += Subcatch[j].landFactor[i].buildup[p];
+    }
+
+    return load;
 }
 
 //=============================================================================

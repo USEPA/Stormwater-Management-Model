@@ -19,7 +19,7 @@
 //
 //   Build 5.1.008:
 //   - Support added for the MinGW compiler.
-//   - Reporting of project options moved to swmm_start. 
+//   - Reporting of project options moved to swmm_start.
 //   - Hot start file now read before routing system opened.
 //   - Final routing step adjusted so that total duration not exceeded.
 //
@@ -38,7 +38,7 @@
 //   Build 5.1.013:
 //   - Support added for saving average results within a reporting period.
 //   - SWMM engine now always compiled to a shared object library.
-//     
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -57,6 +57,11 @@
   #ifdef _MSC_VER
   #define EXH
   #endif
+
+  // Use alias of methods unavailable before VS2015
+  #if _MSC_VER < 1900
+    #define snprintf _snprintf
+  #endif
 #endif
 
 // --- include Windows & exception handling headers
@@ -67,6 +72,22 @@
 #ifdef EXH
   #include <excpt.h>
 #endif
+
+
+// --- define DLLEXPORT
+
+//#ifndef DLLEXPORT
+#ifdef WINDOWS
+    #ifdef __MINGW32__
+        // Seems to be more wrapper friendly
+        #define DLLEXPORT __declspec(dllexport) __cdecl
+    #else
+        #define DLLEXPORT __declspec(dllexport) __stdcall
+    #endif
+#else
+    #define DLLEXPORT
+#endif
+//#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,18 +109,18 @@
 #include "datetime.h"                  // date/time functions
 #include "objects.h"                   // definitions of SWMM's data objects
 #include "funcs.h"                     // declaration of all global functions
-#include "text.h"                      // listing of all text strings 
+#include "text.h"                      // listing of all text strings
 #define  EXTERN                        // defined as 'extern' in headers.h
 #include "globals.h"                   // declaration of all global variables
 
-#include "swmm5.h"                     // declaration of SWMM's API functions
-
+#include "swmm5.h"                     // declaration of exportable functions
+                                       //   callable from other programs
 #define  MAX_EXCEPTIONS 100            // max. number of exceptions handled
 
 //-----------------------------------------------------------------------------
 //  Unit conversion factors
 //-----------------------------------------------------------------------------
-const double Ucf[10][2] = 
+const double Ucf[10][2] =
       {//  US      SI
       {43200.0,   1097280.0 },         // RAINFALL (in/hr, mm/hr --> ft/sec)
       {12.0,      304.8     },         // RAINDEPTH (in, mm --> ft)
@@ -112,16 +133,21 @@ const double Ucf[10][2] =
       {2.203e-6,  1.0e-6    },         // MASS (lb, kg --> mg)
       {43560.0,   3048.0    }          // GWFLOW (cfs/ac, cms/ha --> ft/sec)
       };
+
+#ifdef __cplusplus
+extern const double Qcf[6] =           // Flow Conversion Factors:
+#else
 const double Qcf[6] =                  // Flow Conversion Factors:
+#endif
     {1.0,     448.831, 0.64632,        // cfs, gpm, mgd --> cfs
      0.02832, 28.317,  2.4466 };       // cms, lps, mld --> cfs
 
 //-----------------------------------------------------------------------------
 //  Shared variables
 //-----------------------------------------------------------------------------
-static int  IsOpenFlag;           // TRUE if a project has been opened
-static int  IsStartedFlag;        // TRUE if a simulation has been started
-static int  SaveResultsFlag;      // TRUE if output to be saved to binary file
+//static int  IsOpenFlag;           // TRUE if a project has been opened
+//static int  IsStartedFlag;        // TRUE if a simulation has been started
+//static int  SaveResultsFlag;      // TRUE if output to be saved to binary file
 static int  ExceptionCount;       // number of exceptions handled
 static int  DoRunoff;             // TRUE if runoff is computed
 static int  DoRouting;            // TRUE if flow routing is computed
@@ -149,9 +175,13 @@ static void execRouting(void);
 static int  xfilter(int xc, char* module, double elapsedTime, long step);
 #endif
 
+// Forward declaration, defined in toolkit.h
+extern int swmm_run_cb(const char *f1, const char *f2, const char *f3,
+    void (*callback) (double *));
+
 //=============================================================================
 
-int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
+int DLLEXPORT swmm_run(const char* f1, const char* f2, const char* f3)
 //
 //  Input:   f1 = name of input file
 //           f2 = name of report file
@@ -160,63 +190,13 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
 //  Purpose: runs a SWMM simulation.
 //
 {
-    long newHour, oldHour = 0;
-    long theDay, theHour;
-    double elapsedTime = 0.0;
-
-    // --- initialize flags                                                    //(5.1.013)
-    IsOpenFlag = FALSE;                                                        //
-    IsStartedFlag = FALSE;                                                     //
-    SaveResultsFlag = TRUE;                                                    //
-
-    // --- open the files & read input data
-    ErrorCode = 0;
-    swmm_open(f1, f2, f3);
-
-    // --- run the simulation if input data OK
-    if ( !ErrorCode )
-    {
-        // --- initialize values
-        swmm_start(TRUE);
-
-        // --- execute each time step until elapsed time is re-set to 0
-        if ( !ErrorCode )
-        {
-            writecon("\n o  Simulating day: 0     hour:  0");
-            do
-            {
-                swmm_step(&elapsedTime);
-                newHour = (long)(elapsedTime * 24.0);
-                if ( newHour > oldHour )
-                {
-                    theDay = (long)elapsedTime;
-                    theHour = (long)((elapsedTime - floor(elapsedTime)) * 24.0);
-                    writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-                    sprintf(Msg, "%-5ld hour: %-2ld", theDay, theHour);        //(5.1.013)
-                    writecon(Msg);
-                    oldHour = newHour;
-                }
-            } while ( elapsedTime > 0.0 && !ErrorCode );
-            writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b"
-                     "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-            writecon("Simulation complete           ");
-        }
-
-        // --- clean up
-        swmm_end();
-    }
-
-    // --- report results
-    if ( Fout.mode == SCRATCH_FILE ) swmm_report();
-
-    // --- close the system
-    swmm_close();
-    return error_getCode(ErrorCode);
+    return swmm_run_cb(f1, f2, f3, NULL);
 }
+
 
 //=============================================================================
 
-int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
+int DLLEXPORT swmm_open(const char *f1, const char *f2, const char *f3)
 //
 //  Input:   f1 = name of input file
 //           f2 = name of report file
@@ -245,7 +225,7 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
         ExceptionCount = 0;
 
         // --- open a SWMM project
-        project_open(f1, f2, f3);
+        project_open((char *)f1, (char *)f2, (char *)f3);
         if ( ErrorCode ) return error_getCode(ErrorCode);
         IsOpenFlag = TRUE;
         report_writeLogo();
@@ -277,7 +257,7 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
 
 int DLLEXPORT swmm_start(int saveResults)
 //
-//  Input:   saveResults = TRUE if simulation results saved to binary file 
+//  Input:   saveResults = TRUE if simulation results saved to binary file
 //  Output:  returns an error code
 //  Purpose: starts a SWMM simulation.
 //
@@ -346,8 +326,8 @@ int DLLEXPORT swmm_start(int saveResults)
         massbal_open();
         stats_open();
 
-        // --- write project options to report file 
-	    report_writeOptions();
+        // --- write project options to report file
+        report_writeOptions();
         if ( RptFlags.controls ) report_writeControlActionsHeading();
     }
 
@@ -493,7 +473,7 @@ void execRouting()
 
         // --- if no runoff analysis, update climate state (for evaporation)
         else climate_setState(getDateTime(NewRoutingTime));
-  
+
         // --- route flows & pollutants through drainage system
         //     (while updating NewRoutingTime)
         if ( DoRouting ) routing_execute(RouteModel, routingStep);
@@ -632,6 +612,7 @@ int  DLLEXPORT swmm_getVersion(void)
 //           y = minor version number, and zzz = build number.
 //
 //  NOTE: Each New Release should be updated in consts.h
+//        THIS FUNCTION WILL EVENTUALLY BE DEPRECATED
 {
     return VERSION;
 }
@@ -816,7 +797,7 @@ void  writecon(char *s)
 //  Purpose: writes string of characters to the console.
 //
 {
-    fprintf(stdout,s);
+    fprintf(stdout,"%s", s);
     fflush(stdout);
 }
 
@@ -893,3 +874,33 @@ int xfilter(int xc, char* module, double elapsedTime, long step)
     return rc;
 }
 #endif
+
+int swmm_IsOpenFlag()
+//
+// Check if Project is Open
+{
+    // TRUE if a project has been opened
+    return IsOpenFlag;
+}
+
+
+int swmm_IsStartedFlag()
+//
+// Check if Simulation has started
+{
+    // TRUE if a simulation has been started
+    return IsStartedFlag;
+}
+
+
+void getSemVersion(char* semver)
+//
+//  Output: Returns Semantic Version
+//  Purpose: retrieves the current semantic version
+//
+//  NOTE: Each New Release should be updated in consts.h
+{
+    snprintf(semver, SEMVERSION_LEN, "%s.%s.%s",
+        SEMVERSION_MAJOR, SEMVERSION_MINOR, SEMVERSION_PATCH);
+}
+//=============================================================================
