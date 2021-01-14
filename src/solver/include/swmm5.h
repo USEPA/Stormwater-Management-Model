@@ -26,11 +26,30 @@
 
 // --- define DLLEXPORT
 
+//#ifndef DLLEXPORT
 #ifdef WINDOWS
-    #define DLLEXPORT __declspec(dllexport) __stdcall
+	#ifdef __MINGW32__
+		// Seems to be more wrapper friendly
+		#define DLLEXPORT __declspec(dllexport) __cdecl
+	#else
+		#define DLLEXPORT __declspec(dllexport) __stdcall
+	#endif
 #else
-    #define DLLEXPORT
+	#define DLLEXPORT
 #endif
+//#endif
+
+
+//-----------------------------------------------------------------------------
+//  Shared variables
+//-----------------------------------------------------------------------------
+static int IsOpenFlag;           // TRUE if a project has been opened
+static int IsStartedFlag;        // TRUE if a simulation has been started
+static int SaveResultsFlag;      // TRUE if output to be saved to binary file
+
+int swmm_IsOpenFlag(void);
+int swmm_IsStartedFlag(void);
+
 
 // --- use "C" linkage for C++ programs
 
