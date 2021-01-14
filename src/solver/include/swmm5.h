@@ -57,18 +57,75 @@ int swmm_IsStartedFlag(void);
 extern "C" { 
 #endif 
 
-int  DLLEXPORT   swmm_run(char* f1, char* f2, char* f3);
-int  DLLEXPORT   swmm_open(char* f1, char* f2, char* f3);
-int  DLLEXPORT   swmm_start(int saveFlag);
-int  DLLEXPORT   swmm_step(double* elapsedTime);
-int  DLLEXPORT   swmm_end(void);
-int  DLLEXPORT   swmm_report(void);
-int  DLLEXPORT   swmm_getMassBalErr(float* runoffErr, float* flowErr,
-                 float* qualErr);
-int  DLLEXPORT   swmm_close(void);
-int  DLLEXPORT   swmm_getVersion(void);
-int  DLLEXPORT   swmm_getError(char* errMsg, int msgLen);
-int  DLLEXPORT   swmm_getWarnings(void);
+/**
+ @brief Opens SWMM input file, reads in network data, runs, and closes
+ @param f1 pointer to name of input file (must exist)
+ @param f2 pointer to name of report file (to be created)
+ @param f3 pointer to name of binary output file (to be created)
+ @return error code
+*/
+int DLLEXPORT swmm_run(const char *f1, const char *f2, const char *f3);
+
+/**
+ @brief Opens SWMM input file & reads in network data
+ @param f1 pointer to name of input file (must exist)
+ @param f2 pointer to name of report file (to be created)
+ @param f3 pointer to name of binary output file (to be created)
+ @return error code
+*/
+int DLLEXPORT swmm_open(const char *f1, const char *f2, const char *f3);
+
+/**
+ @brief Start SWMM simulation
+ @param saveFlag TRUE or FALSE to save timeseries to report file
+ @return error code
+*/
+int DLLEXPORT swmm_start(int saveFlag);
+
+/**
+ @brief Step SWMM simulation forward
+ @param[out] elapsedTime elapsed simulation time [milliseconds]
+ @return error code
+*/
+int DLLEXPORT swmm_step(double* elapsedTime);
+
+/**
+ @brief End SWMM simulation
+ @return error code
+*/
+int DLLEXPORT swmm_end(void);
+
+/**
+ @brief Write text report file
+ @return error code
+*/
+int DLLEXPORT swmm_report(void);
+
+/**
+ @brief Get routing errors
+ @param[out] runoffErr Runoff routing error
+ @param[out] flowErr Flow routing error
+ @param[out] qualErr Quality routing error
+ @return error code
+*/
+int DLLEXPORT swmm_getMassBalErr(float* runoffErr, float* flowErr, float* qualErr);
+
+/**
+ @brief Frees all memory and files used by SWMM
+ @return Error code
+*/
+int DLLEXPORT swmm_close(void);
+
+/**
+ @brief Get Legacy SWMM version number
+ @return Version
+*/
+int DLLEXPORT swmm_getVersion(void);
+
+
+int DLLEXPORT swmm_getError(char* errMsg, int msgLen);
+
+int DLLEXPORT swmm_getWarnings(void);
 
 #ifdef __cplusplus 
 }   // matches the linkage specification from above */ 
