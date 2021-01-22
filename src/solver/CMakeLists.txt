@@ -8,6 +8,10 @@
 #         US EPA ORD/CESER
 #
 
+################################################################################
+###################    CMAKELISTS FOR SWMM-SOLVER TARGET    ####################
+################################################################################
+
 
 find_package(OpenMP REQUIRED)
 
@@ -26,7 +30,7 @@ file(GLOB
 )
 
 if(BUILD_DEF)
-    # Build library with def file interface for backward compatibility
+    # Builds library with def file interface for backward compatibility
     set_source_files_properties(${PROJECT_SOURCE_DIR}/bindings/swmm5.def
         PROPERTIES_HEADER_FILE_ONLY TRUE
     )
@@ -39,7 +43,7 @@ if(BUILD_DEF)
     )
 
 else()
-
+    # Performs standard library build 
     add_library(swmm5
         SHARED
             ${SWMM_SOURCES}
@@ -48,6 +52,7 @@ else()
 
 endif()
 
+# Sets MSVC compiler flags
 target_compile_options(swmm5
     PUBLIC
         "$<$<C_COMPILER_ID:MSVC>:"
@@ -78,6 +83,17 @@ target_include_directories(swmm5
         ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
+
+set_target_properties(swmm5
+    PROPERTIES
+        MACOSX_RPATH TRUE
+        SKIP_BUILD_RPATH FALSE
+        BUILD_WITH_INSTALL_RPATH FALSE
+        #INSTALL_RPATH "${PACKAGE_RPATH}"
+        INSTALL_RPATH_USE_LINK_PATH TRUE
+)
+
+
 install(TARGETS swmm5 EXPORT swmm5Targets
     RUNTIME    DESTINATION "${TOOL_DIST}"
     LIBRARY    DESTINATION "${LIBRARY_DIST}"
@@ -102,19 +118,28 @@ install(
 )
 
 
-# TODO: Figure out why this doesn't work for package target
-# When building on MacOS relocate libomp to install package
+# TODO: Figure out why relocation doesn't work for package target
+
+# When building on Linux/MacOS relocate OpenMP library to install for wheel build
 if(NOT MSVC)
-    get_filename_component(EXTERN_LIB_PATH ${OpenMP_libomp_LIBRARY} REALPATH)
+    if (APPLE)
+        set(OMP_LIB_NAME ${OpenMP_libomp_LIBRARY})
+    elseif (UNIX AND NOT APPLE)
+        set(OMP_LIB_NAME ${OpenMP_gomp_LIBRARY}) 
+    endif()
+    
+    get_filename_component(EXTERN_LIB_PATH ${OMP_LIB_NAME} REALPATH)
 
     install(
         FILES
             ${EXTERN_LIB_PATH}
         DESTINATION
-            ${CMAKE_INSTALL_PREFIX}/extern
+            ${CMAKE_INSTALL_PREFIX}/lib
+        PERMISSIONS
+            OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
     )
 
-    # Pass the var up the project tree
+    # Pass the var up the project tree 
     set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
 endif()
 

@@ -8,6 +8,10 @@
 #         US EPA ORD/CESER
 #
 
+################################################################################
+##################    CMAKELISTS FOR SWMM-SOLVER PROJECT    ####################
+################################################################################
+
 
 cmake_minimum_required (VERSION 3.13)
 
@@ -57,7 +61,7 @@ if(BUILD_TESTS)
 endif()
 
 
-# Pass var up the project tree
+# Pass var up the project tree used for library reloacation
 if(NOT MSVC)
     set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
 endif()
