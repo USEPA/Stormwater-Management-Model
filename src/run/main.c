@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
 #include "swmm5.h"
 
 int  main(int argc, char *argv[])
