@@ -9,7 +9,7 @@
  */
 
 #ifndef TIMER_H
-#define TIMER_H
+#define TIMER_H 
 
 
 // System includes
