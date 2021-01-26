@@ -26,7 +26,7 @@ long current_time_millis(void)
     if (sec < 0)
         sec = tv.tv_sec;
 
-    return (tv.tv_sec - sec)*1000 + tv.tv_usec/1000;
+    return (tv.tv_sec - sec)*1000 + tv.tv_usec/1000; 
 #endif
 }
 
