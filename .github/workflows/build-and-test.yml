@@ -39,7 +39,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: michaeltryby/ci-tools
-        ref: owa-master
+        ref: master
         path: ci-tools
 
     - name: Setup python
