@@ -33,7 +33,7 @@ set_target_properties(test_lid
 set(solver_test_srcs
     test_canonical.cpp
     test_gage.cpp
-    test_pollut.cpp
+    test_pollutants.cpp
     test_toolkit.cpp
     test_solver.cpp
     test_stats.cpp

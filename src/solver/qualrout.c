@@ -101,25 +101,58 @@ void qualrout_execute(double tStep)
 //
 {
     int    i, j;
+    int    p, extPollutFlag;
     double qIn, vAvg;
-
+ 
     // --- find mass flow each link contributes to its downstream node
     for ( i = 0; i < Nobjects[LINK]; i++ ) findLinkMassFlow(i, tStep);
+
+    // --- check for external treatment in nodes or links
+    for (j = 0; j < Nobjects[NODE]; j++)
+    {
+	// --- check for external pollutant
+	for ( p = 0; p < Nobjects[POLLUT]; p++)
+	{
+		if (Node[j].extPollutFlag[p] == 1)
+		{
+			extPollutFlag = 1;
+			break;
+		}
+
+	}
+
+    }
+
+    for (i = 0; i < Nobjects[LINK]; i++)
+    {
+	// --- check for external pollutant
+	for ( p = 0; p < Nobjects[POLLUT]; p++)
+	{
+		if (Link[i].extPollutFlag[p] == 1)
+		{
+			extPollutFlag = 1;
+			break;
+		}
+
+	}
+
+    }
 
     // --- find new water quality concentration at each node  
     for (j = 0; j < Nobjects[NODE]; j++)
     {
+
         // --- get node inflow and average volume
         qIn = Node[j].inflow;
         vAvg = (Node[j].oldVolume + Node[j].newVolume) / 2.0;
         
         // --- save inflow concentrations if treatment applied
-        if ( Node[j].treatment )
+        if ( Node[j].treatment || extPollutFlag == 1)
         {
             if ( qIn < ZERO ) qIn = 0.0;
             treatmnt_setInflow(qIn, Node[j].newQual);
         }
-       
+
         // --- find new quality at the node 
         if ( Node[j].type == STORAGE || Node[j].oldVolume > FUDGE )
         {
@@ -128,7 +161,7 @@ void qualrout_execute(double tStep)
         else findNodeQual(j);
 
         // --- apply treatment to new quality values
-        if ( Node[j].treatment ) treatmnt_treat(j, qIn, vAvg, tStep);
+        if ( Node[j].treatment || extPollutFlag == 1) treatmnt_treat(j, qIn, vAvg, tStep);
     }
 
     // --- find new water quality in each link
@@ -254,7 +287,8 @@ void findLinkQual(int i, double tStep)
            vEvap,            // volume lost to evaporation (ft3)
            vLosses,          // evap. + seepage volume loss (ft3)
            fEvap,            // evaporation concentration factor
-           barrels;          // number of barrels in conduit
+           barrels,          // number of barrels in conduit
+    	   lossExtQual;      // loss value for external quality 
 
     // --- identify index of upstream node
     j = Link[i].node1;
@@ -310,7 +344,7 @@ void findLinkQual(int i, double tStep)
         // --- start with concen. at start of time step
         c1 = Link[i].oldQual[p];
 
-        // --- update mass balance accounting for seepage loss
+	// --- update mass balance accounting for seepage loss
         massbal_addSeepageLoss(p, qSeep*c1);
 
         // --- increase concen. by evaporation factor
@@ -330,8 +364,22 @@ void findLinkQual(int i, double tStep)
             c2 = 0.0;
         }
 
-        // --- assign new concen. to link
-        Link[i].newQual[p] = c2;
+	if (Link[i].extPollutFlag[p] == 0)
+	{
+            // --- assign new concen. to link
+            Link[i].newQual[p] = c2;
+	}
+	// --- update mass balance and set external pollutant
+	else if( Link[i].extPollutFlag[p] == 1)
+	{
+	    // --- mass balance update
+            lossExtQual = c2 - Link[i].extQual[p];
+            lossExtQual = lossExtQual * v1/ tStep;
+            massbal_addReactedMass(p, lossExtQual);
+
+            Link[i].newQual[p] = Link[i].extQual[p];
+            Link[i].extPollutFlag[p] = 0;
+	}
     }
 }
 
@@ -452,6 +500,7 @@ void  findStorageQual(int j, double tStep)
 
         // --- assign new concen. to node
         Node[j].newQual[p] = c2;
+	Node[j].reactorQual[p] = c2;
     }
 }
 
