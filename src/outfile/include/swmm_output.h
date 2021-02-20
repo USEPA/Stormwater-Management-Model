@@ -6,7 +6,6 @@
  *
  *      Modified by: Michael E. Tryby,
  *                   Bryant McDonnell
- *                   Caleb Buahin
  *
  */
 

@@ -7,9 +7,7 @@
 # Author: Michael E. Tryby
 #         US EPA ORD/CESER
 #
-# Modified by: Caleb Buahin
-#              Xylem Inc.
-#
+
 
 
 #Prep ourselves for compiling with boost
