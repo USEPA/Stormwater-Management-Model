@@ -20,7 +20,7 @@
 #define   VERSION            51014          // Eventually will be deprecated.
 #define   SEMVERSION_MAJOR   "5"            // Major Semantic Version
 #define   SEMVERSION_MINOR   "1"            // Minor Semantic Version
-#define   SEMVERSION_PATCH   "014.dev7"     // Patch Semantic Version
+#define   SEMVERSION_PATCH   "014"     // Patch Semantic Version
 #define   SEMVERSION_LEN     20             // Version String Len
 
 #define   MAGICNUMBER        516114522

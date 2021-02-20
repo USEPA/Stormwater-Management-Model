@@ -7,7 +7,6 @@
  *  Author: Michael E. Tryby
  *          US EPA - ORD/CESER
  * 
- *  Modified by: Caleb Buahin
  */
 
 

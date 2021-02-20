@@ -7,9 +7,6 @@
 # Modified by: Michael E. Tryby
 #              US EPA ORD/NRMRL
 #
-#              Caleb Buahin
-#              Xylem Inc.
-#
 
 
 # Location of libs runswmm uses at runtime on MacOS/Linux

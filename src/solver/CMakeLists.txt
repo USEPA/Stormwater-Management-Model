@@ -7,9 +7,7 @@
 # Author: Michael E. Tryby
 #         US EPA ORD/CESER
 # 
-#         Caleb Buahin
-#         Xylem Inc.
-#
+
 
 
 find_package(OpenMP REQUIRED)
@@ -30,7 +28,7 @@ file(GLOB
 
 if(BUILD_DEF)
     # Build library with def file interface for backward compatibility
-    set_source_files_properties(${PROJECT_SOURCE_DIR}/swmm5.def
+    set_source_files_properties(${PROJECT_SOURCE_DIR}/bindings/swmm5.def
         PROPERTIES_HEADER_FILE_ONLY TRUE
     )
 
