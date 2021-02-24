@@ -9,7 +9,7 @@
 #
 
 ################################################################################
-###################    CMAKELISTS FOR SWMM-SOLVER TARGET    ####################
+######################    CMAKELISTS FOR SOLVER TARGET    ######################
 ################################################################################
 
 
@@ -118,28 +118,19 @@ install(
 )
 
 
-# TODO: Figure out why relocation doesn't work for package target
-
-# When building on Linux/MacOS relocate OpenMP library to install for wheel build
-if(NOT MSVC)
-    if (APPLE)
-        set(OMP_LIB_NAME ${OpenMP_libomp_LIBRARY})
-    elseif (UNIX AND NOT APPLE)
-        set(OMP_LIB_NAME ${OpenMP_gomp_LIBRARY}) 
-    endif()
-    
-    get_filename_component(EXTERN_LIB_PATH ${OMP_LIB_NAME} REALPATH)
+# TODO: Figure out why this doesn't work for package target
+# When building on MacOS relocate libomp to install package
+if(APPLE)
+    get_filename_component(EXTERN_LIB_PATH ${OpenMP_libomp_LIBRARY} REALPATH)
 
     install(
         FILES
             ${EXTERN_LIB_PATH}
         DESTINATION
-            ${CMAKE_INSTALL_PREFIX}/lib
-        PERMISSIONS
-            OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+            ${CMAKE_INSTALL_PREFIX}/extern
     )
 
-    # Pass the var up the project tree 
+    # Pass the var up the project tree
     set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
 endif()
 
