@@ -85,9 +85,11 @@ jobs:
           submodules: recursive
 
       - name: Clone ci-tools repo
-        run:
-          git clone https://github.com/OpenWaterAnalytics/ci-tools.git
-
+        uses: actions/checkout@v2
+        with:
+          repository: OpenWaterAnalytics/ci-tools
+          path: ci-tools
+          
       - name: Setup python
         uses: actions/setup-python@v2
         with:
