@@ -87,9 +87,6 @@ jobs:
       - name: Clone ci-tools repo
         run:
           git clone https://github.com/OpenWaterAnalytics/ci-tools.git
-          cd ci-tools
-          git checkout master
-          cd ..
 
       - name: Setup python
         uses: actions/setup-python@v2
