@@ -7,8 +7,6 @@
 # Authors: Michael E. Tryby
 #          US EPA ORD/CESER
 #
-# Modified by: Caleb Buahin
-#
 
 
 cmake_minimum_required (VERSION 3.13)
