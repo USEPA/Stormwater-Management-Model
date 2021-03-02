@@ -109,6 +109,9 @@ jobs:
           ./make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
 
       - name: Before reg test
+        if: ${{ contains(github.ref, 'master') }}
+        env:
+          BENCHMARK_TAG: v1.0.3-dev
         if: ${{ contains(github.ref, 'develop') }}
         env:
           BENCHMARK_TAG: v1.0.3-dev
