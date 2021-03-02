@@ -112,7 +112,7 @@ jobs:
         env:
           MASTER: v1.0.3-dev
           DEVELOP: v1.0.3.dev
-        run: ./before-nrtest.${{ matrix.script_extension }} ${{ format('env.{0}', env.BRANCH) }}
+        run: ./before-nrtest.${{ matrix.script_extension }} ${{ format('env.{0}', ${GITHUB_REF##*/}) }}
 
       - name: Run reg test
         run: |
