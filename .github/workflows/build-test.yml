@@ -100,25 +100,22 @@ jobs:
           brew install boost
 
       - name: Build and unit test
-        run: |
-          ./make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
+        run: ./make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
 
       - name: Build for reg test
-        run: |
-          ./make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
+        run: ./make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
 
       - name: Set nrtest benchmark tags
         if: ${{ contains(github.ref, 'master') }}
-        run: echo "BENCHMARK_TAG=v.1.0.3-dev" >> $GITHUB_ENV
+        run: echo "BENCHMARK_TAG=v1.0.3-dev" >> $GITHUB_ENV
       - if: ${{ contains(github.ref, 'develop') }}
-        run: echo "BENCHMARK_TAG=v.1.0.3-dev" >> $GITHUB_ENV
+        run: echo "BENCHMARK_TAG=v1.0.3-dev" >> $GITHUB_ENV
 
       - name: Before reg test
         run: ./before-nrtest.${{ matrix.script_extension }} ${{ env.BENCHMARK_TAG }}
 
       - name: Run reg test
-        run: |
-          ./run-nrtests.${{ matrix.script_extension }} ${{ matrix.gh_run_number }}
+        run: ./run-nrtests.${{ matrix.script_extension }} ${{ matrix.gh_run_number }}
 
       - name: Upload artifacts
         if: ${{ always() }}
