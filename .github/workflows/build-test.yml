@@ -76,7 +76,9 @@ jobs:
       BUILD_HOME: build
       TEST_HOME: nrtests
       NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
-      # ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      BRANCH: ${GITHUB_REF##*/}
+      BENCHMARKS: [ { "branch": "master",  "tag": v1.0.3-dev },
+                    { "branch": "develop", "tag": v1.0.3-dev } ]
 
     steps:
       - name: Checkout repo
@@ -109,12 +111,9 @@ jobs:
           ./make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
 
       - name: Before reg test
-        if: ${{ contains(github.ref, 'master') }}
         env:
-          BENCHMARK_TAG: v1.0.3-dev
-        if: ${{ contains(github.ref, 'develop') }}
-        env:
-          BENCHMARK_TAG: v1.0.3-dev
+
+
         run: ./before-nrtest.${{ matrix.script_extension }} ${{ env.BENCHMARK_TAG }}
 
       - name: Run reg test
