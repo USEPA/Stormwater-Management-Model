@@ -112,7 +112,7 @@ jobs:
         if: ${{ contains(github.ref, 'develop') }}
         env:
           BENCHMARK_TAG: v1.0.3-dev
-        run: ./before-nrtest.${{ matrix.script_extension }} "$BENCHMARK_TAG"
+        run: ./before-nrtest.${{ matrix.script_extension }} ${{ env.BENCHMARK_TAG }}
 
       - name: Run reg test
         run: |
