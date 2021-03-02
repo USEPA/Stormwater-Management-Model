@@ -84,7 +84,7 @@ jobs:
           submodules: recursive
 
       - name: Get branch name
-        uses: nelonoel/branch-name@v1
+        uses: nelonoel/branch-name@v1.0.1
 
       - name: Setup python
         uses: actions/setup-python@v2
