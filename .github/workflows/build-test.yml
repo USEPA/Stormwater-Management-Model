@@ -83,9 +83,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Get branch name
-        uses: nelonoel/branch-name@v1.0.1
-
       - name: Setup python
         uses: actions/setup-python@v2
         with:
@@ -110,11 +107,14 @@ jobs:
         run: |
           ./make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
 
+      - name: Set nrtest benchmark tags
+        if: ${{ contains(github.ref, 'master') }}
+        run: echo "BENCHMARK_TAG=v.1.0.3-dev" >> $GITHUB_ENV
+      - if: ${{ contains(github.ref, 'develop') }}
+        run: echo "BENCHMARK_TAG=v.1.0.3-dev" >> $GITHUB_ENV
+
       - name: Before reg test
-        env:
-          master:  v1.0.3-dev
-          develop: v1.0.3-dev
-        run: ./before-nrtest.${{ matrix.script_extension }} ${format('{{ env.{0} }}', env.BRANCH_NAME) }
+        run: ./before-nrtest.${{ matrix.script_extension }} ${{env.BENCHMARK_TAG)}}
 
       - name: Run reg test
         run: |
