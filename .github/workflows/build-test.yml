@@ -112,9 +112,10 @@ jobs:
 
       - name: Before reg test
         env:
-          MASTER: v1.0.3-dev
-          DEVELOP: v1.0.3.dev
-        run: ./before-nrtest.${{ matrix.script_extension }} ${{ format('env.{0}', ${BRANCH_NAME}) }}
+          BRANCH: ${BRANCH_NAME}
+          MASTER:  v1.0.3-dev
+          DEVELOP: v1.0.3-dev
+        run: ./before-nrtest.${{ matrix.script_extension }} ${{ format('env.{0}', env.BRANCH) }}
 
       - name: Run reg test
         run: |
