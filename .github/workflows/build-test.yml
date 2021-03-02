@@ -76,13 +76,15 @@ jobs:
       BUILD_HOME: build
       TEST_HOME: nrtests
       NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
-      BRANCH: ${{ ${GITHUB_REF##*/} }}
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
         with:
           submodules: recursive
+
+      - name: Get branch name
+        uses: nelonoel/branch-name@v1
 
       - name: Setup python
         uses: actions/setup-python@v2
@@ -112,7 +114,7 @@ jobs:
         env:
           MASTER: v1.0.3-dev
           DEVELOP: v1.0.3.dev
-        run: ./before-nrtest.${{ matrix.script_extension }} ${{ format('env.{0}', ${GITHUB_REF##*/}) }}
+        run: ./before-nrtest.${{ matrix.script_extension }} ${{ format('env.{0}', ${BRANCH_NAME}) }}
 
       - name: Run reg test
         run: |
