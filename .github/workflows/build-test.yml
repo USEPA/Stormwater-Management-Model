@@ -109,8 +109,8 @@ jobs:
           ./make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
 
       - name: Before reg test
-        run: |
-          ./before-nrtest.${{ matrix.script_extension }}
+        if: ${{ contains(github.ref, 'develop') }}
+        run: ./before-nrtest.${{ matrix.script_extension }} v1.0.3-dev
 
       - name: Run reg test
         run: |
