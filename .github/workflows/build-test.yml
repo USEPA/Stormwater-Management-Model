@@ -114,7 +114,7 @@ jobs:
         run: echo "BENCHMARK_TAG=v.1.0.3-dev" >> $GITHUB_ENV
 
       - name: Before reg test
-        run: ./before-nrtest.${{ matrix.script_extension }} ${{env.BENCHMARK_TAG)}}
+        run: ./before-nrtest.${{ matrix.script_extension }} ${{ env.BENCHMARK_TAG }}
 
       - name: Run reg test
         run: |
