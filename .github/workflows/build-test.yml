@@ -76,8 +76,8 @@ jobs:
       BUILD_HOME: build
       TEST_HOME: nrtests
       NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
-      BENCHMARK_TAGS: "[ { "branch": "master", "tag": "v1.0.3-dev" },
-                         { "branch": "develop", "tag": "v1.0.3-dev" } ]"
+      BENCHMARK_TAGS: [ { "branch": "master", "tag": "v1.0.3-dev" },
+                        { "branch": "develop", "tag": "v1.0.3-dev" } ]
 
     steps:
       - name: Checkout repo
