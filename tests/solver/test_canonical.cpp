@@ -1,16 +1,20 @@
-/*
- *   test_swmm.cpp
- *
- *   Created: 03/10/2018
- *   Author: Bryant E. McDonnell
- *           EmNet LLC
- *
- *   Unit testing for SWMM using Boost Test.
+ /*
+  ******************************************************************************
+  Project:      OWA SWMM
+  Version:      5.1.13
+  Module:       test_canonical.cpp
+  Description:  tests for canonical SWMM API functions
+  Authors:      see AUTHORS
+  Copyright:    see AUTHORS
+  License:      see LICENSE
+  Last Updated: 12/21/2020
+  ******************************************************************************
  */
 
- #include <boost/test/unit_test.hpp>
 
- #include "test_solver.hpp"
+#include <boost/test/unit_test.hpp>
+
+#include "test_solver.hpp"
 
 using namespace std;
 

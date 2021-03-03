@@ -1,31 +1,16 @@
 /*
- *   test_toolkitAPI.cpp
- *
- *   Created: 03/10/2018
- *   Author: Bryant E. McDonnell
- *           EmNet LLC
- *
- *   Unit testing for SWMM-ToolkitAPI using Boost Test.
-
-
-
-* TABLE OF CONTENTS AND STRUCTURE
-
-  ->  Numerical Diff Functions
-  ->  Non-Fixuture Unit Tests
-  ->  Unit tests using the fixtures
-      - Error Test Checks
-      - Parameter Get / Set Tests
-         1. Subcatchments
-         2. Nodes
-         3. Links
-      - Result Get Tests
+ ******************************************************************************
+ Project:      OWA SWMM
+ Version:      5.1.13
+ Module:       test_toolkit.cpp
+ Description:  tests for SWMM toolkit API functions
+ Authors:      see AUTHORS
+ Copyright:    see AUTHORS
+ License:      see LICENSE
+ Last Updated: 12/21/2020
+ ******************************************************************************
  */
 
-// NOTE: Travis installs libboost test version 1.5.4
-//#define BOOST_TEST_DYN_LINK
-
-//#define BOOST_TEST_MODULE "toolkitAPI"
 
 #include <boost/test/unit_test.hpp>
 
@@ -168,7 +153,7 @@ BOOST_FIXTURE_TEST_CASE(object_bounds_check, FixtureOpenClose) {
     double input_val = 0;
     double *result_array;
     int length;
-    
+
     //Gage
     error = swmm_getGagePrecip(100, SM_TOTALPRECIP, &val);
     BOOST_CHECK_EQUAL(error, ERR_API_OBJECT_INDEX);

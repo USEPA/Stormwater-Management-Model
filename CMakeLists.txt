@@ -46,14 +46,18 @@ set(CONFIG_DIST  "cmake")
 
 
 option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
+option(BUILD_DOCS "Build toolkit docs (requires Doxygen)" OFF)
 
 
 # Add project subdirectories
+if(BUILD_DOCS)
+  add_subdirectory(docs)
+endif()
+
 add_subdirectory(src/outfile)
 add_subdirectory(src/solver)
 add_subdirectory(src/run)
 add_subdirectory(src/shared)
-
 
 if(BUILD_TESTS)
     enable_testing()
@@ -70,6 +74,16 @@ endif()
 # Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
 set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)
+
+
+# Create install target for License and Authors files
+install(
+    FILES
+        "LICENSE"
+        "AUTHORS"
+    DESTINATION
+        "."
+)
 
 
 # Configure CPack driven installer package

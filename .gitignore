@@ -33,11 +33,7 @@ build/
 
 # Testing
 nrtests/
-<<<<<<< HEAD
-nrtestsuite/
-=======
 upload/
->>>>>>> c99f166db32857fd89c1ac1c30ec8117e6f1024d
 performance.json
 stderr.log
 stdout.log
