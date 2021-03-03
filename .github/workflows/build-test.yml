@@ -75,7 +75,6 @@ jobs:
       PROJECT: swmm
       BUILD_HOME: build
       TEST_HOME: nrtests
-      NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
 
     steps:
       - name: Checkout repo
@@ -107,6 +106,7 @@ jobs:
 
       - name: Before reg test
         env:
+          NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
           BENCHMARK_TAG: v1.0.3-dev
         run: ./before-nrtest.${{ matrix.script_extension }} ${{ env.BENCHMARK_TAG }}
 
