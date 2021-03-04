@@ -43,7 +43,7 @@ if(BUILD_DEF)
     )
 
 else()
-    # Performs standard library build 
+    # Performs standard library build
     add_library(swmm5
         SHARED
             ${SWMM_SOURCES}
@@ -89,7 +89,7 @@ set_target_properties(swmm5
         MACOSX_RPATH TRUE
         SKIP_BUILD_RPATH FALSE
         BUILD_WITH_INSTALL_RPATH FALSE
-        #INSTALL_RPATH "${PACKAGE_RPATH}"
+        INSTALL_RPATH "${PACKAGE_RPATH}"
         INSTALL_RPATH_USE_LINK_PATH TRUE
 )
 
@@ -127,7 +127,7 @@ if(APPLE)
         FILES
             ${EXTERN_LIB_PATH}
         DESTINATION
-            ${CMAKE_INSTALL_PREFIX}/extern
+            ${LIBRARY_DIST}
     )
 
     # Pass the var up the project tree

@@ -66,7 +66,7 @@ endif()
 
 
 # Pass var up the project tree used for library reloacation
-if(NOT MSVC)
+if(APPLE)
     set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
 endif()
 
