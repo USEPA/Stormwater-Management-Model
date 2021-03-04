@@ -8,6 +8,10 @@
 #         US EPA ORD/CESER
 #
 
+################################################################################
+######################    CMAKELISTS FOR SOLVER TARGET    ######################
+################################################################################
+
 
 find_package(OpenMP REQUIRED)
 
@@ -26,7 +30,7 @@ file(GLOB
 )
 
 if(BUILD_DEF)
-    # Build library with def file interface for backward compatibility
+    # Builds library with def file interface for backward compatibility
     set_source_files_properties(${PROJECT_SOURCE_DIR}/bindings/swmm5.def
         PROPERTIES_HEADER_FILE_ONLY TRUE
     )
@@ -39,7 +43,7 @@ if(BUILD_DEF)
     )
 
 else()
-
+    # Performs standard library build 
     add_library(swmm5
         SHARED
             ${SWMM_SOURCES}
@@ -48,6 +52,7 @@ else()
 
 endif()
 
+# Sets MSVC compiler flags
 target_compile_options(swmm5
     PUBLIC
         "$<$<C_COMPILER_ID:MSVC>:"
@@ -77,6 +82,17 @@ target_include_directories(swmm5
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
+
+
+set_target_properties(swmm5
+    PROPERTIES
+        MACOSX_RPATH TRUE
+        SKIP_BUILD_RPATH FALSE
+        BUILD_WITH_INSTALL_RPATH FALSE
+        #INSTALL_RPATH "${PACKAGE_RPATH}"
+        INSTALL_RPATH_USE_LINK_PATH TRUE
+)
+
 
 install(TARGETS swmm5 EXPORT swmm5Targets
     RUNTIME    DESTINATION "${TOOL_DIST}"

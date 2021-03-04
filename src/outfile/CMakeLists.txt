@@ -41,6 +41,16 @@ file(COPY ${CMAKE_CURRENT_BINARY_DIR}/swmm_output_export.h
 )
 
 
+set_target_properties(swmm-output
+    PROPERTIES
+        MACOSX_RPATH TRUE
+        SKIP_BUILD_RPATH FALSE
+        BUILD_WITH_INSTALL_RPATH FALSE
+        INSTALL_RPATH "${PACKAGE_RPATH}"
+        INSTALL_RPATH_USE_LINK_PATH TRUE
+)
+
+
 install(TARGETS swmm-output
     EXPORT
         swmm-outputTargets
