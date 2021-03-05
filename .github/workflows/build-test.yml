@@ -75,8 +75,6 @@ jobs:
       PROJECT: swmm
       BUILD_HOME: build
       TEST_HOME: nrtests
-      NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
-      # ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
     steps:
       - name: Checkout repo
@@ -108,20 +106,19 @@ jobs:
           brew install boost
 
       - name: Build and unit test
-        run: |
-          ./make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
+        run: ./make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
 
       - name: Build for reg test
-        run: |
-          ./make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
+        run: ./make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
 
       - name: Before reg test
-        run: |
-          ./before-nrtest.${{ matrix.script_extension }}
+        env:
+          NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
+          BENCHMARK_TAG: v1.0.3-dev
+        run: ./before-nrtest.${{ matrix.script_extension }} ${{ env.BENCHMARK_TAG }}
 
       - name: Run reg test
-        run: |
-          ./run-nrtests.${{ matrix.script_extension }} ${{ matrix.gh_run_number }}
+        run: ./run-nrtests.${{ matrix.script_extension }} ${{ matrix.gh_run_number }}
 
       - name: Upload artifacts
         if: ${{ always() }}
