@@ -150,7 +150,7 @@ static void parseGhcndFileLine(void);
 
 //=============================================================================
 
-int  climate_readParams(char* tok[], int ntoks) 
+int  climate_readParams(char* tok[], int ntoks)
 //
 //  Input:   tok[] = array of string tokens
 //           ntoks = number of tokens
