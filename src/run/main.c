@@ -1,16 +1,16 @@
-/*
- *  main.c - Main stub for the command line version of EPA SWMM 5.1
- *
- *  Created on: October 9, 2020
- *  Updated on:
- *
- *  Author:     Michael E. Tryby
- *              US EPA - ORD/CESER
- *
- */
+//-----------------------------------------------------------------------------
+//   main.c
+//
+//   Project:  EPA SWMM5
+//   Version:  5.1
+//   Date:     05/10/2018
+//   Author:   L. Rossman
 
-// System includes
+//   Main stub for the command line version of EPA SWMM 5.1
+//   to be run with swmm5.dll.
+
 #include <stdio.h>
+#include <time.h>
 #include <string.h>
 #include <math.h>
 
@@ -76,7 +76,7 @@ int  main(int argc, char *argv[])
 //  f3 = name of binary output file if saved (or blank if not saved).
 //
 {
-    // --- check for proper number of command line arguments
+     // --- check for proper number of command line arguments
     if (argc == 4) {
         // --- extract file names from command line arguments
         char *inputFile = argv[1];

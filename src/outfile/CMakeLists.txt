@@ -2,9 +2,11 @@
 # CMakeLists.txt - CMake configuration file for swmm/outfile
 #
 # Created: July 11, 2019
+# Updated: Jan 14, 2021
 #
 # Author: Michael E. Tryby
 #         US EPA ORD/CESER
+#         
 #
 
 # configure file groups

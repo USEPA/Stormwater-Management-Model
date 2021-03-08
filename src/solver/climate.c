@@ -39,7 +39,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "headers.h"
+#include "headers.h" 
 
 //-----------------------------------------------------------------------------
 //  Constants
@@ -168,8 +168,8 @@ int  climate_readParams(char* tok[], int ntoks)
 {
     int      i, j, k;
     double   x[6], y;
-    DateTime aDate;
-
+    DateTime aDate; 
+ 
     // --- identify keyword
     k = findmatch(tok[0], TempKeyWords);
     if ( k < 0 ) return error_setInpError(ERR_KEYWORD, tok[0]);

@@ -8,6 +8,7 @@
 //             03/19/15   (Build 5.1.008)
 //             08/01/16   (Build 5.1.011)
 //             03/14/17   (Build 5.1.012)
+//             03/01/20   (Build 5.1.014)
 //   Author:   L. Rossman
 //             M. Tryby
 //
@@ -29,6 +30,9 @@
 //
 //   Build 5.1.012:
 //   - Runoff wet time step no longer kept aligned with reporting times.
+//
+//   Build 5.1.014:
+//   - Fixed street sweeping bug.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 

@@ -1,7 +1,7 @@
 /*
  ******************************************************************************
  Project:      OWA SWMM
- Version:      5.1.13
+ Version:      5.1.14
  Module:       test_output.cpp
  Description:  tests for output library functions
  Authors:      see AUTHORS
@@ -257,7 +257,7 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
     const int ref_dim            = 10;
     float     ref_array[ref_dim] = {
         0.0f, 1.2438242f, 2.5639679f, 4.524055f, 2.5115132f, 0.69808137f,
-        0.040894926f, 0.011605669f, 0.00509294f, 0.0027438672f};
+		0.040894926f, 0.011605669f, 0.00509294f, 0.0027438672f};
 
     std::vector<float> ref_vec;
     ref_vec.assign(ref_array, ref_array + 10);
@@ -274,7 +274,7 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
 
     const int ref_dim            = 10;
     float     ref_array[ref_dim] = {
-        0.5f, 0.0f, 0.0f, 0.125f, 1.2438242f,
+		0.5f, 0.0f, 0.0f, 0.125f, 1.2438242f,
         0.0f, 0.0f, 0.0f, 33.481991f, 6.6963983f};
 
     std::vector<float> ref_vec;
@@ -292,8 +292,8 @@ BOOST_FIXTURE_TEST_CASE(test_getNodeResult, Fixture) {
 
     const int ref_dim        = 8;
     float ref_array[ref_dim] = {
-        0.296234f, 995.296204f, 0.0f, 1.302650f, 1.302650f, 0.0f,
-        15.361463f, 3.072293f};
+		0.296234f, 995.296204f, 0.0f, 1.302650f, 1.302650f, 0.0f,
+		15.361463f, 3.072293f};
 
     std::vector<float> ref_vec;
     ref_vec.assign(ref_array, ref_array + ref_dim);
@@ -310,8 +310,8 @@ BOOST_FIXTURE_TEST_CASE(test_getLinkResult, Fixture) {
 
     const int ref_dim        = 7;
     float ref_array[ref_dim] = {
-        4.631762f, 1.0f, 5.8973422f, 314.15927f, 1.0f, 19.070757f,
-        3.8141515f};
+		4.631762f, 1.0f, 5.8973422f, 314.15927f, 1.0f, 19.070757f,
+		3.8141515f};
 
     std::vector<float> ref_vec;
     ref_vec.assign(ref_array, ref_array + ref_dim);
@@ -329,7 +329,7 @@ BOOST_FIXTURE_TEST_CASE(test_getSystemResult, Fixture) {
     const int ref_dim            = 14;
     float     ref_array[ref_dim] = {
         70.0f, 0.1f, 0.0f, 0.19042271f, 14.172027f, 0.0f, 0.0f, 0.0f,
-        0.0f, 14.172027f, 0.55517411f, 13.622702f, 2913.0793f, 0.0f};
+		0.0f, 14.172027f, 0.55517411f, 13.622702f, 2913.0793f, 0.0f};
 
     std::vector<float> ref_vec;
     ref_vec.assign(ref_array, ref_array + ref_dim);

@@ -2,9 +2,11 @@
  *  swmm_output_enums.h
  *
  *  Created on: October 18, 2019
+ *  Updated on: January 14, 2020
  *
  *  Author: Michael E. Tryby
  *          US EPA - ORD/CESER
+ * 
  */
 
 

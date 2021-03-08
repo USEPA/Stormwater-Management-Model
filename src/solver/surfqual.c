@@ -4,6 +4,7 @@
 //   Project:  EPA SWMM5
 //   Version:  5.1
 //   Date:     03/19/15  (Build 5.1.008)
+//             03/01/20  (Build 5.1.014)
 //   Author:   L. Rossman
 //
 //   Subcatchment water quality functions.
@@ -13,6 +14,8 @@
 //     subcatch.c.
 //   - Support for separate accounting of LID drain flows included. 
 //
+//   Build 5.1.014:
+//   - Fixed bug in computing effective BMP removal by LIDs.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 

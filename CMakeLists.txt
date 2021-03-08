@@ -2,10 +2,10 @@
 # CMakeLists.txt - CMake configuration file for swmm-solver
 #
 # Created: July 11, 2019
-# Updated: May 29, 2020
+# Updated: Jan 14, 2021
 #
-# Author: Michael E. Tryby
-#         US EPA ORD/CESER
+# Authors: Michael E. Tryby
+#          US EPA ORD/CESER
 #
 
 ################################################################################
@@ -22,7 +22,7 @@ endif()
 
 
 project(swmm-solver
-    VERSION 5.1.13
+    VERSION 5.1.14
     LANGUAGES C CXX
     )
 

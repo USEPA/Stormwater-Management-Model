@@ -2,6 +2,7 @@
 # CMakeLists.txt - CMake configuration file for swmm-solver/run
 #
 # Created: July 11, 2019
+# Updated: Jan 14, 2021
 #
 # Modified by: Michael E. Tryby
 #              US EPA ORD/NRMRL

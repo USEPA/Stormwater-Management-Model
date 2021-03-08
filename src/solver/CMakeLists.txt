@@ -2,11 +2,12 @@
 # CMakeLists.txt - CMake configuration file for swmm-solver/library
 #
 # Created: Jul 11, 2019
-# Updated: Mar  5, 2020
+# Updated: Jan 14, 2021
 #
 # Author: Michael E. Tryby
 #         US EPA ORD/CESER
-#
+# 
+
 
 ################################################################################
 ######################    CMAKELISTS FOR SOLVER TARGET    ######################

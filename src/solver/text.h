@@ -20,6 +20,8 @@
 //   Text strings
 //-----------------------------------------------------------------------------
 
+#include "consts.h"
+
 #define FMT01 \
  "\tswmm5 <input file> <report file> <output file>\n"
 
@@ -29,7 +31,7 @@
 #define FMT06 "\n o  Retrieving project data"
 #define FMT07 "\n o  Writing output report"
 #define FMT08 \
-  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build 5.1.013)"         //(5.1.013)
+  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build "SEMVERSION_MAJOR"."SEMVERSION_MINOR"."SEMVERSION_PATCH")"         //(5.1.014)
 #define FMT09 \
   "\n  --------------------------------------------------------------"
 #define FMT10 "\n"
@@ -47,7 +49,7 @@
 #define FMT21  "  Total elapsed time: "
 
 // Warning messages
-#define WARN01 "WARNING 01: wet weather time step reduced to recording interval for Rain Gage" 
+#define WARN01 "WARNING 01: wet weather time step reduced to recording interval for Rain Gage"
 #define WARN02 "WARNING 02: maximum depth increased for Node"
 #define WARN03 "WARNING 03: negative offset ignored for Link"
 #define WARN04 "WARNING 04: minimum elevation drop used for Conduit"
@@ -239,7 +241,7 @@
 #define  w_CUSTOM            "CUSTOM"
 #define  w_FORCE_MAIN        "FORCE_MAIN"
 #define  w_H_W               "H-W"
-#define  w_D_W               "D-W" 
+#define  w_D_W               "D-W"
 
 // Link Offset Options
 #define  w_ELEVATION         "ELEVATION"
@@ -256,7 +258,7 @@
 // Flow Volume Units
 #define  w_MGAL              "10^6 gal"
 #define  w_MLTRS             "10^6 ltr"
-#define  w_GAL               "gal" 
+#define  w_GAL               "gal"
 #define  w_LTR               "ltr"
 
 // Ponded Depth Units

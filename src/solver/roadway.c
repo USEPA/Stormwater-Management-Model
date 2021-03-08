@@ -24,7 +24,10 @@
 #include <math.h>
 #include "headers.h"
 
-enum RoadSurface {PAVED = 1, GRAVEL = 2};
+enum RoadSurface {
+    PAVED = 1,
+    GRAVEL = 2
+};
 
 //-----------------------------------------------------------------------------
 //  Constants
@@ -39,7 +42,7 @@ enum RoadSurface {PAVED = 1, GRAVEL = 2};
 static const int N_Cr_Low_Paved = 4;
 static const double Cr_Low_Paved[4][2] = {
     {0.0, 2.85}, {0.2, 2.95}, {0.7, 3.03}, {4.0, 3.05}};
-    
+
 static const int N_Cr_Low_Gravel = 8;
 static const double Cr_Low_Gravel[8][2] = {
     {0.0, 2.5}, {0.5, 2.7},  {1.0, 2.8}, {1.5, 2.9}, {2.0, 2.98},
@@ -187,4 +190,3 @@ double getY(double x, const double table[][2], const int n)
     }
     return table[n-1][1];
 }
-

@@ -7,6 +7,7 @@
 //             04/04/14   (Build 5.1.003)
 //             04/14/14   (Build 5.1.004)
 //             09/15/14   (Build 5.1.007)
+//             03/01/20   (Build 5.1.014)
 //   Author:   L. Rossman (EPA)
 //             R. Dickinson (CDM)
 //
@@ -19,6 +20,8 @@
 //   - Ignore RDII option implemented.
 //   - Rainfall climate adjustment implemented.
 //
+//   Build 5.1.014:
+//   - Fixes bug related to isUsed property of a unit hydrograph's rain gage.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
