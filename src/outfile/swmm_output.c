@@ -715,7 +715,7 @@ int EXPORT_OUT_API SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
 //
 {
     int     errorcode = 0;
-    float   temp;
+    float   *temp;
     data_t *p_data;
 
     p_data = (data_t *)p_handle;
