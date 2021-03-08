@@ -724,9 +724,11 @@ int EXPORT_OUT_API SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
         errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods)
         errorcode = 422;
+    else if
+        MEMCHECK(temp = newFloatArray(1)) errorcode = 411;
     else {
         // don't need to loop since there's only one system
-        temp = getSystemValue(p_data, periodIndex, attr);
+        temp[0] = getSystemValue(p_data, periodIndex, attr);
 
         *outValueArray = &temp;
         *length        = 1;
