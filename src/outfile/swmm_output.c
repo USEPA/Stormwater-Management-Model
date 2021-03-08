@@ -723,7 +723,7 @@ int EXPORT_OUT_API SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
     if (p_data == NULL)
         errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods)
-        errorcode = 422; 
+        errorcode = 422;
     else if
         MEMCHECK(temp = newFloatArray(1)) errorcode = 411;
     else {
