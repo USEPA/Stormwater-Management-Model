@@ -14,7 +14,10 @@
 ################################################################################
 
 
-find_package(OpenMP REQUIRED)
+find_package(OpenMP
+	OPTIONAL_COMPONENTS
+		C
+)
 
 
 # configure file groups
@@ -73,7 +76,7 @@ target_link_options(swmm5
 target_link_libraries(swmm5
     PUBLIC
         $<$<NOT:$<BOOL:$<C_COMPILER_ID:MSVC>>>:m>
-        $<$<BOOL:OpenMP_C_FOUND>:OpenMP::OpenMP_C>
+        $<$<BOOL:${OpenMP_FOUND}>:OpenMP::OpenMP_C>
 )
 
 target_include_directories(swmm5
