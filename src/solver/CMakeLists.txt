@@ -124,7 +124,7 @@ install(
 
 # TODO: Figure out why this doesn't work for package target
 # When building on MacOS relocate libomp to install package
-if(APPLE)
+if(APPLE AND OpenMP_FOUND)
     get_filename_component(EXTERN_LIB_PATH ${OpenMP_libomp_LIBRARY} REALPATH)
 
     install(
