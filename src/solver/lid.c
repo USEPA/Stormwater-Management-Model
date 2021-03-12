@@ -12,6 +12,7 @@
 //             08/01/16   (Build 5.1.011)
 //             03/14/17   (Build 5.1.012)
 //             05/10/18   (Build 5.1.013)
+//             03/01/20   (Build 5.1.014)
 //   Author:   L. Rossman (US EPA)
 //
 //   This module handles all data processing involving LID (Low Impact
@@ -72,6 +73,10 @@
 //     control curve for underdrain flow.
 //   - Support added for unclogging permeable pavement at fixed intervals.
 //   - Support added for pollutant removal in underdrain flow.
+//
+//   Build 5.1.014:
+//   - Fixed bug in creating LidProcs when there are no subcatchments.
+//   - Fixed bug in adding underdrain pollutant loads to mass balances.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -246,10 +251,10 @@ void lid_create(int lidCount, int subcatchCount)
             return;
         }
     }
-
+        
     //... initialize LID groups
     for (j = 0; j < GroupCount; j++) LidGroups[j] = NULL;
-
+    
     //... create LID objects
     if ( LidCount == 0 ) return;
     LidProcs = (TLidProc *) calloc(LidCount, sizeof(TLidProc));
@@ -1481,7 +1486,7 @@ void  lid_addDrainLoads(int j, double c[], double tStep)
                 //... update system mass balance totals
                 massbal_updateLoadingTotals(BMP_REMOVAL_LOAD, p, r*w);
                 if (isRunoffLoad)
-                    massbal_updateLoadingTotals(RUNOFF_LOAD, p, w*(1.0-r));
+                    massbal_updateLoadingTotals(RUNOFF_LOAD, p, w*(1.0 - r));
             }
 
             // process next LID unit in the group

@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2016, ubuntu-16.04, macos-latest]
+        os: [windows-2016, ubuntu-16.04, macos-latest] 
         requirements: [requirements-swmm.txt]
         include:
           - os: windows-2016
@@ -75,14 +75,19 @@ jobs:
       PROJECT: swmm
       BUILD_HOME: build
       TEST_HOME: nrtests
-      NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
-      # ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
         with:
           submodules: recursive
+
+      - name: Clone ci-tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: OpenWaterAnalytics/ci-tools
+          ref: master
+          path: ci-tools
 
       - name: Setup python
         uses: actions/setup-python@v2
@@ -101,20 +106,19 @@ jobs:
           brew install boost
 
       - name: Build and unit test
-        run: |
-          ./make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
+        run: ./make.${{ matrix.script_extension }} -t -g "${{ matrix.generator }}"
 
       - name: Build for reg test
-        run: |
-          ./make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
+        run: ./make.${{ matrix.script_extension }} -g "${{ matrix.generator }}"
 
       - name: Before reg test
-        run: |
-          ./before-nrtest.${{ matrix.script_extension }}
+        env:
+          NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
+          BENCHMARK_TAG: v1.0.4-dev
+        run: ./before-nrtest.${{ matrix.script_extension }} ${{ env.BENCHMARK_TAG }}
 
       - name: Run reg test
-        run: |
-          ./run-nrtests.${{ matrix.script_extension }} ${{ matrix.gh_run_number }}
+        run: ./run-nrtests.${{ matrix.script_extension }} ${{ matrix.gh_run_number }}
 
       - name: Upload artifacts
         if: ${{ always() }}

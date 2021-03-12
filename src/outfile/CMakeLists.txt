@@ -2,9 +2,11 @@
 # CMakeLists.txt - CMake configuration file for swmm/outfile
 #
 # Created: July 11, 2019
+# Updated: Jan 14, 2021
 #
 # Author: Michael E. Tryby
 #         US EPA ORD/CESER
+#         
 #
 
 # configure file groups
@@ -38,6 +40,16 @@ generate_export_header(swmm-output
 
 file(COPY ${CMAKE_CURRENT_BINARY_DIR}/swmm_output_export.h
     DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+
+set_target_properties(swmm-output
+    PROPERTIES
+        MACOSX_RPATH TRUE
+        SKIP_BUILD_RPATH FALSE
+        BUILD_WITH_INSTALL_RPATH FALSE
+        INSTALL_RPATH "${PACKAGE_RPATH}"
+        INSTALL_RPATH_USE_LINK_PATH TRUE
 )
 
 

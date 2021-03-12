@@ -10,6 +10,7 @@
 //             08/01/16    (Build 5.1.011)
 //             03/14/17    (Build 5.1.012)
 //             05/10/18    (Build 5.1.013)
+//             03/01/20    (Build 5.1.014)
 //   Author:   L. Rossman (EPA)
 //
 //   Report writing functions.
@@ -40,6 +41,8 @@
 //   - Name of surcharge method reported in report_writeOptions().
 //   - Missing format specifier added to fprintf() in report_writeErrorCode.
 //
+//   Build 5.1.014:
+//   - Fixed bug in confusing keywords with ID names in report_readOptions().
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -815,7 +818,7 @@ void report_writeFlowError(TRoutingTotals *totals)
 
 //=============================================================================
 
-void report_writeQualError(TRoutingTotals QualTotals[])
+void report_writeQualError(TRoutingTotals* QualTotals)
 //
 //  Input:   totals = accumulated quality routing totals for each pollutant
 //  Output:  none

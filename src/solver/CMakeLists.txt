@@ -2,14 +2,22 @@
 # CMakeLists.txt - CMake configuration file for swmm-solver/library
 #
 # Created: Jul 11, 2019
-# Updated: Mar  5, 2020
+# Updated: Jan 14, 2021
 #
 # Author: Michael E. Tryby
 #         US EPA ORD/CESER
-#
+# 
 
 
-find_package(OpenMP REQUIRED)
+################################################################################
+######################    CMAKELISTS FOR SOLVER TARGET    ######################
+################################################################################
+
+
+find_package(OpenMP
+	OPTIONAL_COMPONENTS
+		C
+)
 
 
 # configure file groups
@@ -26,7 +34,7 @@ file(GLOB
 )
 
 if(BUILD_DEF)
-    # Build library with def file interface for backward compatibility
+    # Builds library with def file interface for backward compatibility
     set_source_files_properties(${PROJECT_SOURCE_DIR}/bindings/swmm5.def
         PROPERTIES_HEADER_FILE_ONLY TRUE
     )
@@ -39,7 +47,7 @@ if(BUILD_DEF)
     )
 
 else()
-
+    # Performs standard library build
     add_library(swmm5
         SHARED
             ${SWMM_SOURCES}
@@ -48,6 +56,7 @@ else()
 
 endif()
 
+# Sets MSVC compiler flags
 target_compile_options(swmm5
     PUBLIC
         "$<$<C_COMPILER_ID:MSVC>:"
@@ -67,7 +76,7 @@ target_link_options(swmm5
 target_link_libraries(swmm5
     PUBLIC
         $<$<NOT:$<BOOL:$<C_COMPILER_ID:MSVC>>>:m>
-        $<$<BOOL:OpenMP_C_FOUND>:OpenMP::OpenMP_C>
+        $<$<BOOL:${OpenMP_FOUND}>:OpenMP::OpenMP_C>
 )
 
 target_include_directories(swmm5
@@ -77,6 +86,17 @@ target_include_directories(swmm5
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
+
+
+set_target_properties(swmm5
+    PROPERTIES
+        MACOSX_RPATH TRUE
+        SKIP_BUILD_RPATH FALSE
+        BUILD_WITH_INSTALL_RPATH FALSE
+        INSTALL_RPATH "${PACKAGE_RPATH}"
+        INSTALL_RPATH_USE_LINK_PATH TRUE
+)
+
 
 install(TARGETS swmm5 EXPORT swmm5Targets
     RUNTIME    DESTINATION "${TOOL_DIST}"
@@ -104,14 +124,14 @@ install(
 
 # TODO: Figure out why this doesn't work for package target
 # When building on MacOS relocate libomp to install package
-if(APPLE)
+if(APPLE AND OpenMP_FOUND)
     get_filename_component(EXTERN_LIB_PATH ${OpenMP_libomp_LIBRARY} REALPATH)
 
     install(
         FILES
             ${EXTERN_LIB_PATH}
         DESTINATION
-            ${CMAKE_INSTALL_PREFIX}/extern
+            ${LIBRARY_DIST}
     )
 
     # Pass the var up the project tree

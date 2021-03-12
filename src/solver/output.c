@@ -7,6 +7,7 @@
 //             03/19/15  (Build 5.1.008)
 //             08/05/15  (Build 5.1.010)
 //             05/10/18  (Build 5.1.013)
+//             03/01/20  (Build 5.1.014)
 //   Author:   L. Rossman (EPA)
 //
 //   Binary output file access functions.
@@ -23,6 +24,9 @@
 //     NumSubcatchVars, NumNodeVars & NumLinkVars 
 //   - Support added for saving average node & link routing results to
 //     binary file in each reporting period.
+//
+//   Build 5.1.014:
+//   - Incorrect loop limit fixed in function output_saveAvgResults.
 //
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -936,7 +940,7 @@ void output_saveAvgResults(FILE* file)
     }
  
     // --- add each link's volume to total system storage
-    for (i = 0; i < Nobjects[NODE]; i++)
+    for (i = 0; i < Nobjects[LINK]; i++)                                       //(5.1.014)
     {
         SysResults[SYS_STORAGE] += (REAL4)(Link[i].newVolume * UCF(VOLUME));
     }
