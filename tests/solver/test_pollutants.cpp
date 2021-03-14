@@ -407,7 +407,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
     do
     {
 	    // Set pollutant in link and check the pollutant in the node
-	    error = swmm_setLinkPollut(link_ind, SM_LINKQUAL, P1, 24.0);
+	    error = swmm_setLinkPollut(link_ind, SM_LINKQUAL, P1, 10.0);
 	    BOOST_REQUIRE(error == ERR_NONE);
 
 	    // Route Model Forward
