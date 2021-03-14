@@ -368,7 +368,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Po
 	    error = swmm_getLinkPollut(link_ind, SM_LINKQUAL, &link_qual, &length);
 	    
 	    // Check
-            BOOST_CHECK_SMALL(abs(node_qual[P1] - link_qual[P1]), 0.01);
+            BOOST_CHECK_SMALL(abs(node_qual[P1] - link_qual[P1]), 0.1);
     	    }
 	    step += 1;
 
@@ -423,7 +423,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
 	    error = swmm_getLinkPollut(link_ind, SM_LINKQUAL, &link_qual, &length);
 	    
 	    // Check
-            BOOST_CHECK_SMALL(abs(node_qual[P1] - link_qual[P1]), 0.01);
+            BOOST_CHECK_SMALL(abs(node_qual[P1] - link_qual[P1]), 0.1);
     	    }
 	    step += 1;
 
