@@ -6,7 +6,7 @@
 #
 # Author: Michael E. Tryby
 #         US EPA ORD/CESER
-# 
+#
 
 
 ################################################################################
@@ -14,14 +14,14 @@
 ################################################################################
 
 
-#find_package(OpenMP
-#	OPTIONAL_COMPONENTS
-#		C
-#)
-
 if(APPLE)
-	set(CMAKE_OSX_DEPLOYMENT_TARGET:STRING 10.9)
 	include(../../extern/openmp.cmake)
+
+else()
+    find_package(OpenMP
+	   OPTIONAL_COMPONENTS
+	      C
+    )
 endif()
 
 # configure file groups
@@ -81,6 +81,7 @@ target_link_libraries(swmm5
     PUBLIC
         $<$<NOT:$<BOOL:$<C_COMPILER_ID:MSVC>>>:m>
         $<$<BOOL:${OpenMP_FOUND}>:OpenMP::OpenMP_C>
+        $<$<BOOL:${APPLE}>:omp>
 )
 
 target_include_directories(swmm5
@@ -128,16 +129,16 @@ install(
 
 # TODO: Figure out why this doesn't work for package target
 # When building on MacOS relocate libomp to install package
-if(APPLE AND OpenMP_FOUND)
-    get_filename_component(EXTERN_LIB_PATH ${OpenMP_libomp_LIBRARY} REALPATH)
-
-    install(
-        FILES
-            ${EXTERN_LIB_PATH}
-        DESTINATION
-            ${LIBRARY_DIST}
-    )
-
+if(APPLE)
+    get_filename_component(EXTERN_LIB_PATH omp REALPATH)
+#
+#    install(
+#        FILES
+#            ${EXTERN_LIB_PATH}
+#        DESTINATION
+#            ${LIBRARY_DIST}
+#    )
+#
     # Pass the var up the project tree
     set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
 endif()
