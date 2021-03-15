@@ -72,7 +72,9 @@ endif()
 
 
 # Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
-set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
+if(OpenMP_FOUND)
+	set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
+endif()
 include(InstallRequiredSystemLibraries)
 
 
