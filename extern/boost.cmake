@@ -24,12 +24,18 @@ if (DEFINED ENV{BOOST_ROOT_1_72_0})
 elseif(DEFINED ENV{BOOST_ROOT_1_67_0})
     set(BOOST_ROOT $ENV{BOOST_ROOT_1_67_0})
 
+# Boost location on Actions build runner
+else()
+    include(/opt/hostedtoolcache/boost/1.72.0/x64/lib/cmake/Boost-1.72.0/BoostConfig.cmake)
+
 endif()
 
 
+set(CMAKE_FIND_DEBUG_MODE TRUE)
 find_package(Boost 1.67.0
     COMPONENTS
         unit_test_framework
     )
+set(CMAKE_FIND_DEBUG_MODE FALSE)
 
 include_directories (${Boost_INCLUDE_DIRS})

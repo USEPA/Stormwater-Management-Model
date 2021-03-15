@@ -22,8 +22,12 @@ target_link_directories(omp
         $<INSTALL_INTERFACE:${LIBRARY_DIST}>
 )
 
-install(TARGETS omp EXPORT ompTargets
-    LIBRARY    DESTINATION "${LIBRARY_DIST}"
+install(TARGETS omp
+    EXPORT
+        ompTargets
+    LIBRARY    
+    DESTINATION
+        "${LIBRARY_DIST}"
 )
 
 install(
