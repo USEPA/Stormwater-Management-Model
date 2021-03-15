@@ -127,18 +127,10 @@ install(
 )
 
 
-# TODO: Figure out why this doesn't work for package target
-# When building on MacOS relocate libomp to install package
+# When building on MacOS save libomp filepath
 if(APPLE)
     get_filename_component(EXTERN_LIB_PATH omp REALPATH)
-#
-#    install(
-#        FILES
-#            ${EXTERN_LIB_PATH}
-#        DESTINATION
-#            ${LIBRARY_DIST}
-#    )
-#
+
     # Pass the var up the project tree
     set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
 endif()
