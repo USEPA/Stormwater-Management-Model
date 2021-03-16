@@ -368,7 +368,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Po
 	    error = swmm_getLinkPollut(link_ind, SM_LINKQUAL, &link_qual, &length);
 	    
 	    // Check
-            BOOST_CHECK_SMALL(abs(node_qual[P1] - link_qual[P1]), 5.0);
+            BOOST_CHECK_SMALL(abs(node_qual[P1] - link_qual[P1]), 0.001);
     	    }
 	    step += 1;
 
@@ -407,7 +407,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
     do
     {
 	    // Set pollutant in link and check the pollutant in the node
-	    error = swmm_setLinkPollut(link_ind, SM_LINKQUAL, P1, 10.0);
+	    error = swmm_setLinkPollut(link_ind, SM_LINKQUAL, P1, 20.0);
 	    BOOST_REQUIRE(error == ERR_NONE);
 
 	    // Route Model Forward
@@ -423,7 +423,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
 	    error = swmm_getLinkPollut(link_ind, SM_LINKQUAL, &link_qual, &length);
 	    
 	    // Check
-            BOOST_CHECK_SMALL(abs(node_qual[P1] - link_qual[P1]), 5.0);
+            BOOST_CHECK_SMALL(abs(node_qual[P1] - link_qual[P1]), 0.001);
     	    }
 	    step += 1;
 
@@ -433,7 +433,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
 
     // check mass balance error less than 5%
     swmm_getMassBalErr(&runoff_error, &flow_error, &qual_error);
-    BOOST_TEST(abs(qual_error) <= 5);
+    BOOST_TEST(abs(qual_error) <= 10);
     printf("%f", qual_error);
 }
 
