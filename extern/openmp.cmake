@@ -1,5 +1,20 @@
+#
+# CMakeLists.txt - CMake configuration file for OpenMP Library on Darwin
+#
+# Created: Mar 17, 2021
+# Updated:
+#
+# Author: Michael E. Tryby
+#         US EPA ORD/CESER
+#
+# Note:
+#  OpenMP library build fails for Xcode generator. Use Ninja or Unix Makefiles
+#  instead.
+#
 
-
+################################################################################
+#####################    CMAKELISTS FOR OPENMP LIBRARY    ######################
+################################################################################
 
 include(FetchContent)
 
@@ -13,8 +28,8 @@ FetchContent_Declare(openmp
 
 set(OPENMP_STANDALONE_BUILD TRUE)
 set(LIBOMP_INSTALL_ALIASES OFF)
-FetchContent_MakeAvailable(openmp)
 
+FetchContent_MakeAvailable(openmp)
 
 target_link_directories(omp
     PUBLIC
@@ -25,7 +40,7 @@ target_link_directories(omp
 install(TARGETS omp
     EXPORT
         ompTargets
-    LIBRARY    
+    LIBRARY
     DESTINATION
         "${LIBRARY_DIST}"
 )

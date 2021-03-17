@@ -16,7 +16,6 @@
 
 if(APPLE)
 	include(../../extern/openmp.cmake)
-
 else()
     find_package(OpenMP
 	   OPTIONAL_COMPONENTS
