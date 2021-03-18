@@ -14,14 +14,10 @@
 ################################################################################
 
 
-if(APPLE)
-	include(../../extern/openmp.cmake)
-else()
-    find_package(OpenMP
-	   OPTIONAL_COMPONENTS
-	      C
-    )
-endif()
+find_package(OpenMP
+    OPTIONAL_COMPONENTS
+        C
+)
 
 # configure file groups
 set(SWMM_PUBLIC_HEADERS
@@ -127,12 +123,12 @@ install(
 
 
 # When building on MacOS save libomp filepath
-if(APPLE)
-    get_filename_component(EXTERN_LIB_PATH omp REALPATH)
-
-    # Pass the var up the project tree
-    set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
-endif()
+#if(APPLE)
+#    get_filename_component(EXTERN_LIB_PATH omp REALPATH)
+#
+#    # Pass the var up the project tree
+#    set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
+#endif()
 
 
 # copy swmm5 to build tree for testing
