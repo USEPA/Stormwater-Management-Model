@@ -122,15 +122,6 @@ install(
 )
 
 
-# When building on MacOS save libomp filepath
-#if(APPLE)
-#    get_filename_component(EXTERN_LIB_PATH omp REALPATH)
-#
-#    # Pass the var up the project tree
-#    set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
-#endif()
-
-
 # copy swmm5 to build tree for testing
 add_custom_command(TARGET swmm5 POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
