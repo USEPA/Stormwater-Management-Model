@@ -25,8 +25,8 @@ elseif(DEFINED ENV{BOOST_ROOT_1_67_0})
     set(BOOST_ROOT $ENV{BOOST_ROOT_1_67_0})
 
 # Boost location on Actions build runner
-else()
-    include(/opt/hostedtoolcache/boost/1.72.0/x64/lib/cmake/Boost-1.72.0/BoostConfig.cmake)
+# else()
+#     include(/opt/hostedtoolcache/boost/1.72.0/x64/lib/cmake/Boost-1.72.0/BoostConfig.cmake)
 
 endif()
 
