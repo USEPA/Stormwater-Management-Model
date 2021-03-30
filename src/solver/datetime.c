@@ -2,17 +2,17 @@
 //   datetime.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             08/01/16   (Build 5.1.011)
+//   Version:  5.2
+//   Date:     03/24/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   DateTime functions.
 //
-//   Build 5.1.011
+//   Update History
+//   ==============
+//   Build 5.1.011:
 //   - decodeTime() no longer rounds up.
 //   - New getTimeStamp function added.
-//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 

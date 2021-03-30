@@ -2,13 +2,8 @@
 //   swmm5.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/19/14  (Build 5.1.001)
-//             03/19/15  (Build 5.1.008)
-//             08/01/16  (Build 5.1.011)
-//             03/14/17  (Build 5.1.012)
-//             05/10/18  (Build 5.1.013)
-//             04/01/20  (Build 5.1.015)
+//   Version:  5.2
+//   Date:     03/24/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   This is the main module of the computational engine for Version 5 of
@@ -18,12 +13,13 @@
 //   This engine should be compiled into a shared object library whose API
 //   functions are listed in swmm5.h.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - Support added for the MinGW compiler.
 //   - Reporting of project options moved to swmm_start. 
 //   - Hot start file now read before routing system opened.
 //   - Final routing step adjusted so that total duration not exceeded.
-//
 //   Build 5.1.011:
 //   - Made sure that MS exception handling only used with MS C compiler.
 //   - Added name of module handling an exception to error report.
@@ -32,14 +28,11 @@
 //   - Changed WarningCode to Warnings (# warnings issued).
 //   - Added swmm_getWarnings() function to retrieve value of Warnings.
 //   - Fixed error code returned on swmm_xxx functions.
-//
 //   Build 5.1.012:
 //   - #include <direct.h> only used when compiled for Windows.
-//
 //   Build 5.1.013:
 //   - Support added for saving average results within a reporting period.
 //   - SWMM engine now always compiled to a shared object library.
-//
 //   Build 5.1.015:
 //   - Fixes bug in summary statistics when Report Start date > Start Date.
 //-----------------------------------------------------------------------------
@@ -86,7 +79,7 @@
 //-----------------------------------------------------------------------------
 #include "consts.h"                    // defined constants
 #include "macros.h"                    // macros used throughout SWMM
-#include "enums.h"                     // enumerated variables
+#include "enums.h"                     // enumerated constants
 #include "error.h"                     // error message codes
 #include "datetime.h"                  // date/time functions
 #include "objects.h"                   // definitions of SWMM's data objects
@@ -167,10 +160,10 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
     long theDay, theHour;
     double elapsedTime = 0.0;
 
-    // --- initialize flags                                                    //(5.1.013)
-    IsOpenFlag = FALSE;                                                        //
-    IsStartedFlag = FALSE;                                                     //
-    SaveResultsFlag = TRUE;                                                    //
+    // --- initialize flags
+    IsOpenFlag = FALSE;
+    IsStartedFlag = FALSE;
+    SaveResultsFlag = TRUE;
 
     // --- open the files & read input data
     ErrorCode = 0;
@@ -195,7 +188,7 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
                     theDay = (long)elapsedTime;
                     theHour = (long)((elapsedTime - floor(elapsedTime)) * 24.0);
                     writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-                    sprintf(Msg, "%-5ld hour: %-2ld", theDay, theHour);        //(5.1.013)
+                    sprintf(Msg, "%-5ld hour: %-2ld", theDay, theHour);
                     writecon(Msg);
                     oldHour = newHour;
                 }
@@ -228,8 +221,8 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
 //  Purpose: opens a SWMM project.
 //
 {
-// --- to be safe, reset the state of the floating point unit                  //(5.1.013)
-#ifdef WINDOWS                                                                 //(5.1.013)
+// --- to be safe, reset the state of the floating point unit
+#ifdef WINDOWS
     _fpreset();
 #endif
 
@@ -309,8 +302,8 @@ int DLLEXPORT swmm_start(int saveResults)
         NewRunoffTime = 0.0;
         NewRoutingTime = 0.0;
         ReportTime =   (double)(1000 * ReportStep);
-        TotalStepCount = 0;                                                    //(5.1.015)
-        ReportStepCount = 0;                                                   //(5.1.015)
+        TotalStepCount = 0;
+        ReportStepCount = 0;
         NonConvergeCount = 0;
         IsStartedFlag = TRUE;
 
@@ -396,7 +389,6 @@ int DLLEXPORT swmm_step(double* elapsedTime)
             execRouting();
         }
 
-////  Following code segment modified for release 5.1.013.  ////               //(5.1.013)
         // --- if saving results to the binary file
         if ( SaveResultsFlag )
         {
@@ -429,7 +421,6 @@ int DLLEXPORT swmm_step(double* elapsedTime)
             // --- not a reporting period so update average results if applicable
             else if ( RptFlags.averages ) output_updateAvgResults();
         }
-////
 
         // --- update elapsed time (days)
         if ( NewRoutingTime < TotalDuration )
@@ -444,7 +435,7 @@ int DLLEXPORT swmm_step(double* elapsedTime)
 
 #ifdef EXH
     // --- end of try loop; handle exception here
-    __except(xfilter(GetExceptionCode(), "swmm_step", ElapsedTime, TotalStepCount)) //(5.1.015)
+    __except(xfilter(GetExceptionCode(), "swmm_step", ElapsedTime, TotalStepCount))
     {
         ErrorCode = ERR_SYSTEM;
     }
@@ -470,7 +461,7 @@ void execRouting()
 #endif
     {
         // --- determine when next routing time occurs
-        TotalStepCount++;                                                      //(5.1.015)
+        TotalStepCount++;
         if ( !DoRouting ) routingStep = MIN(WetStep, ReportStep);
         else routingStep = routing_getRoutingStep(RouteModel, RouteStep);
         if ( routingStep <= 0.0 )
@@ -508,7 +499,7 @@ void execRouting()
 #ifdef EXH
     // --- end of try loop; handle exception here
     __except(xfilter(GetExceptionCode(), "execRouting",
-                     ElapsedTime, TotalStepCount))                             //(5.1.015)
+                     ElapsedTime, TotalStepCount))
     {
         ErrorCode = ERR_SYSTEM;
         return;

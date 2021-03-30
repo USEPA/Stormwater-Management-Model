@@ -2,19 +2,19 @@
 //   landuse.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14  (Build 5.1.001)
-//             03/19/15  (Build 5.1.008)
+//   Version:  5.2
+//   Date:     03/24/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Pollutant buildup and washoff functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - landuse_getWashoffMass() re-named to landuse_getWashoffQual() and
 //     modified to return concentration instead of mass load.
 //   - landuse_getRunoffLoad() re-named to landuse_getWashoffLoad() and
 //     modified to work with landuse_getWashoffQual().
-//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 

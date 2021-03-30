@@ -2,12 +2,8 @@
 //   consts.h
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/20/14  (Build 5.1.001)
-//            08/01/16  (Build 5.1.011)
-//            05/10/18  (Build 5.1.013)
-//            03/01/20  (Build 5.1.014)
-//            04/01/20  (Build 5.1.015)
+//   Version: 5.2
+//   Date:    03/24/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Various Constants
@@ -16,12 +12,11 @@
 #ifndef CONSTS_H
 #define CONSTS_H
 
-
 //------------------
 // General Constants
 //------------------
 
-#define   VERSION            51015
+#define   VERSION            52000 
 #define   MAGICNUMBER        516114522
 #define   EOFMARK            0x1A           // Use 0x04 for UNIX systems
 #define   MAXTITLE           3              // Max. # title lines
@@ -98,8 +93,8 @@
 
 //---------------------------
 // Token separator characters
-//---------------------------
-#define   SEPSTR    " \t\n\r"
+//--------------------------- 
+#define   SEPSTR    " \t\n\r" 
 
 
 #endif //CONSTS_H

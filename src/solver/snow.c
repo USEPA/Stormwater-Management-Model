@@ -2,19 +2,19 @@
 //   snow.c
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/20/14   (Build 5.1.001)
-//            03/19/15   (Build 5.1.008)
+//   Version: 5.2
+//   Date:    03/24/21   (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Models snow melt processes.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - Adjustment of snowmelt and subcatchment's net precipitation for area
 //     covered by snow was corrected. 
 //   - Area covered by snow now included in calculation of rate that liquid
 //     water leaves a snowpack.
-//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 

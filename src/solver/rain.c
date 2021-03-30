@@ -2,12 +2,8 @@
 //   rain.c
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/20/14  (Build 5.1.001)
-//            08/05/15  (Build 5.1.010)
-//            08/22/16  (Build 5.1.011)
-//            05/10/18  (Build 5.1.013)
-//            03/01/20  (Build 5.1.014)
+//   Version: 5.2
+//   Date:    03/24/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Places rainfall data from external files into a SWMM rainfall
@@ -41,15 +37,14 @@
 //         Date/time for start of period (8-byte double)
 //         Rain depth (inches) (4-byte float)
 //
+//   Update History
+//   ==============
 //   Release 5.1.010:
 //   - Modified error message for records out of sequence in std. format file.
-//
 //   Release 5.1.011:
 //   - Can now read decimal rainfall values in newer NWS online format.
-//
 //   Release 5.1.013:
 //   - Variable x properly initialized with float value in readNwsOnlineValue().
-//
 //   Release 5.1.014:
 //   - Fixed indexing bug in rainFileConflict() function.
 //-----------------------------------------------------------------------------
@@ -874,7 +869,7 @@ int readNwsOnlineValue(char* s, long* v, char* flag)
 //
 {
     int    n;
-    float  x = 99.99f;                                                         //(5.1.013)
+    float  x = 99.99f;
 
     // --- check for newer format of decimal inches
     if ( strchr(s, '.') )

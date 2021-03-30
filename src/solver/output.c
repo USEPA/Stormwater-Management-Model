@@ -2,32 +2,28 @@
 //   output.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14  (Build 5.1.001)
-//             03/19/15  (Build 5.1.008)
-//             08/05/15  (Build 5.1.010)
-//             05/10/18  (Build 5.1.013)
-//             03/01/20  (Build 5.1.014)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     03/24/21  (Build 5.2.0)
+//   Author:   L. Rossman
 //
 //   Binary output file access functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - Possible divide by zero for reported system wide variables avoided.
 //   - Updating of maximum node depth at reporting times added.
-//
 //   Build 5.1.010:
 //   - Potentional ET added to list of system-wide variables saved to file.
-//
 //   Build 5.1.013:
 //   - Names NsubcatchVars, NnodeVars & NlinkVars replaced with
 //     NumSubcatchVars, NumNodeVars & NumLinkVars 
 //   - Support added for saving average node & link routing results to
 //     binary file in each reporting period.
-//
 //   Build 5.1.014:
 //   - Incorrect loop limit fixed in function output_saveAvgResults.
-//
+//   Build 5.2.0:
+//   - Changed how time step averaged flow is computed.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -45,10 +41,10 @@
 enum InputDataType {INPUT_TYPE_CODE, INPUT_AREA, INPUT_INVERT, INPUT_MAX_DEPTH,
                     INPUT_OFFSET, INPUT_LENGTH};
 
-typedef struct                                                                 //(5.1.013)
-{                                                                              //
-    REAL4* xAvg;                                                               //
-}   TAvgResults;                                                               //
+typedef struct
+{
+    REAL4* xAvg;
+}   TAvgResults;
 
 //-----------------------------------------------------------------------------
 //  Shared variables    
@@ -66,9 +62,9 @@ static INT4      NumLinks;             // number of links reported on
 static INT4      NumPolluts;           // number of pollutants reported on
 static REAL4     SysResults[MAX_SYS_RESULTS];    // values of system output vars.
 
-static TAvgResults* AvgLinkResults;                                            //(5.1.013)
-static TAvgResults* AvgNodeResults;                                            //
-static int          Nsteps;                                                    //
+static TAvgResults* AvgLinkResults;
+static TAvgResults* AvgNodeResults;
+static int          Nsteps;
 
 //-----------------------------------------------------------------------------
 //  Exportable variables (shared with report.c)
@@ -87,11 +83,10 @@ static void output_saveSubcatchResults(double reportTime, FILE* file);
 static void output_saveNodeResults(double reportTime, FILE* file);
 static void output_saveLinkResults(double reportTime, FILE* file);
 
-static int  output_openAvgResults(void);                                       //(5.1.013)
-static void output_closeAvgResults(void);                                      //
-static void output_initAvgResults(void);                                       //
-static void output_saveAvgResults(FILE* file);                                 //
-
+static int  output_openAvgResults(void);
+static void output_closeAvgResults(void);
+static void output_initAvgResults(void);
+static void output_saveAvgResults(FILE* file);
 
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
@@ -99,7 +94,7 @@ static void output_saveAvgResults(FILE* file);                                 /
 //  output_open                   (called by swmm_start in swmm5.c)
 //  output_end                    (called by swmm_end in swmm5.c)
 //  output_close                  (called by swmm_close in swmm5.c)
-//  output_updateAvgResults       (called by swmm_step in swmm5.c)             //(5.1.013)
+//  output_updateAvgResults       (called by swmm_step in swmm5.c)
 //  output_saveResults            (called by swmm_step in swmm5.c)
 //  output_checkFileSize          (called by swmm_report)
 //  output_readDateTime           (called by routines in report.c)
@@ -139,7 +134,7 @@ int output_open()
     //     Total Inflow, Overflow and Quality
     NumNodeVars = MAX_NODE_RESULTS - 1 + NumPolluts;
 
-    // --- link results consist of Depth, Flow, Velocity, Volume,              //(5.1.013)
+    // --- link results consist of Depth, Flow, Velocity, Volume,
     //     Capacity and Quality
     NumLinkVars = MAX_LINK_RESULTS - 1 + NumPolluts;
 
@@ -170,14 +165,14 @@ int output_open()
         return ErrorCode;
     }
 
-    // --- allocate memory to store average node & link results per period     //(5.1.013)
-    AvgNodeResults = NULL;                                                     //
-    AvgLinkResults = NULL;                                                     //
-    if ( RptFlags.averages && !output_openAvgResults() )                       //
-    {                                                                          //
-        report_writeErrorMsg(ERR_MEMORY, "");                                  //
-        return ErrorCode;                                                      //
-    }                                                                          //
+    // --- allocate memory to store average node & link results per period
+    AvgNodeResults = NULL;
+    AvgLinkResults = NULL;
+    if ( RptFlags.averages && !output_openAvgResults() )
+    {
+        report_writeErrorMsg(ERR_MEMORY, "");
+        return ErrorCode;
+    }
 
     fseek(Fout.file, 0, SEEK_SET);
     k = MAGICNUMBER;
@@ -453,7 +448,7 @@ void output_saveResults(double reportTime)
 //
 {
     int i;
-    extern TRoutingTotals StepFlowTotals;  // defined in massbal.c             //(5.1.013)
+    extern TRoutingTotals StepFlowTotals;  // defined in massbal.c
     DateTime reportDate = getDateTime(reportTime);
     REAL8 date;
 
@@ -469,11 +464,11 @@ void output_saveResults(double reportTime)
     if (Nobjects[SUBCATCH] > 0)
         output_saveSubcatchResults(reportTime, Fout.file);
 
-    // --- save average routing results over reporting period if called for    //(5.1.013)
-    if ( RptFlags.averages ) output_saveAvgResults(Fout.file);                 //
+    // --- save average routing results over reporting period if called for
+    if ( RptFlags.averages ) output_saveAvgResults(Fout.file);
 
-    // --- otherwise save interpolated point routing results                   //(5.1.013)
-    else                                                                       //
+    // --- otherwise save interpolated point routing results
+    else
     {
         if (Nobjects[NODE] > 0)
             output_saveNodeResults(reportTime, Fout.file);
@@ -537,7 +532,7 @@ void output_close()
     FREE(SubcatchResults);
     FREE(NodeResults);
     FREE(LinkResults);
-    output_closeAvgResults();                                                  //(5.1.013)
+    output_closeAvgResults();
 }
 
 //=============================================================================
@@ -623,8 +618,6 @@ void output_saveSubcatchResults(double reportTime, FILE* file)
 }
 
 //=============================================================================
-
-////  This function was re-written for release 5.1.013.  ////                  //(5.1.013)
 
 void output_saveNodeResults(double reportTime, FILE* file)
 //
@@ -756,8 +749,6 @@ void output_readLinkResults(int period, int index)
     fread(SysResults, sizeof(REAL4), MAX_SYS_RESULTS, Fout.file);
 }
 
-////  The following functions were added for release 5.1.013.  ////            //(5.1.013)
-
 //=============================================================================
 //  Functions for saving average results within a reporting period to file.
 //=============================================================================
@@ -869,16 +860,7 @@ void output_updateAvgResults()
         // --- add current results to average accumulation
         for (j = 0; j < NumLinkVars; j++)
         {
-            // --- accumulate flow so its sign (+/-) will equal that of most
-            //     recent flow result
-            if ( j == LINK_FLOW )
-            {
-                AvgLinkResults[k].xAvg[j] =
-                    sign * (ABS(AvgLinkResults[k].xAvg[j]) + ABS(LinkResults[j]));
-            }
-
-            // --- link capacity is another special case
-            else if (j == LINK_CAPACITY)
+            if (j == LINK_CAPACITY)
             {
                 // --- accumulate capacity (fraction full) for conduits 
                 if ( Link[i].type == CONDUIT )
@@ -940,7 +922,7 @@ void output_saveAvgResults(FILE* file)
     }
  
     // --- add each link's volume to total system storage
-    for (i = 0; i < Nobjects[LINK]; i++)                                       //(5.1.014)
+    for (i = 0; i < Nobjects[LINK]; i++)
     {
         SysResults[SYS_STORAGE] += (REAL4)(Link[i].newVolume * UCF(VOLUME));
     }

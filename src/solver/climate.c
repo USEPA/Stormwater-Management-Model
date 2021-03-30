@@ -2,33 +2,26 @@
 //   climate.c
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/20/10 (Build 5.1.001)
-//            09/15/14 (Build 5.1.007)
-//            03/19/15 (Build 5.1.008)
-//            08/05/15 (Build 5.1.010)
-//            08/01/16 (Build 5.1.011)
-//            05/10/18 (Build 5.1.013)
+//   Version: 5.2
+//   Date:    03/24/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Climate related functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - NCDC GHCN climate file format added.
 //   - Monthly adjustments for temperature, evaporation & rainfall added.
-//
 //   Build 5.1.008:
 //   - Monthly adjustments for hyd. conductivity added.
 //   - Time series evaporation rates can now vary within a day.
 //   - Evaporation rates are now properly updated when only flow routing
 //     is being simulated.
-//
 //   Build 5.1.010:
 //   - Hargreaves evaporation now computed using 7-day average temperatures.
-//             
 //   Build 5.1.011:
 //   - Monthly adjustment for hyd. conductivity <= 0 is ignored.
-//
 //   Build 5.1.013:
 //   - Reads names of monthly adjustment patterns for various parameters
 //     of a subcatchment from the [ADJUSTMENTS] section of input file.
@@ -373,11 +366,11 @@ int climate_readAdjustments(char* tok[], int ntoks)
 //    EVAPORATION   v1 ... v12
 //    RAINFALL      v1 ... v12
 //    CONDUCTIVITY  v1 ... v12
-//    N-PERV        subcatchID  patternID                                      //(5.1.013
-//    DSTORE        subcatchID  patternID                                      //
-//    INFIL         subcatchID  patternID                                      //
+//    N-PERV        subcatchID  patternID 
+//    DSTORE        subcatchID  patternID
+//    INFIL         subcatchID  patternID
 {
-    int i, j;                                                                  //(5.1.013)
+    int i, j;
 
     if (ntoks == 1) return 0;
 
@@ -426,7 +419,6 @@ int climate_readAdjustments(char* tok[], int ntoks)
         return 0;
     }
 
-////  Following code segments added to release 5.1.013.  ////                  //(5.1.013)
     if ( match(tok[0], "N-PERV") )
     {
         if ( ntoks < 3 ) return error_setInpError(ERR_ITEMS, "");

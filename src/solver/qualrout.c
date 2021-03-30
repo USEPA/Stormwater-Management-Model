@@ -2,29 +2,26 @@
 //   qualrout.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             04/02/15   (Build 5.1.008)
-//             04/30/15   (Build 5.1.009)
-//             08/05/15   (Build 5.1.010)
-//             04/01/20   (Build 5.1.015)
+//   Version:  5.2
+//   Date:     03/24/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Water quality routing functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - Pollutant mass lost to seepage flow added to mass balance totals.
 //   - Pollutant concen. increased when evaporation occurs.
-//
 //   Build 5.1.009:
 //   - Criterion for dry link/storage node changed to avoid concen. blowup.
-//
 //   Build 5.1.010:
 //   - Entire module re-written to be more compact and easier to follow.
 //   - Neglible depth limit replaced with a negligible volume limit.
-//
 //   Build 5.1.015:
 //   - Fixed mass balance issue for empty storage nodes that flood.
+//   Build 5.2.0:
+//   - Support added for flow capture by inlet structures.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -194,7 +191,11 @@ void findLinkMassFlow(int i, double tStep)
     // --- identify index of downstream node
     j = Link[i].node2;
     if ( qLink < 0.0 ) j = Link[i].node1;
+
+    // --- flow rate into downstream node (adjusted for inlet capture)
     qLink = fabs(qLink);
+    if (RouteModel != DW)
+        qLink -= inlet_capturedFlow(i);
 
     // --- examine each pollutant
     for (p = 0; p < Nobjects[POLLUT]; p++)
@@ -446,8 +447,8 @@ void  findStorageQual(int j, double tStep)
         wIn = Node[j].newQual[p];
         c2 = getMixedQual(c1, v1, wIn, qIn, tStep);
 
-// --- set concen. to zero if remaining volume & inflow is negligible          //(5.1.015)
-        if (Node[j].newVolume <= ZeroVolume && qIn <= FLOW_TOL)                //(5.1.015)
+        // --- set concen. to zero if remaining volume & inflow is negligible
+        if (Node[j].newVolume <= ZeroVolume && qIn <= FLOW_TOL)
         {
             massbal_addToFinalStorage(p, c2 * Node[j].newVolume);
             c2 = 0.0;

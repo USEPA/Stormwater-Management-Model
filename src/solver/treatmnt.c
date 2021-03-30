@@ -2,16 +2,18 @@
 //   treatmnt.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             03/19/15   (Build 5.1.008)
+//   Version:  5.2
+//   Date:     03/24/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Pollutant treatment functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - A bug in evaluating recursive calls to treatment functions was fixed. 
-//
+//   Build 5.2.0:
+//   - Changed enumerated constant used to indicate a math expression error.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -147,7 +149,7 @@ int  treatmnt_readExpression(char* tok[], int ntoks)
     //      variable's name into an index number) 
     equation = mathexpr_create(expr, getVariableIndex);
     if ( equation == NULL )
-        return error_setInpError(ERR_TREATMENT_EXPR, "");
+        return error_setInpError(ERR_MATH_EXPR, "");
 
     // --- save the treatment parameters in the node's treatment object
     Node[j].treatment[p].treatType = k;
@@ -449,5 +451,3 @@ double  getRemoval(int p)
     }
     return R[p];
 }
-
-//=============================================================================

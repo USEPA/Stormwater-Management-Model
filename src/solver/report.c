@@ -2,52 +2,41 @@
 //   report.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/21/2014  (Build 5.1.001)
-//             04/14/14    (Build 5.1.004)
-//             09/15/14    (Build 5.1.007)
-//             04/02/15    (Build 5.1.008)
-//             08/01/16    (Build 5.1.011)
-//             03/14/17    (Build 5.1.012)
-//             05/10/18    (Build 5.1.013)
-//             03/01/20    (Build 5.1.014)
-//             05/18/20    (Build 5.1.015)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     03/24/21    (Build 5.2.0)
+//   Author:   L. Rossman
 //
 //   Report writing functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.004:
 //   - Ignore RDII option reported.
-//
 //   Build 5.1.007:
 //   - Total exfiltration loss reported.
-//
 //   Build 5.1.008:
 //   - Number of threads option reported.
 //   - LID drainage volume and outfall runon reported.
 //   - "Internal Outflow" label changed to "Flooding Loss" in Flow Routing
 //     Continuity table.
 //   - Exfiltration loss added into Quality Routing Continuity table.
-//
 //   Build 5.1.011:
 //   - Blank line added after writing project title.
 //   - Text of error message saved to global variable ErrorMsg.
 //   - Global variable Warnings incremented after warning message issued.
-//
 //   Build 5.1.012:
 //   - System time step statistics adjusted for time in steady state.
-//
 //   Build 5.1.013:
 //   - Parsing of AVERAGES report option added to report_readOptions().
 //   - Name of surcharge method reported in report_writeOptions().
 //   - Missing format specifier added to fprintf() in report_writeErrorCode.
-//
 //   Build 5.1.014:
 //   - Fixed bug in confusing keywords with ID names in report_readOptions().
-//
 //   Build 5.1.015:
 //   - Fixes bug in summary statistics when Report Start date > Start Date.
 //   - Support added for grouped freqency table of routing time steps.
+//   Build 5.2.0:
+//   - Support added for reporting most frequent non-converging links.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -91,7 +80,7 @@ static void report_Nodes(void);
 static void report_NodeHeader(char *id);
 static void report_Links(void);
 static void report_LinkHeader(char *id);
-static void report_RouteStepFreq(TSysStats* sysStats);                         //(5.1.015)
+static void report_RouteStepFreq(TSysStats* sysStats);
 
 //=============================================================================
 
@@ -149,12 +138,12 @@ int report_readOptions(char* tok[], int ntoks)
         else                 return error_setInpError(ERR_KEYWORD, tok[1]);
         return 0;
 
-      case 8: // Averages                                                      //(5.1.013)
-        m = findmatch(tok[1], NoYesWords);                                     //
-        if      (m == YES) RptFlags.averages = TRUE;                           //
-        else if (m == NO)  RptFlags.averages = FALSE;                          //
-        else               return error_setInpError(ERR_KEYWORD, tok[1]);      //
-        return 0;                                                              //
+      case 8: // Averages
+        m = findmatch(tok[1], NoYesWords);
+        if      (m == YES) RptFlags.averages = TRUE;
+        else if (m == NO)  RptFlags.averages = FALSE;
+        else               return error_setInpError(ERR_KEYWORD, tok[1]);
+        return 0;
 
       default: return error_setInpError(ERR_KEYWORD, tok[1]);
     }
@@ -334,9 +323,9 @@ void report_writeOptions()
     fprintf(Frpt.file, "\n  Flow Routing Method ...... %s",
         RouteModelWords[RouteModel]);
 
-    if (RouteModel == DW)                                                      //(5.1.013)
-    fprintf(Frpt.file, "\n  Surcharge Method ......... %s",                    //(5.1.013)
-        SurchargeWords[SurchargeMethod]);                                      //(5.1.013)
+    if (RouteModel == DW)
+    fprintf(Frpt.file, "\n  Surcharge Method ......... %s",
+        SurchargeWords[SurchargeMethod]);
 
     datetime_dateToStr(StartDate, str);
     fprintf(Frpt.file, "\n  Starting Date ............ %s", str);
@@ -1028,6 +1017,31 @@ void report_writeMaxFlowTurns(TMaxStats flowTurns[], int nMaxStats)
 
 //=============================================================================
 
+void report_writeNonconvergedStats(TMaxStats maxNonconverged[], int nMaxStats)
+{
+    int i, j;
+    if (Nobjects[NODE] == 0 || RouteModel != DW) return;
+    WRITE("");
+    WRITE("*********************************");
+    WRITE("Most Frequent Nonconverging Nodes");
+    WRITE("*********************************");
+    if (nMaxStats <= 0 || maxNonconverged[0].index <= 0)
+        fprintf(Frpt.file, "\n  Convergence obtained at all time steps.");
+    else
+    {
+        for (i = 0; i < nMaxStats; i++)
+        {
+            j = maxNonconverged[i].index;
+            if (j < 0 || maxNonconverged[i].value <= 0.0) continue;
+            fprintf(Frpt.file, "\n  Node %s (%.2f%%)",
+                Node[j].ID, 100.0 * maxNonconverged[i].value / TotalStepCount);
+        }
+    }
+    WRITE("");
+}
+
+//=============================================================================
+
 void report_writeSysStats(TSysStats* sysStats)
 //
 //  Input:   sysStats = simulation statistics for overall system
@@ -1036,9 +1050,9 @@ void report_writeSysStats(TSysStats* sysStats)
 //
 {
     double x;
-    double eventStepCount;  // Routing steps taken during reporting period   //(5.1.015)
+    double eventStepCount;  // Routing steps taken during reporting period
 
-    eventStepCount = ReportStepCount - sysStats->steadyStateCount;           //(5.1.015)
+    eventStepCount = ReportStepCount - sysStats->steadyStateCount;
     if ( Nobjects[LINK] == 0 || TotalStepCount == 0
         || eventStepCount == 0.0 ) return; 
     WRITE("");
@@ -1064,15 +1078,14 @@ void report_writeSysStats(TSysStats* sysStats)
         "\n  Percent Not Converging      :  %7.2f",
         100.0 * (double)NonConvergeCount / eventStepCount);
 
-    // --- write grouped frequency table of variable routing time steps        //(5.1.015)
-    if (RouteModel == DW && CourantFactor > 0.0)                               //
-        report_RouteStepFreq(sysStats);                                        //
+    // --- write grouped frequency table of variable routing time steps
+    if (RouteModel == DW && CourantFactor > 0.0)
+        report_RouteStepFreq(sysStats);
     WRITE("");
 }
 
 //=============================================================================
 
-////  New function added to release 5.1.015.  ////                             //(5.1.015)
 void report_RouteStepFreq(TSysStats* sysStats)
 //
 //  Input:   sysStats = simulation statistics for overall system
@@ -1447,7 +1460,7 @@ void report_writeErrorCode()
         if ( (ErrorCode >= ERR_MEMORY && ErrorCode <= ERR_TIMESTEP)
         ||   (ErrorCode >= ERR_FILE_NAME && ErrorCode <= ERR_OUT_FILE)
         ||   (ErrorCode == ERR_SYSTEM) )
-            fprintf(Frpt.file, "%s", error_getMsg(ErrorCode));                 //(5.1.013)
+            fprintf(Frpt.file, "%s", error_getMsg(ErrorCode));
     }
 }
 

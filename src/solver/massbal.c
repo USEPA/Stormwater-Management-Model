@@ -2,41 +2,34 @@
 //   massbal.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/19/14  (Build 5.1.001)
-//             09/15/14  (Build 5.1.007)
-//             04/02/15  (Build 5.1.008)
-//             08/05/15  (Build 5.1.010)
-//             08/01/16  (Build 5.1.011)
-//             03/14/17  (Build 5.1.012)
-//             05/10/18  (Build 5.1.013)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     03/26/21  (Build 5.2.0)
+//   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
 //   Mass balance functions
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - Mass balances modified to to correctly handle negative external inflows.
 //   - Volume from minimum surface area at nodes included in mass balances.
-//
 //   Build 5.1.008:
 //   - massbal_updateRunoffTotals() modified.
 //   - LID drain flows and returned outfall flows added to components of
 //     runoff mass balance.
 //   - Seepage pollutant loss added into mass balances.
-//
 //   Build 5.1.010:
 //   - Remaining pollutant mass in "dry" elements now added to final storage.
-//
 //   Build 5.1.011:
 //   - Final stored pollutant mass in links ignored for Steady Flow routing.
-//
 //   Build 5.1.012:
 //   - Terminal storage nodes no longer treated as non-storage terminal
 //     nodes are when updating total outflow volume.
-//
 //   Build 5.1.013:
 //   - Volume from MinSurfArea no longer included in initial & final storage.
+//   Build 5.2.0:
+//   - Support added for Inlets.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -625,20 +618,38 @@ void massbal_updateRoutingTotals(double tStep)
         QualTotals[j].seepLoss += StepQualTotals[j].seepLoss * tStep;
         QualTotals[j].finalStorage += StepQualTotals[j].finalStorage;
     }
+}
 
-    for ( j = 0; j < Nobjects[NODE]; j++)
+//=============================================================================
+
+void massbal_updateNodeTotals(double tStep)
+//
+//  Input:   tStep = time step (sec)
+//  Output:  none
+//  Purpose: updates cumulative inflow and outflow volumes for nodes.
+//
+{
+    int j;
+    for (j = 0; j < Nobjects[NODE]; j++)
     {
+        // --- update node's cumulative inflow volume
         NodeInflow[j] += Node[j].inflow * tStep;
-        if ( Node[j].type == OUTFALL || 
-            (Node[j].degree == 0 && Node[j].type != STORAGE) )
+
+        // --- for outfall nodes and non-storage nodes with no outflow
+        //     links, add inflow volume to cumulative outflow volume
+        if (Node[j].type == OUTFALL ||
+            (Node[j].degree == 0 && Node[j].type != STORAGE))
         {
             NodeOutflow[j] += Node[j].inflow * tStep;
         }
+
+        // --- otherwise update node's cumulative outflow volume with
+        //     its current outflow volume plus any overflow volume
         else
         {
-            NodeOutflow[j] += Node[j].outflow * tStep; 
-            if ( Node[j].newVolume <= Node[j].fullVolume ) 
-                NodeOutflow[j] += Node[j].overflow * tStep; 
+            NodeOutflow[j] += Node[j].outflow * tStep;
+            if (Node[j].newVolume <= Node[j].fullVolume)
+                NodeOutflow[j] += Node[j].overflow * tStep;
         }
     }
 }

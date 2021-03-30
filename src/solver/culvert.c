@@ -2,9 +2,8 @@
 //   culvert.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             05/10/18   (Build 5.1.013)
+//   Version:  5.2
+//   Date:     03/24/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Culvert equations for SWMM5
@@ -12,6 +11,8 @@
 //   Computes flow reduction in a culvert-type conduit due to
 //   inlet control using equations from the FHWA HEC-5 circular.
 //
+//   Update History
+//   ==============
 //   Build 5.1.013:
 //   - C parameter corrected for Arch, Corrugated Metal, Mitered culvert. 
 //-----------------------------------------------------------------------------
@@ -108,7 +109,7 @@ static const double Params[58][5] = {
 
     // Arch, Corrugated Metal
     {1.0, 0.0083, 2.00, 0.0379, 0.69},  //90 deg headwall
-    {1.0, 0.0300, 1.00, 0.0473, 0.75},  //Mitered to slope                     //(5.1.013)
+    {1.0, 0.0300, 1.00, 0.0473, 0.75},  //Mitered to slope
     {1.0, 0.0340, 1.50, 0.0496, 0.57},  //Thin wall projecting
 
     // Circular Culvert

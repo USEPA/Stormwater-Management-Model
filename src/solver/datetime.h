@@ -2,9 +2,8 @@
 //   datetime.h
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             08/01/16   (Build 5.1.011)
+//   Version:  5.2
+//   Date:     03/24/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   The DateTime type is used to store date and time values. It is
@@ -14,7 +13,9 @@
 //   passed since 12/31/1899. The fractional part of a DateTime value is the
 //   fraction of a 24 hour day that has elapsed.
 //
-//   Build 5.1.011
+//   Update History
+//   ==============
+//   Build 5.1.011:
 //   - New getTimeStamp function added.
 //-----------------------------------------------------------------------------
 

@@ -2,17 +2,12 @@
 //   hotstart.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14  (Build 5.1.001)
-//             03/28/14  (Build 5.1.002)
-//             04/23/14  (Build 5.1.005)
-//             03/19/15  (Build 5.1.008)
-//             08/01/16  (Build 5.1.011)
-//             04/01/20  (Build 5.1.015)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     03/24/21 (Build 5.2.0)
+//   Author:   L. Rossman
 //
 //   Hot Start file functions.
-
+//
 //   A SWMM hot start file contains the state of a SWMM project after
 //   a simulation has been run, allowing it to be used to initialize
 //   a subsequent simulation that picks up where the previous run ended.
@@ -29,15 +24,15 @@
 //   insure that these components are of the same sub-type and maintain
 //   the same order as when the hot start file was created.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - Storage node hydraulic residence time (HRT) was added to the file.
 //   - Link control settings are now applied when reading a hot start file.
 //   - Runoff read from file assigned to newRunoff property instead of oldRunoff.
 //   - Array indexing bug when reading snowpack state from file fixed.
-//
 //   Build 5.1.011:
 //   - Link control setting bug when reading a hot start file fixed.    
-//
 //   Build 5.1.015:
 //   - Support added for multiple infiltration methods within a project.
 //-----------------------------------------------------------------------------
@@ -381,7 +376,7 @@ void  saveRunoff(void)
 
         // Infiltration state (max. of 6 elements)
         for (j=0; j<sizeX; j++) x[j] = 0.0;
-        infil_getState(i, x);                                                  //(5.1.015)
+        infil_getState(i, x);
         fwrite(x, sizeof(double), 6, f);
 
         // Groundwater state (4 elements)
@@ -450,7 +445,7 @@ void  readRunoff()
 
         // Infiltration state (max. of 6 elements)
         for (j=0; j<6; j++) if ( !readDouble(&x[j], f) ) return;
-        infil_setState(i, x);                                                  //(5.1.015)
+        infil_setState(i, x);
 
         // Groundwater state (4 elements)
         if ( Subcatch[i].groundwater != NULL )

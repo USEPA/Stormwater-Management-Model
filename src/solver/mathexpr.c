@@ -1,6 +1,6 @@
 /******************************************************************************
 **  MODULE:        MATHEXPR.C
-**  PROJECT:       EPA SWMM 5.1
+**  PROJECT:       EPA SWMM5
 **  DESCRIPTION:   Evaluates symbolic mathematical expression consisting
 **                 of numbers, variable names, math functions & arithmetic
 **                 operators.

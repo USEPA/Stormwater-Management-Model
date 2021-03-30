@@ -2,23 +2,22 @@
 //   error.c
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/20/14  (Build 5.1.001)
-//            03/19/15  (Build 5.1.008)
-//            08/05/15  (Build 5.1.010)
-//            04/14/20  (Build 5.1.015)
+//   Version: 5.2
+//   Date:    03/24/21   (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Error messages
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - Text of Error 217 for control rules modified.
-//
 //   Build 5.1.010:
 //   - Text of Error 318 for rainfall data files modified.
-//
 //   Build 5.1.015:
 //   - Added new Error 140 for storage nodes.
+//   Build 5.2.0:
+//   - Added new Error 235 for invalid infiltration parameters.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -59,7 +58,7 @@
 "\n  ERROR 138: Node %s has initial depth greater than maximum depth."
 #define ERR139 "\n  ERROR 139: Regulator %s is the outlet of a non-storage node."
 #define ERR140 \
-"\n  ERROR 140: Storage node %s has negative volume at full depth."            //(5.1.015) 
+"\n  ERROR 140: Storage node %s has negative volume at full depth."
 #define ERR141 \
 "\n  ERROR 141: Outfall %s has more than 1 inlet link or an outlet link."
 #define ERR143 "\n  ERROR 143: Regulator %s has invalid cross-section shape."
@@ -107,7 +106,7 @@
 #define ERR209 "\n  ERROR 209: undefined object %s "
 #define ERR211 "\n  ERROR 211: invalid number %s "
 #define ERR213 "\n  ERROR 213: invalid date/time %s "
-#define ERR217 "\n  ERROR 217: control rule clause invalid or out of sequence "  //(5.1.008)
+#define ERR217 "\n  ERROR 217: control rule clause invalid or out of sequence "
 #define ERR219 "\n  ERROR 219: data provided for unidentified transect "
 #define ERR221 "\n  ERROR 221: transect station out of sequence "
 #define ERR223 "\n  ERROR 223: Transect %s has too few stations." 
@@ -115,7 +114,8 @@
 #define ERR227 "\n  ERROR 227: Transect %s has no Manning's N."
 #define ERR229 "\n  ERROR 229: Transect %s has invalid overbank locations."
 #define ERR231 "\n  ERROR 231: Transect %s has no depth."
-#define ERR233 "\n  ERROR 233: invalid treatment function expression "
+#define ERR233 "\n  ERROR 233: invalid math expression "
+#define ERR235 "\n  ERROR 235: invalid infiltration parameters."
 
 #define ERR301 "\n  ERROR 301: files share same names."
 #define ERR303 "\n  ERROR 303: cannot open input file."
@@ -128,7 +128,7 @@
 #define ERR315 "\n  ERROR 315: cannot open rainfall interface file %s."
 #define ERR317 "\n  ERROR 317: cannot open rainfall data file %s."
 #define ERR318 \
-"\n  ERROR 318: the following line is out of sequence in rainfall data file %s." //(5.1.010)
+"\n  ERROR 318: the following line is out of sequence in rainfall data file %s."
 #define ERR319 "\n  ERROR 319: unknown format for rainfall data file %s."
 #define ERR320 "\n  ERROR 320: invalid format for rainfall interface file."
 #define ERR321 "\n  ERROR 321: no data in rainfall interface file for gage %s."
@@ -202,7 +202,7 @@ char* ErrorMsgs[] =
       ERR327, ERR329, ERR330, ERR331, ERR333, ERR335, ERR336, ERR337, ERR338,
       ERR339, ERR341, ERR343, ERR345, ERR351, ERR353, ERR355, ERR357, ERR361,
       ERR363, ERR401, ERR402, ERR403, ERR405, ERR501, ERR502, ERR503, ERR504,
-	  ERR505, ERR506, ERR507, ERR508, ERR509, ERR140};                         //(5.1.015)
+	  ERR505, ERR506, ERR507, ERR508, ERR509, ERR140, ERR235};
 
 int ErrorCodes[] =
     { 0,      101,    103,    105,    107,    108,    109,    110,    111,
@@ -217,7 +217,7 @@ int ErrorCodes[] =
       327,    329,    330,    331,    333,    335,    336,    337,    338,
       339,    341,    343,    345,    351,    353,    355,    357,    361,
       363,    401,    402,    403,    405,    501,    502,    503,    504,
-	  505,    506,    507,    508,    509,    140};                            //(5.1.015)
+	  505,    506,    507,    508,    509,    140,    235};
 
 char  ErrString[256];
 

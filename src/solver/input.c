@@ -2,23 +2,23 @@
 //   input.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14  (Build 5.1.001)
-//             09/15/14  (Build 5.1.007)
-//             08/01/16  (Build 5.1.011)
-//             04/01/20  (Build 5.1.015)
+//   Version:  5.2
+//   Date:     03/24/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Input data processing functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - Support added for climate adjustment input data.
-//
 //   Build 5.1.011:
 //   - Support added for reading hydraulic event dates.
-//
 //   Build 5.1.015:
 //   - Support added for multiple infiltration methods within a project.
+//   Build 5.2.0:
+//   - Support added for Streets and Inlets.
+//   - Support added for named variables & math expressions in control rules.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "headers.h"
+#include "street.h"
 #include "lid.h"
 
 //-----------------------------------------------------------------------------
@@ -87,6 +88,7 @@ int input_countObjects()
     for (i = 0; i < MAX_OBJ_TYPES; i++) Nobjects[i] = 0;
     for (i = 0; i < MAX_NODE_TYPES; i++) Nnodes[i] = 0;
     for (i = 0; i < MAX_LINK_TYPES; i++) Nlinks[i] = 0;
+    controls_init();
 
     // --- make pass through data file counting number of each object
     while ( fgets(line, MAXLINE, Finp.file) != NULL )
@@ -407,6 +409,7 @@ int  addObject(int objType, char* id)
 
       case s_CONTROL:
         if ( match(id, w_RULE) ) Nobjects[CONTROL]++;
+        else controls_addToCount(id);
         break;
 
       case s_TRANSECT:
@@ -436,6 +439,22 @@ int  addObject(int objType, char* id)
         break;
 
       case s_EVENT: NumEvents++; break;
+
+      case s_STREET:
+        if ( !project_addObject(STREET, id, Nobjects[STREET]) )
+            errcode = error_setInpError(ERR_DUP_NAME, id);
+        Nobjects[STREET]++;
+        break;
+
+      case s_INLET:
+        // --- an INLET object can span several lines
+        if (project_findObject(INLET, id) < 0)
+        {
+            if ( !project_addObject(INLET, id, Nobjects[INLET]) ) 
+                errcode = error_setInpError(ERR_DUP_NAME, id);
+            Nobjects[INLET]++;
+        }
+        break;
     }
     return errcode;
 }
@@ -481,7 +500,7 @@ int  parseLine(int sect, char *line)
         return subcatch_readSubareaParams(Tok, Ntokens);
 
       case s_INFIL:
-        return infil_readParams(InfilModel, Tok, Ntokens);                     //(5.1.015)
+        return infil_readParams(InfilModel, Tok, Ntokens);
 
       case s_AQUIFER:
         j = Mobjects[AQUIFER];
@@ -600,6 +619,15 @@ int  parseLine(int sect, char *line)
       case s_EVENT:
         return readEvent(Tok, Ntokens);
 
+      case s_STREET:
+        return street_readParams(Tok, Ntokens);
+
+      case s_INLET:
+        return inlet_readDesignParams(Tok, Ntokens);
+
+      case s_INLET_USAGE:
+        return inlet_readUsageParams(Tok, Ntokens);
+
       default: return 0;
     }
 }
@@ -619,6 +647,11 @@ int readControl(char* tok[], int ntoks)
 
     // --- check for minimum number of tokens
     if ( ntoks < 2 ) return error_setInpError(ERR_ITEMS, "");
+
+    if (match(tok[0], w_VARIABLE))
+        return controls_addVariable(tok, ntoks);
+    if (match(tok[0], w_EXPRESSION))
+        return controls_addExpression(tok, ntoks);
 
     // --- get index of control rule keyword
     keyword = findmatch(tok[0], RuleKeyWords);

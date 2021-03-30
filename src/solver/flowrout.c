@@ -2,33 +2,26 @@
 //   flowrout.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/19/14  (Build 5.1.001)
-//             09/15/14  (Build 5.1.007)
-//             03/19/15  (Build 5.1.008)
-//             03/14/17  (Build 5.1.012)
-//             03/01/20  (Build 5.1.014)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     03/24/21  (Build 5.2.0)
+//   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
 //   Flow routing functions.
 //
-//
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - updateStorageState() modified in response to node outflow being 
 //     initialized with current evap & seepage losses in routing_execute().
-//
 //   Build 5.1.008:
 //   - Determination of node crown elevations moved to dynwave.c.
 //   - Support added for new way of recording conduit's fullness state.
-//
 //   Build 5.1.012:
 //   - Overflow computed in updateStorageState() must be non-negative.
 //   - Terminal storage nodes now updated corectly.
-//
 //   Build 5.1.014:
 //   - Arguments to function link_getLossRate changed.
-//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -179,10 +172,11 @@ int flowrout_execute(int links[], int routingModel, double tStep)
         // --- retrieve inflow at upstream end of link
         qin  = getLinkInflow(j, tStep);
 
-        // route flow through link
+        // --- route flow through link
         if ( routingModel == SF )
             steps += steadyflow_execute(j, &qin, &qout, tStep);
-        else steps += kinwave_execute(j, &qin, &qout, tStep);
+        else
+            steps += kinwave_execute(j, &qin, &qout, tStep);
         Link[j].newFlow = qout;
 
         // adjust outflow at upstream node and inflow at downstream node
@@ -641,8 +635,8 @@ void setNewNodeState(int j, double dt)
     // --- update terminal storage nodes
     if ( Node[j].type == STORAGE )
     {
-    if ( Node[j].updated == FALSE )
-        updateStorageState(j, Nobjects[LINK], NULL, dt);
+        if ( Node[j].updated == FALSE )
+            updateStorageState(j, Nobjects[LINK], NULL, dt);
         return; 
     }
 
@@ -727,7 +721,7 @@ void updateNodeDepth(int i, double y)
     if ( Node[i].type == STORAGE ) return;
 
     // --- if non-outfall node is flooded, then use full depth
-    if ( Node[i].type != OUTFALL &&
+    if ( Node[i].type != OUTFALL && Node[i].degree > 0 &&
          Node[i].overflow > 0.0 ) y = Node[i].fullDepth;
 
     // --- if current new depth below y
@@ -770,7 +764,7 @@ int steadyflow_execute(int j, double* qin, double* qout, double tStep)
         else 
         {
             // --- adjust flow for evap and infil losses
-            q -= link_getLossRate(j, q);                                       //(5.1.014)
+            q -= link_getLossRate(j, q);
          
             // --- flow can't exceed full flow 
             if ( q > Link[j].qFull )

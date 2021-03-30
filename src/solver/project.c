@@ -2,16 +2,8 @@
 //   project.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/19/14  (Build 5.1.000)
-//             04/14/14  (Build 5.1.004)
-//             09/15/14  (Build 5.1.007)
-//             03/19/15  (Build 5.1.008)
-//             04/30/15  (Build 5.1.009)
-//             08/01/16  (Build 5.1.011)
-//             03/14/17  (Build 5.1.012)
-//             05/10/18  (Build 5.1.013)
-//             04/01/20  (Build 5.1.015)
+//   Version:  5.2
+//   Date:     03/24/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -23,41 +15,38 @@
 //   o initializing the internal state of all objects
 //   o managing hash tables for identifying objects by ID name
 //
+//   Update History
+//   ==============
 //   Build 5.1.004:
 //   - Ignore RDII option added.
-//
 //   Build 5.1.007:
 //   - Default monthly adjustments for climate variables included.
 //   - User-supplied GW flow equations initialized to NULL.
 //   - Storage node exfiltration object initialized to NULL.
 //   - Freeing of memory used for storage node exfiltration included.
-//
 //   Build 5.1.008:
 //   - Constants used for dynamic wave routing moved to dynwave.c.
 //   - Input processing of minimum time step & number of
 //     parallel threads for dynamic wave routing added.
 //   - Default values of hyd. conductivity adjustments added.
 //   - Freeing of memory used for outfall pollutant load added.
-//
 //   Build 5.1.009:
 //   - Fixed bug in computing total duration introduced in 5.1.008.
-//
 //   Build 5.1.011:
 //   - Memory management of hydraulic event dates array added.
-//
 //   Build 5.1.012:
 //   - Minimum conduit slope option initialized to 0 (none).
 //   - NO/YES no longer accepted as options for NORMAL_FLOW_LIMITED.
-//
 //   Build 5.1.013:
 //   - omp_get_num_threads function protected against lack of compiler
 //     support for OpenMP.
 //   - Rain gage validation now performed after subcatchment validation.
 //   - More robust parsing of MinSurfarea option provided.
 //   - Support added for new RuleStep analysis option.
-//
 //   Build 5.1.015: 
 //   - Support added for multiple infiltration methods within a project.
+//   Build 5.2.0:
+//   - Support added for Streets and Inlets.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -65,13 +54,15 @@
 #include <string.h>
 #include <math.h>
 
-#if defined(_OPENMP)                                                           //(5.1.013)
-  #include <omp.h>                                                             //     
-#else                                                                          //
-  int omp_get_num_threads(void) { return 1;}                                   //
-#endif                                                                         //
+// Protect against lack of compiler support for OpenMP
+#if defined(_OPENMP)
+  #include <omp.h>     
+#else
+  int omp_get_num_threads(void) { return 1;}
+#endif
 
 #include "headers.h"
+#include "street.h"
 #include "lid.h" 
 #include "hash.h"
 #include "mempool.h"
@@ -215,7 +206,7 @@ void project_validate()
     if ( Nobjects[AQUIFER]  == 0 ) IgnoreGwater   = TRUE;
     for ( i=0; i<Nobjects[AQUIFER]; i++ )  gwater_validateAquifer(i);
     for ( i=0; i<Nobjects[SUBCATCH]; i++ ) subcatch_validate(i);
-    for ( i=0; i<Nobjects[GAGE]; i++ )     gage_validate(i);                   //(5.1.013)
+    for ( i=0; i<Nobjects[GAGE]; i++ )     gage_validate(i);
     for ( i=0; i<Nobjects[SNOWMELT]; i++ ) snow_validateSnowmelt(i);
 
     // --- compute geometry tables for each shape curve
@@ -261,14 +252,16 @@ void project_validate()
     // --- validate dynamic wave options
     if ( RouteModel == DW ) dynwave_validate();
 
-    // --- adjust number of parallel threads to be used                        //(5.1.013)
-#pragma omp parallel                                                           //(5.1.008)
-{
-    if ( NumThreads == 0 ) NumThreads = omp_get_num_threads();                 //(5.1.008)
-    else NumThreads = MIN(NumThreads, omp_get_num_threads());                  //(5.1.008)
-}
-    if ( Nobjects[LINK] < 4 * NumThreads ) NumThreads = 1;                     //(5.1.008)
+    // --- validate street/channel inlets
+    inlet_validate();
 
+    // --- adjust number of parallel threads to be used
+#pragma omp parallel
+{
+    if ( NumThreads == 0 ) NumThreads = omp_get_num_threads();
+    else NumThreads = MIN(NumThreads, omp_get_num_threads());
+}
+    if ( Nobjects[LINK] < 4 * NumThreads ) NumThreads = 1;
 }
 
 //=============================================================================
@@ -534,7 +527,7 @@ int project_readOption(char* s1, char* s2)
       case WET_STEP:
       case DRY_STEP:
       case REPORT_STEP:
-      case RULE_STEP:                                                          //(5.1.013)
+      case RULE_STEP:
         if ( !datetime_strToTime(s2, &aTime) )
         {
             return error_setInpError(ERR_DATETIME, s2);
@@ -543,19 +536,19 @@ int project_readOption(char* s1, char* s2)
         h += 24*(int)aTime;
         s = s + 60*m + 3600*h;
 
-        // --- RuleStep allowed to be 0 while other time steps must be > 0     //(5.1.013)
-        if (k == RULE_STEP)                                                    //      
-        {                                                                      //
-            if (s < 0) return error_setInpError(ERR_NUMBER, s2);               //
-        }                                                                      //
-        else if ( s <= 0 ) return error_setInpError(ERR_NUMBER, s2);           //
+        // --- RuleStep allowed to be 0 while other time steps must be > 0
+        if (k == RULE_STEP)     
+        {
+            if (s < 0) return error_setInpError(ERR_NUMBER, s2);
+        }
+        else if ( s <= 0 ) return error_setInpError(ERR_NUMBER, s2);
 
         switch ( k )
         {
           case WET_STEP:     WetStep = s;     break;
           case DRY_STEP:     DryStep = s;     break;
           case REPORT_STEP:  ReportStep = s;  break;
-          case RULE_STEP:    RuleStep = s;    break;                           //(5.1.013)
+          case RULE_STEP:    RuleStep = s;    break;
         }
         break;
 
@@ -672,10 +665,10 @@ int project_readOption(char* s1, char* s2)
       // --- minimum surface area (ft2 or sq. meters) associated with nodes
       //     under dynamic wave flow routing 
       case MIN_SURFAREA:
-        if (!getDouble(s2, &MinSurfArea))                                      //(5.1.013)
-            return error_setInpError(ERR_NUMBER, s2);                          //(5.1.013)
-        if (MinSurfArea < 0.0)                                                 //(5.1.013)
-            return error_setInpError(ERR_NUMBER, s2);                          //(5.1.013)
+        if (!getDouble(s2, &MinSurfArea))
+            return error_setInpError(ERR_NUMBER, s2);
+        if (MinSurfArea < 0.0)
+            return error_setInpError(ERR_NUMBER, s2);
         break;
 
       // --- minimum conduit slope (%)
@@ -720,7 +713,7 @@ int project_readOption(char* s1, char* s2)
         LatFlowTol /= 100.0;
         break;
 
-      // --- method used for surcharging in dynamic wave flow routing          //(5.1.013)
+      // --- method used for surcharging in dynamic wave flow routing
       case SURCHARGE_METHOD:
           m = findmatch(s2, SurchargeWords);
           if (m < 0) return error_setInpError(ERR_KEYWORD, s2);
@@ -763,10 +756,10 @@ void initPointers()
     Tseries  = NULL;
     Transect = NULL;
     Shape    = NULL;
-    Aquifer    = NULL;
-    UnitHyd    = NULL;
-    Snowmelt   = NULL;
-    Event      = NULL;
+    Aquifer  = NULL;
+    UnitHyd  = NULL;
+    Snowmelt = NULL;
+    Event    = NULL;
     MemPoolAllocated = FALSE;
 }
 
@@ -810,8 +803,8 @@ void setDefaults()
    FlowUnits       = CFS;              // CFS flow units
    InfilModel      = HORTON;           // Horton infiltration method
    RouteModel      = KW;               // Kin. wave flow routing method
-   SurchargeMethod = EXTRAN;           // Use EXTRAN method for surcharging    //(5.1.013)
-   CrownCutoff     = 0.96;                                                     //(5.1.013)
+   SurchargeMethod = EXTRAN;           // Use EXTRAN method for surcharging
+   CrownCutoff     = 0.96;             // Fractional pipe crown cutoff 
    AllowPonding    = FALSE;            // No ponding at nodes
    InertDamping    = SOME;             // Partial inertial damping
    NormalFlowLtd   = BOTH;             // Default normal flow limitation
@@ -1015,8 +1008,14 @@ void createObjects()
     ErrorCode = transect_create(Nobjects[TRANSECT]);
     if ( ErrorCode ) return;
 
+    // --- create street cross sections & inlet designs
+    ErrorCode = street_create(Nobjects[STREET]);
+    if ( ErrorCode ) return;
+    ErrorCode = inlet_create(Nobjects[INLET]);
+    if ( ErrorCode ) return;
+
     // --- allocate memory for infiltration data
-    infil_create(Nobjects[SUBCATCH]);                                          //(5.1.015)
+    infil_create(Nobjects[SUBCATCH]);
 
     // --- allocate memory for water quality state variables
     for (j = 0; j < Nobjects[SUBCATCH]; j++)
@@ -1039,6 +1038,7 @@ void createObjects()
     }
     for (j = 0; j < Nobjects[LINK]; j++)
     {
+        Link[j].inlet = NULL;
         Link[j].oldQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
         Link[j].newQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
         Link[j].totalLoad = (double *) calloc(Nobjects[POLLUT], sizeof(double));
@@ -1185,6 +1185,7 @@ void deleteObjects()
         FREE(Link[j].oldQual);
         FREE(Link[j].newQual);
         FREE(Link[j].totalLoad);
+        // Any inlet assigned to Link[j].inlet is freed in inlet_delete().
     }
 
     // --- free memory used for rainfall infiltration
@@ -1222,6 +1223,10 @@ void deleteObjects()
 
     // --- delete cross section transects
     transect_delete();
+
+    // --- delete street and inlet design objects
+    street_delete();
+    inlet_delete();
 
     // --- delete control rules
     controls_delete();

@@ -2,40 +2,36 @@
 //   funcs.h
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14  (Build 5.1.000)
-//             09/15/14  (Build 5.1.007)
-//             04/02/15  (Build 5.1.008)
-//             08/05/15  (Build 5.1.010)
-//             05/10/18  (Build 5.1.013)
-//             03/01/20  (Build 5.1.014)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     03/24/21 (Build 5.2.0)
+//   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
 //   Global interfacing functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - climate_readAdjustments() added.
-//
 //   Build 5.1.008:
 //   - Function list was re-ordered and blank lines added for readability.
 //   - Pollutant buildup/washoff functions for the new surfqual.c module added.
 //   - Several other functions added, re-named or have modified arguments.
-//
 //   Build 5.1.010:
 //   - New roadway_getInflow() function added.
-//
 //   Build 5.1.013:
 //   - Additional arguments added to function stats_updateSubcatchStats.
-//
 //   Build 5.1.014:
 //   - Arguments to link_getLossRate function changed.
-//
+//   Build 5.2.0:
+//   - Support added for Streets and Inlets.
+//   - Support added for reporting most frequent non-converging links.
+//   - Support added for named variables & math expressions in control rules.
+//   - Support added for tracking a gage's prior n-hour rainfall total.
 //-----------------------------------------------------------------------------
 
 #ifndef FUNCS_H
 #define FUNCS_H
-
 
 void     project_open(char *f1, char *f2, char *f3);
 void     project_close(void);
@@ -86,12 +82,14 @@ void    report_writeQualError(TRoutingTotals* totals);
 void    report_writeMaxStats(TMaxStats massBalErrs[], TMaxStats CourantCrit[],
         int nMaxStats);
 void    report_writeMaxFlowTurns(TMaxStats flowTurns[], int nMaxStats);
+void    report_writeNonconvergedStats(TMaxStats maxNonconverged[],
+        int nMaxStats);
 void    report_writeSysStats(TSysStats* sysStats);
 
 void    report_writeErrorMsg(int code, char* msg);
 void    report_writeErrorCode(void);
 void    report_writeInputErrorMsg(int k, int sect, char* line, long lineCount);
-void    report_writeWarningMsg(char* msg, char* id);
+void    report_writeWarningMsg(char* msg, char* id); 
 void    report_writeTseriesErrorMsg(int code, TTable *tseries);
 
 void    inputrpt_writeInput(void);
@@ -255,6 +253,8 @@ void    massbal_updateLoadingTotals(int type, int pollut, double w);
 void    massbal_updateGwaterTotals(double vInfil, double vUpperEvap,
         double vLowerEvap, double vLowerPerc, double vGwater);
 void    massbal_updateRoutingTotals(double tStep);
+void    massbal_updateNodeTotals(double tStep);
+
 
 void    massbal_initTimeStepTotals(void);
 void    massbal_addInflowFlow(int type, double q);
@@ -280,14 +280,16 @@ void    stats_report(void);
 void    stats_updateCriticalTimeCount(int node, int link);
 void    stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
         int steadyState);
-void    stats_updateSubcatchStats(int subcatch, double rainVol,
+void    stats_updateSubcatchStats(int subcatch, double rainVol, 
         double runonVol, double evapVol, double infilVol,
-        double impervVol, double pervVol, double runoffVol, double runoff);    //(5.1.013)
+        double impervVol, double pervVol, double runoffVol, double runoff);
 void    stats_updateGwaterStats(int j, double infil, double evap,
         double latFlow, double deepFlow, double theta, double waterTable,
         double tStep);
 void    stats_updateMaxRunoff(void);
 void    stats_updateMaxNodeDepth(int node, double depth);
+void    stats_updateConvergenceStats(int node, int converged);
+
 
 //-----------------------------------------------------------------------------
 //   Raingage Methods
@@ -299,6 +301,8 @@ void     gage_setState(int gage, DateTime aDate);
 double   gage_getPrecip(int gage, double *rainfall, double *snowfall);
 void     gage_setReportRainfall(int gage, DateTime aDate);
 DateTime gage_getNextRainDate(int gage, DateTime aDate);
+void     gage_updatePastRain(int j, int tStep);
+double   gage_getPastRain(int gage, int hrs);
 
 //-----------------------------------------------------------------------------
 //   Subcatchment Methods
@@ -361,12 +365,12 @@ void    node_getResults(int node, double wt, float x[]);
 int     inflow_readExtInflow(char* tok[], int ntoks);
 int     inflow_readDwfInflow(char* tok[], int ntoks);
 int     inflow_readDwfPattern(char* tok[], int ntoks);
-int     inflow_setExtInflow(int j, int param, int type,
-        int tSeries, int basePat, double cf,
+int     inflow_setExtInflow(int j, int param, int type, 
+        int tSeries, int basePat, double cf, 
         double baseline, double sf);
-int     inflow_validate(int param, int type, int tSeries,
-        int basePat, double *cf);
-
+int     inflow_validate(int param, int type, int tSeries, 
+        int basePat, double *cf);					
+						
 void    inflow_initDwfInflow(TDwfInflow* inflow);
 void    inflow_initDwfPattern(int pattern);
 
@@ -419,7 +423,7 @@ double  link_getYnorm(int link, double q);
 double  link_getVelocity(int link, double q, double y);
 double  link_getFroude(int link, double v, double y);
 double  link_getPower(int link);
-double  link_getLossRate(int link, double q);                                  //(5.1.014)
+double  link_getLossRate(int link, double q);
 char    link_getFullState(double a1, double a2, double aFull);
 
 void    link_getResults(int link, double wt, float x[]);
@@ -431,6 +435,7 @@ int     xsect_isOpen(int type);
 int     xsect_setParams(TXsect *xsect, int type, double p[], double ucf);
 void    xsect_setIrregXsectParams(TXsect *xsect);
 void    xsect_setCustomXsectParams(TXsect *xsect);
+void    xsect_setStreetXsectParams(TXsect *xsect);
 double  xsect_getAmax(TXsect* xsect);
 
 double  xsect_getSofA(TXsect* xsect, double area);
@@ -464,6 +469,7 @@ int     transect_create(int n);
 void    transect_delete(void);
 int     transect_readParams(int* count, char* tok[], int ntoks);
 void    transect_validate(int j);
+void    transect_createStreetTransect(int i);
 
 //-----------------------------------------------------------------------------
 //   Custom Shape Cross-Section Methods
@@ -475,8 +481,12 @@ int     shape_validate(TShape *shape, TTable *curve);
 //-----------------------------------------------------------------------------
 int     controls_create(int n);
 void    controls_delete(void);
+void    controls_init(void);
+void    controls_addToCount(char* s);
+int     controls_addVariable(char* tok[], int ntoks);
+int     controls_addExpression(char* tok[], int ntoks);
 int     controls_addRuleClause(int rule, int keyword, char* Tok[], int nTokens);
-int     controls_evaluate(DateTime currentTime, DateTime elapsedTime,
+int     controls_evaluate(DateTime currentTime, DateTime elapsedTime, 
         double tStep);
 
 //-----------------------------------------------------------------------------
@@ -500,8 +510,8 @@ double  table_inverseLookup(TTable* table, double y);
 
 double  table_getSlope(TTable *table, double x);
 double  table_getMaxY(TTable *table, double x);
-double  table_getArea(TTable* table, double x);
-double  table_getInverseArea(TTable* table, double a);
+double  table_getStorageVolume(TTable* table, double x);
+double  table_getStorageDepth(TTable* table, double v);
 
 void    table_tseriesInit(TTable *table);
 double  table_tseriesLookup(TTable* table, double t, char extend);

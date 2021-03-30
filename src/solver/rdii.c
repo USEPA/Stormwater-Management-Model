@@ -2,13 +2,9 @@
 //   rdii.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             04/04/14   (Build 5.1.003)
-//             04/14/14   (Build 5.1.004)
-//             09/15/14   (Build 5.1.007)
-//             03/01/20   (Build 5.1.014)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     03/24/21   (Build 5.2.0)
+//   Author:   L. Rossman
 //             R. Dickinson (CDM)
 //
 //   RDII processing functions.
@@ -16,10 +12,11 @@
 //   Note: RDII means rainfall dependent infiltration/inflow,
 //         UH means unit hydrograph.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - Ignore RDII option implemented.
 //   - Rainfall climate adjustment implemented.
-//
 //   Build 5.1.014:
 //   - Fixes bug related to isUsed property of a unit hydrograph's rain gage.
 //-----------------------------------------------------------------------------

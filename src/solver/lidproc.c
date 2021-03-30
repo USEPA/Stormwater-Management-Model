@@ -2,28 +2,20 @@
 //   lidproc.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/12   (Build 5.1.001)
-//             05/19/14   (Build 5.1.006)
-//             09/15/14   (Build 5.1.007)
-//             03/19/15   (Build 5.1.008)
-//             04/30/15   (Build 5.1.009)
-//             08/05/15   (Build 5.1.010)
-//             08/01/16   (Build 5.1.011)
-//             03/14/17   (Build 5.1.012)
-//             05/10/18   (Build 5.1.013)
-//             03/01/20   (Build 5.1.014)
-//   Author:   L. Rossman (US EPA)
+//   Version:  5.2
+//   Date:     03/24/21   (Build 5.2.0)
+//   Author:   L. Rossman
 //
 //   This module computes the hydrologic performance of an LID (Low Impact
 //   Development) unit at a given point in time.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - Euler integration now applied to all LID types except Vegetative
 //     Swale which continues to use successive approximation.
 //   - LID layer flux routines were re-written to more accurately model
 //     flooded conditions.
-//
 //   Build 5.1.008:
 //   - MAX_STATE_VARS replaced with MAX_LAYERS.
 //   - Optional soil layer added to Porous Pavement LID.
@@ -33,13 +25,10 @@
 //   - Detailed reporting procedure fixed.
 //   - Possibile negative head on Bioretention Cell drain avoided.
 //   - Bug in computing flow through Green Roof drainage mat fixed.
-//
 //   Build 5.1.009:
 //   - Fixed typo in net flux rate for vegetative swale LID.
-//
 //   Build 5.1.010:
 //   - New modified version of Green-Ampt used for surface layer infiltration.
-//
 //   Build 5.1.011:
 //   - Re-named STOR_INFIL to STOR_EXFIL and StorageInfil to StorageExfil to
 //     better reflect their meaning.
@@ -48,22 +37,18 @@
 //   - Flux rate routines for LIDs with underdrains modified to produce more
 //     physically meaningful results.
 //   - Reporting of detailed results re-written.
-//
 //   Build 5.1.012:
 //   - Modified upper limit for soil layer percolation.
 //   - Modified upper limit on surface infiltration into rain gardens.
 //   - Modified upper limit on drain flow for LIDs with storage layers.
 //   - Used re-defined wasDry variable for LID reports to fix duplicate lines.
-//
 //   Build 5.1.013:
 //   - Support added for open/closed head levels and multiplier v. head curve
 //     to control underdrain flow.
 //   - Support added for regenerating pavement permeability at fixed intervals.
-//
 //   Build 5.1.014:
 //   - Fixed failure to initialize all LID layer moisture volumes to 0 before
 //     computing LID unit performance in lidproc_getOutflow.
-//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -881,8 +866,8 @@ void pavementFluxRates(double x[], double f[])
     //... find perc rate out of pavement layer
     PavePerc = getPavementPermRate();
 
-    //... surface infiltration can't exceed pavement permeability              //(5.1.013)
-    SurfaceInfil = MIN(SurfaceInfil, PavePerc);                                //
+    //... surface infiltration can't exceed pavement permeability
+    SurfaceInfil = MIN(SurfaceInfil, PavePerc);
 
     //... limit pavement perc by available water
     maxRate = PaveVolume/Tstep + SurfaceInfil - PaveEvap;
@@ -1357,7 +1342,7 @@ double  getStorageDrainRate(double storageDepth, double soilTheta,
 //           layers above it (soil, pavement, and surface in that order)
 //           minus the drain outlet offset.
 {
-    int    curve = theLidProc->drain.qCurve;                                   //(5.1.013)
+    int    curve = theLidProc->drain.qCurve;
     double head = storageDepth;
     double outflow = 0.0;
     double paveThickness    = theLidProc->pavement.thickness;
@@ -1397,13 +1382,13 @@ double  getStorageDrainRate(double storageDepth, double soilTheta,
         }
     }
 
-    // --- no outflow if:                                                      //(5.1.013)
-    //     a) no prior outflow and head below open threshold                   //
-    //     b) prior outflow and head below closed threshold                    //
-    if ( theLidUnit->oldDrainFlow == 0.0 &&                                    //
-         head <= theLidProc->drain.hOpen ) return 0.0;                         //
-    if ( theLidUnit->oldDrainFlow > 0.0 &&                                     //
-         head <= theLidProc->drain.hClose ) return 0.0;                        //
+    // --- no outflow if:
+    //     a) no prior outflow and head below open threshold
+    //     b) prior outflow and head below closed threshold
+    if ( theLidUnit->oldDrainFlow == 0.0 &&
+         head <= theLidProc->drain.hOpen ) return 0.0;
+    if ( theLidUnit->oldDrainFlow > 0.0 &&
+         head <= theLidProc->drain.hClose ) return 0.0;
 
     // --- make head relative to drain offset
     head -= theLidProc->drain.offset;
@@ -1420,7 +1405,7 @@ double  getStorageDrainRate(double storageDepth, double soilTheta,
                   pow(head, theLidProc->drain.expon);
 
         // --- apply user-supplied control curve to outflow
-        if (curve >= 0)  outflow *= table_lookup(&Curve[curve], head);         //(5.1.013)
+        if (curve >= 0)  outflow *= table_lookup(&Curve[curve], head);
 
         // --- convert outflow to ft/s
         outflow /= UCF(RAINFALL);
@@ -1527,7 +1512,7 @@ void updateWaterBalance(TLidUnit *lidUnit, double inflow, double evap,
 //  Output:  none
 //
 {
-    lidUnit->volTreated += inflow * Tstep;                                     //(5.1.013)
+    lidUnit->volTreated += inflow * Tstep;
     lidUnit->waterBalance.inflow += inflow * Tstep;
     lidUnit->waterBalance.evap += evap * Tstep;
     lidUnit->waterBalance.infil += infil * Tstep;

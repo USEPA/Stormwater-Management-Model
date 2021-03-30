@@ -2,9 +2,8 @@
 //   error.h
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/20/14  (Build 5.1.001)
-//            04/14/20  (Build 5.1.015)
+//   Version: 5.2
+//   Date:    03/24/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Error codes
@@ -107,7 +106,7 @@ enum  ErrorType {
       ERR_TRANSECT_MANNING,     //227  62
       ERR_TRANSECT_OVERBANK,    //229  63
       ERR_TRANSECT_NO_DEPTH,    //231  64
-      ERR_TREATMENT_EXPR,       //233  65
+      ERR_MATH_EXPR,            //233  65
 
   //... File Name/Opening Errors
       ERR_FILE_NAME,            //301  66
@@ -121,7 +120,7 @@ enum  ErrorType {
       ERR_RAIN_FILE_SCRATCH,    //313  72
       ERR_RAIN_FILE_OPEN,       //315  73
       ERR_RAIN_FILE_DATA,       //317  74
-      ERR_RAIN_FILE_SEQUENCE,   //318  75
+      ERR_RAIN_FILE_SEQUENCE,   //318  75 
       ERR_RAIN_FILE_FORMAT,     //319  76
       ERR_RAIN_IFACE_FORMAT,    //320  77
       ERR_RAIN_FILE_GAGE,       //321  78
@@ -148,7 +147,7 @@ enum  ErrorType {
       ERR_RDII_FILE_SCRATCH,    //341  91
       ERR_RDII_FILE_OPEN,       //343  92
       ERR_RDII_FILE_FORMAT,     //345  93
-
+      
   //... Routing File Errors
       ERR_ROUTING_FILE_OPEN,    //351  94
       ERR_ROUTING_FILE_FORMAT,  //353  95
@@ -170,16 +169,17 @@ enum  ErrorType {
       ERR_API_INPUTNOTOPEN,     //502  105
       ERR_API_SIM_NRUNNING,     //503  106
 	  ERR_API_WRONG_TYPE,       //504  107
-	  ERR_API_OBJECT_INDEX,     //505  108
+	  ERR_API_OBJECT_INDEX,     //505  108	  
 	  ERR_API_POLLUT_INDEX,     //506  109
 	  ERR_API_INFLOWTYPE,       //507  110
 	  ERR_API_TSERIES_INDEX,    //508  111
 	  ERR_API_PATTERN_INDEX,    //509  112
 
   //... Additional Errors
-      ERR_STORAGE_VOLUME,       //140  113                                     //(5.1.015)
+      ERR_STORAGE_VOLUME,       //140  113 
+      ERR_INFIL_PARAMS,         //235  114
       MAXERRMSG};
-
+      
 char* error_getMsg(int i);
 int   error_getCode(int i);
 int   error_setInpError(int errcode, char* s);
