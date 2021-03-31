@@ -2,11 +2,11 @@
 //   main.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     05/10/2018
+//   Version:  5.2
+//   Date:     03/24/2021
 //   Author:   L. Rossman
 
-//   Main stub for the command line version of EPA SWMM 5.1
+//   Main stub for the command line version of EPA SWMM 5.2
 //   to be run with swmm5.dll.
 
 #include <string.h>
@@ -19,9 +19,9 @@ int  main(int argc, char *argv[])
 //  Input:   argc = number of command line arguments
 //           argv = array of command line arguments
 //  Output:  returns error status
-//  Purpose: runs the command line version of EPA SWMM 5.1.
+//  Purpose: runs the command line version of EPA SWMM 5.2.
 //
-//  Command line is: swmm5 f1  f2  f3
+//  Command line is: runswmm f1  f2  f3
 //  where f1 = name of input file, f2 = name of report file, and
 //  f3 = name of binary output file if saved (or blank if not saved).
 //
@@ -56,12 +56,12 @@ int  main(int argc, char *argv[])
         if (strcmp(arg1, "--help") == 0 || strcmp(arg1, "-h") == 0)
         {
             // Help
-            printf("\n\nSTORMWATER MANAGEMENT MODEL (SWMM5) HELP\n\n");
+            printf("\n\nSTORMWATER MANAGEMENT MODEL (SWMM) HELP\n\n");
             printf("COMMANDS:\n");
-            printf("\t--help (-h)       Help Docs\n");
+            printf("\t--help (-h)       SWMM Help\n");
             printf("\t--version (-v)    Build Version\n");
             printf("\nRUNNING A SIMULATION:\n");
-            printf("\t swmm5 <input file> <report file> <output file>\n\n");
+            printf("\t runswmm <input file> <report file> <optional output file>\n\n");
         }
         else if (strcmp(arg1, "--version") == 0 || strcmp(arg1, "-v") == 0)
         {
