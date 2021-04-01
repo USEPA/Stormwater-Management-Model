@@ -274,7 +274,7 @@ where `expression` is defined on a separate line before its first use in a rule 
 ```
 EXPRESSION name = f(variable1, variable2, ...)
 ```
-The function `f(...)` can be any well-formed mathematical expression containing one or more named variables and any of the same math operators and functions that can be used in a groundwater flow equation of a pollutant treatment function. Here is an example of using this feature:
+The function `f(...)` can be any well-formed mathematical expression containing one or more named variables and any of the same math operators and functions that can be used in a groundwater flow equation or a pollutant treatment function. Here is an example of using this feature:
 ```
 [RULES]
 VARIABLE Q1 = LINK 1 FLOW
