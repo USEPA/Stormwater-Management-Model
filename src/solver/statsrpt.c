@@ -24,6 +24,7 @@
 //   - Fixes bug in summary statistics when Report Start date > Start Date.
 //   Build 5.2.0:
 //   - Adds a new Street & Inlet Summary table.
+//   - Fixes value used for total reporting time.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -776,10 +777,13 @@ void writeFlowClass()
 //
 //  Input:   none
 //  Output:  none
-//  Purpose: writes flow classification fro each conduit to report file.
+//  Purpose: writes flow classification for each conduit to report file.
 //
 {
     int   i, j, k;
+    double totalSeconds = NewRoutingTime / 1000.0 -
+                          (ReportStart - StartDateTime) * SECperDAY;
+
 
     if ( RouteModel != DW ) return;
     WRITE("");
@@ -805,10 +809,8 @@ void writeFlowClass()
             fprintf(Frpt.file, "  %4.2f",
                 LinkStats[j].timeInFlowClass[i] /= (double)ReportStepCount);
         }
-        fprintf(Frpt.file, "  %4.2f", LinkStats[j].timeNormalFlow /
-                                      (NewRoutingTime/1000.0));
-        fprintf(Frpt.file, "  %4.2f", LinkStats[j].timeInletControl /
-                                      (NewRoutingTime/1000.0)); 
+        fprintf(Frpt.file, "  %4.2f", LinkStats[j].timeNormalFlow / totalSeconds);
+        fprintf(Frpt.file, "  %4.2f", LinkStats[j].timeInletControl / totalSeconds);
     }
     WRITE("");
 }
@@ -887,7 +889,8 @@ void writePumpFlows()
         if ( Link[j].type != PUMP ) continue;
         k = Link[j].subIndex;
         fprintf(Frpt.file, "\n  %-20s", Link[j].ID);
-        totalSeconds = NewRoutingTime / 1000.0;
+        totalSeconds = NewRoutingTime / 1000.0 -
+                       (ReportStart - StartDateTime) * SECperDAY;
         pctUtilized = PumpStats[k].utilized / totalSeconds * 100.0;
         avgFlow = PumpStats[k].avgFlow;
         if ( PumpStats[k].totalPeriods > 0 )
