@@ -6,8 +6,9 @@
 **                 operators.
 **  AUTHORS:       L. Rossman, US EPA - NRMRL
 **                 F. Shang, University of Cincinnati
-**  VERSION:       5.1.008
-**  LAST UPDATE:   04/01/15
+**  VERSION:       5.2.0
+**  LAST UPDATE:   03/24/21
+**  BUG FIXES:     Problems related to '^' operator (L.Rossman, 03/24/21)
 ******************************************************************************/
 /*
 **   Operand codes:
@@ -327,11 +328,8 @@ ExprTree * newNode()
 
 ExprTree * getSingleOp(int *lex)
 {
-    int bracket;
     int opcode;
     ExprTree *left;
-    ExprTree *right;
-    ExprTree *node;
 
     /* --- open parenthesis, so continue to grow the tree */
     if ( *lex == 1 )
@@ -376,41 +374,6 @@ ExprTree * getSingleOp(int *lex)
         }
     }   
     *lex = getLex();
-
-    /* --- exponentiation */
-    while ( *lex == 31 )
-    {
-        *lex = getLex();
-        bracket = 0;
-        if ( *lex == 1 )
-        {
-            bracket = 1;
-            *lex = getLex();
-        }
-        if ( *lex != 7 )
-        {
-            Err = 1;
-            return NULL;
-        }
-        right = newNode();
-        right->opcode = *lex;
-        right->fvalue = Fvalue;
-        node = newNode();
-        node->left = left;
-        node->right = right;
-        node->opcode = 31;
-        left = node;
-        if (bracket)
-        {
-            *lex = getLex();
-            if ( *lex != 2 )
-            {
-                Err = 1;
-                return NULL;
-            }
-        }
-        *lex = getLex();
-    }
     return left;
 }
 
@@ -435,7 +398,7 @@ ExprTree * getOp(int *lex)
         else if ( *lex == 3) *lex = getLex();
     }
     left = getSingleOp(lex);
-    while ( *lex == 5 || *lex == 6 )
+    while ( *lex == 5 || *lex == 6 || *lex == 31)
     {
         opcode = *lex;
         *lex = getLex();
@@ -719,11 +682,11 @@ double mathexpr_eval(MathExpr *expr, double (*getVariableValue) (int))
                
         case 31: 
 		r1 = ExprStack[stackindex];
-		r2 = ExprStack[stackindex-1];
+        stackindex--;
+		r2 = ExprStack[stackindex];
 		if (r2 <= 0.0) r2 = 0.0;
-		else r2 = exp(r1*log(r2));
-		ExprStack[stackindex-1] = r2;
-		stackindex--;
+		else r2 = pow(r2, r1);
+		ExprStack[stackindex] = r2;
 		break;
         }
         node = node->next;
