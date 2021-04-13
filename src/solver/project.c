@@ -1041,7 +1041,6 @@ void createObjects()
 	Node[j].inQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
 	Node[j].reactorQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
 	Node[j].extPollutFlag = (int *) calloc(Nobjects[POLLUT], sizeof(int));
-	Node[j].rptFlag = 0;
         Node[j].extInflow = NULL;
         Node[j].dwfInflow = NULL;
         Node[j].rdiiInflow = NULL;
