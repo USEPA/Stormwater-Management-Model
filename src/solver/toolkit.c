@@ -2108,6 +2108,10 @@ int DLLEXPORT swmm_setLinkPollut(int index, int type, int pollutant_index, doubl
 	}
 	else
 	{
+		if (ExtPollutFlag == 0)
+		{
+			ExtPollutFlag = 1;
+		}
 		if (pollutant_index <= Nobjects[POLLUT])
 		{
 			switch(type)
