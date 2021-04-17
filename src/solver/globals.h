@@ -97,7 +97,8 @@ EXTERN int
                   SweepEnd,                 // Day of year when sweeping ends
                   MaxTrials,                // Max. trials for DW routing
                   NumThreads,               // Number of parallel threads used
-                  NumEvents;                // Number of detailed events
+                  NumEvents,                // Number of detailed events
+		  ExtPollutFlag;	    // Enable external pollutant injection
                 //InSteadyState;            // System flows remain constant
 
 EXTERN double

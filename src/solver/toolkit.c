@@ -1964,6 +1964,10 @@ int DLLEXPORT swmm_setNodePollut(int index, int pollutant_index, double pollutan
 	}
 	else
 	{
+		if (ExtPollutFlag == 0)
+		{
+			ExtPollutFlag = 1;
+		}
 		if (pollutant_index <= Nobjects[POLLUT])
 		{
 			Node[index].extQual[pollutant_index] = pollutant_value;

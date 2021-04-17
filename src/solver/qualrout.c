@@ -101,42 +101,11 @@ void qualrout_execute(double tStep)
 //
 {
     int    i, j;
-    int    p, extPollutFlag;
+    int    p;
     double qIn, vAvg;
  
     // --- find mass flow each link contributes to its downstream node
     for ( i = 0; i < Nobjects[LINK]; i++ ) findLinkMassFlow(i, tStep);
-
-    // --- check for external treatment in nodes or links
-    for (j = 0; j < Nobjects[NODE]; j++)
-    {
-	// --- check for external pollutant
-	for ( p = 0; p < Nobjects[POLLUT]; p++)
-	{
-		if (Node[j].extPollutFlag[p] == 1)
-		{
-			extPollutFlag = 1;
-			break;
-		}
-
-	}
-
-    }
-
-    for (i = 0; i < Nobjects[LINK]; i++)
-    {
-	// --- check for external pollutant
-	for ( p = 0; p < Nobjects[POLLUT]; p++)
-	{
-		if (Link[i].extPollutFlag[p] == 1)
-		{
-			extPollutFlag = 1;
-			break;
-		}
-
-	}
-
-    }
 
     // --- find new water quality concentration at each node  
     for (j = 0; j < Nobjects[NODE]; j++)
@@ -147,7 +116,7 @@ void qualrout_execute(double tStep)
         vAvg = (Node[j].oldVolume + Node[j].newVolume) / 2.0;
         
         // --- save inflow concentrations if treatment applied
-        if ( Node[j].treatment || extPollutFlag == 1)
+        if ( Node[j].treatment || ExtPollutFlag == 1)
         {
             if ( qIn < ZERO ) qIn = 0.0;
             treatmnt_setInflow(qIn, Node[j].newQual);
@@ -161,7 +130,7 @@ void qualrout_execute(double tStep)
         else findNodeQual(j);
 
         // --- apply treatment to new quality values
-        if ( Node[j].treatment || extPollutFlag == 1) treatmnt_treat(j, qIn, vAvg, tStep);
+        if ( Node[j].treatment || ExtPollutFlag == 1) treatmnt_treat(j, qIn, vAvg, tStep);
     }
 
     // --- find new water quality in each link
