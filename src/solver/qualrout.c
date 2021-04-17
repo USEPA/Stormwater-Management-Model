@@ -135,6 +135,10 @@ void qualrout_execute(double tStep)
 
     // --- find new water quality in each link
     for ( i = 0; i < Nobjects[LINK]; i++ ) findLinkQual(i, tStep);
+
+    // --- default to swmm treatment
+    if (ExtPollutFlag == 1){ExtPollutFlag = 0;}
+
 }
 
 //=============================================================================

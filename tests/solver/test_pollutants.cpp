@@ -146,7 +146,7 @@ BOOST_FIXTURE_TEST_CASE(get_pollut_values, FixtureBeforeStep){
 }
 
 
-// Testing Node influent - storage assets
+// Testing Node influent concentration- storage assets
 BOOST_FIXTURE_TEST_CASE(get_node_pollutant_values_cin, FixtureBeforeStep_Pollut_Node){
     
     int error, step_ind;
@@ -200,12 +200,12 @@ BOOST_FIXTURE_TEST_CASE(get_node_reactor_pollutant, FixtureBeforeStep_Pollut_Nod
 	// the system reaches a steady state
 
 	// Get reactor concentration
-	error = swmm_getNodePollut(1, SM_NODECIN, &new_qual, &length);
+	error = swmm_getNodePollut(1, SM_NODEREACTORC, &new_qual, &length);
 	BOOST_REQUIRE(error == ERR_NONE);
 
 	if (step_ind > 1000)
 	{
-		BOOST_CHECK_SMALL(old_qual[P1] - new_qual[P1], 0.00);
+		BOOST_CHECK_SMALL(old_qual[P1] - new_qual[P1], 0.00001);
 	}
 	
 	old_qual = new_qual;
@@ -236,13 +236,13 @@ BOOST_FIXTURE_TEST_CASE(set_node_pollutant_cumulative_values, FixtureBeforeStep_
 	// Set pollutant
 	error = swmm_setNodePollut(1, P1, 0);
 	BOOST_REQUIRE(error == ERR_NONE);
+        // Route Model Forward
+        error = swmm_step(&elapsedTime);
 	// Get pollutant
 	error = swmm_getNodePollut(1, SM_NODEQUAL, &node_qual, &length);
 	BOOST_REQUIRE(error == ERR_NONE);
 	// Record cumulative pollutant 
 	total_pollutant = total_pollutant + node_qual[P1];
-        // Route Model Forward
-        error = swmm_step(&elapsedTime);
         
     }while (elapsedTime != 0 && !error);
     BOOST_REQUIRE(error == ERR_NONE);
@@ -407,14 +407,14 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
     do
     {
 	    // Set pollutant in link and check the pollutant in the node
-	    error = swmm_setLinkPollut(link_ind, SM_LINKQUAL, P1, 20.0);
+	    error = swmm_setLinkPollut(link_ind, SM_LINKQUAL, P1, 2.0);
 	    BOOST_REQUIRE(error == ERR_NONE);
 
 	    // Route Model Forward
             error = swmm_step(&elapsedTime);
 	    BOOST_REQUIRE(error == ERR_NONE);
 	   
-	    if (step > 10) // Wait for water to reach node
+	    if (step > 100) // Wait for water to reach node
             { 
 	    // Get infows concentration in node
             error = swmm_getNodePollut(node_ind,  SM_NODEQUAL, &node_qual, &length);
