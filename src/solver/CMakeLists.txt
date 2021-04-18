@@ -6,7 +6,7 @@
 #
 # Author: Michael E. Tryby
 #         US EPA ORD/CESER
-# 
+#
 
 
 ################################################################################
@@ -15,10 +15,9 @@
 
 
 find_package(OpenMP
-	OPTIONAL_COMPONENTS
-		C
+    OPTIONAL_COMPONENTS
+        C
 )
-
 
 # configure file groups
 set(SWMM_PUBLIC_HEADERS
@@ -64,6 +63,9 @@ target_compile_options(swmm5
             "$<$<CONFIG:Release>:/fp:fast>"
             "$<$<CONFIG:Release>:/Zi>"
         ">"
+        $<$<C_COMPILER_ID:AppleClang>:
+            $<$<STREQUAL:"${CMAKE_GENERATOR}","Ninja">:-O3>
+        >
 )
 
 target_link_options(swmm5
@@ -77,6 +79,7 @@ target_link_libraries(swmm5
     PUBLIC
         $<$<NOT:$<BOOL:$<C_COMPILER_ID:MSVC>>>:m>
         $<$<BOOL:${OpenMP_FOUND}>:OpenMP::OpenMP_C>
+        $<$<BOOL:${OpenMP_AVAILABLE}>:omp>
 )
 
 target_include_directories(swmm5
@@ -120,23 +123,6 @@ install(
     DESTINATION
         "${INCLUDE_DIST}"
 )
-
-
-# TODO: Figure out why this doesn't work for package target
-# When building on MacOS relocate libomp to install package
-if(APPLE AND OpenMP_FOUND)
-    get_filename_component(EXTERN_LIB_PATH ${OpenMP_libomp_LIBRARY} REALPATH)
-
-    install(
-        FILES
-            ${EXTERN_LIB_PATH}
-        DESTINATION
-            ${LIBRARY_DIST}
-    )
-
-    # Pass the var up the project tree
-    set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
-endif()
 
 
 # copy swmm5 to build tree for testing

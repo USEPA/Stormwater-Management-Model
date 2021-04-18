@@ -21,6 +21,7 @@
 
 
 # Build files
+ci-tools/
 build/
 *.o
 /Debug/
