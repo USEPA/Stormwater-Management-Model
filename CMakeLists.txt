@@ -2,7 +2,7 @@
 # CMakeLists.txt - CMake configuration file for swmm-solver
 #
 # Created: July 11, 2019
-# Updated: May 29, 2020
+# Updated: May 19, 2021
 #
 # Author: Michael E. Tryby
 #         US EPA ORD/CESER
@@ -61,14 +61,10 @@ if(BUILD_TESTS)
 endif()
 
 
-# Pass var up the project tree
-if(APPLE)
-    set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
-endif()
-
-
 # Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
-set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
+if(OpenMP_FOUND)
+    set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
+endif()
 include(InstallRequiredSystemLibraries)
 
 
