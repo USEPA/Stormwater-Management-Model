@@ -30,6 +30,7 @@ jobs:
         requirements: [requirements-swmm.txt]
         include:
           - os: windows-2016
+            sys_pkgs: choco install boost-msvc-14.1
             generator: Visual Studio 15 2017 Win64
             experimental: true
             script_extension: cmd
@@ -40,7 +41,9 @@ jobs:
               run:
                 shell: cmd
                 working-directory: ./ci-tools/windows
+
           - os: ubuntu-16.04
+            sys_pkgs: sudo apt install libboost-dev libboost-all-dev
             generator: "Unix Makefiles"
             experimental: true
             script_extension: sh
@@ -51,7 +54,9 @@ jobs:
               run:
                 shell: bash
                 working-directory: ./ci-tools/linux
-          - os: macos-latest
+
+          - os: macos-10.15
+            sys_pkgs: brew install libomp boost
             generator: Xcode
             experimental: true
             ci_tools_path: ci-tools/darwin
@@ -99,11 +104,8 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r ${{ matrix.requirements }}
 
-      - name: Install Darwin requirements
-        if: ${{ contains(matrix.os, 'macos') }}
-        run: |
-          brew install libomp
-          brew install boost
+      - name: Install required system packages
+        run: ${{ matrix.sys_pkgs }}
 
       - name: Build and unit test
         run: |
