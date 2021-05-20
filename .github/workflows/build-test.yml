@@ -81,8 +81,13 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+
+      - name: Clone ci-tools repo
+        uses: actions/checkout@v2
         with:
-          submodules: recursive
+          repository: OpenWaterAnalytics/ci-tools
+          ref: master
+          path: ci-tools
 
       - name: Setup python
         uses: actions/setup-python@v2
