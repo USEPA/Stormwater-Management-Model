@@ -24,7 +24,7 @@ endif()
 project(swmm-solver
     VERSION 5.1.14
     LANGUAGES C CXX
-    )
+)
 
 # Append local dir to module search path
 # list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -62,12 +62,6 @@ add_subdirectory(src/shared)
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
-endif()
-
-
-# Pass var up the project tree used for library reloacation
-if(APPLE)
-    set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
 endif()
 
 
