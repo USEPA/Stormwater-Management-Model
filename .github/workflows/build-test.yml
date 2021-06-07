@@ -117,7 +117,7 @@ jobs:
 
       - name: Before reg test
         run: |
-          ./before-nrtest.${{ matrix.script_extension }}
+          ./before-nrtest.${{ matrix.script_extension }} v1.0.3-dev
 
       - name: Run reg test
         run: |
