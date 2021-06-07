@@ -2,14 +2,17 @@
 # CMakeLists.txt - CMake configuration file for swmm-solver/library
 #
 # Created: Jul 11, 2019
-# Updated: Mar  5, 2020
+# Updated: May  19, 2021
 #
 # Author: Michael E. Tryby
 #         US EPA ORD/CESER
 #
 
 
-find_package(OpenMP REQUIRED)
+find_package(OpenMP
+    OPTIONAL_COMPONENTS
+        C
+)
 
 
 # configure file groups
@@ -55,6 +58,9 @@ target_compile_options(swmm5
             "$<$<CONFIG:Release>:/fp:fast>"
             "$<$<CONFIG:Release>:/Zi>"
         ">"
+        $<$<C_COMPILER_ID:AppleClang>:
+            $<$<STREQUAL:"${CMAKE_GENERATOR}","Ninja">:-O3>
+        >
 )
 
 target_link_options(swmm5
@@ -67,7 +73,8 @@ target_link_options(swmm5
 target_link_libraries(swmm5
     PUBLIC
         $<$<NOT:$<BOOL:$<C_COMPILER_ID:MSVC>>>:m>
-        $<$<BOOL:OpenMP_C_FOUND>:OpenMP::OpenMP_C>
+        $<$<BOOL:${OpenMP_C_FOUND}>:OpenMP::OpenMP_C>
+        $<$<BOOL:${OpenMP_AVAILABLE}>:omp>
 )
 
 target_include_directories(swmm5
@@ -100,23 +107,6 @@ install(
     DESTINATION
         "${INCLUDE_DIST}"
 )
-
-
-# TODO: Figure out why this doesn't work for package target
-# When building on MacOS relocate libomp to install package
-if(APPLE)
-    get_filename_component(EXTERN_LIB_PATH ${OpenMP_libomp_LIBRARY} REALPATH)
-
-    install(
-        FILES
-            ${EXTERN_LIB_PATH}
-        DESTINATION
-            ${CMAKE_INSTALL_PREFIX}/extern
-    )
-
-    # Pass the var up the project tree
-    set(EXTERN_LIB_PATH ${EXTERN_LIB_PATH} PARENT_SCOPE)
-endif()
 
 
 # copy swmm5 to build tree for testing
