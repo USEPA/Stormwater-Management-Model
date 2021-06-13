@@ -103,8 +103,8 @@ jobs:
         if: ${{ contains(matrix.os, 'ubuntu') }}
         run: |
           sudo apt-get update
-          sudo apt install libboost-dev libboost-all-dev
-          
+          sudo apt install libboost1.67-dev
+
       - name: Install Darwin requirements
         if: ${{ contains(matrix.os, 'macos') }}
         run: |
