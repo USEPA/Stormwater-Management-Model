@@ -9,8 +9,8 @@
  *
  *   Unit testing mechanics for the pollutant API using Boost Test.
  */
-
- #include "test_pollutants.hpp"
+#include <boost/test/unit_test.hpp>
+#include "test_pollutants.hpp"
 
 using namespace std;
 
