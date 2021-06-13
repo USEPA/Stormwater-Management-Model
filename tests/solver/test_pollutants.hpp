@@ -9,8 +9,10 @@
 #ifndef TEST_POLLUTANT_HPP
 #define TEST_POLLUTANT_HPP
 
+extern "C" {
 #include "swmm5.h"
 #include "toolkit.h"
+}
 
 #define ERR_NONE 0
 
