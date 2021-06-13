@@ -14,9 +14,10 @@
 #ifndef TEST_SOLVER_HPP
 #define TEST_SOLVER_HPP
 
+extern "C" {
 #include "swmm5.h"
 #include "toolkit.h"
-
+}
 
 // Add shared data paths here
 #define DATA_PATH_INP "test_example1.inp"
