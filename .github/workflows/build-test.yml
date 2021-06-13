@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2016, ubuntu-18.10, macos-latest] 
+        os: [windows-2016, ubuntu-20.04, macos-latest] 
         requirements: [requirements-swmm.txt]
         include:
           - os: windows-2016
@@ -40,7 +40,7 @@ jobs:
               run:
                 shell: cmd
                 working-directory: ./ci-tools/windows
-          - os: ubuntu-18.10
+          - os: ubuntu-20.04
             generator: "Unix Makefiles"
             experimental: true
             script_extension: sh
