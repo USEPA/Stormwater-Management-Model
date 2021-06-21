@@ -170,7 +170,7 @@ BOOST_FIXTURE_TEST_CASE(get_node_pollutant_values_cin, FixtureBeforeStep_Pollut_
 
 	// Check for constant influent
 	if (step_ind > 5)
-        BOOST_CHECK_SMALL(cin - node_qual[P1], 0.001);
+        BOOST_CHECK_CLOSE(cin, node_qual[P1], 0.001);
 
 	// Route Model Forward
         error = swmm_step(&elapsedTime);
@@ -208,7 +208,7 @@ BOOST_FIXTURE_TEST_CASE(get_node_reactor_pollutant, FixtureBeforeStep_Pollut_Nod
 
 	if (step_ind > 1000)
 	{
-		BOOST_CHECK_SMALL(old_qual[P1] - new_qual[P1], 0.00001);
+		BOOST_CHECK_CLOSE(old_qual[P1], new_qual[P1], 0.001);
 	}
 
 	old_qual = new_qual;
@@ -280,7 +280,7 @@ BOOST_FIXTURE_TEST_CASE(set_node_pollutant_stepwise_values, FixtureBeforeStep_Po
 	BOOST_REQUIRE(error == ERR_NONE);
 
 	// Check
-    	BOOST_CHECK_SMALL(node_qual[P1] - 1.234, 0.001);
+    	BOOST_CHECK_CLOSE(node_qual[P1], 1.234, 0.001);
 
     }while (elapsedTime != 0 && !error);
     BOOST_REQUIRE(error == ERR_NONE);
@@ -317,7 +317,7 @@ BOOST_FIXTURE_TEST_CASE(set_node_pollutant_stepwise_values_2, FixtureBeforeStep_
 	BOOST_REQUIRE(error == ERR_NONE);
 
 	// Check
-    	BOOST_CHECK_SMALL(node_qual[P1] - 50.0, 0.001);
+    	BOOST_CHECK_CLOSE(node_qual[P1], 50.0, 0.001);
 
     }while (elapsedTime != 0 && !error);
     BOOST_REQUIRE(error == ERR_NONE);
@@ -371,7 +371,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Po
 	    error = swmm_getLinkPollut(link_ind, SM_LINKQUAL, &link_qual, &length);
 
 	    // Check
-            BOOST_CHECK_SMALL(abs(node_qual[P1] - link_qual[P1]), 0.001);
+            BOOST_CHECK_CLOSE(node_qual[P1], link_qual[P1], 0.001);
     	    }
 	    step += 1;
 
@@ -426,7 +426,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
 	    error = swmm_getLinkPollut(link_ind, SM_LINKQUAL, &link_qual, &length);
 
 	    // Check
-            BOOST_CHECK_SMALL(abs(node_qual[P1] - link_qual[P1]), 0.001);
+            BOOST_CHECK_CLOSE(node_qual[P1], link_qual[P1], 0.001);
     	    }
 	    step += 1;
 
