@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2016, ubuntu-18.04, macos-10.15]
+        os: [windows-2016, ubuntu-16.04, macos-10.15]
         include:
           - os: windows-2016
             sys_pkgs: choco install boost-msvc-14.1
@@ -36,7 +36,7 @@ jobs:
                 shell: cmd
                 working-directory: ./ci-tools/windows
 
-          - os: ubuntu-18.04
+          - os: ubuntu-16.04
             sys_pkgs: sudo apt install libboost-dev libboost-all-dev
             build_unit_test: make.sh -t -g "Unix Makefiles"
             build_reg_test:  make.sh -g "Unix Makefiles"
