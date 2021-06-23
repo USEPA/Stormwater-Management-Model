@@ -28,6 +28,7 @@ jobs:
             build_reg_test:  make.cmd -g "Visual Studio 15 2017 Win64"
             before_reg_test: before-nrtest.cmd
             run_reg_test:    run-nrtests.cmd
+            build_id: "%GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%"
             experimental: false
             artifacts_ext: zip
             artifact_content_type: zip
@@ -42,6 +43,7 @@ jobs:
             build_reg_test:  make.sh -g "Unix Makefiles"
             before_reg_test: before-nrtest.sh
             run_reg_test:    run-nrtests.sh
+            build_id: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
             experimental: true
             artifacts_ext: tar.gz
             artifact_content_type: tar
@@ -56,6 +58,7 @@ jobs:
             build_reg_test:  make.zsh -g "Xcode"
             before_reg_test: before-nrtest.zsh
             run_reg_test:    run-nrtests.zsh
+            build_id: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
             experimental: true
             artifacts_ext: tar.gz
             artifact_content_type: tar
@@ -114,9 +117,7 @@ jobs:
         run: ./${{ matrix.before_reg_test }} ${{ env.BENCHMARK_TAG }}
 
       - name: Run reg test
-        env:
-          BUILD_ID: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
-        run: ./${{ matrix.run_reg_test }} ${{ env.BUILD_ID }}
+        run: ./${{ matrix.run_reg_test }} ${{ matrix.build_id }}
 
       - name: Upload artifacts
         if: ${{ always() }}
