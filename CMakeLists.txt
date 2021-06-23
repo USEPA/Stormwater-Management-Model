@@ -2,7 +2,7 @@
 # CMakeLists.txt - CMake configuration file for swmm-solver
 #
 # Created: July 11, 2019
-# Updated: Jan 14, 2021
+# Updated: May 19, 2021
 #
 # Authors: Michael E. Tryby
 #          US EPA ORD/CESER
@@ -67,7 +67,7 @@ endif()
 
 # Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
 if(OpenMP_FOUND)
-	set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
+    set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 endif()
 include(InstallRequiredSystemLibraries)
 
