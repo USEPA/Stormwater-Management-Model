@@ -28,7 +28,7 @@ endif()
 
 
 set(CMAKE_FIND_DEBUG_MODE FALSE)
-find_package(Boost 1.65.0
+find_package(Boost 1.67.0
     COMPONENTS
         unit_test_framework
     )
