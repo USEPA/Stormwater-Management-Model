@@ -329,7 +329,7 @@ BOOST_FIXTURE_TEST_CASE(set_node_pollutant_stepwise_values_2, FixtureBeforeStep_
 }
 
 
-
+/*
 // Testing Pollutant Setter - Link - Stepwise - mass balance concentation less than 10
 BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Pollut_Link){
 
@@ -437,6 +437,6 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
     swmm_getMassBalErr(&runoff_error, &flow_error, &qual_error);
     BOOST_CHECK(abs(qual_error) <= 20.0);
 }
-
+*/
 
 BOOST_AUTO_TEST_SUITE_END()
