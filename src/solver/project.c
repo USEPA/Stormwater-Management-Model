@@ -1052,6 +1052,7 @@ void createObjects()
         Link[j].newQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
 	Link[j].extQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
         Link[j].totalLoad = (double *) calloc(Nobjects[POLLUT], sizeof(double));
+	Link[j].reactorQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
 	Link[j].extPollutFlag = (int *) calloc(Nobjects[POLLUT], sizeof(int));
     }
 

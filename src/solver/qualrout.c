@@ -336,6 +336,9 @@ void findLinkQual(int i, double tStep)
             massbal_addToFinalStorage(p, c2 * v2);
             c2 = 0.0;
         }
+	
+	// --- set reactor qual for external pollutant handling
+	Link[i].reactorQual[p] = c2;
 
 	if (Link[i].extPollutFlag[p] == 0)
 	{

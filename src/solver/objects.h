@@ -671,6 +671,7 @@ typedef struct
    double*       newQual;         // current quality state
    double*       totalLoad;       // total quality mass loading
    double*       extQual;	  // external quality state 	
+   double*	 reactorQual;     // concentration in the mixed reactor   
    int           flowClass;       // flow classification
    double        dqdh;            // change in flow w.r.t. head (ft2/sec)
    signed char   direction;       // flow direction flag
