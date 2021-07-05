@@ -26,7 +26,8 @@ DRY_DAYS             0
 REPORT_STEP          00:00:01
 WET_STEP             00:00:01
 DRY_STEP             00:00:01
-ROUTING_STEP         00:00:01 
+ROUTING_STEP         1
+RULE_STEP            00:00:00
 
 INERTIAL_DAMPING     PARTIAL
 NORMAL_FLOW_LIMITED  BOTH
@@ -50,35 +51,42 @@ DRY_ONLY         NO
 [JUNCTIONS]
 ;;Name           Elevation  MaxDepth   InitDepth  SurDepth   Aponded   
 ;;-------------- ---------- ---------- ---------- ---------- ----------
+J1               860        0          0          0          0         
 Outlet           868        0          0          0          0         
 
 [OUTFALLS]
 ;;Name           Elevation  Type       Stage Data       Gated    Route To        
 ;;-------------- ---------- ---------- ---------------- -------- ----------------
-TailWater        858        FIXED      859.5            NO                       
+TailWater        855        FIXED      859.5            NO                       
 
 [STORAGE]
 ;;Name           Elev.    MaxDepth   InitDepth  Shape      Curve Name/Params            N/A      Fevap    Psi      Ksat     IMD     
-;;-------------- -------- ---------- ----------- ---------- ---------------------------- -------- --------          -------- --------
-Inlet            878      9          0          TABULAR    StorageCurve                 0        0       
+;;-------------- -------- ---------- ---------- ---------- ---------------------------- -------- --------          -------- --------
+Inlet            878      9          0          TABULAR    StorageCurve               0        0       
 
 [CONDUITS]
 ;;Name           From Node        To Node          Length     Roughness  InOffset   OutOffset  InitFlow   MaxFlow   
 ;;-------------- ---------------- ---------------- ---------- ---------- ---------- ---------- ---------- ----------
+C1               Outlet           J1               400        0.01       0          0          0          0         
+C2               J1               TailWater        400        0.01       0          0          0          0         
 Culvert          Inlet            Outlet           200        0.014      0          0          0          0         
-Channel          Outlet           TailWater        200        0.03       0          0          0          0         
 
 [WEIRS]
-;;Name           From Node        To Node          Type         CrestHt    Qcoeff     Gated    EndCon   EndCoeff   Surcharge  RoadWidth  RoadSurf  
-;;-------------- ---------------- ---------------- ------------ ---------- ---------- -------- -------- ---------- ---------- ---------- ----------
+;;Name           From Node        To Node          Type         CrestHt    Qcoeff     Gated    EndCon   EndCoeff   Surcharge  RoadWidth  RoadSurf   Coeff. Curve
+;;-------------- ---------------- ---------------- ------------ ---------- ---------- -------- -------- ---------- ---------- ---------- ---------- ----------------
 Roadway          Inlet            Outlet           ROADWAY      9          3.33       NO       0        0          NO         40         GRAVEL    
 
 [XSECTIONS]
 ;;Link           Shape        Geom1            Geom2      Geom3      Geom4      Barrels    Culvert   
 ;;-------------- ------------ ---------------- ---------- ---------- ---------- ---------- ----------
+C1               CIRCULAR     1                0          0          0          1                    
+C2               CIRCULAR     1                0          0          0          1                    
 Culvert          CIRCULAR     3                0          0          0          2          4         
-Channel          TRAPEZOIDAL  9                10         2          2          1                    
 Roadway          RECT_OPEN    50               200        0          0         
+
+[LOSSES]
+;;Link           Kentry     Kexit      Kavg       Flap Gate  Seepage   
+;;-------------- ---------- ---------- ---------- ---------- ----------
 
 [POLLUTANTS]
 ;;Name           Units  Crain      Cgw        Crdii      Kdecay     SnowOnly   Co-Pollutant     Co-Frac    Cdwf       Cinit     
@@ -88,9 +96,8 @@ P1               MG/L   0.0        0.0        0.0        0.0        NO         *
 [INFLOWS]
 ;;Node           Constituent      Time Series      Type     Mfactor  Sfactor  Baseline Pattern
 ;;-------------- ---------------- ---------------- -------- -------- -------- -------- --------
-Inlet            FLOW             ""               FLOW     1.0      1.0      10.0
-Inlet            P1               ""               CONCENTRATION     1.0      1.0	10                    
-             
+Inlet            FLOW             ""               FLOW     1.0      1.0      10.0             
+Inlet            P1               ""               CONCENTRATION 1.0      1.0      10               
 
 [CURVES]
 ;;Name           Type       X-Value    Y-Value   
@@ -140,12 +147,13 @@ LINKS ALL
 [TAGS]
 
 [MAP]
-DIMENSIONS -59.264 5535.422 7089.237 6044.959
-Units      None
+DIMENSIONS       1408.9383        6118.83065       6238.6797        7216.52835      
+UNITS            None
 
 [COORDINATES]
 ;;Node           X-Coord            Y-Coord           
 ;;-------------- ------------------ ------------------
+J1               5131.441           6259.528          
 Outlet           4206.542           6357.994          
 TailWater        6019.146           6168.726          
 Inlet            1628.472           6476.537          
@@ -155,4 +163,3 @@ Inlet            1628.472           6476.537
 ;;-------------- ------------------ ------------------
 Roadway          2311.068           7166.633          
 Roadway          3762.491           7151.463          
-

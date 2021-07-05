@@ -329,8 +329,8 @@ BOOST_FIXTURE_TEST_CASE(set_node_pollutant_stepwise_values_2, FixtureBeforeStep_
 }
 
 
-/*
-// Testing Pollutant Setter - Link - Stepwise - mass balance concentation less than 10
+
+// Testing Pollutant Setter - Link - Stepwise - mass balance concentation less than 5
 BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Pollut_Link){
 
     int error, link_ind, node_ind;
@@ -340,8 +340,8 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Po
     double elapsedTime = 0.0;
     double node_inflow;
     float runoff_error, flow_error, qual_error;
-    char linkid[] = "Culvert";
-    char nodeid[] = "Outlet";
+    char linkid[] = "C1";
+    char nodeid[] = "J1";
     int length;
 
     // Pollutant ID
@@ -355,7 +355,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Po
     do
     {
 	    // Set pollutant in link and check the pollutant in the node
-	    error = swmm_setLinkPollut(link_ind, SM_LINKQUAL, P1, 2.0);
+	    error = swmm_setLinkPollut(link_ind, SM_LINKQUAL, P1, 20.0);
 	    BOOST_REQUIRE(error == ERR_NONE);
 
 	    // Route Model Forward
@@ -371,7 +371,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Po
 	    error = swmm_getLinkPollut(link_ind, SM_LINKQUAL, &link_qual, &length);
 
 	    // Check
-            BOOST_CHECK_CLOSE(node_qual[P1], link_qual[P1], 20.0);
+            BOOST_CHECK_CLOSE(node_qual[P1], link_qual[P1], 0.01);
     	    }
 	    step += 1;
 
@@ -395,8 +395,8 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
     double elapsedTime = 0.0;
     double node_inflow;
     float runoff_error, flow_error, qual_error;
-    char linkid[] = "Culvert";
-    char nodeid[] = "Outlet";
+    char linkid[] = "C1";
+    char nodeid[] = "J1";
     int length;
 
     // Pollutant ID
@@ -426,7 +426,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
 	    error = swmm_getLinkPollut(link_ind, SM_LINKQUAL, &link_qual, &length);
 
 	    // Check
-            BOOST_CHECK_CLOSE(node_qual[P1], link_qual[P1], 20.0);
+            BOOST_CHECK_CLOSE(node_qual[P1], link_qual[P1], 0.01);
     	    }
 	    step += 1;
 
@@ -435,8 +435,8 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
     swmm_end();
 
     swmm_getMassBalErr(&runoff_error, &flow_error, &qual_error);
-    BOOST_CHECK(abs(qual_error) <= 20.0);
+    BOOST_CHECK(abs(qual_error) <= 5.0);
 }
-*/
+
 
 BOOST_AUTO_TEST_SUITE_END()
