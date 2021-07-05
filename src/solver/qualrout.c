@@ -352,7 +352,6 @@ void findLinkQual(int i, double tStep)
             lossExtQual = c2 - Link[i].extQual[p];
             lossExtQual = lossExtQual * v1/ tStep;
             massbal_addReactedMass(p, lossExtQual);
-
             Link[i].newQual[p] = Link[i].extQual[p];
             Link[i].extPollutFlag[p] = 0;
 	}

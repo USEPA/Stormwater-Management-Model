@@ -79,8 +79,8 @@ Roadway          Inlet            Outlet           ROADWAY      9          3.33 
 [XSECTIONS]
 ;;Link           Shape        Geom1            Geom2      Geom3      Geom4      Barrels    Culvert   
 ;;-------------- ------------ ---------------- ---------- ---------- ---------- ---------- ----------
-C1               CIRCULAR     1                0          0          0          1                    
-C2               CIRCULAR     1                0          0          0          1                    
+C1               CIRCULAR     3                0          0          0          1                    
+C2               CIRCULAR     3                0          0          0          1                    
 Culvert          CIRCULAR     3                0          0          0          2          4         
 Roadway          RECT_OPEN    50               200        0          0         
 
@@ -97,7 +97,7 @@ P1               MG/L   0.0        0.0        0.0        0.0        NO         *
 ;;Node           Constituent      Time Series      Type     Mfactor  Sfactor  Baseline Pattern
 ;;-------------- ---------------- ---------------- -------- -------- -------- -------- --------
 Inlet            FLOW             ""               FLOW     1.0      1.0      10.0             
-Inlet            P1               ""               CONCENTRATION 1.0      1.0      10               
+Inlet            P1               ""               CONCENTRATION 1.0      1.0      10.0               
 
 [CURVES]
 ;;Name           Type       X-Value    Y-Value   
