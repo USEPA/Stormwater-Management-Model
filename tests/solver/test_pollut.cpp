@@ -352,10 +352,8 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Po
     error = swmm_getObjectIndex(SM_NODE, nodeid, &node_ind);
     BOOST_REQUIRE(error == ERR_NONE);
 
-    do
-    {	    
-	    if (step > 1000 and step < 2000)
-	    {
+    do{	    
+	    if (step > 1000 and step < 2000){
 	    	// Set pollutant in link and check the pollutant in the node
 	    	error = swmm_setLinkPollut(link_ind, SM_LINKQUAL, P1, 1.0);
 	    	BOOST_REQUIRE(error == ERR_NONE);
@@ -373,8 +371,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Po
 
 	    // Check
             BOOST_CHECK_CLOSE(node_qual[P1], link_qual[P1], 0.01);
-    	    }
-	    step += 1;
+    	    }step += 1;
 
     }while (elapsedTime != 0 && !error);
     BOOST_REQUIRE(error == ERR_NONE);
@@ -382,7 +379,6 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Po
 
     // check mass balance error less than 5%
     swmm_getMassBalErr(&runoff_error, &flow_error, &qual_error);
-    printf("\n Quality Error: %f \n", qual_error);
     BOOST_CHECK(abs(qual_error) <= 5.0);
 }
 
@@ -409,10 +405,8 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
     error = swmm_getObjectIndex(SM_NODE, nodeid, &node_ind);
     BOOST_REQUIRE(error == ERR_NONE);
 
-    do
-    {	    
-	    if (step > 1000 and step < 2000)
-	    {
+    do{	    
+	    if (step > 1000 & step < 2000){
 	    	// Set pollutant in link and check the pollutant in the node
 	    	error = swmm_setLinkPollut(link_ind, SM_LINKQUAL, P1, 20.0);
 	    	BOOST_REQUIRE(error == ERR_NONE);
@@ -420,9 +414,9 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
 	    // Route Model Forward
             error = swmm_step(&elapsedTime);
 	    BOOST_REQUIRE(error == ERR_NONE);
-	    
-	    if (step > 1500 and step < 2000) // Wait for water to reach node
-            {
+
+	     // Wait for water to reach node
+	    if (step > 1500 & step < 2000){
 	    // Get infows concentration in node
             error = swmm_getNodePollut(node_ind,  SM_NODEQUAL, &node_qual, &length);
 	    BOOST_REQUIRE(error == ERR_NONE);
@@ -431,15 +425,13 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_
 
 	    // Check
             BOOST_CHECK_CLOSE(node_qual[P1], link_qual[P1], 0.01);
-    	    }
-	    step += 1;
+    	    }step += 1;
 
     }while (elapsedTime != 0 && !error);
     BOOST_REQUIRE(error == ERR_NONE);
     swmm_end();
 
     swmm_getMassBalErr(&runoff_error, &flow_error, &qual_error);
-    printf("\n Quality Error: %f \n", qual_error);
     BOOST_CHECK(abs(qual_error) <= 5.0);
 }
 
