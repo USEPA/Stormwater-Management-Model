@@ -227,6 +227,7 @@ BOOST_FIXTURE_TEST_CASE(set_node_pollutant_cumulative_values, FixtureBeforeStep_
 
     int error;
     double* node_qual;
+    float runoff_error, flow_error, qual_error;
     double elapsedTime = 0.0;
     double total_pollutant = 0.0;
     int length;
