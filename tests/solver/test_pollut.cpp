@@ -222,7 +222,7 @@ BOOST_FIXTURE_TEST_CASE(get_node_reactor_pollutant, FixtureBeforeStep_Pollut_Nod
 }
 
 
-// Testing Pollutant Setter - Node - Cumulative
+// Testing Pollutant Setter - Node - Cumulative and mass balance
 BOOST_FIXTURE_TEST_CASE(set_node_pollutant_cumulative_values, FixtureBeforeStep_Pollut_Node){
 
     int error;
@@ -253,6 +253,9 @@ BOOST_FIXTURE_TEST_CASE(set_node_pollutant_cumulative_values, FixtureBeforeStep_
     // Cumulative must be 0.00
     BOOST_CHECK_SMALL(total_pollutant, 1.0e-06);
     swmm_end();
+    // check mass balance error less than 5%
+    swmm_getMassBalErr(&runoff_error, &flow_error, &qual_error);
+    BOOST_CHECK(abs(qual_error) <= 1.0);
 }
 
 // Testing Pollutant Setter - Node - Stepwise and Mass balance less than inflow concentration of 10
