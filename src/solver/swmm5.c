@@ -290,6 +290,9 @@ int DLLEXPORT swmm_start(int saveResults)
         NonConvergeCount = 0;
         IsStartedFlag = TRUE;
 
+	// --- initialize external pollutant control
+	ExtPollutFlag = 0;
+
         // --- initialize global continuity errors
         RunoffError = 0.0;
         GwaterError = 0.0;

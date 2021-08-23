@@ -1874,6 +1874,8 @@ int DLLEXPORT swmm_getNodeResult(int index, SM_NodeResult type, double *result)
                             + Node[index].invertElev) * UCF(LENGTH); break;
             case SM_LATINFLOW:
                 *result = Node[index].newLatFlow * UCF(FLOW); break;
+	    case SM_HRT:
+		*result = Node[index].hrt; break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         }
     }
@@ -1883,7 +1885,7 @@ int DLLEXPORT swmm_getNodeResult(int index, SM_NodeResult type, double *result)
 int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **pollutArray, int *length)
 ///
 /// Input:   index = Index of desired ID
-///          type = Result Type (SM_NodePollut)
+///          type = Result Type (SM_NodePollut or SM_NODECIN or SM_NODEREACTORC)
 /// Output:  PollutArray pointer (pollutant data desired, byref)
 /// Return:  API Error
 /// Purpose: Gets Node Simulated Water Quality Value at Current Time
@@ -1920,11 +1922,61 @@ int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **pollutA
                 *pollutArray = result;
                 *length = Nobjects[POLLUT];
             } break;
+	    case SM_NODECIN:
+	    {
+		for (p=0; p < Nobjects[POLLUT]; p++)
+		{
+		    result[p] = Node[index].inQual[p];
+		} *pollutArray = result;
+	    } break;
+	    case SM_NODEREACTORC:
+	    {
+		for (p=0; p < Nobjects[POLLUT]; p++)
+		{
+		    result[p] = Node[index].reactorQual[p];
+		} *pollutArray = result;
+	    } break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         }
     }
     return error_getCode(error_code_index);
 }
+
+int DLLEXPORT swmm_setNodePollut(int index, int pollutant_index, double pollutant_value)
+///
+/// Input:   index = Index of desired ID
+///          pollutant_index = Index of desired polluant
+//           pollutant_value = Value of the pollutant
+/// Return:  API Error
+/// Purpose: Set pollutant concentration in nodes at the current time step
+{
+	int error_code_index = 0;
+
+	// Check if Open
+	if(swmm_IsOpenFlag() == FALSE)
+	{
+	    error_code_index = ERR_API_INPUTNOTOPEN;
+	}
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[NODE])
+	{
+	    error_code_index = ERR_API_OBJECT_INDEX;
+	}
+	else
+	{
+		if (ExtPollutFlag == 0)
+		{
+			ExtPollutFlag = 1;
+		}
+		if (pollutant_index <= Nobjects[POLLUT])
+		{
+			Node[index].extQual[pollutant_index] = pollutant_value;
+	    		Node[index].extPollutFlag[pollutant_index] = 1;
+		}
+	}
+	return error_getCode(error_code_index);
+}
+
 
 int DLLEXPORT swmm_getLinkResult(int index, SM_LinkResult type, double *result)
 ///
@@ -2030,6 +2082,50 @@ int DLLEXPORT swmm_getLinkPollut(int index, SM_LinkPollut type, double **pollutA
         } 
     }
     return error_getCode(error_code_index);
+}
+
+
+int DLLEXPORT swmm_setLinkPollut(int index, int type, int pollutant_index, double pollutant_value)
+///
+///  Input: index = Index of the desired Link ID
+/// 	    type = SM_LINKQUAL - Sets link's qual and allows accounting for loss and mixing calculation
+///         pollutant_index = index of pollutant to set
+///         pollutant_value = concentration to set
+///  Output: API error
+///  Purponse: Set pollutant concentration in links 
+{
+	int error_code_index = 0;
+
+	// Check if Open
+	if(swmm_IsOpenFlag() == FALSE)
+	{
+	    error_code_index = ERR_API_INPUTNOTOPEN;
+	}
+	// Check if object index is within bounds
+	else if (index < 0 || index >= Nobjects[NODE])
+	{
+	    error_code_index = ERR_API_OBJECT_INDEX;
+	}
+	else
+	{
+		if (ExtPollutFlag == 0)
+		{
+			ExtPollutFlag = 1;
+		}
+		if (pollutant_index <= Nobjects[POLLUT])
+		{
+			switch(type)
+			{
+				case SM_LINKQUAL:
+					{
+						Link[index].extQual[pollutant_index] = pollutant_value;
+						Link[index].extPollutFlag[pollutant_index] = 1;
+					} break;
+				default: error_code_index = ERR_API_OUTBOUNDS; break;
+			}
+		}
+	}
+	return error_getCode(error_code_index);
 }
 
 int DLLEXPORT swmm_getSubcatchResult(int index, SM_SubcResult type, double* result)

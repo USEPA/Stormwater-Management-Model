@@ -48,7 +48,7 @@ target_compile_features(test_solver
     PUBLIC
       cxx_generalized_initializers
 )
-  
+
 target_link_libraries(test_solver
     ${Boost_LIBRARIES}
     swmm5

@@ -393,6 +393,25 @@ int DLLEXPORT swmm_getNodeResult(int index, SM_NodeResult type, double *result);
 int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **pollutArray, int *length);
 
 /**
+ @brief Sets pollutant values for a specified node.
+ @param index The index of a node
+ @param pollutant_index Pollutant index to set
+ @param pollutant_value Pollutant value to set 
+ @return Error code
+*/
+int DLLEXPORT swmm_setNodePollut(int index, int pollutant_index, double pollutant_value);
+
+/**
+ @brief Sets pollutant values for a specified link.
+ @param index The index of a link
+ @param pollutant_index Pollutant index to set
+ @param pollutant_value Pollutant value to set 
+ @return Error code
+*/
+
+int DLLEXPORT swmm_setLinkPollut(int index, int type, int pollutant_index, double pollutant_value);
+
+/**
  @brief Get a result value for specified link.
  @param index The index of a link
  @param type The property type code (See @ref SM_LinkResult)
