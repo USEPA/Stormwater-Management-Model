@@ -7,6 +7,7 @@ ORD Stormwater Management Model (aka "SWMM")
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model)
 [![Join the chat at https://gitter.im/OpenWaterAnalytics/lobby](https://badges.gitter.im/OpenWaterAnalytics/Stormwater-Management-Model.svg)](https://gitter.im/OpenWaterAnalytics/lobby)
 [![docs](https://img.shields.io/badge/docs-passing-green.svg)](http://wateranalytics.org/Stormwater-Management-Model/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5484299.svg)](https://doi.org/10.5281/zenodo.5484299)
 
 ## Build Status
 ![build](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/workflows/Build%20and%20Test/badge.svg?branch=master)
