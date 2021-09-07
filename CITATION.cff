@@ -57,6 +57,6 @@ authors:
   orcid: "https://orcid.org/0000-0000-0000-0000"
 title: "Open Water Analytics Stormwater Management Model"
 version: 5.1.13
-doi: http://doi.org
+doi: 10.5281/zenodo.5484299
 date-released: 2021-01-12
 url: "https://github.com/OpenWaterAnalytics/Stormwater-Management-Model"
