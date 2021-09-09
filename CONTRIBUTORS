@@ -1,5 +1,7 @@
 #
-# Contributors file of people whose contributions reside in the default branch
+# CONTRIBUTORS
+#
+# List of people whose contributions reside in the default branch
 # of OWA SWMM ordered alphabetically by last name. This file is modeled after
 # the CREDITS file maintained by the linux project.
 #
@@ -8,11 +10,12 @@
 #
 
 
+
 N: Colleen Barr
 E: barr.colleen@epa.gov
 L: Public Domain
 C: 0
-D: output file API
+D: Output file API
 
 
 N: Caleb Buahin
@@ -20,6 +23,7 @@ E: caleb.buahin@gmail.com
 L: MIT License
 C: 129
 D: Development operations, bug fix, v5.1.14 merge
+
 
 N: Laurent Courty
 E: lrntct@gmail.com
@@ -67,14 +71,14 @@ N: Bryant E. McDonnell
 E: bemcdonnell@gmail.com
 L: MIT License
 C: 147
-D: Founder, maintainer, toolkit API, testing, documentation, paper
+D: Founder, maintainer, toolkit API, testing, documentation
 
 
 N: Abhiram Mullapudi
 E: abhiramm@umich.edu
 L: MIT License
 C: 20
-D: Rain API, testing, water quality API, development operations, paper
+D: Rain API, testing, water quality API, development operations
 
 
 N: Gonzalo Peña-Castellanos
@@ -88,7 +92,7 @@ N: Katherine Ratliff
 E: ratliff.katherine@epa.gov
 L: MIT License
 C: 41
-D: Stats API, bug fix, testing, paper
+D: Stats API, bug fix, testing
 
 
 N: Lewis Rossman
@@ -116,7 +120,7 @@ N: Michael Tryby
 E: tryby.michael@epa.gov
 L: Public Domain
 C: 386
-D: Mentor, Development operations, Python wrapper, paper
+D: Mentor, output file API, testing framework, development operations, Python wrapper
 
 
 N: Jennifer Wu
