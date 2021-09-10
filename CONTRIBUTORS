@@ -17,7 +17,7 @@ D: Output file API
 N: Caleb Buahin
 E: caleb.buahin@gmail.com
 L: MIT License
-D: Development operations, bug fix, v5.1.14 merge, reviews
+D: Development operations, bug fix, v5.1.14 merge, review
 
 N: Laurent Courty
 E: lrntct@gmail.com
@@ -57,7 +57,7 @@ D: Founder, maintainer, toolkit API, testing, review, bug fix, documentation
 N: Abhiram Mullapudi
 E: abhiramm@umich.edu
 L: MIT License
-D: Rain API, testing, water quality API, development operations
+D: Rain API, testing, water quality API, development operations, review
 
 N: Gonzalo Peña-Castellanos
 E: goanpeca@gmail.com
@@ -67,7 +67,7 @@ D: Development operations, testing, documentation
 N: Katherine Ratliff
 E: ratliff.katherine@epa.gov
 L: MIT License
-D: Stats API, bug fix, testing
+D: Stats API, bug fix, testing, review
 
 N: Lewis Rossman
 E: LRossman@cinci.rr.com
@@ -87,12 +87,12 @@ D: Bug fix, testing
 N: Michael Tryby
 E: tryby.michael@epa.gov
 L: Public Domain
-D: Mentor, output file API, testing framework, development operations, Python wrapper
+D: Mentor, output file API, testing framework, development operations, Python wrapper, review
 
 N: Jia Xin Wu
 E: wuu.jennifer@gmail.com
 L: MIT License
-D: Maintainer, LID API, bug fixes, testing, development operations, Python wrapper
+D: Maintainer, LID API, bug fixes, testing, development operations, Python wrapper, review
 
 N: Xu Xi
 E: 12907470@qq.com
