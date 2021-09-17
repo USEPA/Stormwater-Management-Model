@@ -72,11 +72,11 @@ endif()
 include(InstallRequiredSystemLibraries)
 
 
-# Create install target for License and Authors files
+# Create install target for License and Contributors files
 install(
     FILES
         "LICENSE"
-        "AUTHORS"
+        "CONTRIBUTORS"
     DESTINATION
         "."
 )
