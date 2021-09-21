@@ -730,7 +730,7 @@ int EXPORT_OUT_API SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
         // don't need to loop since there's only one system
         temp[0] = getSystemValue(p_data, periodIndex, attr);
 
-        *outValueArray = &temp;
+        *outValueArray = temp;
         *length        = 1;
     }
 
