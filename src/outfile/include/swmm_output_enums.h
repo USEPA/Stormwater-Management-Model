@@ -94,7 +94,7 @@ typedef enum {
     SMO_outfall_flows,          // (flow units),
     SMO_volume_stored,          // (ft3 or m3),
     SMO_evap_rate               // (in/day or mm/day),
-	//p_evap_rate             // (in/day or mm/day)
+	SMO_p_evap_rate             // (in/day or mm/day)
 } SMO_systemAttribute;
 
 
