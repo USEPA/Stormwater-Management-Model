@@ -46,3 +46,4 @@ tests/solver/data/feng*
 
 # Generated files
 *_export.h
+version.h

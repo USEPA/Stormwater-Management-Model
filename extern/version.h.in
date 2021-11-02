@@ -1,0 +1,27 @@
+/*
+ *  version.h - SWMM version information
+ *
+ *  Created on: Nov 2, 2021
+ *  
+ *  Author:     Michael E. Tryby
+ *              US EPA - ORD/CESER
+ */
+
+
+#ifndef VERSION_H_
+#define VERSION_H_
+
+
+
+#define VERSION         "@swmm-solver_VERSION@"
+#define VERSION_MAJOR   @swmm-solver_VERSION_MAJOR@
+#define VERSION_MINOR   @swmm-solver_VERSION_MINOR@
+#define VERSION_PATCH   @swmm-solver_VERSION_PATCH@
+
+#define GIT_HASH        "@GIT_HASH@"
+
+#define BUILD_ID        "@BUILD_ID@"
+
+
+
+#endif /* VERSION_H_ */

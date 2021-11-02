@@ -14,6 +14,9 @@ find_package(OpenMP
         C
 )
 
+# Generate version header
+include(../../extern/version.cmake)
+
 
 # configure file groups
 set(SWMM_PUBLIC_HEADERS
@@ -27,6 +30,7 @@ file(GLOB
     SWMM_SOURCES
         RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.c *.h
 )
+
 
 if(BUILD_DEF)
     # Builds library with def file interface for backward compatibility
