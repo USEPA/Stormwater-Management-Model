@@ -8,7 +8,9 @@
 #         US EPA - ORD/CESER
 #
 # Usage:
-#  To overwrite version.h file with current info into set GEN_VER_HEADER=ON. 
+#  To overwrite version.h file with current info set GEN_VER_HEADER=ON. 
+#
+
 
 if(GEN_VER_HEADER)
 

@@ -15,6 +15,7 @@
 #include <time.h>
 
 #include "headers.h"
+#include "version.h"
 #include "shared/cstr_helper.h"
 
 #include "swmm5.h"
@@ -39,28 +40,16 @@ double* newDoubleArray(int n);
 
 
 
-// void DLLEXPORT swmm_getSemVersion(char* semver)
-// //
-// //  Output: Returns Semantic Version
-// //  Purpose: retrieves the current semantic version
-// //
-// //  NOTE: Each New Release should be updated in consts.h
-// {
-//     getSemVersion(semver);
-// }
-
-int DLLEXPORT swmm_getVersionInfo(char** major, char** minor, char** patch)
+char* DLLEXPORT swmm_getSemVersion(char* semver)
 //
-//  Output: Returns Semantic Version Info
+//  Output: Returns Semantic Version
 //  Purpose: retrieves the current semantic version
 //
 //  NOTE: Each New Release should be updated in consts.h
 {
-    cstr_duplicate(major, SEMVERSION_MAJOR);
-    cstr_duplicate(minor, SEMVERSION_MINOR);
-    cstr_duplicate(patch, SEMVERSION_PATCH);
-    return 0;
+    return get_version();
 }
+
 
 //-----------------------------------------------------------------------------
 //  Extended API Functions

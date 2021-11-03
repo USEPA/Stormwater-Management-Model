@@ -50,7 +50,10 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+
 #include "headers.h"
+#include "version.h"
+
 
 #define WRITE(x) (report_writeLine((x)))
 #define LINE_10 "----------"
@@ -240,11 +243,9 @@ void report_writeLogo()
 //  Purpose: writes report header lines to report file.
 //
 {
-	char SEMVERSION[SEMVERSION_LEN];
-	getSemVersion(SEMVERSION);
-
 	sprintf(Msg, \
-		"\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build %s)", SEMVERSION);
+		"\n  OWA STORM WATER MANAGEMENT MODEL - VERSION v%s (Build %s)", 
+        get_version(), get_buildid());
 
     fprintf(Frpt.file, "%s", Msg);
     fprintf(Frpt.file, FMT09);

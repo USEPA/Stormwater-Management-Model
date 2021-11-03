@@ -34,18 +34,18 @@ extern "C" {
 
 // /**
 //  @brief Get full semantic version number
-//  @param[out] semver sematic version (char array)
+//  @return sematic version (char array)
 // */
-// void DLLEXPORT   swmm_getSemVersion(char* semver);
+char * DLLEXPORT  swmm_getSemVersion();
 
-/**
- @brief Get full semantic version number info
- @param[out] major sematic version major number
- @param[out] minor sematic version minor number
- @param[out] patch sematic version patch number
- @return error code
-*/
-int  DLLEXPORT   swmm_getVersionInfo(char **major, char **minor, char **patch);
+///**
+// @brief Get full semantic version number info
+// @param[out] major sematic version major number
+// @param[out] minor sematic version minor number
+// @param[out] patch sematic version patch number
+// @return error code
+//*/
+//int  DLLEXPORT   swmm_getVersionInfo(char **major, char **minor, char **patch);
 
 /**
  @brief Opens SWMM input file, reads in network data, runs, and closes

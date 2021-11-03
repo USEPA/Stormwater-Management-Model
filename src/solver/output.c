@@ -34,8 +34,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "headers.h"
 
+#include "headers.h"
+#include "version.h"
 
 // Definition of 4-byte integer, 4-byte real and 8-byte real types
 #define INT4  int
@@ -182,7 +183,7 @@ int output_open()
     fseek(Fout.file, 0, SEEK_SET);
     k = MAGICNUMBER;
     fwrite(&k, sizeof(INT4), 1, Fout.file);   // Magic number
-    k = VERSION;
+    k = get_version_legacy();
     fwrite(&k, sizeof(INT4), 1, Fout.file);   // Version number
     k = FlowUnits;
     fwrite(&k, sizeof(INT4), 1, Fout.file);   // Flow units
