@@ -6,7 +6,7 @@
  *  Author:     see CONTRIBUTORS
  *
  *  Note: 
- *    The build process automatically generates this file. Do not edit.
+ *    The cmake build process automatically generates this file. Do not edit.
  */
 
 
@@ -15,12 +15,8 @@
 
 
 
-#include <string.h>
-
-#define SHORT 8
-
-
-#define ORGANIZATION    "OWA"
+#define ORGANIZATION    "Open Water Analytics"
+#define ORG             "OWA"
 
 #define VERSION         "@swmm-solver_VERSION@"
 #define VERSION_MAJOR   @swmm-solver_VERSION_MAJOR@
@@ -32,7 +28,7 @@
 #define BUILD_ID        "@BUILD_ID@"
 
 
-static inline int   get_version_legacy() { \
+static inline int get_version_legacy() { \
     return VERSION_MAJOR * 10000 + VERSION_MINOR * 1000 + VERSION_PATCH; \
 }
 

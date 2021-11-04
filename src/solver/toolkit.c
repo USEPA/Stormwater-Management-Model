@@ -52,7 +52,7 @@ char* DLLEXPORT swmm_getSemVersion()
 
 char* DLLEXPORT swmm_getBuildId()
 //
-//  Output: Returns short Build Id
+//  Output: Returns Build Id
 //  Purpose: retrieves the current build id
 //
 {

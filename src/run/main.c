@@ -25,6 +25,10 @@
 #define BAR_LEN 50l
 #define MSG_LEN 84
 
+#define FMT_USAGE \
+"\nUsage:\n \
+ \trunswmm <input file> <report file> <output file>\n\n"
+
 #define FMT_HELP \
 "\n\nOWA Stormwater Management Model (SWMM5) Help\n\n \
  Commands:\n \
@@ -133,8 +137,7 @@ int  main(int argc, char *argv[])
     }
 
     else {
-        printf("\nUsage:\n");
-        printf("\trunswmm <input file> <report file> <output file>\n\n");
+        printf(FMT_USAGE);
     }
 
     return 0;

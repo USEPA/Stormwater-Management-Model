@@ -118,7 +118,7 @@ int DLLEXPORT swmm_close(void);
 
 /**
  @brief Get SWMM version number
- @return Version
+ @return Version as integer
 */
 int DLLEXPORT swmm_getVersion(void);
 

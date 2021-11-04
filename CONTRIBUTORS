@@ -92,7 +92,7 @@ D: Bug fix, testing
 N: Michael Tryby
 E: tryby.michael@epa.gov
 L: Public Domain
-D: Mentor, output file API, testing framework, development operations, Python wrapper, review
+D: Mentor, output file API, testing framework, CLI, development operations, Python wrapper, review
 
 N: Jia Xin Wu
 E: wuu.jennifer@gmail.com

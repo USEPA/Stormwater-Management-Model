@@ -34,7 +34,7 @@ extern "C" {
 
 /**
  @brief Get full semantic version number
- @return sematic version
+ @return sematic version string
 */
 char* DLLEXPORT  swmm_getSemVersion();
 

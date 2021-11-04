@@ -615,8 +615,6 @@ int DLLEXPORT swmm_getVersion(void)
 //           uses a format of xyzzz where x = major version number,
 //           y = minor version number, and zzz = build number.
 //
-//  NOTE: Each New Release should be updated in consts.h
-//        THIS FUNCTION WILL EVENTUALLY BE DEPRECATED
 {
     return get_version_legacy();
 }

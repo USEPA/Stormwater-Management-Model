@@ -20,18 +20,18 @@
 //   Text strings
 //-----------------------------------------------------------------------------
 
-#include "consts.h"
+//#include "consts.h"
 
-#define FMT01 \
- "\tswmm5 <input file> <report file> <output file>\n"
+//#define FMT01 \
+// "\tswmm5 <input file> <report file> <output file>\n"
 
 #define FMT03 " There are errors.\n"
 #define FMT04 " There are warnings.\n"
 #define FMT05 "\n"
 #define FMT06 "\n o  Retrieving project data"
 #define FMT07 "\n o  Writing output report"
-#define FMT08 \
-  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build "SEMVERSION_MAJOR"."SEMVERSION_MINOR"."SEMVERSION_PATCH")"         //(5.1.014)
+//#define FMT08 \
+//  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build "SEMVERSION_MAJOR"."SEMVERSION_MINOR"."SEMVERSION_PATCH")"         //(5.1.014)
 #define FMT09 \
   "\n  --------------------------------------------------------------"
 #define FMT10 "\n"
