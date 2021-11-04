@@ -4,9 +4,7 @@
   *  Created on: October 9, 2020
   *  Updated on:
   *
-  *  Author:     Michael E. Tryby
-  *              US EPA - ORD/CESER
-  *
+  *  Author:      See CONTRIBUTORS
   */
 
 #include <stdio.h>

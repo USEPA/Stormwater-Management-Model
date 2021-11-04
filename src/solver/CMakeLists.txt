@@ -90,6 +90,18 @@ target_include_directories(swmm5
         ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
+include(GenerateExportHeader)
+generate_export_header(swmm5
+    BASE_NAME toolkit  
+    EXPORT_MACRO_NAME EXPORT_TOOLKIT
+    EXPORT_FILE_NAME toolkit_export.h
+    STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC
+)
+
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}/toolkit_export.h
+    DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
 
 set_target_properties(swmm5
     PROPERTIES
