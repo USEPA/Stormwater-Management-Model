@@ -36,13 +36,13 @@ extern "C" {
  @brief Get full semantic version number
  @return sematic version string
 */
-char* DLLEXPORT  swmm_getSemVersion();
+char DLLEXPORT *swmm_getSemVersion();
 
 /**
  @brief Get Build Id
  @return build id string
 */
-char* DLLEXPORT swmm_getBuildId();
+char DLLEXPORT *swmm_getBuildId();
 
 
 /**

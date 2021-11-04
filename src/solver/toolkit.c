@@ -36,11 +36,11 @@ int  stats_getSubcatchStat(int index, TSubcatchStats **subcatchStats);
 
 
 // Utilty Function Declarations
-double* newDoubleArray(int n);
+double *newDoubleArray(int n);
 
 
 
-char* DLLEXPORT swmm_getSemVersion()
+char DLLEXPORT *swmm_getSemVersion()
 //
 //  Output: Returns Semantic Version
 //  Purpose: retrieves the current semantic version
@@ -50,7 +50,7 @@ char* DLLEXPORT swmm_getSemVersion()
 }
 
 
-char* DLLEXPORT swmm_getBuildId()
+char DLLEXPORT *swmm_getBuildId()
 //
 //  Output: Returns Build Id
 //  Purpose: retrieves the current build id
