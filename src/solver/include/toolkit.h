@@ -32,20 +32,18 @@ extern "C" {
 #include "toolkit_structs.h"
 
 
-// /**
-//  @brief Get full semantic version number
-//  @return sematic version (char array)
-// */
-char * DLLEXPORT  swmm_getSemVersion();
+/**
+ @brief Get full semantic version number
+ @return sematic version
+*/
+char* DLLEXPORT  swmm_getSemVersion();
 
-///**
-// @brief Get full semantic version number info
-// @param[out] major sematic version major number
-// @param[out] minor sematic version minor number
-// @param[out] patch sematic version patch number
-// @return error code
-//*/
-//int  DLLEXPORT   swmm_getVersionInfo(char **major, char **minor, char **patch);
+/**
+ @brief Get Build Id
+ @return build id string
+*/
+char* DLLEXPORT swmm_getBuildId();
+
 
 /**
  @brief Opens SWMM input file, reads in network data, runs, and closes

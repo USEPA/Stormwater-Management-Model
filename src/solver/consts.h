@@ -15,14 +15,6 @@
 //------------------
 // General Constants
 //------------------
-
-// Update VERSION and SEMVERSION Simultaneously
-//#define   VERSION            51014          // Eventually will be deprecated.
-//#define   SEMVERSION_MAJOR   "5"            // Major Semantic Version
-//#define   SEMVERSION_MINOR   "1"            // Minor Semantic Version
-//#define   SEMVERSION_PATCH   "014"     // Patch Semantic Version
-//#define   SEMVERSION_LEN     20             // Version String Len
-
 #define   MAGICNUMBER        516114522
 #define   EOFMARK            0x1A           // Use 0x04 for UNIX systems
 #define   MAXTITLE           3              // Max. # title lines

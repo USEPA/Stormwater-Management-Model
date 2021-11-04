@@ -244,8 +244,8 @@ void report_writeLogo()
 //
 {
 	sprintf(Msg, \
-		"\n  OWA STORM WATER MANAGEMENT MODEL - VERSION v%s (Build %s)", 
-        get_version(), get_buildid());
+		"\n  OWA STORM WATER MANAGEMENT MODEL - VERSION v%s (Build %.10s)", 
+        VERSION, BUILD_ID);
 
     fprintf(Frpt.file, "%s", Msg);
     fprintf(Frpt.file, FMT09);

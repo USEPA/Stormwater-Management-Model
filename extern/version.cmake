@@ -4,13 +4,14 @@
 # Created: November 2, 2021
 # Updated:
 #
-# Author: Michael E. Tryby
-#         US EPA - ORD/CESER
+# Author:  see CONTRIBUTORS
 #
 # Usage:
-#  To overwrite version.h file with current info set GEN_VER_HEADER=ON. 
+#   GEN_VER_HEADER=ON -- overwrites version.h file with current info 
 #
 
+
+option(GEN_VER_HEADER "Automatically update version header" ON)
 
 if(GEN_VER_HEADER)
 

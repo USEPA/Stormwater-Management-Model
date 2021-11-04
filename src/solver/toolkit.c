@@ -40,16 +40,24 @@ double* newDoubleArray(int n);
 
 
 
-char* DLLEXPORT swmm_getSemVersion(char* semver)
+char* DLLEXPORT swmm_getSemVersion()
 //
 //  Output: Returns Semantic Version
 //  Purpose: retrieves the current semantic version
 //
-//  NOTE: Each New Release should be updated in consts.h
 {
-    return get_version();
+    return VERSION;
 }
 
+
+char* DLLEXPORT swmm_getBuildId()
+//
+//  Output: Returns short Build Id
+//  Purpose: retrieves the current build id
+//
+{
+    return BUILD_ID;
+}
 
 //-----------------------------------------------------------------------------
 //  Extended API Functions

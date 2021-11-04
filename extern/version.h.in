@@ -15,6 +15,11 @@
 
 
 
+#include <string.h>
+
+#define SHORT 8
+
+
 #define ORGANIZATION    "OWA"
 
 #define VERSION         "@swmm-solver_VERSION@"
@@ -27,11 +32,9 @@
 #define BUILD_ID        "@BUILD_ID@"
 
 
-static inline char *get_version() { return VERSION; }
 static inline int   get_version_legacy() { \
     return VERSION_MAJOR * 10000 + VERSION_MINOR * 1000 + VERSION_PATCH; \
 }
-static inline char *get_buildid() { return BUILD_ID; }
 
 
 

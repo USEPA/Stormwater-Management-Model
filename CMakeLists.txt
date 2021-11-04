@@ -48,7 +48,6 @@ set(CONFIG_DIST  "cmake")
 # Define build options
 option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
 option(BUILD_DOCS "Build toolkit docs (requires Doxygen)" OFF)
-option(GEN_VER_HEADER "Automatically update version header" OFF)
 
 
 # Add project subdirectories
