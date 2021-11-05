@@ -117,8 +117,8 @@ int DLLEXPORT swmm_getMassBalErr(float* runoffErr, float* flowErr, float* qualEr
 int DLLEXPORT swmm_close(void);
 
 /**
- @brief Get Legacy SWMM version number
- @return Version
+ @brief Get SWMM version number
+ @return Version as integer
 */
 int DLLEXPORT swmm_getVersion(void);
 

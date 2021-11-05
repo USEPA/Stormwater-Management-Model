@@ -45,6 +45,7 @@ set(LIBRARY_DIST "lib")
 set(CONFIG_DIST  "cmake")
 
 
+# Define build options
 option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
 option(BUILD_DOCS "Build toolkit docs (requires Doxygen)" OFF)
 
@@ -84,7 +85,7 @@ install(
 
 # Configure CPack driven installer package
 set(CPACK_GENERATOR "ZIP;TGZ")
-set(CPACK_PACKAGE_VENDOR "US_EPA")
+set(CPACK_PACKAGE_VENDOR "OWA")
 set(CPACK_ARCHIVE_FILE_NAME "swmm")
 
 include(CPack)

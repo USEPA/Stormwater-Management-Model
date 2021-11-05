@@ -1,13 +1,15 @@
-/** @file toolkit.c
- @see http://github.com/openwateranalytics/stormwater-management-model
+/*
+  *  toolkit.c - OWA SWMM Toolkit API
+  *
+  *  Created on: Aug 30, 2016
+  *  Updated on:
+  *
+  *  Author:      See CONTRIBUTORS
+  * 
+  *  Note: 
+  *     Originally developed by Bryant McDonnell  
+  */
 
- toolkit.c
- @brief Exportable Functions for Toolkit API.
- @date 08/30/2016 (First Contribution)
- @authors B. McDonnell (EmNet LLC), OpenWaterAnalytics members: see <a href="https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/AUTHORS">AUTHORS</a>.
-
-
-*/
 #define _CRT_SECURE_NO_DEPRECATE
 
 
@@ -15,6 +17,7 @@
 #include <time.h>
 
 #include "headers.h"
+#include "version.h"
 #include "shared/cstr_helper.h"
 
 #include "swmm5.h"
@@ -35,38 +38,33 @@ int  stats_getSubcatchStat(int index, TSubcatchStats **subcatchStats);
 
 
 // Utilty Function Declarations
-double* newDoubleArray(int n);
+double *newDoubleArray(int n);
 
 
 
-// void DLLEXPORT swmm_getSemVersion(char* semver)
-// //
-// //  Output: Returns Semantic Version
-// //  Purpose: retrieves the current semantic version
-// //
-// //  NOTE: Each New Release should be updated in consts.h
-// {
-//     getSemVersion(semver);
-// }
-
-int DLLEXPORT swmm_getVersionInfo(char** major, char** minor, char** patch)
+EXPORT_TOOLKIT char *swmm_getSemVersion()
 //
-//  Output: Returns Semantic Version Info
+//  Output: Returns Semantic Version
 //  Purpose: retrieves the current semantic version
 //
-//  NOTE: Each New Release should be updated in consts.h
 {
-    cstr_duplicate(major, SEMVERSION_MAJOR);
-    cstr_duplicate(minor, SEMVERSION_MINOR);
-    cstr_duplicate(patch, SEMVERSION_PATCH);
-    return 0;
+    return VERSION;
+}
+
+EXPORT_TOOLKIT char *swmm_getBuildId()
+//
+//  Output: Returns Build Id
+//  Purpose: retrieves the current build id
+//
+{
+    return BUILD_ID;
 }
 
 //-----------------------------------------------------------------------------
 //  Extended API Functions
 //-----------------------------------------------------------------------------
 
-int DLLEXPORT  swmm_run_cb(const char* f1, const char* f2, const char* f3,
+EXPORT_TOOLKIT int swmm_run_cb(const char* f1, const char* f2, const char* f3,
     void (*callback) (double *))
 //
 //  Input:   f1 = name of input file
@@ -135,7 +133,7 @@ int DLLEXPORT  swmm_run_cb(const char* f1, const char* f2, const char* f3,
 }
 
 
-int DLLEXPORT swmm_getAPIError(int errorCode, char **errorMsg)
+EXPORT_TOOLKIT int swmm_getAPIError(int errorCode, char **errorMsg)
 ///
 /// Input:   errorCode = error code
 /// Output:  errmessage String
@@ -148,7 +146,7 @@ int DLLEXPORT swmm_getAPIError(int errorCode, char **errorMsg)
 }
 
 
-int DLLEXPORT swmm_project_findObject(SM_ObjectType type, char *id, int *index)
+EXPORT_TOOLKIT int swmm_project_findObject(SM_ObjectType type, char *id, int *index)
 {
     int error_code_index = 0;
 
@@ -163,7 +161,7 @@ int DLLEXPORT swmm_project_findObject(SM_ObjectType type, char *id, int *index)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getSimulationDateTime(SM_TimePropety type, int *year, int *month, int *day,
+EXPORT_TOOLKIT int swmm_getSimulationDateTime(SM_TimePropety type, int *year, int *month, int *day,
                                          int *hour, int *minute, int *second)
 ///
 /// Input:   type = time type to return
@@ -204,7 +202,7 @@ int DLLEXPORT swmm_getSimulationDateTime(SM_TimePropety type, int *year, int *mo
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setSimulationDateTime(SM_TimePropety type, int year, int month,
+EXPORT_TOOLKIT int swmm_setSimulationDateTime(SM_TimePropety type, int year, int month,
                                          int day, int hour, int minute,
                                          int second)
 ///
@@ -266,7 +264,7 @@ int DLLEXPORT swmm_setSimulationDateTime(SM_TimePropety type, int year, int mont
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT  swmm_getSimulationUnit(SM_Units type, int *value)
+EXPORT_TOOLKIT int  swmm_getSimulationUnit(SM_Units type, int *value)
 ///
 /// Input:   type = simulation unit type
 /// Output:  enum representation of units
@@ -298,7 +296,7 @@ int DLLEXPORT  swmm_getSimulationUnit(SM_Units type, int *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT  swmm_getSimulationAnalysisSetting(SM_SimOption type, int *value)
+EXPORT_TOOLKIT int  swmm_getSimulationAnalysisSetting(SM_SimOption type, int *value)
 ///
 /// Input:   type = analysis type
 /// Output:  setting True or False
@@ -339,7 +337,7 @@ int DLLEXPORT  swmm_getSimulationAnalysisSetting(SM_SimOption type, int *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT  swmm_getSimulationParam(SM_SimSetting type, double *value)
+EXPORT_TOOLKIT int  swmm_getSimulationParam(SM_SimSetting type, double *value)
 ///
 /// Input:   type = analysis type
 /// Output:  Simulation Parameter
@@ -411,7 +409,7 @@ int DLLEXPORT  swmm_getSimulationParam(SM_SimSetting type, double *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT  swmm_countObjects(SM_ObjectType type, int *count)
+EXPORT_TOOLKIT int  swmm_countObjects(SM_ObjectType type, int *count)
 ///
 /// Input:   type = object type (Based on SM_ObjectType enum)
 /// Output:  count = pointer to integer
@@ -431,7 +429,7 @@ int DLLEXPORT  swmm_countObjects(SM_ObjectType type, int *count)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getObjectIndex(SM_ObjectType type, char *id, int *index)
+EXPORT_TOOLKIT int swmm_getObjectIndex(SM_ObjectType type, char *id, int *index)
 ///
 /// Input:   type = object type (Based on SM_ObjectType enum)
 ///          char* = ID name
@@ -450,7 +448,7 @@ int DLLEXPORT swmm_getObjectIndex(SM_ObjectType type, char *id, int *index)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getObjectId(SM_ObjectType type, int index, char **id)
+EXPORT_TOOLKIT int swmm_getObjectId(SM_ObjectType type, int index, char **id)
 ///
 /// Input:   type = object type (Based on SM_ObjectType enum)
 ///          index = Index of desired ID
@@ -516,7 +514,7 @@ int DLLEXPORT swmm_getObjectId(SM_ObjectType type, int index, char **id)
    return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getNodeType(int index, SM_NodeType *Ntype)
+EXPORT_TOOLKIT int swmm_getNodeType(int index, SM_NodeType *Ntype)
 ///
 /// Input:   index = Index of desired ID
 ///          Ntype = Node type (Based on enum SM_NodeType)
@@ -540,7 +538,7 @@ int DLLEXPORT swmm_getNodeType(int index, SM_NodeType *Ntype)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLinkType(int index, SM_LinkType *Ltype)
+EXPORT_TOOLKIT int swmm_getLinkType(int index, SM_LinkType *Ltype)
 ///
 /// Input:   index = Index of desired ID
 ///          Ltype = Link type (Based on enum SM_LinkType)
@@ -564,7 +562,7 @@ int DLLEXPORT swmm_getLinkType(int index, SM_LinkType *Ltype)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLinkConnections(int index, int *Node1, int *Node2)
+EXPORT_TOOLKIT int swmm_getLinkConnections(int index, int *Node1, int *Node2)
 ///
 /// Input:   index = Index of desired ID
 /// Output:  Node1 and Node2 indeces
@@ -592,7 +590,7 @@ int DLLEXPORT swmm_getLinkConnections(int index, int *Node1, int *Node2)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLinkDirection(int index, signed char *value)
+EXPORT_TOOLKIT int swmm_getLinkDirection(int index, signed char *value)
 ///
 /// Input:   index = Index of desired ID
 /// Output:  Link Direction (Only changes is slope < 0)
@@ -618,7 +616,7 @@ int DLLEXPORT swmm_getLinkDirection(int index, signed char *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getNodeParam(int index, SM_NodeProperty param, double *value)
+EXPORT_TOOLKIT int swmm_getNodeParam(int index, SM_NodeProperty param, double *value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_NodeProperty)
@@ -658,7 +656,7 @@ int DLLEXPORT swmm_getNodeParam(int index, SM_NodeProperty param, double *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setNodeParam(int index, SM_NodeProperty param, double value)
+EXPORT_TOOLKIT int swmm_setNodeParam(int index, SM_NodeProperty param, double value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_NodeProperty)
@@ -704,7 +702,7 @@ int DLLEXPORT swmm_setNodeParam(int index, SM_NodeProperty param, double value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLinkParam(int index, SM_LinkProperty param, double *value)
+EXPORT_TOOLKIT int swmm_getLinkParam(int index, SM_LinkProperty param, double *value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_LinkProperty)
@@ -748,7 +746,7 @@ int DLLEXPORT swmm_getLinkParam(int index, SM_LinkProperty param, double *value)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setLinkParam(int index, SM_LinkProperty param, double value)
+EXPORT_TOOLKIT int swmm_setLinkParam(int index, SM_LinkProperty param, double value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_LinkProperty)
@@ -806,7 +804,7 @@ int DLLEXPORT swmm_setLinkParam(int index, SM_LinkProperty param, double value)
 }
 
 
-int DLLEXPORT swmm_getSubcatchParam(int index, SM_SubcProperty param, double *value)
+EXPORT_TOOLKIT int swmm_getSubcatchParam(int index, SM_SubcProperty param, double *value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_SubcProperty)
@@ -846,7 +844,7 @@ int DLLEXPORT swmm_getSubcatchParam(int index, SM_SubcProperty param, double *va
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setSubcatchParam(int index, SM_SubcProperty param, double value)
+EXPORT_TOOLKIT int swmm_setSubcatchParam(int index, SM_SubcProperty param, double value)
 ///
 /// Input:   index = Index of desired ID
 ///          param = Parameter desired (Based on enum SM_SubcProperty)
@@ -897,7 +895,7 @@ int DLLEXPORT swmm_setSubcatchParam(int index, SM_SubcProperty param, double val
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getSubcatchOutConnection(int index, SM_ObjectType *type, int *out_index)
+EXPORT_TOOLKIT int swmm_getSubcatchOutConnection(int index, SM_ObjectType *type, int *out_index)
 ///
 /// Input:   index = Index of desired ID
 ///         (Subcatchments can load to Node or another Subcatchment)
@@ -941,7 +939,7 @@ int DLLEXPORT swmm_getSubcatchOutConnection(int index, SM_ObjectType *type, int 
 }
 
 
-int DLLEXPORT swmm_getLidUCount(int index, int *value)
+EXPORT_TOOLKIT int swmm_getLidUCount(int index, int *value)
 // Input:   index = Index of desired subcatchment
 // Output:  int = number of lid units for subcatchment
 // Return:  number of lid units for subcatchment
@@ -968,7 +966,7 @@ int DLLEXPORT swmm_getLidUCount(int index, int *value)
 }
 
 
-int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, SM_LidUProperty param, double *value)
+EXPORT_TOOLKIT int swmm_getLidUParam(int index, int lidIndex, SM_LidUProperty param, double *value)
 //
 // Input:   index = Index of desired subcatchment
 //          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
@@ -1022,7 +1020,7 @@ int DLLEXPORT swmm_getLidUParam(int index, int lidIndex, SM_LidUProperty param, 
 }
 
 
-int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, SM_LidUProperty param, double value)
+EXPORT_TOOLKIT int swmm_setLidUParam(int index, int lidIndex, SM_LidUProperty param, double value)
 //
 // Input:   index = Index of desired subcatchment
 //          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
@@ -1087,7 +1085,7 @@ int DLLEXPORT swmm_setLidUParam(int index, int lidIndex, SM_LidUProperty param, 
 }
 
 
-int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, SM_LidUOptions param, int *value)
+EXPORT_TOOLKIT int swmm_getLidUOption(int index, int lidIndex, SM_LidUOptions param, int *value)
 //
 // Input:   index = Index of desired subcatchment
 //          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
@@ -1139,7 +1137,7 @@ int DLLEXPORT swmm_getLidUOption(int index, int lidIndex, SM_LidUOptions param, 
 }
 
 
-int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, SM_LidUOptions param, int value)
+EXPORT_TOOLKIT int swmm_setLidUOption(int index, int lidIndex, SM_LidUOptions param, int value)
 //
 // Input:   index = Index of desired subcatchment
 //          lidIndex = Index of desired lid unit (subcatchment allow for multiple lid units)
@@ -1237,7 +1235,7 @@ int DLLEXPORT swmm_setLidUOption(int index, int lidIndex, SM_LidUOptions param, 
 }
 
 
-int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, int *condition)
+EXPORT_TOOLKIT int swmm_getLidCOverflow(int lidControlIndex, int *condition)
 //
 // Input:   lidControlIndex = Index of desired lid control
 // Output:  condition = value to be output
@@ -1269,7 +1267,7 @@ int DLLEXPORT swmm_getLidCOverflow(int lidControlIndex, int *condition)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_LidLayerProperty param, double *value)
+EXPORT_TOOLKIT int swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_LidLayerProperty param, double *value)
 //
 // Input:   lidControlIndex = Index of desired lid control
 //          layerIndex = Index of desired lid control layer (Based on enum SM_LidLayer)
@@ -1452,7 +1450,7 @@ int DLLEXPORT swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_
 }
 
 
-int DLLEXPORT swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_LidLayerProperty param, double value)
+EXPORT_TOOLKIT int swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_LidLayerProperty param, double value)
 //
 // Input:   lidControlIndex = Index of desired lid control
 //          layerIndex = Index of desired lid control layer (Based on enum SM_LidLayers)
@@ -1797,7 +1795,7 @@ int DLLEXPORT swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_
 // Active Simulation Results API
 //-------------------------------
 
-int DLLEXPORT swmm_getCurrentDateTime(int *year, int *month, int *day,
+EXPORT_TOOLKIT int swmm_getCurrentDateTime(int *year, int *month, int *day,
                                       int *hour, int *minute, int *second)
 ///
 /// Input:   timetype = time type to return
@@ -1832,7 +1830,7 @@ int DLLEXPORT swmm_getCurrentDateTime(int *year, int *month, int *day,
 }
 
 
-int DLLEXPORT swmm_getNodeResult(int index, SM_NodeResult type, double *result)
+EXPORT_TOOLKIT int swmm_getNodeResult(int index, SM_NodeResult type, double *result)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_NodeResult)
@@ -1882,7 +1880,7 @@ int DLLEXPORT swmm_getNodeResult(int index, SM_NodeResult type, double *result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **pollutArray, int *length)
+EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **pollutArray, int *length)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_NodePollut or SM_NODECIN or SM_NODEREACTORC)
@@ -1942,7 +1940,7 @@ int DLLEXPORT swmm_getNodePollut(int index, SM_NodePollut type, double **pollutA
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setNodePollut(int index, int pollutant_index, double pollutant_value)
+EXPORT_TOOLKIT int swmm_setNodePollut(int index, int pollutant_index, double pollutant_value)
 ///
 /// Input:   index = Index of desired ID
 ///          pollutant_index = Index of desired polluant
@@ -1978,7 +1976,7 @@ int DLLEXPORT swmm_setNodePollut(int index, int pollutant_index, double pollutan
 }
 
 
-int DLLEXPORT swmm_getLinkResult(int index, SM_LinkResult type, double *result)
+EXPORT_TOOLKIT int swmm_getLinkResult(int index, SM_LinkResult type, double *result)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_LinkResult)
@@ -2025,7 +2023,7 @@ int DLLEXPORT swmm_getLinkResult(int index, SM_LinkResult type, double *result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLinkPollut(int index, SM_LinkPollut type, double **pollutArray, int *length)
+EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **pollutArray, int *length)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_LinkPollut)
@@ -2085,7 +2083,7 @@ int DLLEXPORT swmm_getLinkPollut(int index, SM_LinkPollut type, double **pollutA
 }
 
 
-int DLLEXPORT swmm_setLinkPollut(int index, int type, int pollutant_index, double pollutant_value)
+EXPORT_TOOLKIT int swmm_setLinkPollut(int index, int type, int pollutant_index, double pollutant_value)
 ///
 ///  Input: index = Index of the desired Link ID
 /// 	    type = SM_LINKQUAL - Sets link's qual and allows accounting for loss and mixing calculation
@@ -2128,7 +2126,7 @@ int DLLEXPORT swmm_setLinkPollut(int index, int type, int pollutant_index, doubl
 	return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getSubcatchResult(int index, SM_SubcResult type, double* result)
+EXPORT_TOOLKIT int swmm_getSubcatchResult(int index, SM_SubcResult type, double* result)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_SubcResult)
@@ -2171,7 +2169,7 @@ int DLLEXPORT swmm_getSubcatchResult(int index, SM_SubcResult type, double* resu
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **pollutArray, int *length)
+EXPORT_TOOLKIT int swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **pollutArray, int *length)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result Type (SM_SubcPollut)
@@ -2252,7 +2250,7 @@ int DLLEXPORT swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **pol
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getGagePrecip(int index, SM_GagePrecip type, double* result)
+EXPORT_TOOLKIT int swmm_getGagePrecip(int index, SM_GagePrecip type, double* result)
 ///
 /// Input:   index = Index of desired ID
 ///          type = Result type
@@ -2294,7 +2292,7 @@ int DLLEXPORT swmm_getGagePrecip(int index, SM_GagePrecip type, double* result)
 }
 
 
-int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats)
+EXPORT_TOOLKIT int swmm_getNodeStats(int index, SM_NodeStats *nodeStats)
 ///
 /// Output:  Node Stats Structure (SM_NodeStats)
 /// Return:  API Error
@@ -2323,7 +2321,7 @@ int DLLEXPORT swmm_getNodeStats(int index, SM_NodeStats *nodeStats)
     return error_getCode(error_index);
 }
 
-int DLLEXPORT swmm_getNodeTotalInflow(int index, double* value)
+EXPORT_TOOLKIT int swmm_getNodeTotalInflow(int index, double* value)
 ///
 /// Input:   Node Index
 /// Output:  Node Total inflow Volume.
@@ -2346,7 +2344,7 @@ int DLLEXPORT swmm_getNodeTotalInflow(int index, double* value)
     return error_getCode(error_index);
 }
 
-int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats *storageStats)
+EXPORT_TOOLKIT int swmm_getStorageStats(int index, SM_StorageStats *storageStats)
 ///
 /// Output:  Storage Node Stats Structure (SM_StorageStats)
 /// Return:  API Error
@@ -2379,7 +2377,7 @@ int DLLEXPORT swmm_getStorageStats(int index, SM_StorageStats *storageStats)
     return error_getCode(error_index);
 }
 
-int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats *outfallStats)
+EXPORT_TOOLKIT int swmm_getOutfallStats(int index, SM_OutfallStats *outfallStats)
 {
     int error_index = 0;
     
@@ -2409,7 +2407,7 @@ int DLLEXPORT swmm_getOutfallStats(int index, SM_OutfallStats *outfallStats)
 }
 
 
-int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats)
+EXPORT_TOOLKIT int swmm_getLinkStats(int index, SM_LinkStats *linkStats)
 ///
 /// Output:  Link Stats Structure (SM_LinkStats)
 /// Return:  API Error
@@ -2439,7 +2437,7 @@ int DLLEXPORT swmm_getLinkStats(int index, SM_LinkStats *linkStats)
 }
 
 
-int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats)
+EXPORT_TOOLKIT int swmm_getPumpStats(int index, SM_PumpStats *pumpStats)
 ///
 /// Output:  Pump Link Stats Structure (SM_PumpStats)
 /// Return:  API Error
@@ -2473,7 +2471,7 @@ int DLLEXPORT swmm_getPumpStats(int index, SM_PumpStats *pumpStats)
 }
 
 
-int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats)
+EXPORT_TOOLKIT int swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats)
 ///
 /// Output:  Subcatchment Stats Structure (SM_SubcatchStats)
 /// Return:  API Error
@@ -2503,7 +2501,7 @@ int DLLEXPORT swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchStats)
 }
 
 
-int DLLEXPORT swmm_getSystemRoutingTotals(SM_RoutingTotals *routingTotals)
+EXPORT_TOOLKIT int swmm_getSystemRoutingTotals(SM_RoutingTotals *routingTotals)
 ///
 /// Output:  System Routing Totals Structure (SM_RoutingTotals)
 /// Return:  API Error
@@ -2528,7 +2526,7 @@ int DLLEXPORT swmm_getSystemRoutingTotals(SM_RoutingTotals *routingTotals)
     return error_getCode(error_index);
 }
 
-int DLLEXPORT swmm_getSystemRunoffTotals(SM_RunoffTotals *runoffTotals)
+EXPORT_TOOLKIT int swmm_getSystemRunoffTotals(SM_RunoffTotals *runoffTotals)
 ///
 /// Output:  System Runoff Totals Structure (SM_RunoffTotals)
 /// Return:  API Error
@@ -2553,7 +2551,7 @@ int DLLEXPORT swmm_getSystemRunoffTotals(SM_RunoffTotals *runoffTotals)
     return error_getCode(error_index);
 }
 
-int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, SM_LidLayer layerIndex, double* result)
+EXPORT_TOOLKIT int swmm_getLidUFluxRates(int index, int lidIndex, SM_LidLayer layerIndex, double* result)
 //
 // Input:   index = Index of desired subcatchment
 //          lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
@@ -2604,7 +2602,7 @@ int DLLEXPORT swmm_getLidUFluxRates(int index, int lidIndex, SM_LidLayer layerIn
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLidGResult(int index, SM_LidResult type, double* result)
+EXPORT_TOOLKIT int swmm_getLidGResult(int index, SM_LidResult type, double* result)
 //
 // Input:   index = index of desired subcatchment
 //          type = type of result data desired
@@ -2653,7 +2651,7 @@ int DLLEXPORT swmm_getLidGResult(int index, SM_LidResult type, double* result)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, SM_LidResult type, double* result)
+EXPORT_TOOLKIT int swmm_getLidUResult(int index, int lidIndex, SM_LidResult type, double* result)
 //
 // Input:   index = Index of desired subcatchment
 //          lidIndex = Index of desired lid control (subcatchment allow for multiple lids)
@@ -2756,7 +2754,7 @@ int DLLEXPORT swmm_getLidUResult(int index, int lidIndex, SM_LidResult type, dou
 // Setters API
 //-------------------------------
 
-int DLLEXPORT swmm_setLinkSetting(int index, double setting)
+EXPORT_TOOLKIT int swmm_setLinkSetting(int index, double setting)
 ///
 /// Input:   index = Index of desired ID
 ///          value = New Target Setting
@@ -2799,7 +2797,7 @@ int DLLEXPORT swmm_setLinkSetting(int index, double setting)
 }
 
 
-int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
+EXPORT_TOOLKIT int swmm_setNodeInflow(int index, double flowrate)
 ///
 /// Input:   index = Index of desired ID
 ///          value = New Inflow Rate
@@ -2860,7 +2858,7 @@ int DLLEXPORT swmm_setNodeInflow(int index, double flowrate)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setOutfallStage(int index, double stage)
+EXPORT_TOOLKIT int swmm_setOutfallStage(int index, double stage)
 ///
 /// Input:   index = Index of desired outfall
 ///          stage = New outfall stage (head)
@@ -2895,7 +2893,7 @@ int DLLEXPORT swmm_setOutfallStage(int index, double stage)
     return error_getCode(error_code_index);
 }
 
-int DLLEXPORT swmm_setGagePrecip(int index, double total_precip)
+EXPORT_TOOLKIT int swmm_setGagePrecip(int index, double total_precip)
 ///
 /// Input:   index = Index of desired ID
 ///          total_precip = rainfall intensity to be set
@@ -2933,6 +2931,15 @@ int DLLEXPORT swmm_setGagePrecip(int index, double total_precip)
     return error_getCode(error_code_index);
 }
 
+EXPORT_TOOLKIT void swmm_freeMemory(void *memory)
+//
+//  Purpose: Frees memory allocated by API calls
+//
+{
+    free(memory);
+}
+
+
 //-------------------------------
 // Utility Functions
 //-------------------------------
@@ -2943,23 +2950,4 @@ double* newDoubleArray(int n)
 ///
 {
     return (double*) malloc((n)*sizeof(double));
-}
-
-
-//void DLLEXPORT freeArray(void** array)
-///
-/// Helper function used to free array allocated memory by API.
-///
-//{
-//    FREE(*array);
-//    *array = NULL;
-//}
-
-
-void DLLEXPORT swmm_freeMemory(void *memory)
-//
-//  Purpose: Frees memory allocated by API calls
-//
-{
-    free(memory);
 }

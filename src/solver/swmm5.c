@@ -112,6 +112,7 @@
 #include "text.h"                      // listing of all text strings
 #define  EXTERN                        // defined as 'extern' in headers.h
 #include "globals.h"                   // declaration of all global variables
+#include "version.h"
 
 #include "swmm5.h"                     // declaration of exportable functions
                                        //   callable from other programs
@@ -606,18 +607,16 @@ int  DLLEXPORT swmm_getMassBalErr(float* runoffErr, float* flowErr,
 
 //=============================================================================
 
-int  DLLEXPORT swmm_getVersion(void)
+int DLLEXPORT swmm_getVersion(void)
 //
 //  Input:   none
-//  Output:  returns SWMM engine version number
+//  Output:  returns SWMM engine version number in legacy format
 //  Purpose: retrieves version number of current SWMM engine which
 //           uses a format of xyzzz where x = major version number,
 //           y = minor version number, and zzz = build number.
 //
-//  NOTE: Each New Release should be updated in consts.h
-//        THIS FUNCTION WILL EVENTUALLY BE DEPRECATED
 {
-    return VERSION;
+    return get_version_legacy();
 }
 
 //=============================================================================
@@ -894,16 +893,3 @@ int swmm_IsStartedFlag()
     // TRUE if a simulation has been started
     return IsStartedFlag;
 }
-
-
-void getSemVersion(char* semver)
-//
-//  Output: Returns Semantic Version
-//  Purpose: retrieves the current semantic version
-//
-//  NOTE: Each New Release should be updated in consts.h
-{
-    snprintf(semver, SEMVERSION_LEN, "%s.%s.%s",
-        SEMVERSION_MAJOR, SEMVERSION_MINOR, SEMVERSION_PATCH);
-}
-//=============================================================================
