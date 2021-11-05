@@ -15,17 +15,19 @@
 
 
 
-#define ORGANIZATION    "Open Water Analytics"
-#define ORG             "OWA"
+#define PROJECT             "SWMM"
+#define ORGANIZATION        "Open_Water_Analytics"
 
-#define VERSION         "@swmm-solver_VERSION@"
-#define VERSION_MAJOR   @swmm-solver_VERSION_MAJOR@
-#define VERSION_MINOR   @swmm-solver_VERSION_MINOR@
-#define VERSION_PATCH   @swmm-solver_VERSION_PATCH@
+#define VERSION             "@swmm-solver_VERSION@"
+#define VERSION_MAJOR       @swmm-solver_VERSION_MAJOR@
+#define VERSION_MINOR       @swmm-solver_VERSION_MINOR@
+#define VERSION_PATCH       @swmm-solver_VERSION_PATCH@
+#define GIT_HASH            "@GIT_HASH@"
 
-#define GIT_HASH        "@GIT_HASH@"
-
-#define BUILD_ID        "@BUILD_ID@"
+#define PLATFORM            "@CMAKE_SYSTEM_NAME@"
+#define COMPILER            "@CMAKE_C_COMPILER_ID@"
+#define COMPILER_VERSION    "@CMAKE_C_COMPILER_VERSION@"
+#define BUILD_ID            "@BUILD_ID@"
 
 
 static inline int get_version_legacy() { \
