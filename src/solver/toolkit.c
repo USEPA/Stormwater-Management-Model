@@ -1,14 +1,14 @@
 /*
-  *  toolkit.c - OWA SWMM Toolkit API
-  *
-  *  Created on: Aug 30, 2016
-  *  Updated on:
-  *
-  *  Author:      See CONTRIBUTORS
-  * 
-  *  Note: 
-  *     Originally developed by Bryant McDonnell  
-  */
+ *  toolkit.c - OWA SWMM Toolkit API
+ *
+ *  Created on: Aug 30, 2016
+ *  Updated on:
+ *
+ *  Author:      See CONTRIBUTORS
+ * 
+ *  Note: 
+ *     Originally developed by Bryant McDonnell  
+ */
 
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -42,7 +42,7 @@ double *newDoubleArray(int n);
 
 
 
-EXPORT_TOOLKIT char *swmm_getSemVersion()
+EXPORT_TOOLKIT const char *swmm_getSemVersion()
 //
 //  Output: Returns Semantic Version
 //  Purpose: retrieves the current semantic version
@@ -51,7 +51,7 @@ EXPORT_TOOLKIT char *swmm_getSemVersion()
     return VERSION;
 }
 
-EXPORT_TOOLKIT char *swmm_getBuildId()
+EXPORT_TOOLKIT const char *swmm_getBuildId()
 //
 //  Output: Returns Build Id
 //  Purpose: retrieves the current build id

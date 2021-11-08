@@ -1,14 +1,14 @@
 /*
-  *  toolkit.h - OWA SWMM Toolkit API
-  *
-  *  Created on: Aug 30, 2016
-  *  Updated on:
-  *
-  *  Author:      See CONTRIBUTORS
-  * 
-  *  Note: 
-  *     Originally developed by Bryant McDonnell 
-  */
+ *  toolkit.h - OWA SWMM Toolkit API
+ *
+ *  Created on: Aug 30, 2016
+ *  Updated on:
+ *
+ *  Author:      See CONTRIBUTORS
+ * 
+ *  Note: 
+ *     Originally developed by Bryant McDonnell 
+ */
 
 #ifndef TOOLKIT_H
 #define TOOLKIT_H
@@ -32,14 +32,14 @@ extern "C" {
  @param[out] Pointer to version number string
  @returns error code
 */
-EXPORT_TOOLKIT char *swmm_getSemVersion();
+EXPORT_TOOLKIT const char *swmm_getSemVersion();
 
 /**
  @brief Get Build Id
  @param[out] Pointer to build id string
  @returns error code
 */
-EXPORT_TOOLKIT char *swmm_getBuildId();
+EXPORT_TOOLKIT const char *swmm_getBuildId();
 
 
 /**
