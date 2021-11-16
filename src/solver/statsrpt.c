@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21 (Build 5.2.0)
+//   Date:     11/01/21 (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Report writing functions for summary statistics.
@@ -46,8 +46,10 @@ extern TOutfallStats*  OutfallStats;
 extern TPumpStats*     PumpStats;
 extern double          MaxOutfallFlow;
 extern double          MaxRunoffFlow;
+extern double          RoutingTimeSpan;
+
 extern double*         NodeInflow;             // defined in MASSBAL.C
-extern double*         NodeOutflow;            // defined in massbal.c
+extern double*         NodeOutflow;
 
 //-----------------------------------------------------------------------------
 //  Local functions
@@ -82,8 +84,8 @@ void statsrpt_writeReport()
 //
 {
     // --- set number of decimal places for reporting flow values
-    if ( FlowUnits == MGD || FlowUnits == CMS ) strcpy(FlowFmt, "%9.3f");
-    else strcpy(FlowFmt, "%9.2f");
+    if ( FlowUnits == MGD || FlowUnits == CMS ) sstrncpy(FlowFmt, "%9.3f", 5);
+    else sstrncpy(FlowFmt, "%9.2f", 5);
 
     // --- volume conversion factor from ft3 to Mgal or Mliters
     if (UnitSystem == US) Vcf = 7.48 / 1.0e6;
@@ -136,8 +138,6 @@ void writeSubcatchRunoff()
     WRITE("");
     fprintf(Frpt.file,
 
-////////  Segment below modified for release 5.1.013.  /////////
-
 "\n  ------------------------------------------------------------------------------------------------------------------------------"
 "\n                            Total      Total      Total      Total     Imperv       Perv      Total       Total     Peak  Runoff"
 "\n                           Precip      Runon       Evap      Infil     Runoff     Runoff     Runoff      Runoff   Runoff   Coeff");
@@ -149,8 +149,6 @@ void writeSubcatchRunoff()
         VolUnitsWords[UnitSystem], FlowUnitWords[FlowUnits]);
     fprintf(Frpt.file,
 "\n  ------------------------------------------------------------------------------------------------------------------------------");
-
-/////////////////////////////////////////////////////////////////
 
     for ( j = 0; j < Nobjects[SUBCATCH]; j++ )
     {
@@ -267,7 +265,7 @@ void writeSubcatchLoads()
         {
             i = UnitSystem;
             if ( Pollut[p].units == COUNT ) i = 2;
-            strcpy(units, LoadUnitsWords[i]);
+            sstrncpy(units, LoadUnitsWords[i], 14);
             fprintf(Frpt.file, "%14s", units);
             totals[p] = 0.0;
         }
@@ -618,7 +616,7 @@ void writeOutfallLoads()
         {
             i = UnitSystem;
             if ( Pollut[p].units == COUNT ) i = 2;
-            strcpy(units, LoadUnitsWords[i]);
+            sstrncpy(units, LoadUnitsWords[i], 14);
             fprintf(Frpt.file, "%14s", units);
         }
         fprintf(Frpt.file,
@@ -781,9 +779,7 @@ void writeFlowClass()
 //
 {
     int   i, j, k;
-    double totalSeconds = NewRoutingTime / 1000.0 -
-                          (ReportStart - StartDateTime) * SECperDAY;
-
+    double totalSeconds = RoutingTimeSpan;
 
     if ( RouteModel != DW ) return;
     WRITE("");
@@ -807,7 +803,8 @@ void writeFlowClass()
         for ( i=0; i<MAX_FLOW_CLASSES; i++ )
         {
             fprintf(Frpt.file, "  %4.2f",
-                LinkStats[j].timeInFlowClass[i] /= (double)ReportStepCount);
+                LinkStats[j].timeInFlowClass[i] /= totalSeconds);              //5.2
+                                                   //(double)ReportStepCount);
         }
         fprintf(Frpt.file, "  %4.2f", LinkStats[j].timeNormalFlow / totalSeconds);
         fprintf(Frpt.file, "  %4.2f", LinkStats[j].timeInletControl / totalSeconds);
@@ -866,7 +863,8 @@ void writePumpFlows()
 //
 {
     int    j, k;
-    double avgFlow, pctUtilized, pctOffCurve1, pctOffCurve2, totalSeconds;
+    double avgFlow, pctUtilized, pctOffCurve1, pctOffCurve2,
+           totalSeconds = RoutingTimeSpan;
 
     if ( Nlinks[PUMP] == 0 ) return;
 
@@ -889,8 +887,6 @@ void writePumpFlows()
         if ( Link[j].type != PUMP ) continue;
         k = Link[j].subIndex;
         fprintf(Frpt.file, "\n  %-20s", Link[j].ID);
-        totalSeconds = NewRoutingTime / 1000.0 -
-                       (ReportStart - StartDateTime) * SECperDAY;
         pctUtilized = PumpStats[k].utilized / totalSeconds * 100.0;
         avgFlow = PumpStats[k].avgFlow;
         if ( PumpStats[k].totalPeriods > 0 )
@@ -936,7 +932,7 @@ void writeLinkLoads()
     {
         i = UnitSystem;
         if ( Pollut[p].units == COUNT ) i = 2;
-        strcpy(units, LoadUnitsWords[i]);
+        sstrncpy(units, LoadUnitsWords[i], 14);
         fprintf(Frpt.file, "%14s", units);
     }
     fprintf(Frpt.file, "\n  %s", linkLine);

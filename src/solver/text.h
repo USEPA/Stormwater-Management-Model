@@ -3,10 +3,16 @@
 //
 //   Project: EPA SWMM5
 //   Version: 5.2
-//   Date:    03/24/21  (Build 5.2.0)
+//   Date:    11/01/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Text strings
+//
+//   Update History
+//   ==============
+//   Build 5.2.0:
+//   - Moved strings used in swmm_run() (in swmm5.c) to that function.
+//   - Added text strings used for storage shapes, streets & inlets.
 //-----------------------------------------------------------------------------
 
 #ifndef TEXT_H
@@ -18,9 +24,6 @@
 
 #define FMT03 " There are errors.\n"
 #define FMT04 " There are warnings.\n"
-#define FMT05 "\n"
-#define FMT06 "\n o  Retrieving project data"
-#define FMT07 "\n o  Writing output report"
 #define FMT08 \
   "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.2 (Build 5.2.0)"
 #define FMT09 \
@@ -186,7 +189,9 @@
 #define  w_OVERFLOW          "OVERFLOW"
 
 // Storage Node Shapes
+#define  w_CYLINDRICAL       "CYLINDRICAL"
 #define  w_CONICAL           "CONICAL"
+#define  w_PARABOLOID        "PARABOLIC"
 #define  w_PYRAMIDAL         "PYRAMIDAL"
 
 // Pump Curve Types
@@ -315,6 +320,7 @@
 #define  w_INLET             "INLET"
 
 // Reporting Options
+#define  w_DISABLED          "DISABLED"
 #define  w_INPUT             "INPUT"
 #define  w_CONTINUITY        "CONTINUITY"
 #define  w_FLOWSTATS         "FLOWSTATS"

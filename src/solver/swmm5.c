@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21  (Build 5.2.0)
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   This is the main module of the computational engine for Version 5 of
@@ -35,6 +35,11 @@
 //   - SWMM engine now always compiled to a shared object library.
 //   Build 5.1.015:
 //   - Fixes bug in summary statistics when Report Start date > Start Date.
+//   Build 5.2.0:
+//   - Added additional API functions.
+//   - Set max. number of open files to 8192.
+//   - Changed getElapsedTime function to use report start as base date/time.
+//   - Support added for relative file names.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -59,6 +64,9 @@
 #ifdef WINDOWS
   #include <windows.h>
   #include <direct.h>
+  #include <errno.h>
+#else
+  #include <unistd.h>
 #endif
 #ifdef EXH
   #include <excpt.h>
@@ -77,16 +85,13 @@
 //  Note: the directives listed below are also contained in headers.h which
 //        is included at the start of most of SWMM's other code modules.
 //-----------------------------------------------------------------------------
-#include "consts.h"                    // defined constants
 #include "macros.h"                    // macros used throughout SWMM
-#include "enums.h"                     // enumerated constants
-#include "error.h"                     // error message codes
-#include "datetime.h"                  // date/time functions
 #include "objects.h"                   // definitions of SWMM's data objects
-#include "funcs.h"                     // declaration of all global functions
-#include "text.h"                      // listing of all text strings 
 #define  EXTERN                        // defined as 'extern' in headers.h
 #include "globals.h"                   // declaration of all global variables
+#include "funcs.h"                     // declaration of all global functions
+#include "error.h"                     // error message codes
+#include "text.h"                      // listing of all text strings 
 
 #include "swmm5.h"                     // declaration of SWMM's API functions
 
@@ -115,12 +120,13 @@ const double Qcf[6] =                  // Flow Conversion Factors:
 //-----------------------------------------------------------------------------
 //  Shared variables
 //-----------------------------------------------------------------------------
-static int  IsOpenFlag;           // TRUE if a project has been opened
-static int  IsStartedFlag;        // TRUE if a simulation has been started
-static int  SaveResultsFlag;      // TRUE if output to be saved to binary file
-static int  ExceptionCount;       // number of exceptions handled
-static int  DoRunoff;             // TRUE if runoff is computed
-static int  DoRouting;            // TRUE if flow routing is computed
+static int    IsOpenFlag;           // TRUE if a project has been opened
+static int    IsStartedFlag;        // TRUE if a simulation has been started
+static int    SaveResultsFlag;      // TRUE if output to be saved to binary file
+static int    ExceptionCount;       // number of exceptions handled
+static int    DoRunoff;             // TRUE if runoff is computed
+static int    DoRouting;            // TRUE if flow routing is computed
+static double RoutingDuration;      // duration of a set of routing steps (msecs)
 
 //-----------------------------------------------------------------------------
 //  External API functions (prototyped in swmm5.h)
@@ -134,11 +140,39 @@ static int  DoRouting;            // TRUE if flow routing is computed
 //  swmm_close
 //  swmm_getMassBalErr
 //  swmm_getVersion
+//  swmm_getError
+//  swmm_getWarnings
+//  swmm_getCount
+//  swmm_getIDname
+//  swmm_getIndex
+//  swmm_getStartNode
+//  swmm_getEndNode
+//  swmm_getValue
+//  swmm_setValue
+//  swmm_getSavedValue
+//  swmm_writeLine
+//  swmm_decodeDate
 
 //-----------------------------------------------------------------------------
 //  Local functions
 //-----------------------------------------------------------------------------
-static void execRouting(void);
+static void   execRouting(void);
+static void   saveResults(void);
+static double getGageValue(int index, int property);
+static double getSubcatchValue(int index, int property);
+static double getNodeValue(int index, int property);
+static double getLinkValue(int index, int property);
+static double getSavedDate(int period);
+static double getSavedSubcatchValue(int index, int property, int period);
+static double getSavedNodeValue(int index, int property, int period);
+static double getSavedLinkValue(int index, int property, int period);
+static double getSystemValue(int property);
+static double getMaxRouteStep();
+static void   setNodeLatFlow(int index, double value);
+static void   setOutfallStage(int index, double value);
+static void   setLinkSetting(int index, double value);
+static void   setRoutingStep(double value);
+static void   getAbsolutePath(const char* fname, char* absPath, size_t size);
 
 // Exception filtering function
 #ifdef EXH
@@ -147,7 +181,7 @@ static int  xfilter(int xc, char* module, double elapsedTime, long step);
 
 //=============================================================================
 
-int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
+int DLLEXPORT  swmm_run(const char *f1, const char *f2, const char *f3)
 //
 //  Input:   f1 = name of input file
 //           f2 = name of report file
@@ -167,6 +201,7 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
 
     // --- open the files & read input data
     ErrorCode = 0;
+    writecon("\n o  Retrieving project data");
     swmm_open(f1, f2, f3);
 
     // --- run the simulation if input data OK
@@ -188,7 +223,7 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
                     theDay = (long)elapsedTime;
                     theHour = (long)((elapsedTime - floor(elapsedTime)) * 24.0);
                     writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-                    sprintf(Msg, "%-5ld hour: %-2ld", theDay, theHour);
+                    snprintf(Msg, MAXMSG, "%-5ld hour: %-2ld", theDay, theHour);
                     writecon(Msg);
                     oldHour = newHour;
                 }
@@ -203,16 +238,20 @@ int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
     }
 
     // --- report results
-    if ( Fout.mode == SCRATCH_FILE ) swmm_report();
+    if ( !ErrorCode && Fout.mode == SCRATCH_FILE )
+    {
+        writecon("\n o  Writing output report");
+        swmm_report();
+    }
 
     // --- close the system
     swmm_close();
-    return error_getCode(ErrorCode);
+    return ErrorCode;
 }
 
 //=============================================================================
 
-int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
+int DLLEXPORT swmm_open(const char *f1, const char *f2, const char *f3)
 //
 //  Input:   f1 = name of input file
 //           f2 = name of report file
@@ -224,6 +263,7 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
 // --- to be safe, reset the state of the floating point unit
 #ifdef WINDOWS
     _fpreset();
+    _setmaxstdio(8192);
 #endif
 
 #ifdef EXH
@@ -234,29 +274,27 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
         // --- initialize error & warning codes
         datetime_setDateFormat(M_D_Y);
         ErrorCode = 0;
-        strcpy(ErrorMsg, "");
+        ErrorMsg[0] = '\0';
         Warnings = 0;
         IsOpenFlag = FALSE;
         IsStartedFlag = FALSE;
         ExceptionCount = 0;
 
         // --- open a SWMM project
+        strcpy(InpDir, "");
         project_open(f1, f2, f3);
-        if ( ErrorCode ) return error_getCode(ErrorCode);
+        getAbsolutePath(f1, InpDir, sizeof(InpDir));
+        if ( ErrorCode ) return ErrorCode;
         IsOpenFlag = TRUE;
         report_writeLogo();
-        writecon(FMT06);
 
         // --- retrieve project data from input file
         project_readInput();
-        if ( ErrorCode ) return error_getCode(ErrorCode);
+        if ( ErrorCode ) return ErrorCode;
 
         // --- write project title to report file & validate data
         report_writeTitle();
         project_validate();
-
-        // --- write input summary to report file if requested
-        if ( RptFlags.input ) inputrpt_writeInput();
     }
 
 #ifdef EXH
@@ -266,7 +304,7 @@ int DLLEXPORT swmm_open(char* f1, char* f2, char* f3)
         ErrorCode = ERR_SYSTEM;
     }
 #endif
-    return error_getCode(ErrorCode);
+    return ErrorCode;
 }
 
 //=============================================================================
@@ -279,11 +317,18 @@ int DLLEXPORT swmm_start(int saveResults)
 //
 {
     // --- check that a project is open & no run started
-    if ( ErrorCode ) return error_getCode(ErrorCode);
-    if ( !IsOpenFlag || IsStartedFlag )
+    if ( ErrorCode ) return ErrorCode;
+    if ( !IsOpenFlag )
+        return (ErrorCode = ERR_API_NOT_OPEN);
+    if ( IsStartedFlag )
+        return (ErrorCode = ERR_API_NOT_ENDED);
+
+    // --- write input summary & project options to report file if requested
+    if (!RptFlags.disabled)
     {
-        report_writeErrorMsg(ERR_NOT_OPEN, "");
-        return error_getCode(ErrorCode);
+        if (RptFlags.input)
+            inputrpt_writeInput();
+        report_writeOptions();
     }
 
     // --- save saveResults flag to global variable
@@ -297,11 +342,12 @@ int DLLEXPORT swmm_start(int saveResults)
     {
         // --- initialize elapsed time in decimal days
         ElapsedTime = 0.0;
+        RoutingDuration = TotalDuration;
 
         // --- initialize runoff, routing & reporting time (in milliseconds)
         NewRunoffTime = 0.0;
         NewRoutingTime = 0.0;
-        ReportTime =   (double)(1000 * ReportStep);
+        ReportTime = 1000 * (double)ReportStep;
         TotalStepCount = 0;
         ReportStepCount = 0;
         NonConvergeCount = 0;
@@ -316,7 +362,7 @@ int DLLEXPORT swmm_start(int saveResults)
         // --- open rainfall processor (creates/opens a rainfall
         //     interface file and generates any RDII flows)
         if ( !IgnoreRainfall ) rain_open();
-        if ( ErrorCode ) return error_getCode(ErrorCode);
+        if ( ErrorCode ) return ErrorCode;
 
         // --- initialize state of each major system component
         project_init();
@@ -343,9 +389,9 @@ int DLLEXPORT swmm_start(int saveResults)
         massbal_open();
         stats_open();
 
-        // --- write project options to report file 
-	    report_writeOptions();
-        if ( RptFlags.controls ) report_writeControlActionsHeading();
+        // --- write heading for control actions listing 
+	    if (!RptFlags.disabled && RptFlags.controls)
+                report_writeControlActionsHeading();
     }
 
 #ifdef EXH
@@ -355,11 +401,11 @@ int DLLEXPORT swmm_start(int saveResults)
         ErrorCode = ERR_SYSTEM;
     }
 #endif
-    return error_getCode(ErrorCode);
+    return ErrorCode;
 }
 //=============================================================================
 
-int DLLEXPORT swmm_step(double* elapsedTime)
+int DLLEXPORT swmm_step(double *elapsedTime)
 //
 //  Input:   elapsedTime = current elapsed time in decimal days
 //  Output:  updated value of elapsedTime,
@@ -368,12 +414,12 @@ int DLLEXPORT swmm_step(double* elapsedTime)
 //
 {
     // --- check that simulation can proceed
-    if ( ErrorCode ) return error_getCode(ErrorCode);
-    if ( !IsOpenFlag || !IsStartedFlag  )
-    {
-        report_writeErrorMsg(ERR_NOT_OPEN, "");
-        return error_getCode(ErrorCode);
-    }
+    if ( ErrorCode ) 
+        return ErrorCode;
+    if ( !IsOpenFlag )
+        return (ErrorCode = ERR_API_NOT_OPEN);
+    if ( !IsStartedFlag )
+        return (ErrorCode = ERR_API_NOT_STARTED);
 
 #ifdef EXH
     // --- begin exception handling loop here
@@ -381,7 +427,7 @@ int DLLEXPORT swmm_step(double* elapsedTime)
 #endif
     {
         // --- if routing time has not exceeded total duration
-        if ( NewRoutingTime < TotalDuration )
+        if ( NewRoutingTime < RoutingDuration )
         {
             // --- route flow & WQ through drainage system
             //     (runoff will be calculated as needed)
@@ -391,42 +437,11 @@ int DLLEXPORT swmm_step(double* elapsedTime)
 
         // --- if saving results to the binary file
         if ( SaveResultsFlag )
-        {
-            // --- and it's time to save results
-            if ( NewRoutingTime >= ReportTime )
-            {
-                // --- if user requested that average results be saved:
-                if ( RptFlags.averages )
-                {
-                    // --- include latest results in current averages
-                    //     if current time equals the reporting time
-                    if ( NewRoutingTime == ReportTime ) output_updateAvgResults();
-
-                    // --- save current average results to binary file
-                    //     (which will re-set averages to 0)
-                    output_saveResults(ReportTime);
-
-                    // --- if current time exceeds reporting period then
-                    //     start computing averages for next period
-                    if ( NewRoutingTime > ReportTime ) output_updateAvgResults();
-                }
-
-                // --- otherwise save interpolated point results
-                else output_saveResults(ReportTime);
-
-                // --- advance to next reporting period
-                ReportTime = ReportTime + (double)(1000 * ReportStep);
-            }
-
-            // --- not a reporting period so update average results if applicable
-            else if ( RptFlags.averages ) output_updateAvgResults();
-        }
+            saveResults();
 
         // --- update elapsed time (days)
-        if ( NewRoutingTime < TotalDuration )
-        {
+        if ( NewRoutingTime < RoutingDuration )
             ElapsedTime = NewRoutingTime / MSECperDAY;
-        }
 
         // --- otherwise end the simulation
         else ElapsedTime = 0.0;
@@ -440,7 +455,54 @@ int DLLEXPORT swmm_step(double* elapsedTime)
         ErrorCode = ERR_SYSTEM;
     }
 #endif
-    return error_getCode(ErrorCode);
+    return ErrorCode;
+}
+
+//=============================================================================
+
+int  DLLEXPORT swmm_stride(int strideStep, double *elapsedTime)
+//
+//  Input:   strideStep = number of seconds to advance the simulation
+//           elapsedTime = current elapsed time in decimal days
+//  Output:  updated value of elapsedTime,
+//           returns error code
+//  Purpose: advances the simulation by a fixed number of seconds.
+{
+    double realRouteStep = RouteStep;
+
+    // --- check that simulation can proceed
+    if (ErrorCode)
+        return ErrorCode;
+    if (!IsOpenFlag)
+        return (ErrorCode = ERR_API_NOT_OPEN);
+    if (!IsStartedFlag)
+        return (ErrorCode = ERR_API_NOT_STARTED);
+
+    // --- modify total duration to be strideStep seconds after current time
+    RoutingDuration = NewRoutingTime + 1000.0 * strideStep;
+    RoutingDuration = MIN(TotalDuration, RoutingDuration);
+
+    // --- modify routing step to not exceed stride time step
+    if (strideStep < RouteStep) RouteStep = strideStep;
+
+    // --- step through simulation until next stride step is reached
+    do
+    {
+        swmm_step(elapsedTime);
+    } while (*elapsedTime > 0.0 && !ErrorCode);
+
+    // --- restore original routing step and routing duration
+    RouteStep = realRouteStep;
+    RoutingDuration = TotalDuration;
+
+    // --- restore actual elapsed time (days)
+    if (NewRoutingTime < TotalDuration)
+    {
+        ElapsedTime = NewRoutingTime / MSECperDAY;
+    }
+    else ElapsedTime = 0.0;
+    *elapsedTime = ElapsedTime;
+    return ErrorCode;
 }
 
 //=============================================================================
@@ -472,15 +534,15 @@ void execRouting()
         nextRoutingTime = NewRoutingTime + 1000.0 * routingStep;
 
         // --- adjust routing step so that total duration not exceeded
-        if ( nextRoutingTime > TotalDuration )
+        if ( nextRoutingTime > RoutingDuration )
         {
-            routingStep = (TotalDuration - NewRoutingTime) / 1000.0;
+            routingStep = (RoutingDuration - NewRoutingTime) / 1000.0;
             routingStep = MAX(routingStep, 1. / 1000.0);
-            nextRoutingTime = TotalDuration;
+            nextRoutingTime = RoutingDuration;
         }
 
         // --- compute runoff until next routing time reached or exceeded
-        if ( DoRunoff ) while ( NewRunoffTime < nextRoutingTime )
+        if ( DoRunoff ) while ( NewRunoffTime < nextRoutingTime)
         {
             runoff_execute();
             if ( ErrorCode ) return;
@@ -491,9 +553,10 @@ void execRouting()
   
         // --- route flows & pollutants through drainage system
         //     (while updating NewRoutingTime)
-        if ( DoRouting ) routing_execute(RouteModel, routingStep);
+        if ( DoRouting )
+            routing_execute(RouteModel, routingStep);
         else
-        NewRoutingTime = nextRoutingTime;
+            NewRoutingTime = nextRoutingTime;
     }
 
 #ifdef EXH
@@ -509,6 +572,45 @@ void execRouting()
 
 //=============================================================================
 
+void saveResults()
+//
+//  Input:   none
+//  Output:  none
+//  Purpose: saves current results to binary output file.
+{
+    if (NewRoutingTime >= ReportTime)
+    {
+        // --- if user requested that average results be saved:
+        if (RptFlags.averages)
+        {
+            // --- include latest results in current averages
+            //     if current time equals the reporting time
+            if (NewRoutingTime == ReportTime) output_updateAvgResults();
+
+            // --- save current average results to binary file
+            //     (which will re-set averages to 0)
+            output_saveResults(ReportTime);
+
+            // --- if current time exceeds reporting period then
+            //     start computing averages for next period
+            if (NewRoutingTime > ReportTime) output_updateAvgResults();
+        }
+
+        // --- otherwise save interpolated point results
+        else output_saveResults(ReportTime);
+
+        // --- advance to next reporting period
+        ReportTime = ReportTime + 1000 * (double)ReportStep;
+    }
+
+    // --- not a reporting period so update average results if applicable
+    else if (RptFlags.averages) output_updateAvgResults();
+
+}
+
+
+//=============================================================================
+
 int DLLEXPORT swmm_end(void)
 //
 //  Input:   none
@@ -517,11 +619,10 @@ int DLLEXPORT swmm_end(void)
 //
 {
     // --- check that project opened and run started
+    if (ErrorCode)
+        return ErrorCode;
     if ( !IsOpenFlag )
-    {
-        report_writeErrorMsg(ERR_NOT_OPEN, "");
-        return error_getCode(ErrorCode);
-    }
+        return (ErrorCode = ERR_API_NOT_OPEN);
 
     if ( IsStartedFlag )
     {
@@ -529,7 +630,7 @@ int DLLEXPORT swmm_end(void)
         if ( Fout.file ) output_end();
 
         // --- report mass balance results and system statistics
-        if ( !ErrorCode )
+        if ( !ErrorCode  && RptFlags.disabled == 0 )
         {
             massbal_report();
             stats_report();
@@ -544,7 +645,7 @@ int DLLEXPORT swmm_end(void)
         hotstart_close();
         IsStartedFlag = FALSE;
     }
-    return error_getCode(ErrorCode);
+    return ErrorCode;
 }
 
 //=============================================================================
@@ -553,17 +654,25 @@ int DLLEXPORT swmm_report()
 //
 //  Input:   none
 //  Output:  returns an error code
-//  Purpose: writes simulation results to report file.
+//  Purpose: writes simulation results to the report file.
 //
 {
-    if ( Fout.mode == SCRATCH_FILE ) output_checkFileSize();
-    if ( ErrorCode ) report_writeErrorCode();
-    else
-    {
-        writecon(FMT07);
+    if ( !ErrorCode )
         report_writeReport();
-    }
-    return error_getCode(ErrorCode);
+    return ErrorCode;
+}
+
+//=============================================================================
+
+void  DLLEXPORT swmm_writeLine(const char *line)
+//
+//  Input:   line = a character string
+//  Output:  returns an error code
+//  Purpose: writes a line of text to the report file.
+//
+{
+    if (IsOpenFlag)
+        report_writeLine(line);
 }
 
 //=============================================================================
@@ -578,8 +687,10 @@ int DLLEXPORT swmm_close()
     if ( Fout.file ) output_close();
     if ( IsOpenFlag ) project_close();
     report_writeSysTime();
-    if ( Finp.file != NULL ) fclose(Finp.file);
-    if ( Frpt.file != NULL ) fclose(Frpt.file);
+    if ( Finp.file != NULL )
+        fclose(Finp.file);
+    if ( Frpt.file != NULL )
+        fclose(Frpt.file);
     if ( Fout.file != NULL )
     {
         fclose(Fout.file);
@@ -592,8 +703,8 @@ int DLLEXPORT swmm_close()
 
 //=============================================================================
 
-int  DLLEXPORT swmm_getMassBalErr(float* runoffErr, float* flowErr,
-                                  float* qualErr)
+int  DLLEXPORT swmm_getMassBalErr(float *runoffErr, float *flowErr,
+                                  float *qualErr)
 //
 //  Input:   none
 //  Output:  runoffErr = runoff mass balance error (percent)
@@ -618,7 +729,7 @@ int  DLLEXPORT swmm_getMassBalErr(float* runoffErr, float* flowErr,
 
 //=============================================================================
 
-int  DLLEXPORT swmm_getVersion(void)
+int  DLLEXPORT swmm_getVersion()
 //
 //  Input:   none
 //  Output:  returns SWMM engine version number
@@ -633,18 +744,18 @@ int  DLLEXPORT swmm_getVersion(void)
 
 //=============================================================================
 
-int DLLEXPORT swmm_getWarnings(void)
+int DLLEXPORT swmm_getWarnings()
 //
 //  Input:  none
 //  Output: returns number of warning messages issued.
-//  Purpose: retireves number of warning messages issued during an analysis.
+//  Purpose: retrieves number of warning messages issued during an analysis.
 {
     return Warnings;
 }
 
 //=============================================================================
 
-int  DLLEXPORT swmm_getError(char* errMsg, int msgLen)
+int  DLLEXPORT swmm_getError(char *errMsg, int msgLen)
 //
 //  Input:   errMsg = character array to hold error message text
 //           msgLen = maximum size of errMsg
@@ -652,19 +763,612 @@ int  DLLEXPORT swmm_getError(char* errMsg, int msgLen)
 //  Purpose: retrieves the code number and text of the error condition that
 //           caused SWMM to abort its analysis.
 {
-    size_t errMsgLen = msgLen;
-
     // --- copy text of last error message into errMsg
-    if ( ErrorCode > 0 && strlen(ErrorMsg) == 0 ) sstrncpy(errMsg, "", 1);
-    else
-    {
-        errMsgLen = MIN(errMsgLen, strlen(ErrorMsg));
-        errMsg = sstrncpy(errMsg, ErrorMsg, errMsgLen);
-    }
+    sstrncpy(errMsg, ErrorMsg, msgLen);
 
     // --- remove leading line feed from errMsg
-    if ( errMsgLen > 0 && errMsg[0] == '\n' ) errMsg[0] = ' ';
-    return error_getCode(ErrorCode);
+    if ( msgLen > 0 && errMsg[0] == '\n' ) errMsg[0] = ' ';
+    return ErrorCode;
+}
+
+//=============================================================================
+
+int  DLLEXPORT swmm_getCount(int objType)
+//
+//  Input:   objType = a type of SWMM object
+//  Output:  returns the number of objects;
+//  Purpose: retrieves the number of objects of a specific type.
+{
+    if (!IsOpenFlag)
+        return 0;
+    if (objType < swmm_GAGE || objType > swmm_LINK)
+        return 0;
+    return Nobjects[objType];
+}
+
+//=============================================================================
+
+void  DLLEXPORT swmm_getName(int objType, int index, char *name, int size)
+//
+//  Input:   objType = a type of SWMM object
+//           index = the object's index in the array of objects
+//           name = a character array
+//           size = size of the name array
+//  Output:  name = the object's ID name;
+//  Purpose: retrieves the ID name of an object.
+{
+    char *idName = NULL;
+
+    name[0] = '\0';
+    if (!IsOpenFlag)
+        return;
+    if (objType < swmm_GAGE || objType > swmm_LINK)
+        return;
+    if (index < 0 || index >= Nobjects[objType])
+        return;
+    switch (objType)
+    {
+        case GAGE:     idName = Gage[index].ID;     break;
+        case SUBCATCH: idName = Subcatch[index].ID; break;
+        case NODE:     idName = Node[index].ID;     break;
+        case LINK:     idName = Link[index].ID;     break;
+    }
+    if (idName)
+        sstrncpy(name, idName, size);
+}
+
+//=============================================================================
+
+int  DLLEXPORT swmm_getIndex(int objType, const char *name)
+//
+//  Input:   objType = a type of SWMM object
+//           name = the object's ID name
+//  Output:  returns the object's position in the array of like objects;
+//  Purpose: retrieves the index of a named object.
+{
+    if (!IsOpenFlag)
+        return -1;
+    if (objType < swmm_GAGE || objType > swmm_LINK)
+        return -1;
+    return project_findObject(objType, name);
+}
+
+//=============================================================================
+
+double  DLLEXPORT swmm_getValue(int objType, int index, int property)
+//
+//  Input:   objType = a type of SWMM object
+//           index = the object's index in the array of like objects
+//           property = a property code associated with the object
+//  Output:  returns the property's current value
+//  Purpose: retrieves the value of an object's property.
+{
+    if (!IsOpenFlag)
+        return 0;
+    if (objType == swmm_SYSTEM)
+        return getSystemValue(property);
+    if (objType < swmm_GAGE || objType > swmm_LINK)
+        return 0;
+    if (index < 0 || index >= Nobjects[objType])
+        return 0;
+    switch (objType)
+    {
+        case GAGE:
+          return getGageValue(index, property);
+        case SUBCATCH:
+          return getSubcatchValue(index, property);
+        case NODE:
+          return getNodeValue(index, property);
+        case LINK:
+          return getLinkValue(index, property);
+    }
+    return 0;
+}
+
+//=============================================================================
+
+void  DLLEXPORT swmm_setValue(int objType, int index, int property, double value)
+//
+//  Input:   objType = a type of SWMM object
+//           index = the object's index in the array of like objects
+//           property = a property code associated with the object
+//           value = the property's new value
+//  Output:  returns an error code
+//  Purpose: sets the value of an object's property.
+{
+    if (!IsOpenFlag)
+        return;
+    if (objType == swmm_GAGE)
+    {
+        if (index < 0 || index >= Nobjects[GAGE])
+            return;
+        if (property == swmm_GAGE_RAINFALL)
+        {
+            if (value >= 0.0)
+                Gage[index].apiRainfall = value;
+        }
+    }
+    else if (objType == swmm_NODE)
+    {
+        if (property == swmm_NODE_LATFLOW)
+            setNodeLatFlow(index, value);
+        if (property == swmm_NODE_HEAD)
+            setOutfallStage(index, value);
+    }
+    else if (objType == swmm_LINK)
+    {
+        if (property == swmm_LINK_SETTING)
+            setLinkSetting(index, value);
+    }
+    if (objType == swmm_SYSTEM)
+    {
+        if (property == swmm_ROUTESTEP)
+            setRoutingStep(value);
+        else if (property == swmm_REPORTSTEP)
+        {
+            if (!IsStartedFlag && value > 0)
+                ReportStep = (int)value;                
+        }
+        else if (property == swmm_NOREPORT)
+        {
+            if (value == 0)
+                RptFlags.disabled = FALSE;
+            else
+                RptFlags.disabled = TRUE;
+        }
+    }
+}
+
+//=============================================================================
+
+double  DLLEXPORT swmm_getSavedValue(int objType, int index, int property, int period)
+//
+//  Input:   objType = a type of SWMM object
+//           index = the object's index in the array of like objects
+//           property = a property code associated with the object
+//           period = a reporting time period (starting from 1) 
+//           value = the property's computed value at the requested time period
+//  Output:  returns an error code
+//  Purpose: retrieves an object's computed value at a specific reporting time period.
+{
+    if (!IsOpenFlag)
+        return 0;
+    if (IsStartedFlag)
+        return 0;
+    if (period < 1 || period > Nperiods)
+        return 0;
+    if (objType == swmm_SYSTEM)
+    {
+        if (property == swmm_CURRENTDATE)
+            return getSavedDate(period);
+        else
+            return 0;
+    }
+    if (objType < swmm_SUBCATCH || objType > swmm_LINK)
+        return 0;
+    if (index < 0 || index >= Nobjects[objType])
+        return 0;
+    switch (objType)
+    {
+    case swmm_SUBCATCH: return getSavedSubcatchValue(index, property, period);
+    case swmm_NODE: return getSavedNodeValue(index, property, period);
+    case swmm_LINK: return getSavedLinkValue(index, property, period);
+    }
+    return 0;
+}
+
+//=============================================================================
+
+void  DLLEXPORT swmm_decodeDate(double date, int *year, int *month, int *day,
+      int *hour, int *minute, int *second, int *dayOfWeek)
+//
+//  Input:  date = an encoded date in decimal days
+//  Output: date's year, month of year, day of month, time of day (hour,
+//           minute, second), and day of weeek
+//  Purpose: retrieves the calendar date and clock time of an encoded date.
+{
+    datetime_decodeDate(date, year, month, day);
+    datetime_decodeTime(date, hour, minute, second);
+    *dayOfWeek = datetime_dayOfWeek(date);
+}
+
+//=============================================================================
+//   Object property getters and setters
+//=============================================================================
+
+double getGageValue(int index, int property)
+//
+//  Input:   index = the index of a rain gage
+//           property = a rain gage property code
+//  Output:  returns current property value
+//  Purpose: retrieves current value of a rain gage property.
+{
+    if (property == swmm_GAGE_RAINFALL)
+        return Gage[index].rainfall;
+    else
+        return 0;
+}
+
+//=============================================================================
+
+double getSubcatchValue(int index, int property)
+//
+//  Input:   index = the index of a subcatchment
+//           property = a subcatchment property code
+//  Output:  returns current property value
+//  Purpose: retrieves current value of a subcatchment's property.
+{
+    TSubcatch* subcatch = &Subcatch[index];
+    switch (property)
+    {
+        case swmm_SUBCATCH_AREA:
+          return subcatch->area * UCF(LANDAREA);
+        case swmm_SUBCATCH_RAINGAGE:
+          return subcatch->gage;
+        case swmm_SUBCATCH_RAINFALL:
+          return subcatch->rainfall * UCF(RAINFALL);
+        case swmm_SUBCATCH_EVAP:
+          return subcatch->evapLoss * UCF(RAINFALL);
+        case swmm_SUBCATCH_INFIL:
+          return subcatch->infil;
+        case swmm_SUBCATCH_RUNOFF:
+          return Subcatch[index].newRunoff * UCF(FLOW);
+        default:
+          return 0;
+    }
+}
+
+//=============================================================================
+
+double getNodeValue(int index, int property)
+//
+//  Input:   index = the index of a node
+//           property = a node property code
+//  Output:  returns current property value
+//  Purpose: retrieves current value of a node's property.
+{
+    TNode* node = &Node[index];
+    switch (property)
+    {
+        case swmm_NODE_TYPE:
+          return node->type;
+        case swmm_NODE_ELEV:
+          return node->invertElev * UCF(LENGTH);
+        case swmm_NODE_MAXDEPTH:
+          return node->fullDepth * UCF(LENGTH);
+        case swmm_NODE_DEPTH:
+          return node->newDepth * UCF(LENGTH);
+        case swmm_NODE_HEAD:
+          return (node->newDepth + node->invertElev) * UCF(LENGTH); 
+        case swmm_NODE_VOLUME:
+          return node->newVolume * UCF(VOLUME);
+        case swmm_NODE_LATFLOW:
+          return node->newLatFlow * UCF(FLOW);
+        case swmm_NODE_INFLOW:
+          return node->inflow * UCF(FLOW);
+        case swmm_NODE_OVERFLOW:
+          return node->overflow * UCF(FLOW);
+        default:
+          return 0;
+    }
+}
+
+//=============================================================================
+
+double getLinkValue(int index, int property)
+//
+//  Input:   index = the index of a link
+//           property = a link property code
+//  Output:  returns current property value
+//  Purpose: retrieves current value of a link's property.
+{
+    TLink* link = &Link[index];
+    switch (property)
+    {
+        case swmm_LINK_TYPE:
+          return link->type;
+        case swmm_LINK_NODE1:
+          return link->node1;
+        case swmm_LINK_NODE2:
+          return link->node2;
+        case swmm_LINK_LENGTH:
+          if (link->type == CONDUIT)
+              return Conduit[link->subIndex].length * UCF(LENGTH);
+          else
+              return 0;
+        case swmm_LINK_SLOPE:
+          if (link->type == CONDUIT)
+              return Conduit[link->subIndex].slope;
+          else
+              return 0;
+          break;
+        case swmm_LINK_FULLDEPTH:
+          return link->xsect.yFull * UCF(LENGTH);
+        case swmm_LINK_FULLFLOW:
+          return link->qFull * UCF(FLOW);
+        case swmm_LINK_FLOW:
+          return link->newFlow * UCF(FLOW);
+        case swmm_LINK_VELOCITY:
+          return link_getVelocity(index, link->newFlow, link->newDepth)
+              * UCF(LENGTH);
+        case swmm_LINK_DEPTH:
+          return link->newDepth * UCF(LENGTH);
+        case swmm_LINK_TOPWIDTH:
+          if (link->type == CONDUIT)
+              return xsect_getWofY(&link->xsect, link->newDepth) * UCF(LENGTH);
+          else
+              return 0;
+        case swmm_LINK_SETTING:
+          return link->setting;
+        case swmm_LINK_TIMEOPEN:
+          if (link->setting > 0.0)
+              return (getDateTime(NewRoutingTime) - link->timeLastSet) * 24.;
+          else
+              return 0;
+        case swmm_LINK_TIMECLOSED:
+          if (link->setting == 0.0)
+              return (getDateTime(NewRoutingTime) - link->timeLastSet) * 24.;
+          else
+              return 0;
+        default:
+          return 0;
+    }
+}
+
+//=============================================================================
+
+double getSystemValue(int property)
+//
+//  Input:   property = a system property code
+//  Output:  returns current property value
+//  Purpose: retrieves current value of a system property.
+{
+    switch (property)
+    {
+        case swmm_STARTDATE:
+          return StartDateTime;
+        case swmm_CURRENTDATE:
+          return StartDateTime + ElapsedTime;
+        case swmm_ELAPSEDTIME:
+          return ElapsedTime;
+        case swmm_ROUTESTEP:
+          return RouteStep;
+        case swmm_MAXROUTESTEP:
+          return getMaxRouteStep();
+        case swmm_REPORTSTEP:
+          return ReportStep;
+        case swmm_TOTALSTEPS:
+          return Nperiods;
+        case swmm_NOREPORT:
+          return RptFlags.disabled;
+        default:
+          return 0;
+    }
+}
+
+//=============================================================================
+
+void  setNodeLatFlow(int index, double value)
+//
+//  Input:   index = the index of a node
+//           value = the node's external inflow value
+//  Output:  none
+//  Purpose: sets the value of a node's external inflow.
+{
+    if (index < 0 || index >= Nobjects[NODE])
+        return;
+    Node[index].apiExtInflow = value / UCF(FLOW);
+/*
+    inflow_setExtInflow(index,            // node index
+                        -1,               // FLOW property code
+                        FLOW_INFLOW,      // inflow type
+                        -1,               // no time series
+                        -1,               // no baseline pattern
+                        1.0 / UCF(FLOW),  // unit conversion factor
+                        value,            // baseline flow value
+                        1.0);             // scaling factor
+*/
+}
+
+//=============================================================================
+
+void  setOutfallStage(int index, double value)
+//
+//  Input:   index = the index of an outfall node
+//           value = the outfall's fixed stage elevation
+//  Output:  none
+//  Purpose: sets the value of an outfall node's fixed stage.
+{
+    TNode* node;
+    if (index < 0 || index >= Nobjects[NODE])
+        return ;
+    node = &Node[index];
+    if (node->type != OUTFALL)
+        return;
+    Outfall[node->subIndex].fixedStage = value / UCF(LENGTH);
+    Outfall[node->subIndex].type = FIXED_OUTFALL;
+}
+
+//=============================================================================
+
+void  setLinkSetting(int index, double value)
+//
+//  Input:   index = the index of a link
+//           value = the link's new setting
+//  Output:  node
+//  Purpose: sets the value of a link's setting.
+{
+    TLink* link;
+    if (index < 0 || index >= Nobjects[NODE])
+        return;
+    link = &Link[index];
+    if (value < 0.0)
+        return;
+    if (link->type != PUMP && value > 1.0)
+        return;
+    if (link->targetSetting == value)
+        return;
+    link->targetSetting = value;
+    if (link->targetSetting * link->setting == 0.0)
+        link->timeLastSet = StartDateTime + ElapsedTime;
+    link_setSetting(index, 0.0);
+}
+
+//=============================================================================
+
+double getSavedDate(int period)
+//
+//  Input:   period = a reporting period (starting at 1)
+//  Output:  returns the date/time of the reporting period in decimal days
+//  Purpose: retrieves the date/time of a reporting period. 
+{
+    double days;
+    output_readDateTime(period, &days);
+    return days;
+}
+
+//=============================================================================
+
+double  getSavedSubcatchValue(int index, int property, int period)
+//
+//  Input:   index = index of a subcatchment
+//           property = index of a computed property
+//           period = a reporting period (starting at 1)
+//  Output:  returns the property's value at the recording period
+//  Purpose: retrieves the computed value of a subcatchment property at a
+//           specific reporting period.
+{
+    // --- SubcatchResults array is defined in output.c and contains
+    //     computed results in user's units
+    extern float* SubcatchResults;
+
+    // --- order in which subcatchment was saved to output results file
+    int outIndex = Subcatch[index].rptFlag - 1;
+    if (outIndex < 0) return 0;
+
+    output_readSubcatchResults(period, outIndex);
+    switch (property)
+    {
+        case swmm_SUBCATCH_RAINFALL:
+          return SubcatchResults[SUBCATCH_RAINFALL];
+        case swmm_SUBCATCH_EVAP:
+          return SubcatchResults[SUBCATCH_EVAP];
+        case swmm_SUBCATCH_INFIL:
+          return SubcatchResults[SUBCATCH_INFIL];
+        case swmm_SUBCATCH_RUNOFF:
+          return SubcatchResults[SUBCATCH_RUNOFF];
+        default:
+          return 0;
+    }
+}
+
+//=============================================================================
+
+double  getSavedNodeValue(int index, int property, int period)
+//
+//  Input:   index = index of a node
+//           property = index of a computed property
+//           period = a reporting period (starting at 1)
+//  Output:  returns the property's value at the recording period
+//  Purpose: retrieves the computed value of a node property at a
+//           specific reporting period.
+{
+    // --- NodeResults array is defined in output.c and contains
+    //     computed results in user's units
+    extern float* NodeResults;
+
+    // --- order in which node was saved to output results file
+    int outIndex = Node[index].rptFlag - 1;
+    if (outIndex < 0) return 0;
+
+    output_readNodeResults(period, outIndex);
+    switch (property)
+    {
+    case swmm_NODE_DEPTH:
+        return NodeResults[NODE_DEPTH];
+    case swmm_NODE_HEAD:
+        return NodeResults[NODE_HEAD];
+    case swmm_NODE_VOLUME:
+        return NodeResults[NODE_VOLUME];
+    case swmm_NODE_LATFLOW:
+        return NodeResults[NODE_LATFLOW];
+    case swmm_NODE_INFLOW:
+        return NodeResults[NODE_INFLOW];
+    case swmm_NODE_OVERFLOW:
+        return NodeResults[NODE_OVERFLOW];
+    default:
+        return 0;
+    }
+}
+
+//=============================================================================
+
+double  getSavedLinkValue(int index, int property, int period)
+//
+//  Input:   index = index of a link
+//           property = index of a computed property
+//           period = a reporting period (starting at 1)
+//  Output:  returns the property's value at the recording period
+//  Purpose: retrieves the computed value of a link property at a
+//           specific reporting period.
+{
+    double y, w;
+
+    // --- LinkResults array is defined in output.c and contains
+    //     computed results in user's units
+    extern float* LinkResults;
+
+    // --- order in which link was saved to output results file
+    int    outIndex = Link[index].rptFlag - 1;
+    if (outIndex < 0) return 0;
+
+    output_readLinkResults(period, outIndex);
+    switch (property)
+    {
+    case swmm_LINK_FLOW:
+        return LinkResults[LINK_FLOW];
+    case swmm_LINK_DEPTH:
+        return LinkResults[LINK_DEPTH];
+    case swmm_LINK_VELOCITY:
+        return LinkResults[LINK_VELOCITY];
+    case swmm_LINK_TOPWIDTH:
+        y = LinkResults[LINK_DEPTH] / UCF(LENGTH);
+        w = xsect_getWofY(&Link[index].xsect, y);
+        return w * UCF(LENGTH);
+    default:
+        return 0;
+    }
+}
+
+//=============================================================================
+
+double getMaxRouteStep()
+{
+    double tmpCourantFactor = CourantFactor;
+    double result = RouteStep;
+
+    if (!IsStartedFlag || RouteModel != DW)
+        return result;
+    CourantFactor = 1.0;
+    result = routing_getRoutingStep(RouteModel, MinRouteStep);
+    CourantFactor = tmpCourantFactor;
+    return result;
+}
+
+//=============================================================================
+
+void  setRoutingStep(double value)
+//
+//  Input:   value = a routing time step (in decimal seconds)
+//  Output:  none
+//  Purpose: sets the value of the current flow routing time step.
+{
+    if (value <= 0.0)
+        return;
+    if (value <= MinRouteStep)
+        value = MinRouteStep;
+    CourantFactor = 0.0;
+    RouteStep = value;
 }
 
 //=============================================================================
@@ -685,23 +1389,68 @@ double UCF(int u)
 
 //=============================================================================
 
-char* sstrncpy(char *dest, const char *src, size_t maxlen)
+size_t sstrncpy(char *dest, const char *src, size_t n)
 //
 //  Input:   dest = string to be copied to
 //           src = string to be copied from
-//           maxlen = number of characters to copy
-//  Output:  returns a pointer to dest
-//  Purpose: safe version of standard strncpy function
+//           n = number of bytes to copy
+//  Output:  returns the size of dest
+//  Purpose: better version of standard strncpy function
 //
 {
-     strncpy(dest, src, maxlen);
-     dest[maxlen] = '\0';
-     return dest;
+    int offset = 0;
+    if (n > 0)
+    {
+        while (*(src + offset) != '\0')
+        {
+            if (offset == n)
+                break;
+            *(dest + offset) = *(src + offset);
+            offset++;
+        }
+    }
+    *(dest + offset) = '\0';
+    return strlen(dest);
 }
 
 //=============================================================================
 
-int  strcomp(char *s1, char *s2)
+size_t sstrcat(char* dest, const char* src, size_t size)
+//
+//  Input:   dest = string to be appended
+//           src = string to append to dest
+//           size = allocated size of dest (including nul terminator)
+//  Output:  returns new size of dest
+//  Purpose: safe version of standard strcat function
+//
+{
+    size_t dest_len, src_len, offset, src_index;
+
+    // obtain initial sizes
+    dest_len = strlen(dest);
+    src_len = strlen(src);
+
+    // get the end of dest
+    offset = dest_len;
+
+    // append src
+    src_index = 0;
+    while (*(src + src_index) != '\0')
+    {
+        *(dest + offset) = *(src + src_index);
+        offset++;
+        src_index++;
+        // don't copy more than size - dest_len - 1 characters
+        if (offset == size - 1)
+            break;
+    }
+    *(dest + offset) = '\0';
+    return strlen(dest);
+}
+
+//=============================================================================
+
+int  strcomp(const char *s1, const char *s2)
 //
 //  Input:   s1 = a character string
 //           s2 = a character string
@@ -735,8 +1484,8 @@ char* getTempFileName(char* fname)
     // --- set dir to user's choice of a temporary directory
     if (strlen(TempDir) > 0)
     {
-        _mkdir(TempDir);
-        dir = TempDir;
+        if (_mkdir(TempDir) == 0 || errno == EEXIST)
+            dir = TempDir;
     }
 
     // --- use _tempnam to get a pointer to an unused file name
@@ -744,7 +1493,7 @@ char* getTempFileName(char* fname)
     if (name == NULL) return NULL;
 
     // --- copy the file name to fname
-    if (strlen(name) < MAXFNAME) strncpy(fname, name, MAXFNAME);
+    if (strlen(name) <= MAXFNAME) sstrncpy(fname, name, MAXFNAME);
     else fname = NULL;
 
     // --- free the pointer returned by _tempnam
@@ -757,7 +1506,7 @@ char* getTempFileName(char* fname)
 #else
 
     // --- use system function mkstemp() to create a temporary file name
-    strcpy(fname, "swmmXXXXXX");
+    sstrncpy(fname, "swmmXXXXXX", MAXFNAME);
     mkstemp(fname);
     return fname;
 
@@ -775,7 +1524,7 @@ void getElapsedTime(DateTime aDate, int* days, int* hrs, int* mins)
 {
     DateTime x;
     int secs;
-    x = aDate - StartDateTime;
+    x = aDate - ReportStart;
     if ( x <= 0.0 )
     {
         *days = 0;
@@ -804,7 +1553,89 @@ DateTime getDateTime(double elapsedMsec)
 
 //=============================================================================
 
-void  writecon(char *s)
+int  isRelativePath(const char* fname)
+//
+//  Input:   fname = a file name
+//  Output:  returns 1 if fname's path is relative or 0 if absolute
+//  Purpose: determines if a file name contains a relative or absolute path.
+//
+{
+    if (strchr(fname, ':')) return 0;
+    if (fname[0] == '\\') return 0;
+    if (fname[0] == '/') return 0;
+    return 1;
+}
+
+//=============================================================================
+
+void getAbsolutePath(const char* fname, char* absPath, size_t size)
+//
+//  Input:   fname = a file name
+//           absPath = string to hold the absolute path
+//           size = max. size of absPath
+//  Output:  absPath = string containing absolute path of fname
+//                     (including ending path delimiter)
+//  Purpose: finds the full path of the directory for file fname
+//
+{
+    char* endOfDir;
+
+    // --- case of empty file anme
+    if (fname == NULL || strlen(fname) == 0)
+        return;
+
+    // --- if fname has a relative path then retrieve its full path
+    if (isRelativePath(fname))
+    {
+        #ifdef WINDOWS
+            GetFullPathName((LPCSTR)fname, (DWORD)size, (LPSTR)absPath, NULL);
+        #else
+            realpath(fname, absPath);
+        #endif
+    }
+
+    // --- otherwise copy fname to absPath
+    else
+    {
+        sstrncpy(absPath, fname, strlen(fname));
+    }
+
+    // --- trim file name portion of absPath
+    #ifdef WINDOWS
+        endOfDir = strrchr(absPath, '\\');
+    #else
+        endOfDir = strrchr(absPath, '/');
+    #endif
+    if (endOfDir)
+    {
+        *(endOfDir+1) =  '\0';
+    }
+}
+
+//=============================================================================
+
+char* addAbsolutePath(char* fname)
+//
+//  Input:   fname = a file name
+//  Output:  returns fname with a full path prepended to it
+//  Purpose: adds an absolute path name to a file name.
+//  Note:    fname must have been dimensioned to accept MAXFNAME characters.
+//
+{
+    size_t  n;
+    char buffer[MAXFNAME];
+    if (isRelativePath(fname))
+    {
+        n = snprintf(buffer, MAXFNAME, "%s%s", InpDir, fname);
+        if (n > 0)
+            sstrncpy(fname, buffer, MAXFNAME);
+    }
+    return fname;
+}
+
+//=============================================================================
+
+void  writecon(const char *s)
 //
 //  Input:   s = a character string
 //  Output:  none
@@ -832,7 +1663,7 @@ int xfilter(int xc, char* module, double elapsedTime, long step)
     int  rc;                           // result code
     long hour;                         // current hour of simulation
     char msg[40];                      // exception type text
-    char xmsg[120];                    // error message text
+    char xmsg[240];                    // error message text
     switch (xc)
     {
     case EXCEPTION_ACCESS_VIOLATION:
@@ -876,7 +1707,7 @@ int xfilter(int xc, char* module, double elapsedTime, long step)
         rc = EXCEPTION_EXECUTE_HANDLER;
     }
     hour = (long)(elapsedTime / 1000.0 / 3600.0);
-    sprintf(xmsg, "%sin module %s at step %d, hour %d",
+    sprintf(xmsg, "%sin module %s at step %ld, hour %ld",
             msg, module, step, hour);
     if ( rc == EXCEPTION_EXECUTE_HANDLER ||
          ++ExceptionCount >= MAX_EXCEPTIONS )

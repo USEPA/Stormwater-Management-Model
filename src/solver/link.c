@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21   (Build 5.2.0)
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
@@ -50,7 +50,6 @@
 #include <math.h>
 #include "headers.h"
 #include "inlet.h"
-#include "street.h"
 
 //-----------------------------------------------------------------------------
 //  Constants
@@ -160,13 +159,19 @@ int link_readXsectParams(char* tok[], int ntoks)
 //  Output:  returns an error code
 //  Purpose: reads a link's cross section parameters from a tokenized
 //           line of input data.
+//  Formats:
+//    Link Shape     Geom1   Geom2   Geom3   Geom4   (Barrels  Culvert)
+//    Link IRREGULAR TransectID
+//    Link STREET    StreetID
 //
 {
     int    i, j, k;
     double x[4];
 
+    // --- check for minimum number of tokens
+    if (ntoks < 3) return error_setInpError(ERR_ITEMS, "");
+
     // --- get index of link
-    if ( ntoks < 6 ) return error_setInpError(ERR_ITEMS, "");
     j = project_findObject(LINK, tok[0]);
     if ( j < 0 ) return error_setInpError(ERR_NAME, tok[0]);
 
@@ -187,6 +192,7 @@ int link_readXsectParams(char* tok[], int ntoks)
         if ( i < 0 ) return error_setInpError(ERR_NAME, tok[2]);
         Link[j].xsect.type = k;
         Link[j].xsect.transect = i;
+        return 0;
     }
 
     // --- for street cross section, find index of Street object
@@ -196,9 +202,14 @@ int link_readXsectParams(char* tok[], int ntoks)
         if (i < 0) return error_setInpError(ERR_NAME, tok[2]);
         Link[j].xsect.type = k;
         Link[j].xsect.transect = i;
+        return 0;
     }
+
     else
     {
+        // --- check that geometric parameters are present
+        if (ntoks < 6) return error_setInpError(ERR_ITEMS, "");
+
         // --- parse max. depth & shape curve for a custom shape
         if ( k == CUSTOM )
         {
@@ -244,7 +255,6 @@ int link_readXsectParams(char* tok[], int ntoks)
             if ( i < 0 ) return error_setInpError(ERR_NUMBER, tok[7]);
             else Link[j].xsect.culvertCode = i;
         }
-
     }
     return 0;
 }

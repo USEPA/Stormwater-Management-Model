@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21  (Build 5.2.0)
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -27,8 +27,8 @@
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
-#include "headers.h"
 #include <math.h>
+#include "headers.h"
 
 static const  double MAXVELOCITY =  50.;     // max. allowable velocity (ft/sec)
 

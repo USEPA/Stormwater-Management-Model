@@ -1,7 +1,7 @@
 A Roadmap to the SWMM 5 Engine Source Code
 ==========================================
 
-The SWMM 5 computational engine consists of 54 C-code files plus several
+The SWMM 5 computational engine consists of 55 C-code files plus 22
 header files. The engine should be compiled into a Dynamic Link Library
 (DLL) under Windows or to a shared object library under Linux or MacOS.
 A main.c file is also provided to build an executable that uses the engine
@@ -108,7 +108,7 @@ rdii.c         computes rainfall dependent infiltration/inflow at selected nodes
                of the drainage network.
 
 inlet.c        computes flow captured by street inlet drains that is diverted to
-               sewer nodes.
+               sewer nodes using methods from the FHWA HEC-22 manual.
 
 kinwave.c      performs kinematic wave flow routing calculations at each time
                step of the simulation.
@@ -166,7 +166,7 @@ keywords.c     defines lists of keywords that appear as part of a SWMM 5
                input file.
 
 mathexpr.c     functions that parse and evaluate user-supplied mathematical
-               expressions for pollutant removal at treatment nodes.
+               expressions.
 
 mempool.c      functions that provide a memory pool used to store object
                ID names.

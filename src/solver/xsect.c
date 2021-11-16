@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21   (Build 5.2.0)
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
@@ -37,7 +37,6 @@
 
 #include <math.h>
 #include "headers.h"
-#include "street.h"
 #include "findroot.h"
 
 #define  RECT_ALFMAX        0.97
@@ -1348,7 +1347,7 @@ void getTransectParams(TXsect *xsect, TTransect *transect)
     }
 
     // Determine height at lowest widest point
-    xsect->ywMax = xsect->yFull * (double)iMax / (double)(transect->nTbl - 1);
+    xsect->ywMax = xsect->yFull * (double)iMax / ((double)(transect->nTbl) - 1);
 }
 
 //=============================================================================
@@ -1431,7 +1430,7 @@ double tabular_getdSdA(TXsect* xsect, double a, double *table, int nItems)
 {
     int    i;
     double alpha = a / xsect->aFull;
-    double delta = 1.0 / (nItems-1);
+    double delta = 1.0 / ((double)nItems-1);
     double dSdA;
 
     // --- find which segment of table contains alpha
@@ -1481,13 +1480,13 @@ double lookup(double x, double *table, int nItems)
     int     i;
 
     // --- find which segment of table contains x
-    delta = 1.0 / (nItems-1);
+    delta = 1.0 / ((double)nItems-1);
     i = (int)(x / delta);
     if ( i >= nItems - 1 ) return table[nItems-1];
 
     // --- compute x at start and end of segment
     x0 = i * delta;
-    x1 = (i+1) * delta;
+    x1 = ((double)i+1) * delta;
 
     // --- linearly interpolate a y-value
     y = table[i] + (x - x0) * (table[i+1] - table[i]) / delta;
@@ -1533,7 +1532,7 @@ double invLookup(double y, double *table, int nItems)
     int    i;                // lower table index that brackets y
 
     // --- compute table's uniform x-increment
-    dx = 1.0 / (double)(nItems-1);
+    dx = 1.0 / (double)((double)nItems-1);
 
     // --- truncate item count if last 2 table entries are decreasing
     n = nItems;
@@ -1542,14 +1541,14 @@ double invLookup(double y, double *table, int nItems)
     // --- check if y falls in decreasing portion of table
     if ( n < nItems && y > table[nItems-1])
     {
-        if ( y >= table[nItems-3] ) return (n-1) * dx;
+        if ( y >= table[nItems-3] ) return ((double)n-1) * dx;
 	    if ( y <= table[nItems-2] ) i = nItems - 2;
 	    else i = nItems - 3;
     }
 
     // --- otherwise locate the interval where y falls in the table
     else i = locate(y, table, n-1);
-    if ( i >= n - 1 ) return (n-1) * dx;
+    if ( i >= n - 1 ) return ((double)n-1) * dx;
 
     // --- compute x at start and end of segment
     x0 = i * dx;
@@ -1664,7 +1663,7 @@ double getYcritEnum(TXsect* xsect, double q, double y0)
             qc = getQcritical(i*dy, &xsectStar);
             if ( qc >= q )
             {
-                yc = ( (q-q0) / (qc - q0) + (double)(i-1) ) * dy;
+                yc = ( (q-q0) / (qc - q0) + ((double)i-1) ) * dy;
                 break;
             }
             q0 = qc;

@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21  (Build 5.2.0)
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Culvert equations for SWMM5
@@ -164,10 +164,10 @@ static double getTransitionFlow(int code, double h, double h1, double h2,
 	          TCulvert* culvert);
 static double getForm1Flow(double h, TCulvert* culvert);
 static double form1Eqn(double yc, void* p);
-
+/*
 static void report_CulvertControl(int j, double q0, double q, int condition,
 	        double yRatio);                                                  //for debugging only
-
+*/
 
 //=============================================================================
 
@@ -392,7 +392,7 @@ double form1Eqn(double yc, void* p)
 }
 
 //=============================================================================
-
+/*
 void report_CulvertControl(int j, double q0, double q, int condition, double yRatio)
 //
 //  Used for debugging only
@@ -408,3 +408,4 @@ void report_CulvertControl(int j, double q0, double q, int condition, double yRa
             "\n  %11s: %8s Culvert %s flow reduced from %.3f to %.3f cfs for %s flow (%.2f).",
             theDate, theTime, Link[j].ID, q0, q, conditionTxt[condition], yRatio);
 }
+*/

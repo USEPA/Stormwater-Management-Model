@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21   (Build 5.2.0)
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Groundwater functions.
@@ -287,11 +287,11 @@ int gwater_readFlowExpression(char* tok[], int ntoks)
     else return error_setInpError(ERR_KEYWORD, tok[1]);
 
     // --- concatenate remaining tokens into a single string
-    strcpy(exprStr, tok[2]);
+    sstrncpy(exprStr, tok[2], MAXLINE);
     for ( i = 3; i < ntoks; i++)
     {
-        strcat(exprStr, " ");
-        strcat(exprStr, tok[i]);
+        sstrcat(exprStr, " ", MAXLINE+1);
+        sstrcat(exprStr, tok[i], MAXLINE+1);
     }
 
     // --- delete any previous flow eqn.

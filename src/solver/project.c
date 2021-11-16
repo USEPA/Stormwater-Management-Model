@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21  (Build 5.2.0)
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -47,6 +47,8 @@
 //   - Support added for multiple infiltration methods within a project.
 //   Build 5.2.0:
 //   - Support added for Streets and Inlets.
+//   - Support added for RptFlags.disabled option.
+//   - Object's rptFlag changed to record its index in output file.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -58,11 +60,10 @@
 #if defined(_OPENMP)
   #include <omp.h>     
 #else
-  int omp_get_num_threads(void) { return 1;}
+  int omp_get_max_threads(void) { return 1;}
 #endif
 
 #include "headers.h"
-#include "street.h"
 #include "lid.h" 
 #include "hash.h"
 #include "mempool.h"
@@ -93,7 +94,7 @@ static char     MemPoolAllocated;      // TRUE if memory pool allocated
 //-----------------------------------------------------------------------------
 static void initPointers(void);
 static void setDefaults(void);
-static void openFiles(char *f1, char *f2, char *f3);
+static void openFiles(const char *f1, const char *f2, const char *f3);
 static void createObjects(void);
 static void deleteObjects(void);
 static void createHashTables(void);
@@ -102,7 +103,7 @@ static void deleteHashTables(void);
 
 //=============================================================================
 
-void project_open(char *f1, char *f2, char *f3)
+void project_open(const char *f1, const char *f2, const char *f3)
 //
 //  Input:   f1 = pointer to name of input file
 //           f2 = pointer to name of report file
@@ -243,11 +244,47 @@ void project_validate()
 
     // --- adjust individual reporting flags to match global reporting flag
     if ( RptFlags.subcatchments == ALL )
-        for (i=0; i<Nobjects[SUBCATCH]; i++) Subcatch[i].rptFlag = TRUE;
-    if ( RptFlags.nodes == ALL )
-        for (i=0; i<Nobjects[NODE]; i++) Node[i].rptFlag = TRUE;
+        for (i=0; i<Nobjects[SUBCATCH]; i++) Subcatch[i].rptFlag = i+1;
+    if (RptFlags.subcatchments == SOME)
+    {
+        j = 1;
+        for (i = 0; i < Nobjects[SUBCATCH]; i++)
+        {
+            if (Subcatch[i].rptFlag)
+            {
+                Subcatch[i].rptFlag = j;
+                j++;
+            }
+        }
+    }
+    if (RptFlags.nodes == ALL)
+        for (i = 0; i < Nobjects[NODE]; i++) Node[i].rptFlag = i+1;
+    else if (RptFlags.nodes == SOME)
+    {
+        j = 1;
+        for (i = 0; i < Nobjects[NODE]; i++)
+        {
+            if (Node[i].rptFlag)
+            {
+                Node[i].rptFlag = j;
+                j++;
+            }
+        }
+    }
     if ( RptFlags.links == ALL )
-        for (i=0; i<Nobjects[LINK]; i++) Link[i].rptFlag = TRUE;
+        for (i=0; i<Nobjects[LINK]; i++) Link[i].rptFlag = i+1;
+    else if (RptFlags.links == SOME)
+    {
+        j = 1;
+        for (i = 0; i < Nobjects[LINK]; i++)
+        {
+            if (Link[i].rptFlag)
+            {
+                Link[i].rptFlag = j;
+                j++;
+            }
+        }
+    }
 
     // --- validate dynamic wave options
     if ( RouteModel == DW ) dynwave_validate();
@@ -256,11 +293,8 @@ void project_validate()
     inlet_validate();
 
     // --- adjust number of parallel threads to be used
-#pragma omp parallel
-{
-    if ( NumThreads == 0 ) NumThreads = omp_get_num_threads();
-    else NumThreads = MIN(NumThreads, omp_get_num_threads());
-}
+    if ( NumThreads == 0 ) NumThreads = omp_get_max_threads();
+    else NumThreads = MIN(NumThreads, omp_get_max_threads());
     if ( Nobjects[LINK] < 4 * NumThreads ) NumThreads = 1;
 }
 
@@ -309,7 +343,7 @@ int   project_addObject(int type, char *id, int n)
 //
 {
     int  result;
-    int  len;
+    long  len;
     char *newID;
 
     // --- do nothing if object already placed in hash table
@@ -317,9 +351,9 @@ int   project_addObject(int type, char *id, int n)
 
     // --- use memory from the hash tables' common memory pool to store
     //     a copy of the object's ID string
-    len = strlen(id) + 1;
-    newID = (char *) Alloc(len*sizeof(char));
-    strcpy(newID, id);
+    len = (long)strlen(id);
+    newID = (char *) Alloc((len+1)*sizeof(char));
+    sstrncpy(newID, id, len);
 
     // --- insert object's ID into the hash table for that type of object
     result = HTinsert(Htable[type], newID, n);
@@ -329,7 +363,7 @@ int   project_addObject(int type, char *id, int n)
 
 //=============================================================================
 
-int project_findObject(int type, char *id)
+int project_findObject(int type, const char *id)
 //
 //  Input:   type = object type
 //           id   = object ID
@@ -363,23 +397,31 @@ double ** project_createMatrix(int nrows, int ncols)
 //  Purpose: allocates memory for a matrix of doubles.
 //
 {
-    int i,j;
+    int i;
     double **a;
 
+    size_t size = (size_t)nrows * (size_t)ncols;
+
     // --- allocate pointers to rows
+    if (nrows < 1 || ncols < 1)
+        return NULL;
     a = (double **) malloc(nrows * sizeof(double *));
-    if ( !a ) return NULL;
+    if ( !a )
+        return NULL;
     
     // --- allocate rows and set pointers to them
-    a[0] = (double *) malloc (nrows * ncols * sizeof(double));
-    if ( !a[0] ) return NULL;
-    for ( i = 1; i < nrows; i++ ) a[i] = a[i-1] + ncols;
-
-    for ( i = 0; i < nrows; i++)
+    a[0] = (double *) malloc (size * sizeof(double));
+    if ( !a[0] )
     {
-        for ( j = 0; j < ncols; j++) a[i][j] = 0.0;
+        free(a);
+        return NULL;
     }
-    
+    for ( i = 1; i < nrows; i++ )
+        a[i] = a[i-1] + ncols;
+
+    // --- fill matrix with zeroes
+    memset(a[0], 0, size);
+
     // --- return pointer to array of pointers to rows
     return a;
 }
@@ -502,8 +544,8 @@ int project_readOption(char* s1, char* s2)
       //      function can be applied)
       case SWEEP_START:
       case SWEEP_END:
-        strcpy(strDate, s2);
-        strcat(strDate, "/1947");
+        sstrncpy(strDate, s2, 24);
+        sstrcat(strDate, "/1947", 25);
         if ( !datetime_strToDate(strDate, &aDate) )
         {
             return error_setInpError(ERR_DATETIME, s2);
@@ -775,8 +817,8 @@ void setDefaults()
    int i, j;
 
    // Project title & temp. file path
-   for (i = 0; i < MAXTITLE; i++) strcpy(Title[i], "");
-   strcpy(TempDir, "");
+   for (i = 0; i < MAXTITLE; i++) sstrncpy(Title[i], "", 0);
+   sstrncpy(TempDir, "", 0);
 
    // Interface files
    Frain.mode      = SCRATCH_FILE;     // Use scratch rainfall file
@@ -802,7 +844,7 @@ void setDefaults()
    UnitSystem      = US;               // US unit system
    FlowUnits       = CFS;              // CFS flow units
    InfilModel      = HORTON;           // Horton infiltration method
-   RouteModel      = KW;               // Kin. wave flow routing method
+   RouteModel      = DW;               // Dynamic wave flow routing method
    SurchargeMethod = EXTRAN;           // Use EXTRAN method for surcharging
    CrownCutoff     = 0.96;             // Fractional pipe crown cutoff 
    AllowPonding    = FALSE;            // No ponding at nodes
@@ -824,7 +866,7 @@ void setDefaults()
    WetStep         = 300;              // Runoff wet time step (secs)
    DryStep         = 3600;             // Runoff dry time step (secs)
    RuleStep        = 0;                // Rules evaluated at each routing step
-   RouteStep       = 300.0;            // Routing time step (secs)
+   RouteStep       = 20;               // Routing time step (secs)
    MinRouteStep    = 0.5;              // Minimum variable time step (sec)
    ReportStep      = 900;              // Reporting time step (secs)
    StartDryDays    = 0.0;              // Antecedent dry days
@@ -851,6 +893,7 @@ void setDefaults()
    SweepEnd        = 365;
 
    // Reporting options
+   RptFlags.disabled      = FALSE;
    RptFlags.input         = FALSE;
    RptFlags.continuity    = TRUE;
    RptFlags.flowStats     = TRUE;
@@ -858,7 +901,6 @@ void setDefaults()
    RptFlags.subcatchments = FALSE;
    RptFlags.nodes         = FALSE;
    RptFlags.links         = FALSE;
-   RptFlags.nodeStats     = FALSE;
    RptFlags.averages      = FALSE;
 
    // Temperature data
@@ -911,7 +953,7 @@ void setDefaults()
 
 //=============================================================================
 
-void openFiles(char *f1, char *f2, char *f3)
+void openFiles(const char *f1, const char *f2, const char *f3)
 //
 //  Input:   f1 = name of input file
 //           f2 = name of report file
@@ -993,7 +1035,7 @@ void createObjects()
     Shape    = (TShape *)    calloc(Nobjects[SHAPE],    sizeof(TShape));
 
     // --- create array of detailed routing event periods
-    Event = (TEvent *) calloc(NumEvents+1, sizeof(TEvent));
+    Event = (TEvent *) calloc((size_t)NumEvents+1, sizeof(TEvent));
     Event[NumEvents].start = BIG;
     Event[NumEvents].end = BIG + 1.0;
 
@@ -1080,7 +1122,7 @@ void createObjects()
     for (j = 0; j < Nobjects[GAGE]; j++)
     {
         Gage[j].tSeries = -1;
-        strcpy(Gage[j].fname, "");
+        sstrncpy(Gage[j].fname, "", 0);
     }
 
     // --- initialize subcatchment properties

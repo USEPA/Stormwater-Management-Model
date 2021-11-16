@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21  (Build 5.2.0)
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Binary output file access functions.
@@ -24,14 +24,24 @@
 //   - Incorrect loop limit fixed in function output_saveAvgResults.
 //   Build 5.2.0:
 //   - Changed how time step averaged flow is computed.
+//   - Object's rptFlag changed to record its index in output file.
+//   - Large file support added.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
+
+// Large File Support
+#ifdef _MSC_VER    // Windows (32-bit and 64-bit)
+  #define F_OFF __int64
+  #define F_SEEK _fseeki64
+#elif              // Other platforms
+  #define F_OFF off64_t
+  #define F_SEEK fseeko
+#endif
 
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include "headers.h"
-
 
 // Definition of 4-byte integer, 4-byte real and 8-byte real types
 #define INT4  int
@@ -49,10 +59,10 @@ typedef struct
 //-----------------------------------------------------------------------------
 //  Shared variables    
 //-----------------------------------------------------------------------------
-static INT4      IDStartPos;           // starting file position of ID names
-static INT4      InputStartPos;        // starting file position of input data
-static INT4      OutputStartPos;       // starting file position of output data
-static INT4      BytesPerPeriod;       // bytes saved per simulation time period
+static F_OFF     IDStartPos;           // starting file position of ID names
+static F_OFF     InputStartPos;        // starting file position of input data
+static F_OFF     OutputStartPos;       // starting file position of output data
+static F_OFF     BytesPerPeriod;       // bytes saved per simulation time period
 static INT4      NumSubcatchVars;      // number of subcatchment output variables
 static INT4      NumNodeVars;          // number of node output variables
 static INT4      NumLinkVars;          // number of link output variables
@@ -60,6 +70,7 @@ static INT4      NumSubcatch;          // number of subcatchments reported on
 static INT4      NumNodes;             // number of nodes reported on
 static INT4      NumLinks;             // number of links reported on
 static INT4      NumPolluts;           // number of pollutants reported on
+
 static REAL4     SysResults[MAX_SYS_RESULTS];    // values of system output vars.
 
 static TAvgResults* AvgLinkResults;
@@ -114,6 +125,7 @@ int output_open()
 {
     int   j;
     int   m;
+    int   n;
     INT4  k;
     REAL4 x;
     REAL8 z;
@@ -146,11 +158,9 @@ int output_open()
     for (j=0; j<Nobjects[NODE]; j++) if (Node[j].rptFlag) NumNodes++;
     for (j=0; j<Nobjects[LINK]; j++) if (Link[j].rptFlag) NumLinks++;
 
-    BytesPerPeriod = sizeof(REAL8)
-        + NumSubcatch * NumSubcatchVars * sizeof(REAL4)
-        + NumNodes * NumNodeVars * sizeof(REAL4)
-        + NumLinks * NumLinkVars * sizeof(REAL4)
-        + MAX_SYS_RESULTS * sizeof(REAL4);
+    n = (NumSubcatch * NumSubcatchVars) + (NumNodes * NumNodeVars) +
+        (NumLinks * NumLinkVars) + MAX_SYS_RESULTS;
+    BytesPerPeriod = sizeof(REAL8) + (size_t)n * sizeof(REAL4);
     Nperiods = 0;
 
     SubcatchResults = NULL;
@@ -174,7 +184,7 @@ int output_open()
         return ErrorCode;
     }
 
-    fseek(Fout.file, 0, SEEK_SET);
+    F_SEEK(Fout.file, 0, SEEK_SET);
     k = MAGICNUMBER;
     fwrite(&k, sizeof(INT4), 1, Fout.file);   // Magic number
     k = VERSION;
@@ -196,11 +206,11 @@ int output_open()
     {
         if ( Subcatch[j].rptFlag ) output_saveID(Subcatch[j].ID, Fout.file);
     }
-    for (j=0; j<Nobjects[NODE];     j++)
+    for (j=0; j<Nobjects[NODE]; j++)
     {
         if ( Node[j].rptFlag ) output_saveID(Node[j].ID, Fout.file);
     }
-    for (j=0; j<Nobjects[LINK];     j++)
+    for (j=0; j<Nobjects[LINK]; j++)
     {
         if ( Link[j].rptFlag ) output_saveID(Link[j].ID, Fout.file);
     }
@@ -381,32 +391,32 @@ int output_open()
         return ErrorCode;
     }
     OutputStartPos = ftell(Fout.file);
-    if ( Fout.mode == SCRATCH_FILE ) output_checkFileSize();
     return ErrorCode;
 }
 
 //=============================================================================
-
+/*  DEPRECATED
 void  output_checkFileSize()
 //
 //  Input:   none
 //  Output:  none
 //  Purpose: checks if the size of the binary output file will be too big
-//           to access using an integer file pointer variable.
+//           to access using a file pointer variable for a 32-bit compile.
 //
 {
     if ( RptFlags.subcatchments != NONE ||
          RptFlags.nodes != NONE ||
          RptFlags.links != NONE )
     {
-        if ( (double)OutputStartPos + (double)BytesPerPeriod * TotalDuration
+        if (sizeof(void*) == 4 &&
+           (double)OutputStartPos + (double)BytesPerPeriod * TotalDuration
              / 1000.0 / (double)ReportStep >= (double)MAXFILESIZE )
         {
-            report_writeErrorMsg(ERR_FILE_SIZE, "");
+            report_writeErrorMsg(ERR_OUT_SIZE, "");
         }
     }
 }
-
+*/
 
 //=============================================================================
 
@@ -511,7 +521,7 @@ void output_end()
     fwrite(&OutputStartPos, sizeof(INT4), 1, Fout.file);
     k = Nperiods;
     fwrite(&k, sizeof(INT4), 1, Fout.file);
-    k = (INT4)error_getCode(ErrorCode);
+    k = (INT4)ErrorCode;
     fwrite(&k, sizeof(INT4), 1, Fout.file);
     k = MAGICNUMBER;
     if (fwrite(&k, sizeof(INT4), 1, Fout.file) < 1)
@@ -545,7 +555,7 @@ void output_saveID(char* id, FILE* file)
 //  Purpose: writes an object's name to the binary output file.
 //
 {
-    INT4 n = strlen(id);
+    INT4 n = (INT4)strlen(id);
     fwrite(&n, sizeof(INT4), 1, file);
     fwrite(id, sizeof(char), n, file);
 }
@@ -668,7 +678,7 @@ void output_saveLinkResults(double reportTime, FILE* file)
     for (j=0; j<Nobjects[LINK]; j++)
     {
         // --- retrieve interpolated results for reporting time & write to file
-        if (Link[j].rptFlag)
+        if (Link[j].rptFlag )
         {
             link_getResults(j, f, LinkResults);
             fwrite(LinkResults, sizeof(REAL4), NumLinkVars, file);
@@ -682,7 +692,7 @@ void output_saveLinkResults(double reportTime, FILE* file)
 
 //=============================================================================
 
-void output_readDateTime(int period, DateTime* days)
+void output_readDateTime(long period, DateTime* days)
 //
 //  Input:   period = index of reporting time period
 //  Output:  days = date/time value
@@ -690,61 +700,65 @@ void output_readDateTime(int period, DateTime* days)
 //           from the binary output file.
 //
 {
-    INT4 bytePos = OutputStartPos + (period-1)*BytesPerPeriod;
-    fseek(Fout.file, bytePos, SEEK_SET);
+    F_OFF p = period;
+    F_OFF bytePos = OutputStartPos + (p-1)*BytesPerPeriod;
+    F_SEEK(Fout.file, bytePos, SEEK_SET);
     *days = NO_DATE;
     fread(days, sizeof(REAL8), 1, Fout.file);
 }
 
 //=============================================================================
 
-void output_readSubcatchResults(int period, int index)
+void output_readSubcatchResults(long period, int index)
 //
 //  Input:   period = index of reporting time period
-//           index = subcatchment index
+//           index = subcatchment index in binary output file
 //  Output:  none
 //  Purpose: reads computed results for a subcatchment at a specific time
 //           period.
 //
 {
-    INT4 bytePos = OutputStartPos + (period-1)*BytesPerPeriod;
-    bytePos += sizeof(REAL8) + index*NumSubcatchVars*sizeof(REAL4);
-    fseek(Fout.file, bytePos, SEEK_SET);
+    long offset = index*NumSubcatchVars;
+    F_OFF p = period;
+    F_OFF bytePos = OutputStartPos + (p-1)*BytesPerPeriod +
+        sizeof(REAL8) + (F_OFF)offset * sizeof(REAL4);
+    F_SEEK(Fout.file, bytePos, SEEK_SET);
     fread(SubcatchResults, sizeof(REAL4), NumSubcatchVars, Fout.file);
 }
 
 //=============================================================================
 
-void output_readNodeResults(int period, int index)
+void output_readNodeResults(long period, int index)
 //
 //  Input:   period = index of reporting time period
-//           index = node index
+//           index = node index in binary output file
 //  Output:  none
 //  Purpose: reads computed results for a node at a specific time period.
 //
 {
-    INT4 bytePos = OutputStartPos + (period-1)*BytesPerPeriod;
-    bytePos += sizeof(REAL8) + NumSubcatch*NumSubcatchVars*sizeof(REAL4);
-    bytePos += index*NumNodeVars*sizeof(REAL4);
-    fseek(Fout.file, bytePos, SEEK_SET);
+    long offset = NumSubcatch*NumSubcatchVars + index*NumNodeVars;
+    F_OFF p = period;
+    F_OFF bytePos = OutputStartPos + (p-1)*BytesPerPeriod +
+        sizeof(REAL8) + (F_OFF)offset * sizeof(REAL4);
+    F_SEEK(Fout.file, bytePos, SEEK_SET);
     fread(NodeResults, sizeof(REAL4), NumNodeVars, Fout.file);
 }
 
 //=============================================================================
 
-void output_readLinkResults(int period, int index)
+void output_readLinkResults(long period, int index)
 //
 //  Input:   period = index of reporting time period
-//           index = link index
+//           index = link index in binary output file
 //  Output:  none
 //  Purpose: reads computed results for a link at a specific time period.
 //
 {
-    INT4 bytePos = OutputStartPos + (period-1)*BytesPerPeriod;
-    bytePos += sizeof(REAL8) + NumSubcatch*NumSubcatchVars*sizeof(REAL4);
-    bytePos += NumNodes*NumNodeVars*sizeof(REAL4);
-    bytePos += index*NumLinkVars*sizeof(REAL4);
-    fseek(Fout.file, bytePos, SEEK_SET);
+    long offset = (NumSubcatch*NumSubcatchVars + NumNodes*NumNodeVars + index*NumLinkVars);
+    F_OFF p = period;
+    F_OFF bytePos = OutputStartPos + (p-1)*BytesPerPeriod +
+        sizeof(REAL8) + (F_OFF)offset * sizeof(REAL4);
+    F_SEEK(Fout.file, bytePos, SEEK_SET);
     fread(LinkResults, sizeof(REAL4), NumLinkVars, Fout.file);
     fread(SysResults, sizeof(REAL4), MAX_SYS_RESULTS, Fout.file);
 }
@@ -754,6 +768,8 @@ void output_readLinkResults(int period, int index)
 //=============================================================================
 
 int output_openAvgResults()
+//
+//  Allocates memory for storing average results for nodes and links.
 {
     int i;
     
@@ -798,6 +814,8 @@ int output_openAvgResults()
 //=============================================================================
 
 void output_closeAvgResults()
+//
+//  Frees memory used for storing average results for nodes and links.
 {
     int i;
     if (AvgNodeResults)
@@ -815,6 +833,8 @@ void output_closeAvgResults()
 //=============================================================================
 
 void output_initAvgResults()
+//
+//  Initializes average node & link results.
 {
     int i, j;
     Nsteps = 0;

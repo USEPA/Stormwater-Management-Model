@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21  (Build 5.2.0)
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Rule-based controls functions.
@@ -70,7 +70,7 @@ enum RuleAttrib   {r_DEPTH, r_MAXDEPTH, r_HEAD, r_VOLUME, r_INFLOW,
 enum RuleRelation {EQ, NE, LT, LE, GT, GE};
 enum RuleSetting  {r_CURVE, r_TIMESERIES, r_PID, r_NUMERIC};
 
-#define MAXVNAME  32
+#define MAXVARNAME  32
 
 static char* ObjectWords[] =
     {"GAGE", "NODE", "LINK", "CONDUIT", "PUMP", "ORIFICE", "WEIR", "OUTLET",
@@ -100,15 +100,15 @@ struct TVariable
 // Named Variable
 struct TNamedVariable
 {
-    struct TVariable variable;         // a rule premise variable 
-    char             name[MAXVNAME+1]; // name used in math expression
+    struct TVariable variable;           // a rule premise variable 
+    char             name[MAXVARNAME+1]; // name used in math expression
 };
 
 // Rule Premise Function 
 struct TExpression
 {
-    MathExpr*  expression;     // tokenized math expression
-    char       name[MAXVNAME]; // expression name
+    MathExpr*  expression;               // tokenized math expression
+    char       name[MAXVARNAME+1];       // expression name
 };
 
 // Rule Premise Clause 
@@ -345,7 +345,7 @@ int  controls_addVariable(char* tok[], int nToks)
     if (err > 0) return err;
     k = CurrentVariable;
     NamedVariable[k].variable = v1;
-    strncpy(NamedVariable[k].name, tok[1], MAXVNAME);
+    sstrncpy(NamedVariable[k].name, tok[1], MAXVARNAME);
     return 0;
 }
 
@@ -369,13 +369,12 @@ int  controls_addExpression(char* tok[], int nToks)
     if (nToks < 4) return ERR_ITEMS;
     k = CurrentExpression;
     Expression[k].expression = NULL;
-    strncpy(Expression[k].name, tok[1], MAXVNAME);
-
-    strcpy(s, tok[3]);
+    sstrncpy(Expression[k].name, tok[1], MAXVARNAME);
+    sstrncpy(s, tok[3], MAXLINE);
     for (i = 4; i < nToks; i++)
     {
-        strcat(s, " ");
-        strcat(s, tok[i]);
+        sstrcat(s, " ", MAXLINE);
+        sstrcat(s, tok[i], MAXLINE);
     }
 
     expr = mathexpr_create(s, getVariableIndex);
@@ -812,7 +811,7 @@ int  getGageAttrib(char* token)
     attrib = atoi(token);
 
     // --- check that number of hours is in allowable range
-    if (attrib < 1 || attrib > 24)
+    if (attrib < 1 || attrib > MAXPASTRAIN)
         return -1;
     return attrib;
 }
@@ -866,8 +865,8 @@ int getPremiseValue(char* token, int attrib, double* value)
         break;
 
       case r_DAYOFYEAR:
-        strncpy(strDate, token, 6);
-        strcat(strDate, "/1947");
+        sstrncpy(strDate, token, 6);
+        sstrcat(strDate, "/1947", 25);
         if ( datetime_strToDate(strDate, value) )
         {
             *value = datetime_dayOfYear(*value);
@@ -1190,13 +1189,13 @@ void updateActionList(struct TAction* a)
     }
 
     // --- action not listed so add it to ActionList
-    if ( !listItem )
+    listItem = (struct TActionList *) malloc(sizeof(struct TActionList));
+    if (listItem)
     {
-        listItem = (struct TActionList *) malloc(sizeof(struct TActionList));
         listItem->next = ActionList;
         ActionList = listItem;
+        listItem->action = a;
     }
-    listItem->action = a;
 }
 
 //=============================================================================

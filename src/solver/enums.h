@@ -3,7 +3,7 @@
 //
 //   Project: EPA SWMM5
 //   Version: 5.2
-//   Date:    03/24/21  (Build 5.2.0)
+//   Date:    11/01/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Enumerated constants
@@ -30,7 +30,7 @@
 //   Build 5.2.0:
 //   - Support added for Streets and Inlets.
 //   - Support added for variable speed pumps.
-//   - Support added for conical & pyramidal storage shapes.
+//   - Support added for analytical storage shapes.
 //-----------------------------------------------------------------------------
 
 #ifndef ENUMS_H
@@ -217,7 +217,7 @@
       LINK_QUAL};                      // concentration of each pollutant
 
 //-------------------------------------
-// System-wide flow quantities
+// System-wide quantities
 //-------------------------------------
 #define MAX_SYS_RESULTS 15
 enum SysFlowType {
@@ -303,7 +303,7 @@ enum  WindType {
       DRYONLY};                        // evap. allowed only in dry periods
 
  enum NormalizerType {
-      PER_AREA,                        // buildup is per unit or area
+      PER_AREA,                        // buildup is per unit of area
       PER_CURB};                       // buildup is per unit of curb length
 
  enum BuildupType {
@@ -393,7 +393,9 @@ enum  CompatibilityType {
  enum StorageType {
       TABULAR,                         // area v. depth from table
       FUNCTIONAL,                      // area v. depth from power function
+      CYLINDRICAL,                     // area v. depth from elliptical cylinder
       CONICAL,                         // area v. depth from elliptical cone
+      PARABOLOID,                      // area v. depth from elliptical paraboloid
       PYRAMIDAL};                      // area v. depth from rectangular pyramid
 
  enum ReactorType {
@@ -442,6 +444,12 @@ enum  CompatibilityType {
       PUMP3_CURVE,                     // flow v. head for pump (continuous)
       PUMP4_CURVE,                     // flow v. depth for pump (continuous)
       PUMP5_CURVE};                    // variable speed version of TYPE3 pump
+
+ enum NodeInletType {
+     NO_INLET,
+     BYPASS,
+     CAPTURE
+ };
 
  enum InputSectionType {
       s_TITLE,        s_OPTION,       s_FILE,         s_RAINGAGE,

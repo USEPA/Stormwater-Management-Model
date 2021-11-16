@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21 (Build 5.2.0)
+//   Date:     11/01/21 (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Hot Start file functions.
@@ -360,12 +360,9 @@ void  saveRunoff(void)
 //  Purpose: saves current state of all subcatchments to hotstart file.
 //
 {
-    int   i, j, k, sizeX;
-    double* x;
+    int   i, j, k;
+    double x[6];
     FILE*  f = Fhotstart2.file;
-
-    sizeX = MAX(6, Nobjects[POLLUT]+1);
-    x = (double *) calloc(sizeX, sizeof(double));
 
     for (i = 0; i < Nobjects[SUBCATCH]; i++)
     {
@@ -375,7 +372,7 @@ void  saveRunoff(void)
         fwrite(x, sizeof(double), 4, f);
 
         // Infiltration state (max. of 6 elements)
-        for (j=0; j<sizeX; j++) x[j] = 0.0;
+        for (j=0; j<6; j++) x[j] = 0.0;
         infil_getState(i, x);
         fwrite(x, sizeof(double), 6, f);
 
@@ -400,25 +397,32 @@ void  saveRunoff(void)
         if ( Nobjects[POLLUT] > 0 )
         {
             // Runoff quality
-            for (j=0; j<Nobjects[POLLUT]; j++) x[j] = Subcatch[i].newQual[j];
-            fwrite(x, sizeof(double), Nobjects[POLLUT], f);
+            for (j=0; j<Nobjects[POLLUT]; j++)
+            {
+                x[0] = Subcatch[i].newQual[j];
+                fwrite(x, sizeof(double), 1, f);
+            }
 
             // Ponded quality
-            for (j=0; j<Nobjects[POLLUT]; j++) x[j] = Subcatch[i].pondedQual[j];
-            fwrite(x, sizeof(double), Nobjects[POLLUT], f);
+            for (j=0; j<Nobjects[POLLUT]; j++)
+            {
+                x[0] = Subcatch[i].pondedQual[j];
+                fwrite(x, sizeof(double), 1, f);
+            }
             
             // Buildup and when streets were last swept
             for (k=0; k<Nobjects[LANDUSE]; k++)
             {
                 for (j=0; j<Nobjects[POLLUT]; j++)
-                    x[j] = Subcatch[i].landFactor[k].buildup[j];
-                fwrite(x, sizeof(double), Nobjects[POLLUT], f);
+                {
+                    x[0] = Subcatch[i].landFactor[k].buildup[j];
+                    fwrite(x, sizeof(double), Nobjects[POLLUT], f);
+                }
                 x[0] = Subcatch[i].landFactor[k].lastSwept;
                 fwrite(x, sizeof(double), 1, f);
             }
         }
     }
-    free(x);
 }
 
 //=============================================================================

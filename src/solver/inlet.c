@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21 (Build 5.2.0)
+//   Date:     11/01/21 (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Street/Channel Inlet Functions
@@ -17,11 +17,92 @@
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
-#include "headers.h"
-#include "street.h"
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "headers.h"
+
+// Grate inlet
+typedef struct
+{
+    int       type;               // type of grate used
+    double    length;             // length (parallel to flow) (ft)
+    double    width;              // width (perpendicular to flow) (ft)
+    double    fracOpenArea;       // fraction of grate area that is open
+    double    splashVeloc;        // splash-over velocity (ft/s)
+} TGrateInlet;
+
+// Slotted drain inlet
+typedef struct
+{
+    double    length;             // length (parallel to flow) (ft)
+    double    width;              // width (perpendicular to flow) (ft)
+} TSlottedInlet;
+
+// Curb opening inlet
+typedef struct
+{
+    double    length;             // length of curb opening (ft)
+    double    height;             // height of curb opening (ft)
+    int       throatAngle;        // type of throat angle
+} TCurbInlet;
+
+// Custom inlet
+typedef struct
+{
+    int       onGradeCurve;       // flow diversion curve index
+    int       onSagCurve;         // flow rating curve index
+} TCustomInlet;
+
+// Inlet design object
+typedef struct
+{
+    char *         ID;            // name assigned to inlet design
+    int            type;          // type of inlet used (grate, curb, etc)
+    TGrateInlet    grateInlet;    // length = 0 if not used
+    TSlottedInlet  slottedInlet;  // length = 0 if not used
+    TCurbInlet     curbInlet;     // length = 0 if not used
+    int            customCurve;   // curve index = -1 if not used
+} TInletDesign;
+
+
+// Inlet performance statistics
+typedef struct
+{
+    int       flowPeriods;        // # periods with approach flow
+    int       capturePeriods;     // # periods with captured flow
+    int       backflowPeriods;    // # periods with backflow
+    double    peakFlow;           // peak flow seen by inlet (cfs)
+    double    peakFlowCapture;    // capture efficiency at peak flow
+    double    avgFlowCapture;     // average capture efficiency
+    double    bypassFreq;         // frequency of bypass flow
+} TInletStats;
+
+// Inlet list object
+struct TInlet
+{
+    int         linkIndex;        // index of conduit link with the inlet
+    int         designIndex;      // index of inlet's design
+    int         nodeIndex;        // index of node receiving captured flow
+    int         numInlets;        // # inlets on each side of street or in channel
+    int         placement;        // whether inlet is on-grade or on-sag
+    double      clogFactor;       // fractional degree of inlet clogging
+    double      flowLimit;        // inlet flow restriction (cfs)
+    double      localDepress;     // local gutter depression (ft)
+    double      localWidth;       // local depression width (ft)
+
+    double      flowFactor;       // flow = flowFactor * (flow spread)^2.67
+    double      flowCapture;      // captured flow rate (cfs)
+    double      backflow;         // backflow from capture node (cfs)
+    double      backflowRatio;    // inlet backflow / capture node overflow
+    TInletStats stats;            // inlet performance statistics
+    TInlet *    nextInlet;        // next inlet in list
+};
+
+// Shared inlet variables
+TInletDesign * InletDesigns;      // array of available inlet designs
+int            InletDesignCount;  // number of inlet designs
+int            UsesInlets;        // TRUE if project uses inlets
 
 //-----------------------------------------------------------------------------
 //  Enumerations
@@ -84,6 +165,7 @@ static const double GrateOpeningRatios[] = {
 //  Imported Variables
 //-----------------------------------------------------------------------------
 extern TLinkStats*     LinkStats;      // defined in STATS.C
+extern TNodeStats*     NodeStats;      // defined in STATS.C
 
 //-----------------------------------------------------------------------------
 //  Local Shared Variables
@@ -91,20 +173,19 @@ extern TLinkStats*     LinkStats;      // defined in STATS.C
 // Variables as named in the HEC-22 manual.
 static double Sx;            // street cross slope
 static double SL;            // conduit longitudinal slope
-static double Sw;            // street gutter slope
+static double Sw;            // gutter + cross slope
 static double a;             // street gutter depression (ft)
 static double W;             // street gutter width (ft)
 static double T;             // top width of flow spread (ft)
 static double n;             // Manning's roughness coeff.
 
 // Additional variables
-static int    Nsides;        // 1- or 2-sided street
-static double Tcrown;        // distance from street curb to crown (ft)
-static double Beta;          // = 1.486 * sqrt(SL) / n
-static double Qfactor;       // factor f in Izzard's eqn. Q = f*T^2.67
-static TXsect *xsect;        // cross-section data of inlet's conduit
-static char   *InletDegree;  // # inflow links to inlet-connected nodes 
-static double *InletFlow;    // captured inlet flow received by each node
+static int     Nsides;       // 1- or 2-sided street
+static double  Tcrown;       // distance from street curb to crown (ft)
+static double  Beta;         // = 1.486 * sqrt(SL) / n
+static double  Qfactor;      // factor f in Izzard's eqn. Q = f*T^2.67
+static TXsect* xsect;        // cross-section data of inlet's conduit
+static double* InletFlow;    // captured inlet flow received by each node
 static TInlet* FirstInlet;   // head of list of deployed inlets
 
 //-----------------------------------------------------------------------------
@@ -115,11 +196,11 @@ static TInlet* FirstInlet;   // head of list of deployed inlets
 // inlet_readDesignParams    called by parseLine in input.c
 // inlet_readUsageParams     called by parseLine in input.c
 // inlet_validate            called by project_validate
-// inlet_findInletFlows      called by routing_execute
-// inlet_convertOverflows    called by routing_execute
+// inlet_findCapturedFlows   called by routing_execute
+// inlet_adjustQualInflows   called by routing_execute
+// inlet_adjustQualOutflows  called by routing execute
 // inlet_writeStatsReport    called by statsrpt_writeReport
 // inlet_capturedFlow        called by findLinkMassFlow in qualrout.c
-
 
 //-----------------------------------------------------------------------------
 //  Local functions
@@ -129,25 +210,30 @@ static int    readCurbInletParams(int inletIndex, char* tok[], int ntoks);
 static int    readSlottedInletParams(int inletIndex, char* tok[], int ntoks);
 static int    readCustomInletParams(int inletIndex, char* tok[], int ntoks);
 
-static void   initInletStats(TInlet *inlet);
-static void   updateInletStats(TInlet *inlet, double q);
+static void   initInletStats(TInlet* inlet);
+static void   updateInletStats(TInlet* inlet, double q);
 static void   writeStreetStatsHeader();
 static void   writeStreetStats(int link);
 
-static int    getInletPlacement(TInlet *inlet, int node);
-static void   getConduitGeometry(TInlet *inlet);
+static void   getBackflowRatios();
+static double getInletArea(TInlet* inlet);
+
+static int    getInletPlacement(TInlet* inlet, int node);
+static void   getConduitGeometry(TInlet* inlet);
 static double getFlowSpread(double flow);
 static double getEo(double slopeRatio, double spread, double gutterWidth);
 
-static double getOnGradeCapturedFlow(TInlet *inlet, double flow, double depth);
+static double getCustomCapturedFlow(TInlet* inlet, double flow, double depth);
+static double getOnGradeCapturedFlow(TInlet* inlet, double flow, double depth);
 static double getOnGradeInletCapture(int inletIndex, double flow, double depth);
 static double getGrateInletCapture(int inletIndex, double flow);
 static double getCurbInletCapture(double flow, double length);
+
 static double getGutterFlowRatio(double gutterWidth);
 static double getGutterAreaRatio(double grateWidth, double area);
 static double getSplashOverVelocity(int grateType, double grateLength);
 
-static double getOnSagCapturedFlow(TInlet *inlet, double flow, double depth);
+static double getOnSagCapturedFlow(TInlet* inlet, double flow, double depth);
 static double getOnSagInletCapture(int inletIndex, double depth);
 static void   findOnSagGrateFlows(int inletIndex, double depth,
               double *weirFlow, double *orificeFlow);
@@ -170,7 +256,6 @@ int  inlet_create(int numInlets)
     int i;
 
     InletDesigns = NULL;
-    InletDegree = NULL;
     InletFlow = NULL;
     InletDesignCount = 0;
     UsesInlets = FALSE;
@@ -179,15 +264,12 @@ int  inlet_create(int numInlets)
     if (InletDesigns == NULL) return ERR_MEMORY;
     InletDesignCount = numInlets;
 
-    InletDegree = (char *)calloc(Nobjects[NODE], sizeof(char));
-    if (InletDegree == NULL) return ERR_MEMORY;
     InletFlow = (double *)calloc(Nobjects[NODE], sizeof(double));
     if (InletFlow == NULL) return ERR_MEMORY;    
 
     for (i = 0; i < InletDesignCount; i++)
     {
-        InletDesigns[i].customInlet.onGradeCurve = -1;
-        InletDesigns[i].customInlet.onSagCurve = -1;
+        InletDesigns[i].customCurve = -1;
         InletDesigns[i].curbInlet.length = 0.0;
         InletDesigns[i].grateInlet.length = 0.0;
         InletDesigns[i].slottedInlet.length = 0.0;
@@ -205,8 +287,8 @@ void inlet_delete()
 //  Purpose: frees all memory allocated for inlet analysis.
 //
 {
-    TInlet *inlet = FirstInlet;
-    TInlet *nextInlet;
+    TInlet* inlet = FirstInlet;
+    TInlet* nextInlet;
     while (inlet)
     {
         nextInlet = inlet->nextInlet;
@@ -215,7 +297,6 @@ void inlet_delete()
     }
     FirstInlet = NULL;
     FREE(InletFlow);
-    FREE(InletDegree);
     FREE(InletDesigns);
 }
 
@@ -235,7 +316,7 @@ int inlet_readDesignParams(char* tok[], int ntoks)
 //  ID  SLOTTED     Length  Width
 //  ID  DROP_GRATE  Length  Width  GrateType  (OpenArea)  (SplashVeloc)
 //  ID  DROP_CURB   Length  Height
-//  ID  CUSTOM      DiversionCurve  RatingCurve
+//  ID  CUSTOM      CurveID
 //  
 {
     int i;
@@ -292,11 +373,11 @@ int inlet_readUsageParams(char* tok[], int ntoks)
 //    placement = ON_GRADE, ON_SAG, or AUTO (the default)
 //
 {
-    int    linkIndex, designIndex, nodeIndex, numInlets = 1;
-    int    placement = AUTOMATIC;
-    double flowLimit = 0.0, pctClogged = 0.0;
-    double aLocal = 0.0, wLocal = 0.0;
-    TInlet *inlet;
+    int     linkIndex, designIndex, nodeIndex, numInlets = 1;
+    int     placement = AUTOMATIC;
+    double  flowLimit = 0.0, pctClogged = 0.0;
+    double  aLocal = 0.0, wLocal = 0.0;
+    TInlet* inlet;
 
     // --- check that inlet's link exists
     if (ntoks < 3) return error_setInpError(ERR_ITEMS, "");
@@ -313,14 +394,16 @@ int inlet_readUsageParams(char* tok[], int ntoks)
 
     // --- get number of inlets
     if (ntoks > 3)
-        if (!getInt(tok[3], &numInlets) || numInlets < 0)
+        if (!getInt(tok[3], &numInlets) || numInlets < 1)
             return error_setInpError(ERR_NUMBER, tok[3]);
 
     // --- get flow limit & percent clogged    
     if (ntoks > 4)
+    {
         if (!getDouble(tok[4], &pctClogged) || pctClogged < 0.0
-            || pctClogged > 100.)
+            || pctClogged > 99.)
             return error_setInpError(ERR_NUMBER, tok[4]);
+    }
     if (ntoks > 5)
         if (!getDouble(tok[5], &flowLimit) || flowLimit < 0.0)
             return error_setInpError(ERR_NUMBER, tok[5]);
@@ -362,6 +445,7 @@ int inlet_readUsageParams(char* tok[], int ntoks)
     inlet->localDepress = aLocal / UCF(LENGTH);
     inlet->localWidth = wLocal / UCF(LENGTH);
     inlet->flowFactor = 0.0;
+    inlet->backflowRatio = 0.0;
     initInletStats(inlet);
     UsesInlets = TRUE;
     return 0;
@@ -378,41 +462,52 @@ void inlet_validate()
 //           node receives either bypased or captured flow from.
 //
 {
-    int i, inletType, isValid;
-    TInlet *inlet;
-    TInlet *prevInlet;
+    int     i, j, inletType, inletValid;
+    TInlet* inlet;
+    TInlet* prevInlet;
 
     // --- traverse the list of inlets placed in conduits
-    memset(InletDegree, 0, Nobjects[NODE] * sizeof(char));
+    if (!UsesInlets) return;
     prevInlet = FirstInlet;
     inlet = FirstInlet;
     while (inlet)
     {
         // --- check that inlet's conduit can accept the inlet's type
-        isValid = FALSE;
+        inletValid = FALSE;
         i = inlet->linkIndex;
         xsect = &Link[i].xsect;
         inletType = InletDesigns[inlet->designIndex].type;
-        if (xsect->type == TRAPEZOIDAL && 
+        if (inletType == CUSTOM_INLET)
+        {
+            j = InletDesigns[inlet->designIndex].customCurve;
+            if (j >= 0)
+            {
+                if (Curve[j].curveType == DIVERSION_CURVE ||
+                    Curve[j].curveType == RATING_CURVE)
+                    inletValid = TRUE;
+            }
+        }
+        else if ((xsect->type == TRAPEZOIDAL || xsect->type == RECT_OPEN) && 
            (inletType == DROP_GRATE_INLET ||
-            inletType == DROP_CURB_INLET ||
-            inletType == CUSTOM_INLET))
-            isValid = TRUE;
+            inletType == DROP_CURB_INLET))
+            inletValid = TRUE;
         else if (xsect->type == STREET_XSECT &&
             inletType != DROP_GRATE_INLET &&
             inletType != DROP_CURB_INLET)
-            isValid = TRUE;
+            inletValid = TRUE;
 
         // --- if inlet placement is valid then 
-        if (isValid)
+        if (inletValid)
         {
-            // --- update inlet count for inlet's bypass and capture nodes 
-            inlet->backflow = 0.0;
-            InletDegree[Link[i].node2]++;
-            InletDegree[inlet->nodeIndex]++;
+            // --- record that receptor node has inlets
+            Node[Link[i].node2].inlet = BYPASS;
+            Node[inlet->nodeIndex].inlet = CAPTURE;
 
-            // --- compute street inlet's flow factor
-            //     (where Q = flowFactor * Spread^2.67)
+            // --- initialize inlet's backflow 
+            inlet->backflow = 0.0;
+
+            // --- compute street inlet's flow factor for Izzard's eqn.
+            //     (used in Q = flowFactor * Spread^2.67 equation)
             getConduitGeometry(inlet);
             inlet->flowFactor = (0.56/n) * pow(SL,0.5) * pow(Sx,1.67);            
 
@@ -442,60 +537,78 @@ void inlet_validate()
             Link[i].inlet = NULL;
         }
     }
+
+    // --- determine how capture node's overflow is split between its inlets
+    getBackflowRatios();
 }
 
 //=============================================================================
 
-void inlet_findInletFlows(double tStep)
+void inlet_findCapturedFlows(double tStep)
 //
 //  Input:   tStep = current flow routing time step (sec)
 //  Output:  none
 //  Purpose: computes flow captured by each inlet and adjusts the
-//           lateral flows of the inlet's bpass and capture nodes accordingly.
+//           lateral flows of the inlet's bypass and capture nodes accordingly.
 //
 //  This function is called after regular lateral flows to all nodes have been
 //  set but before a flow routing step has been taken.
 {
-    int    i, j, m, p, placement;
-    double q, w;
+    int    i, j, m, placement;
+    double q;
     TInlet *inlet;
 
     // --- For non-DW routing find conduit flow into each node
     //     (used to limit max. amount of on-sag capture)
+    if (!UsesInlets) return;
+    memset(InletFlow, 0, Nobjects[NODE]*sizeof(double));
     if (RouteModel != DW)
     {
         for (j = 0; j < Nobjects[NODE]; j++)
-            Node[j].inflow = 0.0;
+            Node[j].inflow = MAX(0., Node[j].newLatFlow);
         for (i = 0; i < Nobjects[LINK]; i++)
-            Node[Link[i].node2].inflow += Link[i].newFlow;
+            Node[Link[i].node2].inflow += MAX(0.0, Link[i].newFlow);
     }
 
     // --- loop through each inlet
     for (inlet = FirstInlet; inlet != NULL; inlet = inlet->nextInlet)
     {
-        // --- identify index of inlet's downstream node 
+        // --- identify indexes of inlet's bypass (j) and capture (m) nodes 
         i = inlet->linkIndex;
         j = Link[i].node2;
+        m = inlet->nodeIndex;
 
         // --- get inlet's placement (ON_GRADE or ON_SAG)
         placement = getInletPlacement(inlet, j);
 
-        // --- find flow captured by on-grade inlet
-        q = fabs(Link[i].newFlow);
-        if (placement == ON_GRADE)
+        // --- find flow captured by a Custom inlet
+        if (InletDesigns[inlet->designIndex].type == CUSTOM_INLET)
         {
-            inlet->outflow = getOnGradeCapturedFlow(inlet, q, Node[j].newDepth);
+            q = fabs(Link[i].newFlow);
+            inlet->flowCapture = getCustomCapturedFlow(inlet, q, Node[j].newDepth);
+        }
+
+        // --- find flow captured by on-grade inlet
+        else if (placement == ON_GRADE)
+        {
+            q = fabs(Link[i].newFlow);
+            inlet->flowCapture = getOnGradeCapturedFlow(inlet, q, Node[j].newDepth);
         }
 
         // --- find flow captured by on-sag inlet
         else
         {
-            inlet->outflow = getOnSagCapturedFlow(inlet, q, Node[j].newDepth);
+            q = Node[j].inflow;
+            inlet->flowCapture = getOnSagCapturedFlow(inlet, q, Node[j].newDepth);
         }
-        if (fabs(inlet->outflow) < FUDGE) inlet->outflow = 0.0;
+        if (fabs(inlet->flowCapture) < FUDGE) inlet->flowCapture = 0.0;
 
         // --- add to total flow captured by inlet's node
-        InletFlow[j] += inlet->outflow;
+        InletFlow[j] += inlet->flowCapture;
+
+        // --- capture node's overflow becomes inlet's backflow
+        inlet->backflow = Node[m].overflow * inlet->backflowRatio;
+        if (fabs(inlet->backflow) < FUDGE) inlet->backflow = 0.0;
     }
 
     // --- make second pass through each inlet
@@ -509,32 +622,19 @@ void inlet_findInletFlows(double tStep)
         // --- for on-sag placement under non-DW routing, captured flow
         //     is limited to inlet's share of bypass node's inflow plus
         //     any stored volume
-        if (RouteModel != DW && placement == ON_SAG)
+        if (RouteModel != DW && getInletPlacement(inlet, j) == ON_SAG)
         {
             q = Node[j].newVolume / tStep;
             q += MAX(Node[j].inflow, 0.0);
             if (InletFlow[j] > q)
-                inlet->outflow *= q / InletFlow[j];
+                inlet->flowCapture *= q / InletFlow[j];
         }
 
         // --- adjust lateral flows at bypass and capture nodes
         //     (subtract captured flow from bypass node, add it to capture
         //     node, and add any backflow to bypass node)
-        Node[j].newLatFlow -= (inlet->outflow - inlet->backflow);
-        Node[m].newLatFlow += inlet->outflow;
-
-        // --- account for pollutant transfer between bypass and capture nodes
-        for (p = 0; p < Nobjects[POLLUT]; p++)
-        {
-            w = inlet->outflow * Node[j].oldQual[p];
-            Node[m].newQual[p] += w;
-
-            if (RouteModel != DW)
-            {
-                w = inlet->backflow * Node[m].oldQual[p];
-                Node[j].newQual[p] += w;
-            }
-        }
+        Node[j].newLatFlow -= (inlet->flowCapture - inlet->backflow);
+        Node[m].newLatFlow += inlet->flowCapture;
 
         // --- update inlet's performance if reporting has begun
         if (getDateTime(NewRoutingTime) > ReportStart)
@@ -544,39 +644,120 @@ void inlet_findInletFlows(double tStep)
 
 //=============================================================================
 
-void  inlet_convertOverflows()
+void  inlet_adjustQualInflows()
 //
 //  Input:   none
 //  Output:  none
-//  Purpose: converts any overflows at capture nodes to inlet backflow.
+//  Purpose: adjusts accumulated flow rates and pollutant mass inflows at each
+//           inlet's bypass and capture nodes after a flow routing step has
+//           been taken prior to a quality routing step. 
 //
-//  This function is called after a flow routing time step has been taken.
 {
-    int i, j, m;
-    TInlet *inlet;
+    int     i, j, m, p;
+    double qNet;
+    TInlet* inlet;
 
+    if (!UsesInlets) return;
+    if (IgnoreQuality || Nobjects[POLLUT] == 0) return;
     for (inlet = FirstInlet; inlet != NULL; inlet = inlet->nextInlet)
     {
-        // --- identify inlet's bypass and capture nodes
+        // --- identify indexes of inlet's bypass (j) and capture (m) nodes 
         i = inlet->linkIndex;
         j = Link[i].node2;
         m = inlet->nodeIndex;
 
-        // --- save capture node's overflow as inlet's backflow
-        if (InletDegree[m] > 0)
+        // --- there's a net flow from the bypass to the capture node
+        qNet = inlet->flowCapture - inlet->backflow;
+        if (qNet > 0.0)
         {
-            inlet->backflow = Node[m].overflow / (double)InletDegree[m];
-            if (fabs(inlet->backflow) < FUDGE) inlet->backflow = 0.0;
+            // --- add net capture flow to capture node's accumulated flow
+            //     inflow for quality routing
+            Node[m].qualInflow += qNet;
+
+            // --- and do the same for pollutant mass flows
+            //     (Node[m].newQual is the mass inflow accumulator for node m)
+            for (p = 0; p < Nobjects[POLLUT]; p++)
+                Node[m].newQual[p] += qNet * Node[j].oldQual[p];
         }
 
-        // --- remove all captured flow at the bypass node
-        InletFlow[j] = 0.0;
+        // --- there's a net backflow from the capture to the bypass node
+        else
+        {
+            // --- add the backflow flow rate and pollutant mass flow to the
+            //     bypass node's accumulated flow and pollutant mass inflow
+            qNet = -qNet;
+            Node[j].qualInflow += qNet;
+            for (p = 0; p < Nobjects[POLLUT]; p++)
+                Node[j].newQual[p] += qNet * Node[m].oldQual[p];
+        }
+    }
+}
+
+//=============================================================================
+
+void inlet_adjustQualOutflows()
+//
+//  Input:   none
+//  Output:  none
+//  Purpose: adjusts mass balance totals after a complete routing step has been
+//           taken so as not to treat inlet transfer flows as system outflows.
+//
+{
+    int     j, p;
+    double  q, w;
+    TInlet* inlet;
+
+    // --- these variables, declared in massbal.c, accumulate system-wide flow and
+    //     pollutant mass fluxes over a time step to use in mass balances
+    extern TRoutingTotals StepFlowTotals;
+    extern TRoutingTotals*  StepQualTotals;
+
+    // --- examine each node
+    for (j = 0; j < Nobjects[NODE]; j++)
+    {
+        // --- node receives captured flow from an inlet
+        if (Node[j].inlet == CAPTURE)
+        {
+            // --- node also has an overflow (e.g., it's a surcharged sewer node)
+            q = Node[j].overflow;
+            if (q > 0.0)
+            {
+                // --- remove overflow from system flooding total since it does
+                //     not leave the system (it is sent to inlet's bypass node)
+                StepFlowTotals.flooding -= q;
+
+                // --- also remove pollutant overflow mass from system totals
+                if (!IgnoreQuality)
+                    for (p = 0; p < Nobjects[POLLUT]; p++)
+                    {
+                        w = q * Node[j].newQual[p];
+                        StepQualTotals[p].flooding -= w;
+                    }
+            }
+        }
     }
 
-    // --- remove overflows at all inlet capture nodes
-    for (inlet = FirstInlet; inlet != NULL; inlet = inlet->nextInlet)
+    // --- for WQ analysis, examine each inlet's bypass node
+    if (!IgnoreQuality && Nobjects[POLLUT] > 0)
     {
-        Node[inlet->nodeIndex].overflow = 0.0;
+        for (inlet = FirstInlet; inlet != NULL; inlet = inlet->nextInlet)
+        {
+            j = Link[inlet->linkIndex].node2;
+
+            // --- inlet has net positive flow capture leading to
+           //      node having a net negative lateral inflow
+            q = inlet->flowCapture - inlet->backflow;
+            if (q > 0.0 && Node[j].newLatFlow < 0.0)
+
+                // --- remove the pollutant mass in the captured flow from
+                //     the system totals since it does not leave the system
+                //     (it is sent to the inlet's capture node)
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    w = q * Node[j].newQual[p];
+                    StepQualTotals[p].outflow -= w;
+                }
+        }
     }
 }
 
@@ -616,7 +797,7 @@ double inlet_capturedFlow(int i)
 //  Purpose: gets the current flow captured by an inlet.
 //
 {
-    if (Link[i].inlet) return Link[i].inlet->outflow;
+    if (Link[i].inlet) return Link[i].inlet->flowCapture;
     return 0.0;
 }
 
@@ -665,11 +846,9 @@ int readGrateInletParams(int i, char* tok[], int ntoks)
     InletDesigns[i].grateInlet.width = width / UCF(LENGTH);
     InletDesigns[i].grateInlet.type = grateType;
     InletDesigns[i].grateInlet.fracOpenArea = areaRatio;
-    InletDesigns[i].grateInlet.splashVeloc = vSplash;
+    InletDesigns[i].grateInlet.splashVeloc = vSplash / UCF(LENGTH);
 
-    // --- check if grate is part of a combo inlet (grate is a street and
-    //     not a drop grate and data for a curb opening inlet has already
-    //     been provided)
+    // --- check if grate is part of a combo inlet 
     if (InletDesigns[i].type == GRATE_INLET &&
         InletDesigns[i].curbInlet.length > 0.0)
         InletDesigns[i].type = COMBO_INLET;
@@ -699,26 +878,20 @@ int readCurbInletParams(int i, char* tok[], int ntoks)
     if (!getDouble(tok[3], &height) || height <= 0.0)
         return error_setInpError(ERR_NUMBER, tok[3]);
 
-    // --- retrieve type of throat angle
-    if (InletDesigns[i].type == CURB_INLET)
+    // --- retrieve type of throat angle for curb inlet
+    throatAngle = VERTICAL_THROAT;
+    if (InletDesigns[i].type == CURB_INLET && ntoks > 4)
     {
-        throatAngle = HORIZONTAL_THROAT;
-        if (ntoks > 4)
-        {
-            throatAngle = findmatch(tok[4], ThroatAngleWords);
-            if (throatAngle < 0) return error_setInpError(ERR_KEYWORD, tok[4]);
-        }
+        throatAngle = findmatch(tok[4], ThroatAngleWords);
+        if (throatAngle < 0) return error_setInpError(ERR_KEYWORD, tok[4]);
     }
-    else throatAngle = VERTICAL_THROAT; 
 
     // ---- save curb opening inlet parameters
     InletDesigns[i].curbInlet.length = length / UCF(LENGTH);
     InletDesigns[i].curbInlet.height = height / UCF(LENGTH);
     InletDesigns[i].curbInlet.throatAngle = throatAngle;
 
-    // --- check if curb inlet is part of a combo inlet (opening is for a
-    //     street and not a drop inlet and data for a grate inlet has already
-    //     been provided)
+    // --- check if curb inlet is part of a combo inlet
     if (InletDesigns[i].type == CURB_INLET &&
         InletDesigns[i].grateInlet.length > 0.0)
         InletDesigns[i].type = COMBO_INLET;
@@ -764,33 +937,21 @@ int readCustomInletParams(int i, char* tok[], int ntoks)
 //  Purpose: extracts custom inlet parameters from a set of string tokens.
 //
 {
-    int c2, c3;    // capture curve indexes
+    int c;    // capture curve index
 
-    if (ntoks < 4) return error_setInpError(ERR_ITEMS, "");
-    if (match(tok[2], "*")) c2 = -1;
+    if (ntoks < 3) return error_setInpError(ERR_ITEMS, "");
     else
     {
-        c2 = project_findObject(CURVE, tok[2]);
-        if (c2 < 0) return error_setInpError(ERR_NAME, tok[2]);
+        c = project_findObject(CURVE, tok[2]);
+        if (c < 0) return error_setInpError(ERR_NAME, tok[2]);
     }
-    InletDesigns[i].customInlet.onGradeCurve = c2;
-    if (match(tok[3], "*"))
-    {
-        c3 = -1;
-        if (c2 == -1) return error_setInpError(ERR_NAME, tok[3]);
-    }
-    else
-    {
-        c3 = project_findObject(CURVE, tok[3]);
-        if (c3 < 0) return error_setInpError(ERR_NAME, tok[3]);
-    }
-    InletDesigns[i].customInlet.onSagCurve = c3;
+    InletDesigns[i].customCurve = c;
     return 0;
 }
 
 //=============================================================================
 
-void initInletStats(TInlet *inlet)
+void initInletStats(TInlet* inlet)
 //
 //  Input:   inlet = an inlet object placed in a conduit link
 //  Output:  none
@@ -799,8 +960,9 @@ void initInletStats(TInlet *inlet)
 {
     if (inlet)
     {
-        inlet->outflow = 0.0;
+        inlet->flowCapture = 0.0;
         inlet->backflow = 0.0;
+        inlet->stats.flowPeriods = 0;
         inlet->stats.capturePeriods = 0;
         inlet->stats.backflowPeriods = 0;
         inlet->stats.peakFlow = 0.0;
@@ -812,7 +974,7 @@ void initInletStats(TInlet *inlet)
 
 //=============================================================================
 
-void updateInletStats(TInlet *inlet, double q)
+void updateInletStats(TInlet* inlet, double q)
 //
 //  Input:   inlet = an inlet object placed in a conduit link
 //           q = inlet's approach flow (cfs)
@@ -820,7 +982,7 @@ void updateInletStats(TInlet *inlet, double q)
 //  Purpose: updates the performance statistics of an inlet.
 //
 {
-    double qCapture = inlet->outflow,
+    double qCapture = inlet->flowCapture,
            qBackflow = inlet->backflow,
            qNet = qCapture - qBackflow,
            qBypass = q - qNet,
@@ -848,12 +1010,17 @@ void updateInletStats(TInlet *inlet, double q)
     {
         inlet->stats.peakFlow = q;
         inlet->stats.peakFlowCapture = fCapture * 100.0;
-    }
+    }    
 }
 
 //=============================================================================
 
 void writeStreetStatsHeader()
+//
+//  Input:   none
+//  Output:  none
+//  Purpose: writes column headers for Street Flow Summary table to SWMM's report file.
+//
 {
     report_writeLine("");
     report_writeLine("*******************");
@@ -861,17 +1028,17 @@ void writeStreetStatsHeader()
     report_writeLine("*******************");
     report_writeLine("");
     fprintf(Frpt.file,
-"\n  ------------------------------------------------------------------------------------------------------------"
-"\n                        Peak   Maximum   Maximum                   Peak Flow   Average      Bypass    BackFlow"
-"\n                        Flow    Spread     Depth  Inlet              Capture   Capture   Frequency   Frequency");
+"\n  ----------------------------------------------------------------------------------------------------------------------"
+"\n                        Peak   Maximum   Maximum                             Peak Flow   Average      Bypass    BackFlow"
+"\n                        Flow    Spread     Depth  Inlet             Inlet      Capture   Capture   Frequency   Frequency");
     if (UnitSystem == US) fprintf(Frpt.file,
-"\n  Street Conduit         %3s        ft        ft  Design                   %%         %%           %%           %%",
-    FlowUnitWords[FlowUnits]);
+"\n  Street Conduit         %3s        ft        ft  Design            Location         %%         %%           %%           %%",
+        FlowUnitWords[FlowUnits]);
     else fprintf(Frpt.file,
-"\n  Conduit                %3s         m         m  Design                   %%         %%           %%           %%",
-    FlowUnitWords[FlowUnits]);
+"\n  Street Conduit         %3s         m         m  Design            Location         %%         %%           %%           %%",
+        FlowUnitWords[FlowUnits]);
     fprintf(Frpt.file,
-"\n  ------------------------------------------------------------------------------------------------------------");
+"\n  ----------------------------------------------------------------------------------------------------------------------");
 }
 
 //=============================================================================
@@ -880,45 +1047,52 @@ void writeStreetStats(int link)
 //
 //  Input:   link = index of a conduit link containing an inlet
 //  Output:  none
-//  Purpose: writes flow statistics for a Street conduit and its inlet
-//           to SWMM's report file.
+//  Purpose: writes flow statistics for a Street conduit and its inlet to
+//           SWMM's report file.
 //
 {
-    int    k, t;
-    double maxSpread, maxDepth, peakFlow;
-    double fp, cp, afc = 0.0, bpf = 0.0;
-    TInlet *inlet;
+    int     k, t, placement;
+    double  maxSpread, maxDepth, maxFlow;
+    double  fp, cp, afc = 0.0, bpf = 0.0;
+    TInlet* inlet;
 
     // --- retrieve street parameters
     k = Link[link].subIndex;
     t = Link[link].xsect.transect;
+    inlet = Link[link].inlet;
 
-    // --- get depth & spread at peak flow
-    //     (based on flow routing result and street's transect geometry)
-    peakFlow = LinkStats[link].maxFlow;
+    // --- get recorded max flow and depth
+    maxFlow = LinkStats[link].maxFlow;
     maxDepth = LinkStats[link].maxDepth;
+
+    // --- SWMM's spread (flow width) at max depth
     maxSpread = xsect_getWofY(&Link[link].xsect, maxDepth) / Street[t].sides;
+    maxSpread = MIN(maxSpread, Street[t].width);
 /*
-    // Alternate method from HEC-22's use of Izzard's form of the Manning eqn.)
+    // HEC-22's spread based on max flow (doesn't account for backwater)
     Sx = Street[t].slope;
     a = Street[t].gutterDepression;
     W = Street[t].gutterWidth;
     n = Street[t].roughness;
     Qfactor = (0.56 / n) * sqrt(Conduit[k].slope) * pow(Sx, 1.67);
-    maxSpread = getFlowSpread(peakFlow / Street[t].sides);
-    maxDepth = maxSpread * Sx + a;
+    maxSpread = getFlowSpread(maxFlow / Street[t].sides);
+    maxSpread = MIN(maxSpread, Street[t].width);
 */
     // --- write street stats
     fprintf(Frpt.file, "\n  %-16s", Link[link].ID);
-    fprintf(Frpt.file, " %9.2f", peakFlow * UCF(FLOW));
-    fprintf(Frpt.file, " %9.2f", maxSpread * UCF(LENGTH));
-    fprintf(Frpt.file, " %9.2f", maxDepth * UCF(LENGTH));
+    fprintf(Frpt.file, " %9.3f", maxFlow * UCF(FLOW));
+    fprintf(Frpt.file, " %9.3f", maxSpread * UCF(LENGTH));
+    fprintf(Frpt.file, " %9.3f", maxDepth * UCF(LENGTH));
 
     // --- write inlet stats
-    inlet = Link[link].inlet;
     if (inlet)
     {
         fprintf(Frpt.file, "  %-16s", InletDesigns[inlet->designIndex].ID);
+        placement = getInletPlacement(inlet, Link[inlet->linkIndex].node2);
+        if (placement == ON_GRADE)
+            fprintf(Frpt.file, "  ON-GRADE");
+        else
+            fprintf(Frpt.file, "  ON-SAG  ");
         fp = inlet->stats.flowPeriods / 100.0;
         if (fp > 0.0)
         {
@@ -938,7 +1112,7 @@ void writeStreetStats(int link)
 
 //=============================================================================
 
-int getInletPlacement(TInlet *inlet, int j)
+int getInletPlacement(TInlet* inlet, int j)
 //
 //  Input:   inlet = an inlet object placed in a conduit link
 //           j = index of inlet's bypass node
@@ -956,7 +1130,7 @@ int getInletPlacement(TInlet *inlet, int j)
 
 //=============================================================================
 
-void  getConduitGeometry(TInlet *inlet)
+void  getConduitGeometry(TInlet* inlet)
 //
 //  Input:   inlet = an inlet object placed in a conduit link
 //  Output:  none
@@ -974,7 +1148,7 @@ void  getConduitGeometry(TInlet *inlet)
     // --- if conduit has a Street cross section
     if (xsect->type == STREET_XSECT)
     {
-        t = Link[linkIndex].xsect.transect;
+        t = xsect->transect;
         Sx = Street[t].slope;                    // street cross slope
         a = Street[t].gutterDepression;          // gutter depression
         W = Street[t].gutterWidth;               // gutter width
@@ -1076,7 +1250,7 @@ double getEo(double Sr, double Ts, double w)
 
 //=============================================================================
 
-double getOnGradeCapturedFlow(TInlet *inlet, double q, double d)
+double getOnGradeCapturedFlow(TInlet* inlet, double q, double d)
 //
 //  Input:   inlet = an inlet object placed in a conduit link
 //           q = flow in link prior to any inlet capture (cfs)
@@ -1124,6 +1298,7 @@ double getOnGradeCapturedFlow(TInlet *inlet, double q, double d)
         qc = getOnGradeInletCapture(inlet->designIndex, qBypassed, d) *
             inlet->clogFactor;
         qc = MIN(qc, qMax);
+        qc = MIN(qc, qBypassed);
         qCaptured += qc;
         qBypassed -= qc;
         if (qBypassed < MIN_RUNOFF_FLOW) break;
@@ -1142,22 +1317,7 @@ double getOnGradeInletCapture(int i, double Q, double d)
 //  Purpose: finds the flow captured by a single on-grade inlet.
 //
 {
-    int    c;
     double Q1 = Q, Qc = 0.0, Lsweep = 0.0, Lcurb = 0.0, Lgrate = 0.0;
-
-    // --- custom inlet -- use onGrade curve if present or onSag curve otherwise
-    c = InletDesigns[i].customInlet.onGradeCurve;
-    if (c >= 0)
-    {
-        Qc = table_lookupEx(&Curve[c], Q * UCF(FLOW)) / UCF(FLOW);             
-        return MIN(Qc, Q);
-    }
-    c = InletDesigns[i].customInlet.onSagCurve;
-    if (c >= 0)
-    {
-        Qc = table_lookupEx(&Curve[c], d * UCF(LENGTH)) / UCF(FLOW);
-        return MIN(Qc, Q);
-    }
 
     // --- drop curb inlet (in non-Street conduit) only operates in on sag mode
     if (InletDesigns[i].type == DROP_CURB_INLET)
@@ -1236,16 +1396,16 @@ double getGrateInletCapture(int i, double Q)
     Wg = InletDesigns[i].grateInlet.width;
 
     // --- flow ratio for drop inlet
-    if (xsect->type == TRAPEZOIDAL)
+    if (xsect->type == TRAPEZOIDAL || xsect->type == RECT_OPEN)
     {
         A = xsect_getAofS(xsect, Q / Beta);
         Y = xsect_getYofA(xsect, A);
         T = xsect_getWofY(xsect, Y);
         Eo = Beta * pow(Y*Wg, 1.67) / pow(Wg + 2*Y, 0.67) / Q;
-        if (Wg > 0.99*xsect->yBot && xsect->sBot > 0.0)
+        if (Wg > 0.99*xsect->yBot && xsect->type == TRAPEZOIDAL && xsect->sBot > 0.0)
         {
-          Wg = xsect->yBot;
-          Sx = 1.0 / xsect->sBot;
+            Wg = xsect->yBot;
+            Sx = 1.0 / xsect->sBot;
         }
     }
 
@@ -1261,7 +1421,7 @@ double getGrateInletCapture(int i, double Q)
     else
     {
         // --- spread confined to gutter
-        if (T <= W) A = T * T * a / W / 2.0;
+        if (T <= W) A = T * T * Sw / 2.0;
 
         // --- spread beyond gutter width
         else A = (T * T * Sx + a * W) / 2.0;
@@ -1319,7 +1479,7 @@ double getCurbInletCapture(double Q, double L)
     // --- for depressed gutter section
     if (a > 0.0)
     {
-        Sr = (Sx + a / W) / Sx;
+        Sr = Sw / Sx;
         Eo = getEo(Sr, T-W, W);
         Se = Sx + Sw * Eo;                                 //HEC-22 Eq(4-24)
     }
@@ -1361,19 +1521,21 @@ double getGutterFlowRatio(double w)
 double getGutterAreaRatio(double Wg, double A)
 //
 //  Input:   Wg = width of grate inlet (ft)
-//           A = gutter area (ft2)
+//           A = total flow area (ft2)
 //  Output:  returns an area ratio
 //  Purpose: computes the ratio of the flow area above a grate to the flow
-//           area above the gutter in a street cross section.
+//           area above depressed gutter in a street cross section.
 //
 {
-    double Aw,     // flow area beyond gutter width (ft2)
-           Ag;     // flow area beyond grate width (ft2)
+    double As,     // flow area beyond gutter width (ft2)
+           Ag;     // flow area over grate width (ft2)
 
     if (Wg >= W) return 1.0;
-    Aw = SQR((T - W)) * Sx;
-    Ag = Aw + SQR((W - Wg)) * Sw;
-    return (A - Ag) / (A - Aw);
+    if (T <= Wg) return 1.0;
+    if (T <= W)  return Wg / T;
+    As = 0.5 * SQR((T - W)) * Sx;
+    Ag = Wg * ( (T * Sx) + a - (Wg * Sw / 2.) );
+    return Ag / (A - As);
 }
 
 //=============================================================================
@@ -1395,7 +1557,7 @@ double getSplashOverVelocity(int grateType, double L)
 
 //=============================================================================
 
-double getOnSagCapturedFlow(TInlet *inlet, double q, double d)
+double getOnSagCapturedFlow(TInlet* inlet, double q, double d)
 //
 //  Input:   inlet = an inlet object placed in a conduit link
 //           q = flow in link prior to any inlet capture (cfs)
@@ -1404,11 +1566,11 @@ double getOnSagCapturedFlow(TInlet *inlet, double q, double d)
 //  Purpose: computes flow captured by an inlet placed on-sag.
 //
 {
-    int c, numInlets, linkIndex, designIndex;
+    int    linkIndex, designIndex, totalInlets;
     double qCaptured = 0.0, qMax = HUGE;
 
-    numInlets = inlet->numInlets;
-    if (numInlets == 0) return 0.0;
+    if (inlet->numInlets == 0) return 0.0;
+    totalInlets = Nsides * inlet->numInlets;
     linkIndex = inlet->linkIndex;
     designIndex = inlet->designIndex;
 
@@ -1416,32 +1578,16 @@ double getOnSagCapturedFlow(TInlet *inlet, double q, double d)
     getConduitGeometry(inlet);
 
     // --- set flow limit per inlet
-    if (inlet->flowLimit > 0.0) qMax = inlet->flowLimit;
+    if (inlet->flowLimit > 0.0)
+        qMax = inlet->flowLimit;
 
     // --- find nominal flow captured by inlet
-    // --- inlet has a custom rating curve
-    c = InletDesigns[designIndex].customInlet.onSagCurve;
-    if (c >= 0)
-        qCaptured = table_lookupEx(&Curve[c], d * UCF(LENGTH)) / UCF(FLOW);
-    else
-    {
-        // --- inlet has a custom diversion curve
-        c = InletDesigns[designIndex].customInlet.onGradeCurve;
-        if (c >= 0)
-        {
-            qCaptured = table_lookupEx(&Curve[c], q * UCF(FLOW)) / UCF(FLOW);
-            qCaptured = MIN(qCaptured, q);
-        }
-
-        // --- use HEC-22 method for all other inlet types
-        else
-            qCaptured = getOnSagInletCapture(designIndex, fabs(d));
-    }
+    qCaptured = getOnSagInletCapture(designIndex, fabs(d));
 
     // --- find actual flow captured by the inlet
     qCaptured *= inlet->clogFactor;
     qCaptured = MIN(qCaptured, qMax);
-    qCaptured *= Nsides * inlet->numInlets;
+    qCaptured *= (double)totalInlets;
     return qCaptured;
 }
 
@@ -1508,12 +1654,13 @@ void findOnSagGrateFlows(int i, double d, double *Qw, double *Qo)
     else
     {
         // --- check for spread within grate width
-        if (d <= Wg * Sw) Wg = d / Sw;
+        if (d <= Wg * Sw)
+            Wg = d / Sw;
 
         // --- avergage depth over grate
         di = d - (Wg / 2.0) * Sw;
 
-        // --- effective grate perimeter & area
+        // --- effective grate perimeter
         P = Lg + 2.0 * Wg;
     }
 
@@ -1591,11 +1738,11 @@ void findOnSagCurbFlows(int i, double d, double L, double *Qw, double *Qo)
         else Qweir = 2.3 * P * pow(dweir, 1.5);
     }
 
-    // --- interpolate between Qwier at depth dweir and Qorif at depth dorif
+    // --- interpolate between Qweir at depth dweir and Qorif at depth dorif
     Qorif = getCurbOrificeFlow(dorif, h, L, throatAngle);
     r = (d - dweir) / (dorif - dweir);
-    *Qw = r * Qweir;
-    *Qo = (1 - r) * Qorif;
+    *Qw = (1.0 -r) * Qweir;
+    *Qo = r * Qorif;
 }
 
 //=============================================================================
@@ -1628,14 +1775,171 @@ double getOnSagSlottedFlow(int i, double d)
 //  Output:  returns captured flow rate (cfs)
 //  Purpose: finds the flow captured by an on-sag slotted inlet.
 //
+//  Note: weir flow = orifice flow at d = 2.587 * inlet width
 {
     double L = InletDesigns[i].slottedInlet.length;
     double w = InletDesigns[i].slottedInlet.width;
-    double qw, qo;
 
-    if (d <= 0.2) return 2.48 * L * pow(d, 1.5);           //HEC-22 Eq(4-32)
-    if (d >= 0.4) return 0.8 * L * w * sqrt(64.32 * d);    //HEC-22 Eq(4-33)
-    qw = 3.9305351 * L;
-    qo = 4.057822076 * L * w;
-    return qw + (d / 0.2 - 1.0) * (qo - qw);
+    if (d <= 2.587 * w)
+        return 2.48 * L * pow(d, 1.5);           //HEC-22 Eq(4-32)
+    else
+        return 0.8 * L * w * sqrt(64.32 * d);    //HEC-22 Eq(4-33)
+}
+
+//=============================================================================
+
+void getBackflowRatios()
+//
+//  Input:   none 
+//  Output:  overflow ratio for each inlet
+//  Purpose: finds the fraction of the overflow produced by an inlet's capture
+//           node that becomes backflow into the inlet.
+//
+//  Note: when a capture node receives flow from two or more inlets
+//        its backflow is divided among the inlets based on:
+//        i)  the fraction of total open area for standard inlets
+//        ii) the fraction of total number of inlets for custom inlets
+{
+    TInlet* inlet;
+    double  area;
+    double  f;
+    int     n;
+
+    // --- info for each node receiving flow from an inlet
+    typedef struct
+    {
+        int    numInletLinks;          // total # inlet links
+        int    numStdInletLinks;       // total # standard inlet links
+        int    numCustomInlets;        // # custom inlets
+        double totalInletArea;         // open area of standard inlets
+    } TInletNode;
+    TInletNode* inletNodes = (TInletNode *) calloc(Nobjects[NODE], sizeof(TInletNode));
+    if (inletNodes == NULL) return;
+
+    // --- Finds each inlet's contribution to its capture node
+    for (inlet = FirstInlet; inlet != NULL; inlet = inlet->nextInlet)
+    {
+        n = inlet->nodeIndex;
+        inletNodes[n].numInletLinks++;
+        area = getInletArea(inlet);
+        if (area > 0.0)
+        {
+            inletNodes[n].numStdInletLinks++;
+            inletNodes[n].totalInletArea += area;
+        }
+        else
+            inletNodes[n].numCustomInlets += inlet->numInlets;
+    }
+
+    // --- find fraction of capture node's overflow that becomes inlet backflow        
+    for (inlet = FirstInlet; inlet != NULL; inlet = inlet->nextInlet)
+    {
+        // --- f is ratio of links with standard inlets to all inlet links
+        //     connected to receptor node n
+        n = inlet->nodeIndex;
+        f = (double) inletNodes[n].numStdInletLinks /
+            (double) inletNodes[n].numInletLinks;
+
+        // --- backflow ratio depends if inlet is standard or custom (area = 0)
+        area = getInletArea(inlet);
+        if (area == 0.0)
+            inlet->backflowRatio = (double)inlet->numInlets /
+                                   (double)inletNodes[n].numCustomInlets * (1. - f);
+        else
+            inlet->backflowRatio = area / inletNodes[n].totalInletArea * f;
+    }
+    free(inletNodes);
+}
+
+//=============================================================================
+
+double getInletArea(TInlet* inlet)
+//
+//  Input:   inlet = an inlet object placed in a conduit link 
+//  Output:  returns the unclogged open area of the inlet (ft2)
+//  Purpose: finds the total open flow area inlets placed in a conduit.
+//
+{
+    double area = 0.0;
+    double curbLength;
+    int i = inlet->designIndex;
+    int grateType = InletDesigns[i].grateInlet.type;
+
+    if (InletDesigns[i].grateInlet.length > 0.0)
+    {
+        area = InletDesigns[i].grateInlet.length * InletDesigns[i].grateInlet.width;
+        if (grateType == GENERIC)
+            area *= InletDesigns[i].grateInlet.fracOpenArea;
+        else
+            area *= GrateOpeningRatios[grateType];
+    }
+
+    curbLength = InletDesigns[i].curbInlet.length - InletDesigns[i].grateInlet.length;
+    if (curbLength > 0.0)
+        area += curbLength * InletDesigns[i].curbInlet.height;
+
+    if (InletDesigns[i].slottedInlet.length > 0.0)
+        area = InletDesigns[i].slottedInlet.length * InletDesigns[i].slottedInlet.width;
+    return area * inlet->numInlets * inlet->clogFactor;
+}
+
+//=============================================================================
+
+double getCustomCapturedFlow(TInlet* inlet, double q, double d)
+{
+    int i = inlet->designIndex;        // inlet's position in InletDesigns array
+    int j;                             // counter for replicate inlets
+    int sides = 1;                     // number of sides for inlet's street (1 or 2)
+    int c;                             // an index into the Curve array
+    double  qApproach,                 // inlet's approach flow (cfs)
+            qBypassed,                 // inlet's bypassed flow (cfs)
+            qCaptured,                 // inlet's captured flow (cfs)
+            qIncrement,                // increment to captured flow (cfs)
+            qMax = HUGE;               // user-supplied flow capture limit (cfs)
+
+    if (inlet->numInlets == 0) return 0.0;
+
+    // --- set limit on max. flow captured per inlet
+    qMax = BIG;
+    if (inlet->flowLimit > 0.0) qMax = inlet->flowLimit;
+
+    // --- get number of sides to a street xsection
+    xsect = &Link[inlet->linkIndex].xsect;
+    if (xsect->type == STREET_XSECT)
+        sides = Street[xsect->transect].sides;
+
+    // --- adjust flow for 2-sided street
+    qApproach = q / sides;
+    qBypassed = qApproach;
+    qCaptured = 0.0;
+
+    // --- get index of inlet's capture curve
+    c = InletDesigns[i].customCurve;
+    if (c >= 0)
+    {
+        // --- curve is captured flow v. approach flow
+        if (Curve[c].curveType == DIVERSION_CURVE)
+        {
+            // --- add up incrmental capture of each replicate inlet
+            for (j = 1; j <= inlet->numInlets; j++)
+            {
+                qIncrement = inlet->clogFactor *
+                    table_lookupEx(&Curve[c], qBypassed * UCF(FLOW)) / UCF(FLOW);
+                qIncrement = MIN(qIncrement, qMax);
+                qIncrement = MIN(qIncrement, qBypassed);
+                qCaptured += qIncrement;
+                qBypassed -= qIncrement;
+                if (qBypassed < MIN_RUNOFF_FLOW) break;
+            }
+        }
+
+        // --- curve is captured flow v. downstream node depth
+        else if (Curve[c].curveType == RATING_CURVE)
+        {
+            qCaptured = inlet->numInlets * inlet->clogFactor *
+                table_lookupEx(&Curve[c], d * UCF(LENGTH)) / UCF(FLOW);
+        }
+        qCaptured *= sides;
+    }
+    return qCaptured;
 }

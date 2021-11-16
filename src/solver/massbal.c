@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/26/21  (Build 5.2.0)
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
@@ -28,8 +28,6 @@
 //     nodes are when updating total outflow volume.
 //   Build 5.1.013:
 //   - Volume from MinSurfArea no longer included in initial & final storage.
-//   Build 5.2.0:
-//   - Support added for Inlets.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -37,7 +35,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include "headers.h"
-#include "swmm5.h"
 
 //-----------------------------------------------------------------------------
 //  Constants   
@@ -618,33 +615,15 @@ void massbal_updateRoutingTotals(double tStep)
         QualTotals[j].seepLoss += StepQualTotals[j].seepLoss * tStep;
         QualTotals[j].finalStorage += StepQualTotals[j].finalStorage;
     }
-}
 
-//=============================================================================
-
-void massbal_updateNodeTotals(double tStep)
-//
-//  Input:   tStep = time step (sec)
-//  Output:  none
-//  Purpose: updates cumulative inflow and outflow volumes for nodes.
-//
-{
-    int j;
     for (j = 0; j < Nobjects[NODE]; j++)
     {
-        // --- update node's cumulative inflow volume
         NodeInflow[j] += Node[j].inflow * tStep;
-
-        // --- for outfall nodes and non-storage nodes with no outflow
-        //     links, add inflow volume to cumulative outflow volume
         if (Node[j].type == OUTFALL ||
             (Node[j].degree == 0 && Node[j].type != STORAGE))
         {
             NodeOutflow[j] += Node[j].inflow * tStep;
         }
-
-        // --- otherwise update node's cumulative outflow volume with
-        //     its current outflow volume plus any overflow volume
         else
         {
             NodeOutflow[j] += Node[j].outflow * tStep;

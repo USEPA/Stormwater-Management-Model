@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21  (Build 5.2.0)
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
@@ -22,12 +22,14 @@
 //   - Terminal storage nodes now updated corectly.
 //   Build 5.1.014:
 //   - Arguments to function link_getLossRate changed.
+//   Build 5.2.0:
+//   - Correction made to updating state of terminal storage nodes.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
-#include "headers.h"
 #include <stdlib.h>
 #include <math.h>
+#include "headers.h"
 
 //-----------------------------------------------------------------------------
 //  Constants
@@ -128,7 +130,7 @@ double flowrout_getRoutingStep(int routingModel, double fixedStep)
 
 int flowrout_execute(int links[], int routingModel, double tStep)
 //
-//  Input:   links = array of link indexes in topo-sorted order
+//  Input:   links = array of link indexes in topo-sorted order (per routing model)
 //           routingModel = type of routing method used
 //           tStep = routing time step (sec)
 //  Output:  returns number of computational steps taken
@@ -637,13 +639,11 @@ void setNewNodeState(int j, double dt)
     {
         if ( Node[j].updated == FALSE )
             updateStorageState(j, Nobjects[LINK], NULL, dt);
-        return; 
     }
 
-    // --- update stored volume using mid-point integration
+    // --- update stored volume
     newNetInflow = Node[j].inflow - Node[j].outflow - Node[j].losses;
-    Node[j].newVolume = Node[j].oldVolume +
-                        0.5 * (Node[j].oldNetInflow + newNetInflow) * dt;
+    Node[j].newVolume = Node[j].oldVolume + newNetInflow * dt;
     if ( Node[j].newVolume < FUDGE ) Node[j].newVolume = 0.0;
 
     // --- determine any overflow lost from system

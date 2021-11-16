@@ -3,7 +3,7 @@
 //
 //   Project: EPA SWMM5
 //   Version: 5.2
-//   Date:    03/24/21  (Build 5.2.0)
+//   Date:    11/01/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Exportable keyword dictionary
@@ -32,7 +32,8 @@
 //   Build 5.2.0:
 //   - Support added for Streets and Inlets.
 //   - Support added for variable speed pumps.
-//   - Support added for conical & pyramidal storage shapes.
+//   - Support added for analytical storage shapes.
+//   - Support added for RptFlags.disabled option.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -103,10 +104,11 @@ char* QualUnitsWords[]     = { w_MGperL, w_UGperL, w_COUNTperL, NULL};
 char* RainTypeWords[]      = { w_INTENSITY, w_VOLUME, w_CUMULATIVE, NULL};
 char* RainUnitsWords[]     = { w_INCHES, w_MMETER, NULL};
 char* RelationWords[]      = { w_TABULAR, w_FUNCTIONAL,
-                               w_CONICAL, w_PYRAMIDAL, NULL};
-char* ReportWords[]        = { w_INPUT, w_CONTINUITY, w_FLOWSTATS,
-                               w_CONTROLS, w_SUBCATCH, w_NODE, w_LINK,
-                               w_NODESTATS, w_AVERAGES, NULL};
+                               w_CYLINDRICAL, w_CONICAL, w_PARABOLIC,
+                               w_PYRAMIDAL, NULL};
+char* ReportWords[]        = { w_DISABLED, w_INPUT, w_SUBCATCH, w_NODE, w_LINK,
+                               w_CONTINUITY, w_FLOWSTATS,w_CONTROLS,
+                               w_AVERAGES, w_NODESTATS, NULL};
 char* RouteModelWords[]    = { w_NONE, w_STEADY, w_KINWAVE, w_XKINWAVE,
                                w_DYNWAVE, NULL};
 char* RuleKeyWords[]       = { w_RULE, w_IF, w_AND, w_OR, w_THEN, w_ELSE, 

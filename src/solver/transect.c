@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21   (Build 5.2.0)
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Geometry processing for irregular cross-section transects.
@@ -11,7 +11,7 @@
 //   Update History
 //   ==============
 //   Build 5.2.0:
-//   - Adds a function to create a transect for a Street cross-section.
+//   - Function added to create a transect for a Street cross-section.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -19,7 +19,6 @@
 #include <string.h>
 #include <math.h>
 #include "headers.h"
-#include "street.h"
 
 //-----------------------------------------------------------------------------
 //  Constants
@@ -274,7 +273,7 @@ void createTables(TTransect *transect, double ymin, double ymax)
     transect->widthTbl[0] = 0.0;
 
     // --- compute geometry for each depth increment
-    dy = (ymax - ymin) / (double)(transect->nTbl - 1);
+    dy = (ymax - ymin) / ((double)(transect->nTbl) - 1);
     y = ymin;
     for (i = 1; i < transect->nTbl; i++)
     {
@@ -592,12 +591,11 @@ void setMaxSectionFactor(TTransect *transect)
 
 //=============================================================================
 
-void  transect_createStreetTransect(int streetIndex)
+void  transect_createStreetTransect(TStreet* street)
 //
 {
     double ymin, ymax, y1, y3, y4;
     double w1, w2, w3, w4;
-    TStreet *street = &Street[streetIndex];
 
     // Point 0 = top of backing
     // Point 1 = top of curb
@@ -606,15 +604,15 @@ void  transect_createStreetTransect(int streetIndex)
     // Point 4 = top of depressed gutter
     // Point 5 = street crown 
 
-        // --- assign height (y) and width (w) to road & gutter sections
+    // --- assign height (y) and width (w) to road & gutter sections
     ymin = 0.0;
-    w1 = street->backing.width;
+    w1 = street->backWidth;
     w2 = street->gutterWidth;
     w3 = street->width;
     w4 = w3 - w2;
     y3 = street->gutterDepression;
     y1 = street->curbHeight + y3;
-    ymax = street->backing.slope * street->backing.width + y1;
+    ymax = street->backSlope * street->backWidth + y1;
     y4 = y3 + street->slope * w4;
     ymax = MAX(ymax, y4);
 
@@ -656,7 +654,7 @@ void  transect_createStreetTransect(int streetIndex)
 
     // --- assign Manning's N to street
     Nchannel = street->roughness;
-    if (street->backing.width == 0.0)
+    if (street->backWidth == 0.0)
     {
         Nleft = Nchannel;
         Nright = Nchannel;
@@ -665,7 +663,7 @@ void  transect_createStreetTransect(int streetIndex)
     }
     else
     {
-        Nleft = street->backing.roughness;
+        Nleft = street->backRoughness;
         Nright = Nleft;
         Xleftbank = Station[1];
         if (street->sides == 2)

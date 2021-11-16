@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21   (Build 5.2.0)
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //             M. Tryby
 //
@@ -27,7 +27,7 @@
 //   Build 5.1.014:
 //   - Fixed street sweeping bug.
 //   Build 5.2.0:
-//   - Support added for saving rainfall amounts in previous 24 hours. 
+//   - Support added for saving rainfall amounts in previous 48 hours. 
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -180,7 +180,7 @@ void runoff_execute()
     if ( Nobjects[SUBCATCH] == 0 )
     {
         OldRunoffTime = NewRunoffTime;
-        NewRunoffTime += (double)(1000 * DryStep);
+        NewRunoffTime += (double)(DryStep) * 1000.;
         NewRunoffTime = MIN(NewRunoffTime, TotalDuration);
         return;
     }
@@ -230,7 +230,7 @@ void runoff_execute()
         NewRunoffTime = TotalDuration;
     }
 
-    // --- update past 24 hour rain totals
+    // --- update past n-hour rain totals
     for (j = 0; j < Nobjects[GAGE]; j++)
         gage_updatePastRain(j, (int)runoffStep);
 
@@ -432,7 +432,7 @@ void  runoff_readFromFile(void)
 
     // --- read runoff time step
     kount = 0;
-    kount += fread(&tStep, sizeof(float), 1, Frunoff.file);
+    kount += (int)fread(&tStep, sizeof(float), 1, Frunoff.file);
 
     // --- compute number of results saved for each subcatchment
     nResults = MAX_SUBCATCH_RESULTS + Nobjects[POLLUT] - 1;
@@ -441,7 +441,7 @@ void  runoff_readFromFile(void)
     for (j = 0; j < Nobjects[SUBCATCH]; j++)
     {
         // --- read vector of saved results
-        kount += fread(SubcatchResults, sizeof(float), nResults, Frunoff.file);
+        kount += (int)fread(SubcatchResults, sizeof(float), nResults, Frunoff.file);
 
         // --- extract hydrologic results, converting units where necessary
         //     (results were saved to file in user's units)

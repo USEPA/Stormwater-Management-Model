@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21 (Build 5.2.0)
+//   Date:     11/01/21 (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Report writing functions for input data summary.
@@ -11,14 +11,13 @@
 //   Update History
 //   ==============
 //   Build 5.2.0:
-//   - Support added for Streets and Inlets.
+//   - Support added for reporting Street geometry tables.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <string.h>
 #include <time.h>
 #include "headers.h"
-#include "street.h"
 #include "lid.h"
 
 #define WRITE(x) (report_writeLine((x)))
@@ -289,7 +288,6 @@ void inputrpt_writeInput()
             }
         }
     }
-    WRITE("");
 
     if (Nobjects[TRANSECT] > 0)
     {
@@ -321,7 +319,6 @@ void inputrpt_writeInput()
             }
         }
     }
-    WRITE("");
 
     if (Nobjects[STREET] > 0)
     {

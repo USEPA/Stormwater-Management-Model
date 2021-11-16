@@ -20,11 +20,11 @@ struct HTentry
 
 typedef struct HTentry *HTtable;
 
-HTtable *HTcreate(void);
-int     HTinsert(HTtable *, char *, int);
-int     HTfind(HTtable *, char *);
-char    *HTfindKey(HTtable *, char *);
-void    HTfree(HTtable *);
+HTtable* HTcreate(void);
+int      HTinsert(HTtable *, char *, int);
+int      HTfind(HTtable *, const char *);
+char*    HTfindKey(HTtable *, const char *);
+void     HTfree(HTtable *);
 
 
 #endif //HASH_H

@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21   (Build 5.2.0)
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   This module handles all data processing involving LID (Low Impact
@@ -66,6 +66,8 @@
 //   - Fixed bug in adding underdrain pollutant loads to mass balances.
 //   Build 5.1.015:
 //   - Support added for mutiple infiltration methods within a project.
+//   Build 5.2.0:
+//   - Covered property added to RAIN_BARREL parameters
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -218,7 +220,9 @@ static int    isLidPervious(int k);
 static double getImpervAreaRunoff(int j);
 static double getPervAreaRunoff(int j);
 static double getSurfaceDepth(int subcatch);
+static double getRainInflow(int j, TLidUnit*  lidUnit);
 static void   findNativeInfil(int j, double tStep);
+
 
 static void   evalLidUnit(int j, TLidUnit* lidUnit, double lidArea,
               double lidInflow, double tStep, double *qRunoff,
@@ -580,7 +584,7 @@ int readSurfaceData(int j, char* toks[], int ntoks)
 //  Output:  returns error code
 //
 //  Format of data is:
-//  LID_ID  SURFACE  StorageHt  VegVolFrac  Roughness  SurfSlope  SideSlope  DamHt
+//  LID_ID  SURFACE  StorageHt  VegVolFrac  Roughness  SurfSlope  SideSlope
 //
 {
     int    i;
@@ -702,10 +706,11 @@ int readStorageData(int j, char* toks[], int ntoks)
 //  Output:  returns error code
 //
 //  Format of data is:
-//    LID_ID STORAGE  Thickness  VoidRatio  Ksat  ClogFactor 
+//    LID_ID STORAGE  Thickness  VoidRatio  Ksat  ClogFactor  (YES/NO) 
 //
 {
     int    i;
+    int    covered = FALSE;
     double x[6];
 
     //... read numerical parameters
@@ -716,6 +721,13 @@ int readStorageData(int j, char* toks[], int ntoks)
             return error_setInpError(ERR_NUMBER, toks[i]);
     }
 
+    //... check if rain barrel is covered
+    if (ntoks > 6)
+    {
+        if (match(toks[6], w_YES))
+            covered = TRUE;
+    }
+
     //... convert void ratio to void fraction
     x[1] = x[1]/(x[1] + 1.0);
 
@@ -724,6 +736,7 @@ int readStorageData(int j, char* toks[], int ntoks)
     LidProcs[j].storage.voidFrac    = x[1];
     LidProcs[j].storage.kSat        = x[2] / UCF(RAINFALL);
     LidProcs[j].storage.clogFactor  = x[3];
+    LidProcs[j].storage.covered     = covered;
     return 0;
 }
  
@@ -750,7 +763,7 @@ int readDrainData(int j, char* toks[], int ntoks)
     for (i = 0; i < 6; i++) x[i] = 0.0;
     for (i = 2; i < 8; i++)
     {
-        if ( ntoks > i && ! getDouble(toks[i], &x[i-2]) || x[i-2] < 0.0 )
+        if ( (ntoks > i) && (! getDouble(toks[i], &x[i-2]) || x[i-2]) < 0.0 )
             return error_setInpError(ERR_NUMBER, toks[i]);
     }
 
@@ -962,8 +975,8 @@ void validateLidProc(int j)
         ||   LidProcs[j].pavement.impervFrac >  1.0 )
 
         {
-            strcpy(Msg, LidProcs[j].ID);
-            strcat(Msg, ERR_PAVE_LAYER);
+            sstrncpy(Msg, LidProcs[j].ID, MAXMSG);
+            sstrcat(Msg, ERR_PAVE_LAYER, MAXMSG);
             report_writeErrorMsg(ERR_LID_PARAMS, Msg);
         }
     }
@@ -977,8 +990,8 @@ void validateLidProc(int j)
         ||   LidProcs[j].soil.kSat          <= 0.0
         ||   LidProcs[j].soil.kSlope        <  0.0 )
         {
-            strcpy(Msg, LidProcs[j].ID);
-            strcat(Msg, ERR_SOIL_LAYER);
+            sstrncpy(Msg, LidProcs[j].ID, MAXMSG);
+            sstrcat(Msg, ERR_SOIL_LAYER, MAXMSG);
             report_writeErrorMsg(ERR_LID_PARAMS, Msg);
         }
     }
@@ -989,8 +1002,8 @@ void validateLidProc(int j)
         if ( LidProcs[j].storage.voidFrac <= 0.0 ||
              LidProcs[j].storage.voidFrac > 1.0 )
         {
-            strcpy(Msg, LidProcs[j].ID);
-            strcat(Msg, ERR_STOR_LAYER);
+            sstrncpy(Msg, LidProcs[j].ID, MAXMSG);
+            sstrcat(Msg, ERR_STOR_LAYER, MAXMSG);
             report_writeErrorMsg(ERR_LID_PARAMS, Msg);
         }
     }
@@ -1006,8 +1019,8 @@ void validateLidProc(int j)
     if (LidProcs[j].drain.hOpen > 0.0 &&
         LidProcs[j].drain.hOpen <= LidProcs[j].drain.hClose)
     {
-        strcpy(Msg, LidProcs[j].ID);
-        strcat(Msg, ERR_DRAIN_HEADS);
+        sstrncpy(Msg, LidProcs[j].ID, MAXMSG);
+        sstrcat(Msg, ERR_DRAIN_HEADS, MAXMSG);
         report_writeErrorMsg(ERR_LID_PARAMS, Msg);
     }
 
@@ -1019,8 +1032,8 @@ void validateLidProc(int j)
              LidProcs[j].surface.thickness == 0.0
            )
         {
-            strcpy(Msg, LidProcs[j].ID);
-            strcat(Msg, ERR_SWALE_SURF);
+            sstrncpy(Msg, LidProcs[j].ID, MAXMSG);
+            sstrcat(Msg, ERR_SWALE_SURF, MAXMSG);
             report_writeErrorMsg(ERR_LID_PARAMS, Msg);
         }
         else LidProcs[j].surface.alpha = 
@@ -1133,8 +1146,8 @@ void validateLidGroup(int j)
                    (1.0 - lidUnit->initSat);
             if ( grnampt_setParams(&(lidUnit->soilInfil), p) == FALSE )
             {
-                strcpy(Msg, LidProcs[k].ID);
-                strcat(Msg, ERR_SOIL_LAYER);
+                sstrncpy(Msg, LidProcs[k].ID, MAXMSG);
+                sstrcat(Msg, ERR_SOIL_LAYER, MAXMSG);
                 report_writeErrorMsg(ERR_LID_PARAMS, Msg);
             }
         }
@@ -1148,15 +1161,15 @@ void validateLidGroup(int j)
                 grnampt_getParams(j, p);
                 if ( grnampt_setParams(&(lidUnit->soilInfil), p) == FALSE )
                 {
-                    strcpy(Msg, LidProcs[k].ID);
-                    strcat(Msg, ERR_GREEN_AMPT);
+                    sstrncpy(Msg, LidProcs[k].ID, MAXMSG);
+                    sstrcat(Msg, ERR_GREEN_AMPT, MAXMSG);
                     report_writeErrorMsg(ERR_LID_PARAMS, Msg);
                 }
             }
             if ( lidUnit->fullWidth <= 0.0 )
             {
-                strcpy(Msg, LidProcs[k].ID);
-                strcat(Msg, ERR_SWALE_WIDTH);
+                sstrncpy(Msg, LidProcs[k].ID, MAXMSG);
+                sstrcat(Msg, ERR_SWALE_WIDTH, MAXMSG);
                 report_writeErrorMsg(ERR_LID_PARAMS, Msg);
             }
         }
@@ -1654,7 +1667,7 @@ void lid_getRunoff(int j, double tStep)
             VlidIn += lidInflow * lidArea * tStep;
 
             //... add rainfall onto LID inflow (ft/s)
-            lidInflow = lidInflow + Subcatch[j].rainfall;
+            lidInflow = lidInflow + getRainInflow(j, lidUnit);
 
             // ... add upstream runon only if LID occupies full subcatchment
             if ( Subcatch[j].area == Subcatch[j].lidArea )
@@ -1716,6 +1729,23 @@ void findNativeInfil(int j, double tStep)
         MaxNativeInfil = Subcatch[j].groundwater->maxInfilVol / tStep;
     }
     else MaxNativeInfil = BIG;
+}
+
+//=============================================================================
+
+double  getRainInflow(int j, TLidUnit*  lidUnit)
+//
+//  Purpose: gets rainfall inflow to an LID unit.
+//  Input:   j = subcatchment index
+//           lidUnit = ptr. to an LID unit
+//  Output:  returns rainfall rate over the LID unit (ft/sec)
+//
+{
+    TLidProc* lidProc = &LidProcs[lidUnit->lidIndex];
+
+    if (lidProc->lidType == RAIN_BARREL &&
+        lidProc->storage.covered == TRUE) return 0.0;
+    return Subcatch[j].rainfall;
 }
 
 //=============================================================================
@@ -1997,5 +2027,5 @@ void initLidRptFile(char* title, char* lidID, char* subcatchID, TLidUnit* lidUni
 
     //... initialize LID dryness state
     lidUnit->rptFile->wasDry = 1;
-    strcpy(lidUnit->rptFile->results, "");
+    sstrncpy(lidUnit->rptFile->results, "", 0);
 }

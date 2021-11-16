@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21   (Build 5.2.0)
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Table (curve and time series) functions.
@@ -27,6 +27,7 @@
 //   - refactored.
 //   - The table_getInverseArea function was renamed table_getStorageDepth and
 //     was refactored.
+//   - Support added for relative file names.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -123,6 +124,7 @@ int table_readTimeseries(char* tok[], int ntoks)
     double x, y;                       // time & value table entries
     DateTime d;                        // day portion of date/time value
     DateTime t;                        // time portion of date/time value
+    char fname[MAXFNAME + 1];
 
     // --- check for minimum number of tokens
     if ( ntoks < 3 ) return error_setInpError(ERR_ITEMS, "");
@@ -138,7 +140,8 @@ int table_readTimeseries(char* tok[], int ntoks)
     // --- check if time series data is in an external file
     if ( strcomp(tok[1], w_FILE ) )
     {
-        sstrncpy(Tseries[j].file.name, tok[2], MAXFNAME);
+        sstrncpy(fname, tok[2], MAXFNAME);
+        sstrncpy(Tseries[j].file.name, addAbsolutePath(fname), MAXFNAME);
         Tseries[j].file.mode = USE_FILE;
         return 0;
     }
@@ -587,7 +590,7 @@ double table_getStorageVolume(TTable *table, double x)
 //  Purpose: finds volume for a given depth in a Storage Curve table.
 //
 {
-    double a, a1, x1, v, dx, dy, s;
+    double a, a1, x1, v, dx = 0.0, dy = 0.0, s;
     TTableEntry* entry;
 
     // --- get first entry in table
@@ -651,7 +654,7 @@ double table_getStorageDepth(TTable *table, double v)
 //  Purpose: finds depth for a given volume in a Storage Curve table.
 //
 {
-    double a1, a2, d1, d2, dd, da, v1, v2, s;
+    double a1, a2, d1, d2, dd = 0.0, da = 0.0, v1, v2, s;
     TTableEntry* entry;
 
     // --- see if target volume is below that of 1st table entry
@@ -698,6 +701,7 @@ double table_getStorageDepth(TTable *table, double v)
             s = da / dd;
             return d1 + (sqrt(a1*a1 + 2.0*s*(v-v1)) - a1) / s;
         }
+
         // --- replace point 1 with point 2
         d1 = d2;
         a1 = a2;

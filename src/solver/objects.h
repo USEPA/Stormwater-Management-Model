@@ -3,7 +3,7 @@
 //
 //   Project: EPA SWMM5
 //   Version: 5.2
-//   Date:    03/24/21  (Build 5.2.0)
+//   Date:    11/01/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //            M. Tryby (EPA)
 //            R. Dickinson (CDM)
@@ -51,15 +51,20 @@
 //   - Support added for grouped freqency table of routing time steps.
 //  Build 5.2.0:
 //  - Support added for Street and Inlet objects.
-//  - Support added for conic & pyramidal storage functions.
+//  - Support added for analytical storage shapes.
 //  - Support added for reporting most frequent non-converging links.
 //  - Support added for tracking a gage's prior n-hour rainfall total.
+//  - Removed extIfaceInflow member from ExtInflow struct.
+//  - Refactored TRptFlags struct.
 //-----------------------------------------------------------------------------
 
 #ifndef OBJECTS_H
 #define OBJECTS_H
 
-
+#include <stdio.h>
+#include "consts.h"
+#include "enums.h"
+#include "datetime.h"
 #include "mathexpr.h"
 #include "inlet.h"
 #include "infil.h"
@@ -108,6 +113,7 @@ typedef struct
 //-----------------
 // RAIN GAGE OBJECT
 //-----------------
+#define MAXPASTRAIN 48
 typedef struct
 {
    char*         ID;              // raingage name
@@ -132,8 +138,9 @@ typedef struct
    DateTime      nextDate;        // next date with recorded rainfall
    double        rainfall;        // current rainfall (in/hr or mm/hr)
    double        nextRainfall;    // next rainfall (in/hr or mm/hr)
+   double        apiRainfall;     // rainfall from API function (in/hr or mm/hr)
    double        reportRainfall;  // rainfall value used for reported results
-   double        pastRain[25];    // previous hourly rain volume (in or mm)
+   double        pastRain[MAXPASTRAIN+1]; // previous hourly rain volume (in or mm)
    int           pastInterval;    // seconds since pastRain last updated
    int           coGage;          // index of gage with same rain timeseries
    int           isUsed;          // TRUE if gage used by any subcatchment
@@ -369,7 +376,7 @@ typedef struct
 typedef struct
 {
    char*         ID;              // subcatchment name
-   char          rptFlag;         // reporting flag
+   int           rptFlag;         // reporting flag
    int           gage;            // raingage index
    int           outNode;         // outlet node index
    int           outSubcatch;     // outlet subcatchment index
@@ -429,7 +436,6 @@ struct ExtInflow
    double         cFactor;       // units conversion factor for mass inflow
    double         baseline;      // constant baseline value
    double         sFactor;       // time series scaling factor
-   double         extIfaceInflow;// external interfacing inflow
    struct ExtInflow* next;       // pointer to next inflow data object
 };
 typedef struct ExtInflow TExtInflow;
@@ -487,7 +493,7 @@ typedef struct
    char*         ID;              // node ID
    int           type;            // node type code
    int           subIndex;        // index of node's sub-category
-   char          rptFlag;         // reporting flag
+   int           rptFlag;         // reporting flag
    double        invertElev;      // invert elevation (ft)
    double        initDepth;       // initial storage level (ft)
    double        fullDepth;       // dist. from invert to surface (ft)
@@ -499,6 +505,7 @@ typedef struct
    TTreatment*   treatment;       // array of treatment data
    //-----------------------------
    int           degree;          // number of outflow links
+   int           inlet;           // is an inlet BYPASS or CAPTURE node
    char          updated;         // true if state has been updated
    double        crownElev;       // top of highest flowing closed conduit (ft)
    double        inflow;          // total inflow (cfs)
@@ -516,6 +523,9 @@ typedef struct
    double*       newQual;         // current quality state
    double        oldFlowInflow;   // previous flow inflow
    double        oldNetInflow;    // previous net inflow
+   double        qualInflow;      // inflow seen for quality routing (cfs)
+   double        apiExtInflow;    // inflow from swmm_setValue function (cfs)
+
 }  TNode;
 
 //---------------
@@ -611,6 +621,25 @@ typedef struct
     int          nTbl;                      // size of geometry tables
 }   TTransect;
 
+//-------------------------------
+// STREET CROSS SECTION STRUCTURE
+//-------------------------------
+typedef struct
+{
+    char* ID;                // name of street section
+    int          sides;             // 1 or 2 sided street
+    double       slope;             // cross slope (Sx)
+    double       width;             // distance from curb to crown (ft) (Tmax)
+    double       curbHeight;        // curb height incl. depression (ft) (Hc)
+    double       gutterDepression;  // gutter depression (ft) (a)
+    double       gutterWidth;       // gutter width (ft) (W)
+    double       roughness;         // street's Manning n
+    double       backSlope;
+    double       backWidth;
+    double       backRoughness;
+    TTransect    transect;          // street's transect   
+}   TStreet;
+
 //-------------------------------------
 // CUSTOM CROSS SECTION SHAPE STRUCTURE
 //-------------------------------------
@@ -637,7 +666,7 @@ typedef struct
    char*         ID;              // link ID
    int           type;            // link type code
    int           subIndex;        // index of link's sub-category
-   char          rptFlag;         // reporting flag
+   int           rptFlag;         // reporting flag
    int           node1;           // start node index
    int           node2;           // end node index
    double        offset1;         // ht. above start node invert (ft)
@@ -824,16 +853,15 @@ typedef struct
 //--------------------------
 typedef struct
 {
-   char          report;          // TRUE if results report generated
+   char          disabled;        // TRUE if reporting is disabled
    char          input;           // TRUE if input summary included
    char          subcatchments;   // TRUE if subcatchment results reported
    char          nodes;           // TRUE if node results reported
    char          links;           // TRUE if link results reported
    char          continuity;      // TRUE if continuity errors reported
    char          flowStats;       // TRUE if routing link flow stats. reported
-   char          nodeStats;       // TRUE if routing node depth stats. reported
    char          controls;        // TRUE if control actions reported
-   char          averages;        // TRUE if average results reported
+   char          averages;        // TRUE if report step averaged results used
    int           linesPerPage;    // number of lines printed per page
 }  TRptFlags;
 
@@ -907,20 +935,21 @@ typedef struct
    double        pctError;         // continuity error
 }  TRoutingTotals;
 
-//-----------------------
-// SYSTEM-WIDE STATISTICS
-//-----------------------
+//---------------------
+// TIME STEP STATISTICS
+//---------------------
 #define TIMELEVELS 6
 typedef struct
 {
-   double        minTimeStep;
-   double        maxTimeStep;
-   double        avgTimeStep;
-   double        avgStepCount;
-   double        steadyStateCount;
-   double        timeStepIntervals[TIMELEVELS];
-   int           timeStepCounts[TIMELEVELS];
-}  TSysStats;
+   double        minTimeStep;          // min. routing time step taken (sec)
+   double        maxTimeStep;          // max. routing time step taken (sec)
+   double        routingTime;          // sum of routing time steps taken (sec)
+   int           timeStepCount;        // number of routing time steps
+   double        trialsCount;          // total routing trials used
+   double        steadyStateTime;      // total time in steady state (sec)
+   double        timeStepIntervals[TIMELEVELS];  // time step intervals (sec)
+   int           timeStepCounts[TIMELEVELS];     // count of steps in interval
+}  TTimeStepStats;
 
 //--------------------
 // RAINFALL STATISTICS
@@ -1023,6 +1052,7 @@ typedef struct
    DateTime      maxFlowDate;
    double        maxVeloc;
    double        maxDepth;
+   double        maxStreetFilled;
    double        timeNormalFlow;
    double        timeInletControl;
    double        timeSurcharged;

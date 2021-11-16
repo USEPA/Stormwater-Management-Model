@@ -3,7 +3,7 @@
 //
 //   Project: EPA SWMM5
 //   Version: 5.2
-//   Date:    03/24/21  (Build 5.2.0)
+//   Date:    11/01/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Various Constants
@@ -36,7 +36,9 @@
 #define   PI                 3.141592654    // Value of pi
 #define   GRAVITY            32.2           // accel. of gravity in US units
 #define   SI_GRAVITY         9.81           // accel of gravity in SI units
+/* DEPRECATED
 #define   MAXFILESIZE        2147483647L    // largest file size in bytes
+*/
 
 //-----------------------------
 // Units factor in Manning Eqn.
@@ -67,7 +69,7 @@
 //-----------------------------------------------------
 // Minimum flow depth and area for dynamic wave routing
 //-----------------------------------------------------
-#define   FUDGE    0.0001    // ft or ft2
+#define   FUDGE   0.0001    // ft or ft2
 
 //---------------------------
 // Various conversion factors

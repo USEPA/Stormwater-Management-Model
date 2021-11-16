@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21   (Build 5.2.0)
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   This module computes the hydrologic performance of an LID (Low Impact
@@ -49,6 +49,10 @@
 //   Build 5.1.014:
 //   - Fixed failure to initialize all LID layer moisture volumes to 0 before
 //     computing LID unit performance in lidproc_getOutflow.
+//   Build 5.2.0:
+//   - Fixed failure to account for effect of Impervious Surface Fraction on
+//     pavement permeability for Permeable Pavement LID
+//   - Fixed units conversion for pavement depth in detailed report file.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -163,7 +167,6 @@ static int    modpuls_solve(int n, double* x, double* xOld, double* xPrev,
                             double* xMin, double* xMax, double* xTol,
                             double* qOld, double* q, double dt, double omega,
                             void (*derivs)(double*, double*));
-
 
 //=============================================================================
 
@@ -364,7 +367,7 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
     double totalVolume;                // total volume stored in LID (ft)
     double rptVars[MAX_RPT_VARS];      // array of reporting variables
     int    isDry = FALSE;              // true if current state of LID is dry
-    char   timeStamp[24];              // date/time stamp
+    char   timeStamp[TIME_STAMP_SIZE + 1]; // date/time stamp
     double elapsedHrs;                 // elapsed hours
 
     //... find total evap. rate and stored volume
@@ -403,7 +406,7 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
         //... convert storage results to original units (in or mm)
         ucf = ucfRainDepth;
         rptVars[SURF_DEPTH] = theLidUnit->surfaceDepth*ucf;
-        rptVars[PAVE_DEPTH] = theLidUnit->paveDepth;
+        rptVars[PAVE_DEPTH] = theLidUnit->paveDepth*ucf;
         rptVars[SOIL_MOIST] = theLidUnit->soilMoisture;
         rptVars[STOR_DEPTH] = theLidUnit->storageDepth*ucf;
 
@@ -419,8 +422,9 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
         //... write the current results to a string which is saved between
         //    reporting periods
         elapsedHrs = NewRunoffTime / 1000.0 / 3600.0;
-        datetime_getTimeStamp(M_D_Y, getDateTime(NewRunoffTime), 24, timeStamp);
-        sprintf(theLidUnit->rptFile->results,
+        datetime_getTimeStamp(
+            M_D_Y, getDateTime(NewRunoffTime), TIME_STAMP_SIZE, timeStamp);
+        snprintf(theLidUnit->rptFile->results, sizeof(theLidUnit->rptFile->results),
              "\n%20s\t %8.3f\t %8.3f\t %8.4f\t %8.3f\t %8.3f\t %8.3f\t %8.3f\t"
              "%8.3f\t %8.3f\t %8.3f\t %8.3f\t %8.3f\t %8.3f",
              timeStamp, elapsedHrs, rptVars[0], rptVars[1], rptVars[2],
@@ -864,7 +868,7 @@ void pavementFluxRates(double x[], double f[])
     SurfaceInfil = SurfaceInflow + (SurfaceVolume / Tstep);
 
     //... find perc rate out of pavement layer
-    PavePerc = getPavementPermRate();
+    PavePerc = getPavementPermRate() * pervFrac;
 
     //... surface infiltration can't exceed pavement permeability
     SurfaceInfil = MIN(SurfaceInfil, PavePerc);

@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21  (Build 5.2.0)
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   The DateTime type is used to store date and time values. It is
@@ -31,6 +31,7 @@ typedef double DateTime;
 #define NO_DATE -693594 // 1/1/0001
 #define DATE_STR_SIZE 12
 #define TIME_STR_SIZE 9
+#define TIME_STAMP_SIZE 21
 
 // Functions for encoding a date or time value to a DateTime value
 DateTime datetime_encodeDate(int year, int month, int day);

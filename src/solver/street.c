@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21  (Build 5.2.0)
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Street Cross-Section Functions
@@ -12,7 +12,7 @@
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <stdlib.h>
-#include "street.h"
+#include "headers.h"
 
 //-----------------------------------------------------------------------------
 //  External functions (declared in street.h)
@@ -31,16 +31,21 @@ int   street_create(int nStreets)
 //
 {
     Street = NULL;
-    StreetCount = 0;
+    Nobjects[STREET] = 0;
     Street = (TStreet *)calloc(nStreets, sizeof(TStreet));
     if (Street == NULL) return ERR_MEMORY;
-    StreetCount = nStreets;
+    Nobjects[STREET] = nStreets;
     return 0;
 }
 
 //=============================================================================
 
 void  street_delete()
+//
+//  Input:   none
+//  Output:  none
+//  Purpose: deletes the collection of Street objects.
+//
 {
     FREE(Street)
 }
@@ -121,9 +126,37 @@ int street_readParams(char* tok[], int ntoks)
     street->gutterDepression = x[5] / UCF(LENGTH);
     street->gutterWidth = x[6] / UCF(LENGTH);
     street->sides = sides;
-    street->backing.width = x[8] / UCF(LENGTH);
-    street->backing.slope = x[9] / 100.0;
-    street->backing.roughness = x[10];
-    transect_createStreetTransect(i);
+    street->backWidth = x[8] / UCF(LENGTH);
+    street->backSlope = x[9] / 100.0;
+    street->backRoughness = x[10];
+    transect_createStreetTransect(street);
     return 0;
+}
+
+//=============================================================================
+
+double street_getExtentFilled(int link)
+//
+//  Input:   link = a link index
+//  Output:  degree to which street is filled
+//  Purpose: finds the degree to which a street link is filled based on the
+//           depth (for DW routing) or cross section area at the higher end.
+//
+{
+    int    k, t;
+    double filled;
+
+    t = Link[link].xsect.transect;
+    if (t < 0) return 0.0;
+    if (RouteModel == DW)
+    {
+        filled = MAX(Node[Link[link].node1].newDepth,
+                     Node[Link[link].node2].newDepth);
+    }
+    else
+    {
+        k = Link[link].subIndex;
+        filled = MAX(Conduit[k].a1, Conduit[k].a2);
+    }
+    return filled;
 }

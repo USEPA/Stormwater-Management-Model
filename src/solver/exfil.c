@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21  (Build 5.2.0)
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Storage unit exfiltration functions.
@@ -17,7 +17,7 @@
 //   Build 5.1.011:
 //   - Fixed units conversion error for storage units with surface area curves.
 //   Build 5.2.0:
-//   - Support added for conical & pyramidal storage shapes.
+//   - Support added for analytical storage shapes.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -140,7 +140,8 @@ void  exfil_initState(int k)
                 exfil->bankMaxArea = BIG;
                 break;
 
-            // --- conical & pyramidal shapes
+            // --- cylindrical, conical & prismatic shapes
+            case CYLINDRICAL:
             case CONICAL:
             case PYRAMIDAL:
                 exfil->btmArea = Storage[k].a0;

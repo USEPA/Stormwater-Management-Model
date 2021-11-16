@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21   (Build 5.2.0)
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Pollutant treatment functions.
@@ -121,11 +121,11 @@ int  treatmnt_readExpression(char* tok[], int ntoks)
     if ( p < 0 ) return error_setInpError(ERR_NAME, tok[1]);
 
     // --- concatenate remaining tokens into a single string
-    strcpy(s, tok[2]);
+    sstrncpy(s, tok[2], MAXLINE);
     for ( i=3; i<ntoks; i++)
     {
-        strcat(s, " ");
-        strcat(s, tok[i]);
+        sstrcat(s, " ", MAXLINE);
+        sstrcat(s, tok[i], MAXLINE);
     }
 
     // --- check treatment type
@@ -152,8 +152,11 @@ int  treatmnt_readExpression(char* tok[], int ntoks)
         return error_setInpError(ERR_MATH_EXPR, "");
 
     // --- save the treatment parameters in the node's treatment object
-    Node[j].treatment[p].treatType = k;
-    Node[j].treatment[p].equation = equation;
+    if (Node[j].treatment != NULL)
+    {
+        Node[j].treatment[p].treatType = k;
+        Node[j].treatment[p].equation = equation;
+    }
     return 0;
 }
 

@@ -3,7 +3,7 @@
 //
 //   Project: EPA SWMM5
 //   Version: 5.2
-//   Date:    03/24/21 (Build 5.2.0)
+//   Date:    11/01/21 (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Global Variables
@@ -28,6 +28,8 @@
 //   - CrownCutoff and RuleStep added as analysis option variables.
 //   Build 5.1.015:
 //   - Fixes bug in summary statistics when Report Start date > Start Date.
+//   Build 5.2.0:
+//   - Support for relative file names added.
 //-----------------------------------------------------------------------------
 
 #ifndef GLOBALS_H
@@ -57,7 +59,8 @@ EXTERN char
                   Msg[MAXMSG+1],            // Text of output message
                   ErrorMsg[MAXMSG+1],       // Text of error message
                   Title[MAXTITLE][MAXMSG+1],// Project title
-                  TempDir[MAXFNAME+1];      // Temporary file directory
+                  TempDir[MAXFNAME+1],      // Temporary file directory
+                  InpDir[MAXFNAME+1];       // Input file directory
 
 EXTERN TRptFlags
                   RptFlags;                 // Reporting options
@@ -96,7 +99,6 @@ EXTERN int
                   MaxTrials,                // Max. trials for DW routing
                   NumThreads,               // Number of parallel threads used
                   NumEvents;                // Number of detailed events
-                //InSteadyState;            // System flows remain constant
 
 EXTERN double
                   RouteStep,                // Routing time step (sec)
@@ -162,6 +164,7 @@ EXTERN TPattern*  Pattern;                  // Array of time patterns
 EXTERN TTable*    Curve;                    // Array of curve tables
 EXTERN TTable*    Tseries;                  // Array of time series tables
 EXTERN TTransect* Transect;                 // Array of transect data
+EXTERN TStreet*   Street;                   // Array of defined Street cross-sections
 EXTERN TShape*    Shape;                    // Array of custom conduit shapes
 EXTERN TEvent*    Event;                    // Array of routing events
 

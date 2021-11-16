@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21  (Build 5.2.0)
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Infiltration functions.
@@ -28,10 +28,10 @@
 //     hydraulic conductivity.
 //   Build 5.1.015:
 //   - Support added for multiple infiltration methods within a project.
-//   - Conversion of runon to ponded depth fixed for Curve Number infiltration.
 //   Build 5.2.0:
 //   - Additional validity check for G-A initial deficit added.
 //   - New error message 235 added for invalid infiltration parameters.
+//   - Conversion of runon to ponded depth fixed for Curve Number infiltration.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 

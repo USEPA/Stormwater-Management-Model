@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     03/24/21  (Build 5.2.0)
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Pollutant buildup and washoff functions.
@@ -41,8 +41,6 @@
 //-----------------------------------------------------------------------------
 static double landuse_getBuildupDays(int landuse, int pollut, double buildup);
 static double landuse_getBuildupMass(int landuse, int pollut, double days);
-static double landuse_getRunoffLoad(int landuse, int pollut, double area,
-              TLandFactor landFactor[], double runoff, double tStep);
 static double landuse_getWashoffQual(int landuse, int pollut, double buildup,
               double runoff, double area);
 static double landuse_getExternalBuildup(int i, int p, double buildup,
@@ -201,7 +199,7 @@ int  landuse_readBuildupParams(char* tok[], int ntoks)
 //
 {
     int    i, j, k, n, p;
-    double c[3], tmax;
+    double c[3] = {0, 0, 0}, tmax;
 
     if ( ntoks < 3 ) return 0;
     j = project_findObject(LANDUSE, tok[0]);

@@ -3,7 +3,7 @@
 //
 //   Project: EPA SWMM5
 //   Version: 5.2
-//   Date:    03/24/21 (Build 5.2.0)
+//   Date:    11/01/21 (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Public interface for infiltration functions.
