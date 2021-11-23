@@ -865,20 +865,22 @@ void sortEvents()
 //  Purpose: sorts the entries of the Event array in chronological order.
 //
 {
-    int i, j;
+    int i, j, gap;
     TEvent temp;
 
-    // Apply simple exchange sort to event list
-    for (i = 0; i < NumEvents-1; i++)
+    // Apply shell sort to event list
+    for (gap = NumEvents/2; gap >= 1; gap /= 2)
     {
-        for (j = i+1; j < NumEvents; j++)
+        for (i = gap; i < NumEvents; i += gap)
         {
-            if ( Event[i].start > Event[j].start )
+            temp = Event[i];
+            j = i - gap;
+            while (j >= 0 && Event[j].start > temp.start)
             {
-                temp = Event[j];
-                Event[j] = Event[i];
-                Event[i] = temp;
+                Event[j+gap] = Event[j];
+                j -= gap;
             }
+            if (j != i-gap) Event[j+gap] = temp;
         }
     }
 
