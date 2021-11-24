@@ -357,7 +357,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Po
     BOOST_REQUIRE(error == ERR_NONE);
 
     do{	    
-	    if (step > 1000 and step < 2000){
+	    if (step > 1000 && step < 2000){
 	    	// Set pollutant in link and check the pollutant in the node
 	    	error = swmm_setLinkPollut(link_ind, SM_LINKQUAL, P1, 1.0);
 	    	BOOST_REQUIRE(error == ERR_NONE);
@@ -365,7 +365,7 @@ BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Po
 	    // Route Model Forward
             error = swmm_step(&elapsedTime);
 	    BOOST_REQUIRE(error == ERR_NONE);
-	    if (step > 1500 and step < 2000) // Wait for water to reach node
+	    if (step > 1500 && step < 2000) // Wait for water to reach node
             {
 	    // Get infows concentration in node
             error = swmm_getNodePollut(node_ind,  SM_NODEQUAL, &node_qual, &length);
