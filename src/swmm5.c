@@ -39,7 +39,8 @@
 //   - Added additional API functions.
 //   - Set max. number of open files to 8192.
 //   - Changed getElapsedTime function to use report start as base date/time.
-//   - Prevented swmm_end() from exiting if swmm_start() had been called.
+//   - Prevented possible infinite loop if swmm_step() called when ErrorCode > 0.
+//   - Prevented early exit from swmm_end() when ErrorCode > 0.
 //   - Support added for relative file names.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -415,6 +416,7 @@ int DLLEXPORT swmm_step(double *elapsedTime)
 //
 {
     // --- check that simulation can proceed
+    *elapsedTime = 0.0;
     if ( ErrorCode ) 
         return ErrorCode;
     if ( !IsOpenFlag )
@@ -472,6 +474,7 @@ int  DLLEXPORT swmm_stride(int strideStep, double *elapsedTime)
     double realRouteStep = RouteStep;
 
     // --- check that simulation can proceed
+    *elapsedTime = 0.0;
     if (ErrorCode)
         return ErrorCode;
     if (!IsOpenFlag)
@@ -629,7 +632,7 @@ int DLLEXPORT swmm_end(void)
         if ( Fout.file ) output_end();
 
         // --- report mass balance results and system statistics
-        if ( !ErrorCode  && RptFlags.disabled == 0 )
+        if ( !ErrorCode && RptFlags.disabled == 0 )
         {
             massbal_report();
             stats_report();
