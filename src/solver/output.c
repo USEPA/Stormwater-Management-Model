@@ -33,8 +33,8 @@
 #ifdef _MSC_VER    // Windows (32-bit and 64-bit)
   #define F_OFF __int64
   #define F_SEEK _fseeki64
-#elif              // Other platforms
-  #define F_OFF off64_t
+#else              // Other platforms
+  #define F_OFF off_t
   #define F_SEEK fseeko
 #endif
 
@@ -125,10 +125,10 @@ int output_open()
 {
     int   j;
     int   m;
-    int   n;
     INT4  k;
     REAL4 x;
     REAL8 z;
+    F_OFF numResults;
 
     // --- open binary output file
     output_openOutFile();
@@ -158,9 +158,11 @@ int output_open()
     for (j=0; j<Nobjects[NODE]; j++) if (Node[j].rptFlag) NumNodes++;
     for (j=0; j<Nobjects[LINK]; j++) if (Link[j].rptFlag) NumLinks++;
 
-    n = (NumSubcatch * NumSubcatchVars) + (NumNodes * NumNodeVars) +
-        (NumLinks * NumLinkVars) + MAX_SYS_RESULTS;
-    BytesPerPeriod = sizeof(REAL8) + (size_t)n * sizeof(REAL4);
+    // --- find size of results saved in each time period
+    numResults = ((F_OFF)NumSubcatch * (F_OFF)NumSubcatchVars)
+        + ((F_OFF)NumNodes * (F_OFF)NumNodeVars)
+        + ((F_OFF)NumLinks * (F_OFF)NumLinkVars) + MAX_SYS_RESULTS;
+    BytesPerPeriod = sizeof(REAL8) + (numResults * sizeof(REAL4));
     Nperiods = 0;
 
     SubcatchResults = NULL;

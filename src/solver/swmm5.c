@@ -39,6 +39,8 @@
 //   - Added additional API functions.
 //   - Set max. number of open files to 8192.
 //   - Changed getElapsedTime function to use report start as base date/time.
+//   - Prevented possible infinite loop if swmm_step() called when ErrorCode > 0.
+//   - Prevented early exit from swmm_end() when ErrorCode > 0.
 //   - Support added for relative file names.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -414,6 +416,7 @@ int DLLEXPORT swmm_step(double *elapsedTime)
 //
 {
     // --- check that simulation can proceed
+    *elapsedTime = 0.0;
     if ( ErrorCode ) 
         return ErrorCode;
     if ( !IsOpenFlag )
@@ -471,6 +474,7 @@ int  DLLEXPORT swmm_stride(int strideStep, double *elapsedTime)
     double realRouteStep = RouteStep;
 
     // --- check that simulation can proceed
+    *elapsedTime = 0.0;
     if (ErrorCode)
         return ErrorCode;
     if (!IsOpenFlag)
@@ -619,8 +623,6 @@ int DLLEXPORT swmm_end(void)
 //
 {
     // --- check that project opened and run started
-    if (ErrorCode)
-        return ErrorCode;
     if ( !IsOpenFlag )
         return (ErrorCode = ERR_API_NOT_OPEN);
 
@@ -630,7 +632,7 @@ int DLLEXPORT swmm_end(void)
         if ( Fout.file ) output_end();
 
         // --- report mass balance results and system statistics
-        if ( !ErrorCode  && RptFlags.disabled == 0 )
+        if ( !ErrorCode && RptFlags.disabled == 0 )
         {
             massbal_report();
             stats_report();
@@ -835,100 +837,82 @@ int  DLLEXPORT swmm_getIndex(int objType, const char *name)
 
 //=============================================================================
 
-double  DLLEXPORT swmm_getValue(int objType, int index, int property)
+double  DLLEXPORT swmm_getValue(int property, int index)
 //
-//  Input:   objType = a type of SWMM object
+//  Input:   property = an object's property code
 //           index = the object's index in the array of like objects
-//           property = a property code associated with the object
+//           
 //  Output:  returns the property's current value
 //  Purpose: retrieves the value of an object's property.
 {
     if (!IsOpenFlag)
         return 0;
-    if (objType == swmm_SYSTEM)
+    if (property < 100)
         return getSystemValue(property);
-    if (objType < swmm_GAGE || objType > swmm_LINK)
-        return 0;
-    if (index < 0 || index >= Nobjects[objType])
-        return 0;
-    switch (objType)
-    {
-        case GAGE:
-          return getGageValue(index, property);
-        case SUBCATCH:
-          return getSubcatchValue(index, property);
-        case NODE:
-          return getNodeValue(index, property);
-        case LINK:
-          return getLinkValue(index, property);
-    }
+    if (property < 200)
+        return getGageValue(property, index);
+    if (property < 300)
+        return getSubcatchValue(property, index);
+    if (property < 400)
+        return getNodeValue(property, index);
+    if (property < 500)
+        return getLinkValue(property, index);
     return 0;
 }
 
 //=============================================================================
 
-void  DLLEXPORT swmm_setValue(int objType, int index, int property, double value)
+void  DLLEXPORT swmm_setValue(int property, int index, double value)
 //
-//  Input:   objType = a type of SWMM object
+//  Input:   property = an object's property code
 //           index = the object's index in the array of like objects
-//           property = a property code associated with the object
 //           value = the property's new value
-//  Output:  returns an error code
+//  Output:  none
 //  Purpose: sets the value of an object's property.
 {
     if (!IsOpenFlag)
         return;
-    if (objType == swmm_GAGE)
+    switch (property)
     {
+    case swmm_GAGE_RAINFALL:
         if (index < 0 || index >= Nobjects[GAGE])
             return;
-        if (property == swmm_GAGE_RAINFALL)
-        {
-            if (value >= 0.0)
-                Gage[index].apiRainfall = value;
-        }
-    }
-    else if (objType == swmm_NODE)
-    {
-        if (property == swmm_NODE_LATFLOW)
-            setNodeLatFlow(index, value);
-        if (property == swmm_NODE_HEAD)
-            setOutfallStage(index, value);
-    }
-    else if (objType == swmm_LINK)
-    {
-        if (property == swmm_LINK_SETTING)
-            setLinkSetting(index, value);
-    }
-    if (objType == swmm_SYSTEM)
-    {
-        if (property == swmm_ROUTESTEP)
-            setRoutingStep(value);
-        else if (property == swmm_REPORTSTEP)
-        {
-            if (!IsStartedFlag && value > 0)
-                ReportStep = (int)value;                
-        }
-        else if (property == swmm_NOREPORT)
-        {
-            if (value == 0)
-                RptFlags.disabled = FALSE;
-            else
-                RptFlags.disabled = TRUE;
-        }
+        if (value >= 0.0)
+            Gage[index].apiRainfall = value;
+        return;
+    case swmm_NODE_LATFLOW:
+        setNodeLatFlow(index, value);
+        return;
+    case swmm_NODE_HEAD:
+        setOutfallStage(index, value);
+        return;
+    case swmm_LINK_SETTING:
+        setLinkSetting(index, value);
+        return;
+    case swmm_ROUTESTEP:
+        setRoutingStep(value);
+        return;
+    case swmm_REPORTSTEP:
+        if (!IsStartedFlag && value > 0)
+            ReportStep = (int)value;                
+        return;
+    case swmm_NOREPORT:
+        if (value == 0)
+            RptFlags.disabled = FALSE;
+        else
+            RptFlags.disabled = TRUE;
+        return;
     }
 }
 
 //=============================================================================
 
-double  DLLEXPORT swmm_getSavedValue(int objType, int index, int property, int period)
+double  DLLEXPORT swmm_getSavedValue(int property, int index, int period)
 //
-//  Input:   objType = a type of SWMM object
+//  Input:   property = an object's property code
 //           index = the object's index in the array of like objects
-//           property = a property code associated with the object
 //           period = a reporting time period (starting from 1) 
-//           value = the property's computed value at the requested time period
-//  Output:  returns an error code
+//  Output:  returns the property's saved value 
 //  Purpose: retrieves an object's computed value at a specific reporting time period.
 {
     if (!IsOpenFlag)
@@ -937,23 +921,14 @@ double  DLLEXPORT swmm_getSavedValue(int objType, int index, int property, int p
         return 0;
     if (period < 1 || period > Nperiods)
         return 0;
-    if (objType == swmm_SYSTEM)
-    {
-        if (property == swmm_CURRENTDATE)
-            return getSavedDate(period);
-        else
-            return 0;
-    }
-    if (objType < swmm_SUBCATCH || objType > swmm_LINK)
-        return 0;
-    if (index < 0 || index >= Nobjects[objType])
-        return 0;
-    switch (objType)
-    {
-    case swmm_SUBCATCH: return getSavedSubcatchValue(index, property, period);
-    case swmm_NODE: return getSavedNodeValue(index, property, period);
-    case swmm_LINK: return getSavedLinkValue(index, property, period);
-    }
+    if (property == swmm_CURRENTDATE)
+        return getSavedDate(period);
+    if (property >= 200 && property < 300)
+        return getSavedSubcatchValue(property, index, period);
+    if (property < 400)
+        return getSavedNodeValue(property, index, period);
+    if (property < 500)
+        return getSavedLinkValue(property, index, period);
     return 0;
 }
 
@@ -976,29 +951,33 @@ void  DLLEXPORT swmm_decodeDate(double date, int *year, int *month, int *day,
 //   Object property getters and setters
 //=============================================================================
 
-double getGageValue(int index, int property)
+double getGageValue(int property, int index)
 //
-//  Input:   index = the index of a rain gage
-//           property = a rain gage property code
+//  Input:   property = a rain gage property code
+//           index = the index of a rain gage
 //  Output:  returns current property value
 //  Purpose: retrieves current value of a rain gage property.
 {
-    if (property == swmm_GAGE_RAINFALL)
-        return Gage[index].rainfall;
-    else
+    if (index < 0 || index >= Nobjects[GAGE])
         return 0;
+    if (property == swmm_GAGE_RAINFALL)
+        return Gage[index].reportRainfall;
+    return 0;
 }
 
 //=============================================================================
 
-double getSubcatchValue(int index, int property)
+double getSubcatchValue(int property, int index)
 //
-//  Input:   index = the index of a subcatchment
-//           property = a subcatchment property code
+//  Input:   property = a subcatchment property code
+//           index = the index of a subcatchment
 //  Output:  returns current property value
 //  Purpose: retrieves current value of a subcatchment's property.
 {
-    TSubcatch* subcatch = &Subcatch[index];
+    TSubcatch* subcatch;
+    if (index < 0 || index >= Nobjects[SUBCATCH])
+        return 0;
+    subcatch = &Subcatch[index];
     switch (property)
     {
         case swmm_SUBCATCH_AREA:
@@ -1006,13 +985,18 @@ double getSubcatchValue(int index, int property)
         case swmm_SUBCATCH_RAINGAGE:
           return subcatch->gage;
         case swmm_SUBCATCH_RAINFALL:
-          return subcatch->rainfall * UCF(RAINFALL);
+            if ( subcatch->gage >= 0 )
+                return Gage[subcatch->gage].reportRainfall;
+            else
+                return 0.0;
         case swmm_SUBCATCH_EVAP:
-          return subcatch->evapLoss * UCF(RAINFALL);
+          return subcatch->evapLoss * UCF(EVAPRATE);
         case swmm_SUBCATCH_INFIL:
-          return subcatch->infil;
+          return subcatch->infilLoss * UCF(RAINFALL);
         case swmm_SUBCATCH_RUNOFF:
-          return Subcatch[index].newRunoff * UCF(FLOW);
+          return subcatch->newRunoff * UCF(FLOW);
+        case swmm_SUBCATCH_RPTFLAG:
+          return (subcatch->rptFlag > 0);
         default:
           return 0;
     }
@@ -1020,14 +1004,17 @@ double getSubcatchValue(int index, int property)
 
 //=============================================================================
 
-double getNodeValue(int index, int property)
+double getNodeValue(int property, int index)
 //
-//  Input:   index = the index of a node
-//           property = a node property code
+//  Input:   property = a node property code
+//           index = the index of a node
 //  Output:  returns current property value
 //  Purpose: retrieves current value of a node's property.
 {
-    TNode* node = &Node[index];
+    TNode* node;
+    if (index < 0 || index >= Nobjects[NODE])
+        return 0;
+    node = &Node[index];
     switch (property)
     {
         case swmm_NODE_TYPE:
@@ -1048,6 +1035,8 @@ double getNodeValue(int index, int property)
           return node->inflow * UCF(FLOW);
         case swmm_NODE_OVERFLOW:
           return node->overflow * UCF(FLOW);
+        case swmm_NODE_RPTFLAG:
+          return (node->rptFlag > 0);
         default:
           return 0;
     }
@@ -1055,14 +1044,17 @@ double getNodeValue(int index, int property)
 
 //=============================================================================
 
-double getLinkValue(int index, int property)
+double getLinkValue(int property, int index)
 //
-//  Input:   index = the index of a link
-//           property = a link property code
+//  Input:   property = a link property code
+//           index = the index of a link
 //  Output:  returns current property value
 //  Purpose: retrieves current value of a link's property.
 {
-    TLink* link = &Link[index];
+    TLink* link;
+    if (index , 0 || index >= Nobjects[LINK])
+        return 0;
+    link = &Link[index];
     switch (property)
     {
         case swmm_LINK_TYPE:
@@ -1087,9 +1079,9 @@ double getLinkValue(int index, int property)
         case swmm_LINK_FULLFLOW:
           return link->qFull * UCF(FLOW);
         case swmm_LINK_FLOW:
-          return link->newFlow * UCF(FLOW);
+          return link->newFlow * UCF(FLOW) * (double)link->direction;
         case swmm_LINK_VELOCITY:
-          return link_getVelocity(index, link->newFlow, link->newDepth)
+          return link_getVelocity(index, fabs(link->newFlow), link->newDepth)
               * UCF(LENGTH);
         case swmm_LINK_DEPTH:
           return link->newDepth * UCF(LENGTH);
@@ -1110,6 +1102,8 @@ double getLinkValue(int index, int property)
               return (getDateTime(NewRoutingTime) - link->timeLastSet) * 24.;
           else
               return 0;
+        case swmm_LINK_RPTFLAG:
+          return (link->rptFlag > 0);
         default:
           return 0;
     }
@@ -1141,6 +1135,8 @@ double getSystemValue(int property)
           return Nperiods;
         case swmm_NOREPORT:
           return RptFlags.disabled;
+        case swmm_FLOWUNITS:
+          return FlowUnits;
         default:
           return 0;
     }
@@ -1158,16 +1154,6 @@ void  setNodeLatFlow(int index, double value)
     if (index < 0 || index >= Nobjects[NODE])
         return;
     Node[index].apiExtInflow = value / UCF(FLOW);
-/*
-    inflow_setExtInflow(index,            // node index
-                        -1,               // FLOW property code
-                        FLOW_INFLOW,      // inflow type
-                        -1,               // no time series
-                        -1,               // no baseline pattern
-                        1.0 / UCF(FLOW),  // unit conversion factor
-                        value,            // baseline flow value
-                        1.0);             // scaling factor
-*/
 }
 
 //=============================================================================
@@ -1202,10 +1188,10 @@ void  setLinkSetting(int index, double value)
     if (index < 0 || index >= Nobjects[NODE])
         return;
     link = &Link[index];
-    if (value < 0.0)
+    if (value < 0.0  || link->type == CONDUIT)
         return;
     if (link->type != PUMP && value > 1.0)
-        return;
+        value = 1.0;
     if (link->targetSetting == value)
         return;
     link->targetSetting = value;
@@ -1229,10 +1215,10 @@ double getSavedDate(int period)
 
 //=============================================================================
 
-double  getSavedSubcatchValue(int index, int property, int period)
+double  getSavedSubcatchValue(int property, int index, int period)
 //
-//  Input:   index = index of a subcatchment
-//           property = index of a computed property
+//  Input:   property = index of a computed property
+//           index = index of a subcatchment
 //           period = a reporting period (starting at 1)
 //  Output:  returns the property's value at the recording period
 //  Purpose: retrieves the computed value of a subcatchment property at a
@@ -1264,10 +1250,10 @@ double  getSavedSubcatchValue(int index, int property, int period)
 
 //=============================================================================
 
-double  getSavedNodeValue(int index, int property, int period)
+double  getSavedNodeValue(int property, int index, int period)
 //
-//  Input:   index = index of a node
-//           property = index of a computed property
+//  Input:   property = index of a computed property
+//           index = index of a node
 //           period = a reporting period (starting at 1)
 //  Output:  returns the property's value at the recording period
 //  Purpose: retrieves the computed value of a node property at a
@@ -1303,10 +1289,10 @@ double  getSavedNodeValue(int index, int property, int period)
 
 //=============================================================================
 
-double  getSavedLinkValue(int index, int property, int period)
+double  getSavedLinkValue(int property, int index, int period)
 //
-//  Input:   index = index of a link
-//           property = index of a computed property
+//  Input:   property = index of a computed property
+//           index = index of a link
 //           period = a reporting period (starting at 1)
 //  Output:  returns the property's value at the recording period
 //  Purpose: retrieves the computed value of a link property at a
@@ -1335,6 +1321,8 @@ double  getSavedLinkValue(int index, int property, int period)
         y = LinkResults[LINK_DEPTH] / UCF(LENGTH);
         w = xsect_getWofY(&Link[index].xsect, y);
         return w * UCF(LENGTH);
+    case swmm_LINK_SETTING:
+        return LinkResults[LINK_CAPACITY];
     default:
         return 0;
     }

@@ -36,6 +36,7 @@
 //   - Global infiltration factor for storage seepage set in routing_execute.
 //   Build 5.2.0:
 //   - Support added for street flow capture and sewer backflow thru inlets.
+//   - Shell sort replaces insertion sort for sorting Event array.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -448,7 +449,6 @@ void addExternalInflows(DateTime currentDate)
         // --- get flow inflow
         q = Node[j].apiExtInflow;
         inflow = Node[j].extInflow;
-        //////////////////if ( !inflow ) continue;
         while ( inflow )
         {
             if ( inflow->type == FLOW_INFLOW )
@@ -933,20 +933,22 @@ void sortEvents()
 //  Purpose: sorts the entries of the Event array in chronological order.
 //
 {
-    int i, j;
+    int i, j, gap;
     TEvent temp;
 
-    // Apply simple exchange sort to event list
-    for (i = 0; i < NumEvents-1; i++)
+    // Apply shell sort to event list
+    for (gap = NumEvents/2; gap >= 1; gap /= 2)
     {
-        for (j = i+1; j < NumEvents; j++)
+        for (i = gap; i < NumEvents; i += gap)
         {
-            if ( Event[i].start > Event[j].start )
+            temp = Event[i];
+            j = i - gap;
+            while (j >= 0 && Event[j].start > temp.start)
             {
-                temp = Event[j];
-                Event[j] = Event[i];
-                Event[i] = temp;
+                Event[j+gap] = Event[j];
+                j -= gap;
             }
+            if (j != i-gap) Event[j+gap] = temp;
         }
     }
 
