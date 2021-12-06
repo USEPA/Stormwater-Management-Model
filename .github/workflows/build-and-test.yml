@@ -41,10 +41,10 @@ jobs:
         python -m pip install -r requirements-swmm.txt
 
     - name: Build and unit test
-      run: make.cmd /t
+      run: make.cmd /t /g "Visual Studio 16 2019"
 
     - name: Build
-      run: make.cmd
+      run: make.cmd /g "Visual Studio 16 2019"
 
     - name: Before test
       run: before-nrtest.cmd
