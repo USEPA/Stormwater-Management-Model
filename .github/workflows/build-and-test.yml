@@ -8,7 +8,8 @@ on:
 
 env:
   OMP_NUM_THREADS: 1
-
+  BUILD_HOME: build
+  TEST_HOME: nrtests
 
 jobs:
   unit_test:
