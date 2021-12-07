@@ -32,7 +32,7 @@ jobs:
 
     - name: Add tar.exe
       if: ${{ runner.os == 'Windows' }}
-      run: echo "C:\Program Files\Git\usr\bin">> %GITHUB_PATH%
+      run: echo "C:\Program Files\Git\usr\bin">> ${{ env.GITHUB_PATH }}
 
     - name: Cache boost
       id: cache-boost
