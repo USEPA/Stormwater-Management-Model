@@ -30,6 +30,11 @@ jobs:
         repository: michaeltryby/ci-tools
         path: ci-tools
 
+    - name: Add tar.exe
+      if: ${{ runner.os == 'Windows' }}
+      run: |
+        "C:\Program Files\Git\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+
     - name: Cache boost
       id: cache-boost
       uses: actions/cache@v2
