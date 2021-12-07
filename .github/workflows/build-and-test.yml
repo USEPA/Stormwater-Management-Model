@@ -6,16 +6,18 @@ on:
   pull_request:
     branches: [ lew-develop ]
 
+env:
+  OMP_NUM_THREADS: 1
+
+
 jobs:
   unit_test:
+    name: Build and unit test
     runs-on: windows-2019
     defaults:
       run:
         shell: cmd
         working-directory: ci-tools/windows
-
-    env:
-      OMP_NUM_THREADS: 1
 
     steps:
     - name: Checkout repo
@@ -54,15 +56,14 @@ jobs:
 
 
   reg_test:
+    name: Build and reg test
     runs-on: windows-2019
     defaults:
       run:
         shell: cmd
         working-directory: ci-tools/windows
 
-      env:
-        OMP_NUM_THREADS: 1
-
+    steps:
     - name: Checkout repo
       uses: actions/checkout@v2
 
