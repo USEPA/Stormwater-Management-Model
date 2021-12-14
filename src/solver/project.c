@@ -244,47 +244,11 @@ void project_validate()
 
     // --- adjust individual reporting flags to match global reporting flag
     if ( RptFlags.subcatchments == ALL )
-        for (i=0; i<Nobjects[SUBCATCH]; i++) Subcatch[i].rptFlag = i+1;
-    if (RptFlags.subcatchments == SOME)
-    {
-        j = 1;
-        for (i = 0; i < Nobjects[SUBCATCH]; i++)
-        {
-            if (Subcatch[i].rptFlag)
-            {
-                Subcatch[i].rptFlag = j;
-                j++;
-            }
-        }
-    }
+        for (i=0; i<Nobjects[SUBCATCH]; i++) Subcatch[i].rptFlag = 1;
     if (RptFlags.nodes == ALL)
-        for (i = 0; i < Nobjects[NODE]; i++) Node[i].rptFlag = i+1;
-    else if (RptFlags.nodes == SOME)
-    {
-        j = 1;
-        for (i = 0; i < Nobjects[NODE]; i++)
-        {
-            if (Node[i].rptFlag)
-            {
-                Node[i].rptFlag = j;
-                j++;
-            }
-        }
-    }
+        for (i = 0; i < Nobjects[NODE]; i++) Node[i].rptFlag = 1;
     if ( RptFlags.links == ALL )
-        for (i=0; i<Nobjects[LINK]; i++) Link[i].rptFlag = i+1;
-    else if (RptFlags.links == SOME)
-    {
-        j = 1;
-        for (i = 0; i < Nobjects[LINK]; i++)
-        {
-            if (Link[i].rptFlag)
-            {
-                Link[i].rptFlag = j;
-                j++;
-            }
-        }
-    }
+        for (i=0; i<Nobjects[LINK]; i++) Link[i].rptFlag = 1;
 
     // --- validate dynamic wave options
     if ( RouteModel == DW ) dynwave_validate();
@@ -320,14 +284,41 @@ int  project_init(void)
 //  Purpose: initializes the internal state of all objects.
 // 
 {
-    int j;
+    int j, k;
     climate_initState();
     lid_initState();
     for (j=0; j<Nobjects[TSERIES]; j++)  table_tseriesInit(&Tseries[j]);
     for (j=0; j<Nobjects[GAGE]; j++)     gage_initState(j);
-    for (j=0; j<Nobjects[SUBCATCH]; j++) subcatch_initState(j);
-    for (j=0; j<Nobjects[NODE]; j++)     node_initState(j);
-    for (j=0; j<Nobjects[LINK]; j++)     link_initState(j);
+    k = 1;
+    for (j=0; j<Nobjects[SUBCATCH]; j++)
+    {
+        subcatch_initState(j);
+        if (Subcatch[j].rptFlag > 0)
+        {
+            Subcatch[j].rptFlag = k;
+            k++;
+        }
+    }
+    k = 1;
+    for (j=0; j<Nobjects[NODE]; j++)
+    {
+        node_initState(j);
+        if (Node[j].rptFlag > 0)
+        {
+            Node[j].rptFlag = k;
+            k++;
+        }
+    }
+    k = 1;        
+    for (j=0; j<Nobjects[LINK]; j++)
+    {
+        link_initState(j);
+        if (Link[j].rptFlag > 0)
+        {
+            Link[j].rptFlag = k;
+            k++;
+        }
+    }
     return ErrorCode;
 }
 

@@ -880,15 +880,27 @@ void  DLLEXPORT swmm_setValue(int property, int index, double value)
         if (value >= 0.0)
             Gage[index].apiRainfall = value;
         return;
+    case swmm_SUBCATCH_RPTFLAG:
+        if (!IsStartedFlag && index >= 0 && index < Nobjects[SUBCATCH])
+            Subcatch[index].rptFlag = (value > 0.0);
+        return;            
     case swmm_NODE_LATFLOW:
         setNodeLatFlow(index, value);
         return;
     case swmm_NODE_HEAD:
         setOutfallStage(index, value);
         return;
+    case swmm_NODE_RPTFLAG:
+        if (!IsStartedFlag && index >= 0 && index < Nobjects[NODE])
+            Node[index].rptFlag = (value > 0.0);
+        return;            
     case swmm_LINK_SETTING:
         setLinkSetting(index, value);
         return;
+    case swmm_LINK_RPTFLAG:
+        if (!IsStartedFlag && index >= 0 && index < Nobjects[LINK])
+            Link[index].rptFlag = (value > 0.0);
+        return;            
     case swmm_ROUTESTEP:
         setRoutingStep(value);
         return;
@@ -897,10 +909,8 @@ void  DLLEXPORT swmm_setValue(int property, int index, double value)
             ReportStep = (int)value;                
         return;
     case swmm_NOREPORT:
-        if (value == 0)
-            RptFlags.disabled = FALSE;
-        else
-            RptFlags.disabled = TRUE;
+        if (!IsStartedFlag)
+            RptFlags.disabled = (value > 0.0);
         return;
     }
 }
@@ -1052,7 +1062,7 @@ double getLinkValue(int property, int index)
 //  Purpose: retrieves current value of a link's property.
 {
     TLink* link;
-    if (index , 0 || index >= Nobjects[LINK])
+    if (index < 0 || index >= Nobjects[LINK])
         return 0;
     link = &Link[index];
     switch (property)
@@ -1167,7 +1177,7 @@ void  setOutfallStage(int index, double value)
 {
     TNode* node;
     if (index < 0 || index >= Nobjects[NODE])
-        return ;
+        return;
     node = &Node[index];
     if (node->type != OUTFALL)
         return;
@@ -1185,7 +1195,7 @@ void  setLinkSetting(int index, double value)
 //  Purpose: sets the value of a link's setting.
 {
     TLink* link;
-    if (index < 0 || index >= Nobjects[NODE])
+    if (index < 0 || index >= Nobjects[LINK])
         return;
     link = &Link[index];
     if (value < 0.0  || link->type == CONDUIT)
