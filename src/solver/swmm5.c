@@ -766,6 +766,8 @@ int  DLLEXPORT swmm_getError(char *errMsg, int msgLen)
 //           caused SWMM to abort its analysis.
 {
     // --- copy text of last error message into errMsg
+    if (ErrorCode > 0 && strlen(ErrorMsg) == 0)
+        error_getMsg(ErrorCode, ErrorMsg);
     sstrncpy(errMsg, ErrorMsg, msgLen);
 
     // --- remove leading line feed from errMsg
