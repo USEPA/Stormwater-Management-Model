@@ -15,6 +15,8 @@
 //     covered by snow was corrected. 
 //   - Area covered by snow now included in calculation of rate that liquid
 //     water leaves a snowpack.
+//   Build 5.2.0:
+//   - Subcatchment snow pack area should not include LID area.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -399,7 +401,8 @@ void snow_plowSnow(int j, double tStep)
             exc = snowpack->wsnow[SNOW_PLOWABLE];
 
             // --- plow out of system
-            f = snowpack->fArea[SNOW_PLOWABLE] * Subcatch[j].area;
+            f = snowpack->fArea[SNOW_PLOWABLE] *
+                (Subcatch[j].area - Subcatch[j].lidArea);
             Snow.removed += Snowmelt[k].sfrac[0] * exc * f;
             sfracTotal = Snowmelt[k].sfrac[0];
 
@@ -544,7 +547,7 @@ double snow_getSnowCover(int j)
         snowCover += (snowpack->wsnow[i] + snowpack->fw[i]) * 
                       snowpack->fArea[i];
     }
-    return snowCover * Subcatch[j].area;
+    return snowCover * (Subcatch[j].area - Subcatch[j].lidArea);
 }
 
 //=============================================================================
