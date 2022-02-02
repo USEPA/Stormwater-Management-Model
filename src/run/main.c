@@ -80,7 +80,7 @@ int  main(int argc, char *argv[])
         reportFile = argv[2];
         if (argc > 3) binaryFile = argv[3];
         else          binaryFile = blank;
-        printf("\n... EPA-SWMM %d.%d (Build %d.%d.%0d)\n", vMajor, vMinor,
+        printf("\n... EPA SWMM %d.%d (Build %d.%d.%0d)\n", vMajor, vMinor,
             vMajor, vMinor, vRelease);
 
         // --- run SWMM
@@ -88,7 +88,7 @@ int  main(int argc, char *argv[])
 
         // Display closing status on console
         runTime = difftime(time(0), start);
-        printf("\n\n... EPA-SWMM completed in %.2f seconds.", runTime);
+        printf("\n\n... EPA SWMM completed in %.2f seconds.", runTime);
         if      ( swmm_getError(errMsg, msgLen) > 0 ) printf(" There are errors.\n");
         else if ( swmm_getWarnings() > 0 ) printf(" There are warnings.\n");
         else printf("\n");

@@ -1680,7 +1680,7 @@ void findOnSagGrateFlows(int i, double d, double *Qw, double *Qo)
     // --- orifice flow applies
     else
     {
-        *Qo = 0.67 * Ao * sqrt(2.0 * 32.16 * di);          //HEC-22 Eq(4-27)
+        *Qo = 0.67 * Ao * sqrt(2.0 * GRAVITY * di);        //HEC-22 Eq(4-27)
     }
 }
 
@@ -1763,7 +1763,7 @@ double getCurbOrificeFlow(double di, double h, double L, int throatAngle)
         d = di - h / 2.0;
     else if (throatAngle == INCLINED_THROAT)
         d = di + (h / 2.0) * 0.7071;
-    return 0.67 * h * L * sqrt(2.0 * 32.16 * d);           //HEC-22 Eq(4-31a)
+    return 0.67 * h * L * sqrt(2.0 * GRAVITY * d);         //HEC-22 Eq(4-31a)
 }
 
 //=============================================================================
