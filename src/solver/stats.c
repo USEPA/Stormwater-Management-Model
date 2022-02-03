@@ -34,7 +34,7 @@
 //   - Fixes failure to initialize all subcatchment groundwater statistics.
 //   - Support added for grouped freqency table of routing time steps.
 //   Build 5.2.0:
-//   - Support added for reporting most frequent non-converging links.
+//   - Support added for reporting most frequent non-converging nodes.
 //   - Support added for RptFlags.disabled option.
 //   - Fixed display of routing statistics report for RptFlags.flowStats = FALSE.
 //-----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ extern double*         NodeOutflow;    // defined in massbal.c
 //  stats_updateTimeStepStats     (called from routing_execute)
 //  stats_updateCriticalTimeCount (called from getVariableStep in dynwave.c)
 //  stats_updateMaxNodeDepth      (called from output_saveNodeResults)
-//  stats_updateNonconvergedCount (called from updateConvergenceStats in dynwave.c)
+//  stats_updateConvergenceStats  (called from updateConvergenceStats in dynwave.c)
 
 //-----------------------------------------------------------------------------
 //  Local functions
@@ -461,12 +461,12 @@ void   stats_updateFlowStats(double tStep, DateTime aDate)
     SysOutfallFlow = 0.0;
 
     // --- update node & link stats
-#pragma omp parallel num_threads(NumThreads)
+//#pragma omp parallel num_threads(NumThreads)
 {
-    #pragma omp for
+//    #pragma omp for
     for ( j=0; j<Nobjects[NODE]; j++ )
         stats_updateNodeStats(j, tStep, aDate);
-    #pragma omp for
+//    #pragma omp for
     for ( j=0; j<Nobjects[LINK]; j++ )
         stats_updateLinkStats(j, tStep, aDate);
 }
@@ -776,7 +776,7 @@ void  stats_findMaxStats()
         MaxFlowTurns[j].index     = -1; 
         MaxFlowTurns[j].value     = -1.0;
         MaxNonConverged[j].index  = -1;
-        MaxNonConverged[j].value  = -1.0;
+        MaxNonConverged[j].value  = 0.0;
     }
 
     // --- find links with most flow turns during reporting period

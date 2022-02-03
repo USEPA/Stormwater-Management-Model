@@ -77,7 +77,7 @@ ERR(227,"\n  ERROR 227: Transect %s has no Manning's N.")
 ERR(229,"\n  ERROR 229: Transect %s has invalid overbank locations.")
 ERR(231,"\n  ERROR 231: Transect %s has no depth.")
 ERR(233,"\n  ERROR 233: invalid math expression ")
-ERR(235,"\n  ERROR 235: invalid infiltration parameters.")
+ERR(235,"\n  ERROR 235: invalid infiltration parameters ")
 
 ERR(301,"\n  ERROR 301: files share same names.")
 ERR(303,"\n  ERROR 303: cannot open input file.")

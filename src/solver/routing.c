@@ -849,11 +849,11 @@ void removeConduitLosses()
     int i, k;
     double barrels,
            evapLoss = 0.0,
-	       seepLoss = 0.0;
+           seepLoss = 0.0;
 
     for ( i = 0; i < Nobjects[LINK]; i++ )
     {
-	    if (Link[i].type == CONDUIT)
+        if (Link[i].type == CONDUIT)
         {
             // --- retrieve number of barrels
             k = Link[i].subIndex;

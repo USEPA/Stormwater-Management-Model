@@ -383,7 +383,7 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
          SurfaceOutflow < MINFLOW &&
          StorageDrain   < MINFLOW &&
          StorageExfil   < MINFLOW &&
-		 totalEvap      < MINFLOW
+         totalEvap      < MINFLOW
        ) isDry = TRUE;
 
     //... update status of HasWetLids
@@ -416,7 +416,7 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
         if ( !isDry && theLidUnit->rptFile->wasDry > 1)
         {
             fprintf(theLidUnit->rptFile->file, "%s",
-				  theLidUnit->rptFile->results);
+                theLidUnit->rptFile->results);
         }
 
         //... write the current results to a string which is saved between
@@ -439,7 +439,7 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
             if ( theLidUnit->rptFile->wasDry == 0 )
             {
                 fprintf(theLidUnit->rptFile->file, "%s",
-					theLidUnit->rptFile->results);
+                    theLidUnit->rptFile->results);
             }
 
             //... increment the number of successive dry periods
@@ -450,8 +450,8 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
         else
         {
             //... write the current results to the report file
-			fprintf(theLidUnit->rptFile->file, "%s",
-			    theLidUnit->rptFile->results);
+            fprintf(theLidUnit->rptFile->file, "%s",
+                theLidUnit->rptFile->results);
 
             //... re-set the number of successive dry periods to 0
             theLidUnit->rptFile->wasDry = 0; 
@@ -652,8 +652,7 @@ void biocellFluxRates(double x[], double f[])
         maxRate = (soilPorosity - soilTheta) * soilThickness / Tstep +
                   SoilPerc + SoilEvap;
         SurfaceInfil = MIN(SurfaceInfil, maxRate);
-
-	}
+    }
 
     //... storage & soil layers are full
     else if ( soilTheta >= soilPorosity && storageDepth >= storageThickness )
@@ -1171,7 +1170,7 @@ void barrelFluxRates(double x[], double f[])
 //
 {
     double storageDepth = x[STOR];
-	double head;
+    double head;
     double maxValue;
 
     //... assign values to layer volumes
@@ -1187,16 +1186,16 @@ void barrelFluxRates(double x[], double f[])
     //... compute outflow if time since last rain exceeds drain delay
     //    (dryTime is updated in lid.evalLidUnit at each time step)
     if ( theLidProc->drain.delay == 0.0 ||
-	     theLidUnit->dryTime >= theLidProc->drain.delay )
-	{
-	    head = storageDepth - theLidProc->drain.offset;
-		if ( head > 0.0 )
-	    {
-	        StorageDrain = getStorageDrainRate(storageDepth, 0.0, 0.0, 0.0);
-		    maxValue = (head/Tstep);
-			StorageDrain = MIN(StorageDrain, maxValue);
-		}
-	}
+        theLidUnit->dryTime >= theLidProc->drain.delay )
+    {
+        head = storageDepth - theLidProc->drain.offset;
+        if ( head > 0.0 )
+        {
+            StorageDrain = getStorageDrainRate(storageDepth, 0.0, 0.0, 0.0);
+            maxValue = (head/Tstep);
+            StorageDrain = MIN(StorageDrain, maxValue);
+        }
+    }
 
     //... limit inflow to available storage
     StorageInflow = SurfaceInflow;

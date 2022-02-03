@@ -639,6 +639,7 @@ void setNewNodeState(int j, double dt)
     {
         if ( Node[j].updated == FALSE )
             updateStorageState(j, Nobjects[LINK], NULL, dt);
+        return;
     }
 
     // --- update stored volume

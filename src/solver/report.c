@@ -71,6 +71,10 @@ extern REAL4* NodeResults;             //  "
 extern REAL4* LinkResults;             //  "
 extern char   ErrString[81];           // defined in ERROR.C
 
+
+extern TNodeStats*     NodeStats;
+
+
 //-----------------------------------------------------------------------------
 //  Local functions
 //-----------------------------------------------------------------------------
@@ -327,18 +331,18 @@ void report_writeOptions()
     if ( Nobjects[LINK] > 0 )
     {
         fprintf(Frpt.file, "\n  Routing Time Step ........ %.2f sec", RouteStep);
-		if ( RouteModel == DW )
-		{
-		fprintf(Frpt.file, "\n  Variable Time Step ....... ");
-		if ( CourantFactor > 0.0 ) fprintf(Frpt.file, "YES");
-		else                       fprintf(Frpt.file, "NO");
-		fprintf(Frpt.file, "\n  Maximum Trials ........... %d", MaxTrials);
-        fprintf(Frpt.file, "\n  Number of Threads ........ %d", NumThreads);
-		fprintf(Frpt.file, "\n  Head Tolerance ........... %.6f ",
-            HeadTol*UCF(LENGTH));
-		if ( UnitSystem == US ) fprintf(Frpt.file, "ft");
-		else                    fprintf(Frpt.file, "m");
-		}
+        if ( RouteModel == DW )
+        {
+            fprintf(Frpt.file, "\n  Variable Time Step ....... ");
+            if ( CourantFactor > 0.0 ) fprintf(Frpt.file, "YES");
+            else                       fprintf(Frpt.file, "NO");
+            fprintf(Frpt.file, "\n  Maximum Trials ........... %d", MaxTrials);
+            fprintf(Frpt.file, "\n  Number of Threads ........ %d", NumThreads);
+            fprintf(Frpt.file, "\n  Head Tolerance ........... %.6f ",
+                HeadTol*UCF(LENGTH));
+            if ( UnitSystem == US ) fprintf(Frpt.file, "ft");
+            else                    fprintf(Frpt.file, "m");
+        }
     }
     WRITE("");
 }
@@ -371,13 +375,13 @@ void report_writeRainStats(int i, TRainStats* r)
         fprintf(Frpt.file,
 "\n  ID         Date         Date         Frequency  w/Precip    Missing    Malfunc.");
         fprintf(Frpt.file,
-"\n  -------------------------------------------------------------------------------\n");
+"\n  -------------------------------------------------------------------------------");
     }
     else
     {
         if ( r->startDate != NO_DATE ) datetime_dateToStr(r->startDate, date1);
         if ( r->endDate   != NO_DATE ) datetime_dateToStr(r->endDate, date2);
-        fprintf(Frpt.file, "  %-10s %-11s  %-11s  %5d min    %6ld     %6ld     %6ld\n",
+        fprintf(Frpt.file, "%-10s %10s   %-10s   %5d min    %6ld     %6ld     %6ld\n",
             Gage[i].staID, date1, date2, Gage[i].rainInterval/60,
             r->periodsRain, r->periodsMissing, r->periodsMalfunc);
     }
@@ -1012,7 +1016,8 @@ void report_writeNonconvergedStats(TMaxStats maxNonconverged[], int nMaxStats)
     WRITE("*********************************");
     WRITE("Most Frequent Nonconverging Nodes");
     WRITE("*********************************");
-    if (nMaxStats <= 0 || maxNonconverged[0].index <= 0)
+    if (nMaxStats <= 0 || maxNonconverged[0].index <= 0 ||
+        maxNonconverged[0].value < 0.00005)
         fprintf(Frpt.file, "\n  Convergence obtained at all time steps.");
     else
     {

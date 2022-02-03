@@ -474,8 +474,8 @@ void writeNodeFlooding()
                 FlowUnitWords[FlowUnits], VolUnitsWords[UnitSystem]);
             if ( RouteModel == DW )      fprintf(Frpt.file, "    %6s",
                                          PondingUnitsWords[UnitSystem]);
-            else if ( UnitSystem == US ) fprintf(Frpt.file, "  1000 ft3");
-            else                         fprintf(Frpt.file, "   1000 m3");
+            else if ( UnitSystem == US ) fprintf(Frpt.file, "  1000 ft\xB3");
+            else                         fprintf(Frpt.file, "   1000 m\xB3");
             fprintf(Frpt.file,
 "\n  --------------------------------------------------------------------------");
             n = 1;

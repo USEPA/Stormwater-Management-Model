@@ -33,8 +33,8 @@
 #ifdef _MSC_VER    // Windows (32-bit and 64-bit)
   #define F_OFF __int64
   #define F_SEEK _fseeki64
-#else              // Other platforms
-  #define F_OFF off_t
+#elif              // Other platforms
+  #define F_OFF off64_t
   #define F_SEEK fseeko
 #endif
 

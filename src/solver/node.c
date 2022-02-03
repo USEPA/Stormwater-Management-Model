@@ -762,8 +762,9 @@ int storage_readParams(int j, int k, char* tok[], int ntoks)
             B = y[1] / 2.;                  // top semi-axis width
             Z = y[2];                       // top height
             x[4] = PI * A * B / Z;          // a1 term
-            x[5] = 1.0;                     // a2 term
+            x[5] = 0.0;                     // a2 term
             x[6] = 0.0;                     // a0 term
+            break;
 
         case PYRAMIDAL:
             L = y[0];
