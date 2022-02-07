@@ -397,20 +397,21 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
 EXPORT_TOOLKIT int swmm_setNodePollut(int index, int pollutant_index, double pollutant_value);
 
 /**
- @brief Sets pollutant values for a specified link.
- @param index The index of a link
+ @brief Sets pollutant values for a specified node.
+ @param index The index of a node
  @param pollutant_index Pollutant index to set
  @param pollutant_value Pollutant value to set 
  @return Error code
 */
 
-EXPORT_TOOLKIT int swmm_setLinkPollut(int index, int type, int pollutant_index, double pollutant_value);
+EXPORT_TOOLKIT int swmm_setLinkPollut(int index, SM_LinkPollut type, int pollutant_index, double pollutant_value);
 
 /**
- @brief Get a result value for specified link.
+ @brief Sets pollutant values for a specified link.
  @param index The index of a link
- @param type The property type code (See @ref SM_LinkResult)
- @param[out] result The result of the link's property
+ @param type The property type code (See @ref SM_LinkPollut)
+ @param pollutant_index Pollutant index to set
+ @param pollutant_value Pollutant value to set 
  @return Error code
 */
 EXPORT_TOOLKIT int swmm_getLinkResult(int index, SM_LinkResult type, double *result);

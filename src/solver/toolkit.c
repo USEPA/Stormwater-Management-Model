@@ -1872,8 +1872,8 @@ EXPORT_TOOLKIT int swmm_getNodeResult(int index, SM_NodeResult type, double *res
                             + Node[index].invertElev) * UCF(LENGTH); break;
             case SM_LATINFLOW:
                 *result = Node[index].newLatFlow * UCF(FLOW); break;
-	    case SM_HRT:
-		*result = Node[index].hrt; break;
+	        case SM_HRT:
+		        *result = Storage[Node[index].subIndex].hrt; break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         }
     }
@@ -2083,7 +2083,7 @@ EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **po
 }
 
 
-EXPORT_TOOLKIT int swmm_setLinkPollut(int index, int type, int pollutant_index, double pollutant_value)
+EXPORT_TOOLKIT int swmm_setLinkPollut(int index, SM_LinkPollut type, int pollutant_index, double pollutant_value)
 ///
 ///  Input: index = Index of the desired Link ID
 /// 	    type = SM_LINKQUAL - Sets link's qual and allows accounting for loss and mixing calculation
