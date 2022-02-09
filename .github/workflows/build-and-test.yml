@@ -2,9 +2,9 @@ name: Build and Test
 
 on:
   push:
-    branches: [ lew-develop ]
+    branches: [ release ]
   pull_request:
-    branches: [ lew-develop ]
+    branches: [ release ]
 
 env:
   OMP_NUM_THREADS: 1
