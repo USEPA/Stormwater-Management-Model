@@ -100,7 +100,7 @@ jobs:
       run: before-nrtest.cmd
 
     - name: Reg test
-      run: run-nrtests.cmd %GITHUB_SHA% %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+      run: run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
     - name: Upload artifacts
       if: ${{ always() }}
