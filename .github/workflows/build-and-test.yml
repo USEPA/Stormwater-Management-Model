@@ -2,9 +2,9 @@ name: Build and Test
 
 on:
   push:
-    branches: [ lew-develop ]
+    branches: [ release ]
   pull_request:
-    branches: [ lew-develop ]
+    branches: [ release ]
 
 env:
   OMP_NUM_THREADS: 1
@@ -95,6 +95,8 @@ jobs:
       run: make.cmd /g "Visual Studio 16 2019"
 
     - name: Before test
+      env:
+        NRTESTS_URL: https://github.com/SWMM-Project/swmm-nrtestsuite
       run: before-nrtest.cmd
 
     - name: Reg test
