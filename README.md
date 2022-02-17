@@ -3,6 +3,10 @@ Stormwater-Management-Model
 
 ORD Stormwater Management Model (aka "SWMM")
 
+<img src="https://user-images.githubusercontent.com/2470152/154559241-8aac70b5-f8c1-41d8-8cf7-e26bbb38c0fc.png" title="EPANET_UI_Example" width="500px" />
+
+This repository contains the source code to the model. A user interface for the model is here: [https://github.com/USEPA/SWMM-EPANET_User_Interface](USEPA/SWMM-EPANET_User_Interface)
+
 
 ## Build Status
 [![Build and Test](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml)
