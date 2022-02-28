@@ -97,7 +97,8 @@ jobs:
     - name: Before test
       env:
         NRTESTS_URL: https://github.com/SWMM-Project/swmm-nrtestsuite
-      run: before-nrtest.cmd
+        RELEASE_TAG: v2.0.0
+      run: before-nrtest.cmd %RELEASE_TAG%
 
     - name: Reg test
       run: run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
