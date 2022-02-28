@@ -2,9 +2,9 @@ name: Build and Test
 
 on:
   push:
-    branches: [ release ]
+    branches: [ develop release ]
   pull_request:
-    branches: [ release ]
+    branches: [ master develop release ]
 
 env:
   OMP_NUM_THREADS: 1
