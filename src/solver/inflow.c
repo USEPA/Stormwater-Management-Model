@@ -2,12 +2,17 @@
 //   inflow.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14  (Build 5.1.001)
+//   Version:  5.2
+//   Date:     11/01/21 (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Manages any Direct External or Dry Weather Flow inflows
 //   that have been assigned to nodes of the drainage system.
+//
+//   Update History
+//   ==============
+//   Build 5.2.0:
+//   - Removed references to unused extIfaceInflow member of ExtInflow struct. 
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -24,10 +29,14 @@
 //  inflow_deleteExtInflows (called by deleteObjects in project.c)
 //  inflow_deleteDwfInflows (called by deleteObjects in project.c)
 //  inflow_getExtInflow     (called by addExternalInflows in routing.c)
+//  inflow_setExtInflow     (called by setNodeInflow in swmm5.c)
 //  inflow_getDwfInflow     (called by addDryWeatherInflows in routing.c)
-//  inflow_getPatternFactor
 
-//=============================================================================
+//-----------------------------------------------------------------------------
+//  Local Functions
+//-----------------------------------------------------------------------------
+double getPatternFactor(int p, int month, int day, int hour);
+
 
 int inflow_readExtInflow(char* tok[], int ntoks)
 //
@@ -75,6 +84,7 @@ int inflow_readExtInflow(char* tok[], int ntoks)
     if (param == -1)
     {
         type = FLOW_INFLOW;
+        cf = 1.0/UCF(FLOW);
     }
 
     // --- do the same for a pollutant inflow
@@ -116,60 +126,14 @@ int inflow_readExtInflow(char* tok[], int ntoks)
         if ( basePat < 0 ) return error_setInpError(ERR_NAME, tok[7]);
     }
 
+    // --- include LperFT3 term in conversion factor for MASS_INFLOW
+    if ( type == MASS_INFLOW ) cf /= LperFT3;
+
     return(inflow_setExtInflow(j, param, type, tseries, basePat,
         cf, baseline, sf));
 }
 
-int inflow_validate(int param, int type, int tseries, int basePat, double *cf)
-// 
-// Purpose: Validates Inflow
-// Input:  param = -1 for Flow or Index of Pollutant
-//         type = FLOW_INFLOW, CONCEN_INFLOW or MASS_INFLOW
-//         tSeries = Time Series Index
-//         basePat = Base Pattern Index
-// Output: cf = Unit Conversion
-// Return: returns Error Code
-{
-    int errcode = 0;
-    // Validate param
-    if (param >= Nobjects[POLLUT])
-    {
-        errcode = ERR_API_POLLUT_INDEX;
-    }
-    // Validate Type
-    else if (type != FLOW_INFLOW 
-             && type != CONCEN_INFLOW 
-             && type != MASS_INFLOW)
-    {
-        errcode = ERR_KEYWORD;
-    }
-    // Validate Timeseries Index
-    else if (tseries >= Nobjects[TSERIES])
-    {
-        errcode = ERR_API_TSERIES_INDEX;
-    }
-    // Validate Timepattern Index
-    else if (basePat >= Nobjects[TIMEPATTERN])
-    {
-        errcode = ERR_API_PATTERN_INDEX;
-    }
-    else
-    {
-        // --- assign type & cf values for a FLOW inflow
-        if ( type == FLOW_INFLOW )
-        {
-            *cf = 1.0/UCF(FLOW);
-        }
-        // --- include LperFT3 term in conversion factor for MASS_INFLOW
-        else if ( type == MASS_INFLOW ) 
-        {
-            *cf /= LperFT3;		
-        }
-    }
-
-    return(errcode);
-}
-
+//=============================================================================
 
 int inflow_setExtInflow(int j, int param, int type, int tseries, int basePat,
                         double cf, double baseline, double sf)
@@ -185,46 +149,37 @@ int inflow_setExtInflow(int j, int param, int type, int tseries, int basePat,
 // Return:   returns Error Code
 
 {
-    int errcode = 0;
     TExtInflow* inflow;            // external inflow object
 
-    // Validate Inflow
-    errcode = inflow_validate(param, type, tseries, basePat, &cf);
-
-    if (errcode == 0)
+    // --- check if an external inflow object for this constituent already exists
+    inflow = Node[j].extInflow;
+    while ( inflow )
     {
-
-        // --- check if an external inflow object for this constituent already exists
-        inflow = Node[j].extInflow;
-        while ( inflow )
-        {
-            if ( inflow->param == param ) break;
-            inflow = inflow->next;
-        }
-
-        // --- if it doesn't exist, then create it
-        if ( inflow == NULL )
-        {
-            inflow = (TExtInflow *) malloc(sizeof(TExtInflow));
-            if ( inflow == NULL ) 
-            {
-                return error_setInpError(ERR_MEMORY, "");
-            }
-            inflow->next = Node[j].extInflow;
-            Node[j].extInflow = inflow;
-        }
-
-        // Assigning Values to the inflow object 
-        inflow->param    = param;
-        inflow->type     = type;
-        inflow->tSeries  = tseries;
-        inflow->cFactor  = cf;
-        inflow->sFactor  = sf;
-        inflow->baseline = baseline;
-        inflow->basePat  = basePat;
-        inflow->extIfaceInflow = 0.0;
+        if ( inflow->param == param ) break;
+        inflow = inflow->next;
     }
-    return(errcode);
+
+    // --- if it doesn't exist, then create it
+    if ( inflow == NULL )
+    {
+        inflow = (TExtInflow *) malloc(sizeof(TExtInflow));
+        if ( inflow == NULL ) 
+        {
+            return error_setInpError(ERR_MEMORY, "");
+        }
+        inflow->next = Node[j].extInflow;
+        Node[j].extInflow = inflow;
+    }
+
+    // --- assign property values to the inflow object
+    inflow->param    = param;
+    inflow->type     = type;
+    inflow->tSeries  = tseries;
+    inflow->cFactor  = cf;
+    inflow->sFactor  = sf;
+    inflow->baseline = baseline;
+    inflow->basePat  = basePat;
+    return 0;
 }
 
 //=============================================================================
@@ -265,17 +220,16 @@ double inflow_getExtInflow(TExtInflow* inflow, DateTime aDate)
     double sf = inflow->sFactor;     // scaling factor
     double blv = inflow->baseline;   // baseline value
     double tsv = 0.0;                // time series value
-    double extIfaceInflow = inflow->extIfaceInflow;// external interfacing inflow
 
     if ( p >= 0 )
     {
         month = datetime_monthOfYear(aDate) - 1;
         day   = datetime_dayOfWeek(aDate) - 1;
         hour  = datetime_hourOfDay(aDate);
-        blv  *= inflow_getPatternFactor(p, month, day, hour);
+        blv  *= getPatternFactor(p, month, day, hour);
     }
     if ( k >= 0 ) tsv = table_tseriesLookup(&Tseries[k], aDate, FALSE) * sf;
-    return cf * (tsv + blv) + cf * extIfaceInflow;
+    return cf * (tsv + blv);
 }
 
 //=============================================================================
@@ -418,19 +372,19 @@ double inflow_getDwfInflow(TDwfInflow* inflow, int month, int day, int hour)
     double f = 1.0;                    // pattern factor
 
     p1 = inflow->patterns[MONTHLY_PATTERN];
-    if ( p1 >= 0 ) f *= inflow_getPatternFactor(p1, month, day, hour);
+    if ( p1 >= 0 ) f *= getPatternFactor(p1, month, day, hour);
     p1 = inflow->patterns[DAILY_PATTERN];
-    if ( p1 >= 0 ) f *= inflow_getPatternFactor(p1, month, day, hour);
+    if ( p1 >= 0 ) f *= getPatternFactor(p1, month, day, hour);
     p1 = inflow->patterns[HOURLY_PATTERN];
     p2 = inflow->patterns[WEEKEND_PATTERN];
     if ( p2 >= 0 )
     {
         if ( day == 0 || day == 6 )
-            f *= inflow_getPatternFactor(p2, month, day, hour);
+            f *= getPatternFactor(p2, month, day, hour);
         else if ( p1 >= 0 )
-            f *= inflow_getPatternFactor(p1, month, day, hour);
+            f *= getPatternFactor(p1, month, day, hour);
     }
-    else if ( p1 >= 0 ) f *= inflow_getPatternFactor(p1, month, day, hour);
+    else if ( p1 >= 0 ) f *= getPatternFactor(p1, month, day, hour);
     return f * inflow->avgValue;
 
 }
@@ -499,7 +453,7 @@ int inflow_readDwfPattern(char* tok[], int ntoks)
 
 //=============================================================================
 
-double inflow_getPatternFactor(int p, int month, int day, int hour)
+double getPatternFactor(int p, int month, int day, int hour)
 //
 //  Input:   p = time pattern index
 //           month = current month of year of simulation
@@ -528,5 +482,3 @@ double inflow_getPatternFactor(int p, int month, int day, int hour)
     }
     return 1.0;
 }
-
-//=============================================================================

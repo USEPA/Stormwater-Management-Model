@@ -2,41 +2,36 @@
 //   infil.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14  (Build 5.1.001)
-//             09/15/14  (Build 5.1.007)
-//             03/19/15  (Build 5.1.008)
-//             08/05/15  (Build 5.1.010)
-//             08/01/16  (Build 5.1.011)
-//             05/10/17  (Build 5.1.013)
-//             04/01/20  (Build 5.1.015)
+//   Version:  5.2
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Infiltration functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - Revised formula for infiltration capacity recovery for the Modified
 //     Horton method.
 //   - The Green-Ampt functions were re-written.
-//
 //   Build 5.1.008:
 //   - Monthly adjustment factors applied to hydraulic conductivity.
-//
 //   Build 5.1.010:
 //   - Support for Modified Green Ampt model added.
 //   - Green-Ampt initial recovery time set to 0.
-//
 //   Build 5.1.011:
 //   - Monthly hydraulic conductivity factor also applied to Fu parameter
 //     for Green-Ampt infiltration.
-//   - Prevented computed Horton infiltration from dropping below f0.
-//
+//   - Prevented computed Horton infiltration from dropping below 0.
 //   Build 5.1.013:
 //   - Support added for subcatchment-specific time patterns that adjust
 //     hydraulic conductivity.
-//
 //   Build 5.1.015:
 //   - Support added for multiple infiltration methods within a project.
+//   Build 5.2.0:
+//   - Additional validity check for G-A initial deficit added.
+//   - New error message 235 added for invalid infiltration parameters.
+//   - Conversion of runon to ponded depth fixed for Curve Number infiltration.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -56,7 +51,7 @@ typedef union TInfil {
 TInfil *Infil;
 
 static double Fumax;   // saturated water volume in upper soil zone (ft)
-static double InfilFactor;                                                     //(5.1.013)
+static double InfilFactor;
 
 //-----------------------------------------------------------------------------
 //  External Functions (declared in infil.h)
@@ -197,7 +192,7 @@ int infil_readParams(int m, char* tok[], int ntoks)
                          break;
       default:           status = TRUE;
     }
-    if ( !status ) return error_setInpError(ERR_NUMBER, "");
+    if ( !status ) return error_setInpError(ERR_INFIL_PARAMS, "");
     return 0;
 }
 
@@ -264,8 +259,6 @@ void infil_setState(int j, double x[])
 
 //=============================================================================
 
-////  New function added for release 5.1.013.  ////                            //(5.1.013)
-
 void infil_setInfilFactor(int j)
 //
 //  Input:   j = subcatchment index
@@ -319,7 +312,7 @@ double infil_getInfil(int j, double tstep, double rainfall,
             Subcatch[j].infilModel);
 
       case CURVE_NUMBER:
-        depth += runon / tstep;
+        depth += runon * tstep;
         return curvenum_getInfil(&Infil[j].curveNum, tstep, rainfall, depth);
 
       default:
@@ -404,8 +397,8 @@ double horton_getInfil(THorton *infil, double tstep, double irate, double depth)
     double fa, fp = 0.0;
     double Fp, F1, t1, tlim, ex, kt;
     double FF, FF1, r;
-    double f0   = infil->f0 * InfilFactor;                                     //(5.1.013)
-    double fmin = infil->fmin * InfilFactor;                                   //(5.1.013)
+    double f0   = infil->f0 * InfilFactor;
+    double fmin = infil->fmin * InfilFactor;
     double Fmax = infil->Fmax;
     double tp   = infil->tp;
     double df   = f0 - fmin;
@@ -515,8 +508,8 @@ double modHorton_getInfil(THorton *infil, double tstep, double irate,
     // --- assign local variables
     double f  = 0.0;
     double fp, fa;
-    double f0 = infil->f0 * InfilFactor;                                       //(5.1.013)
-    double fmin = infil->fmin * InfilFactor;                                   //(5.1.013)
+    double f0 = infil->f0 * InfilFactor;
+    double fmin = infil->fmin * InfilFactor;
     double df = f0 - fmin;
     double kd = infil->decay;
     double kr = infil->regen * Evap.recoveryFactor;
@@ -588,7 +581,7 @@ int grnampt_setParams(TGrnAmpt *infil, double p[])
 {
     double ksat;                       // sat. hyd. conductivity in in/hr
 
-    if ( p[0] < 0.0 || p[1] <= 0.0 || p[2] < 0.0 ) return FALSE;
+    if ( p[0] < 0.0 || p[1] <= 0.0 || p[2] < 0.0 || p[2] > 1.0) return FALSE;
     infil->S      = p[0] / UCF(RAINDEPTH);   // Capillary suction head (ft)
     infil->Ks     = p[1] / UCF(RAINFALL);    // Sat. hyd. conductivity (ft/sec)
     infil->IMDmax = p[2];                    // Max. init. moisture deficit
@@ -652,7 +645,7 @@ double grnampt_getInfil(TGrnAmpt *infil, double tstep, double irate,
 //
 {
     // --- find saturated upper soil zone water volume
-    Fumax = infil->IMDmax * infil->Lu * sqrt(InfilFactor);                     //(5.1.013)
+    Fumax = infil->IMDmax * infil->Lu * sqrt(InfilFactor);
 
     // --- reduce time until next event
     infil->T -= tstep;
@@ -680,8 +673,8 @@ double grnampt_getUnsatInfil(TGrnAmpt *infil, double tstep, double irate,
 //
 {
     double ia, c1, F2, dF, Fs, kr, ts;
-    double ks = infil->Ks * InfilFactor;                                       //(5.1.013)
-    double lu = infil->Lu * sqrt(InfilFactor);                                 //(5.1.013)
+    double ks = infil->Ks * InfilFactor;
+    double lu = infil->Lu * sqrt(InfilFactor);
 
     // --- get available infiltration rate (rainfall + ponded water)
     ia = irate + depth / tstep;
@@ -786,8 +779,8 @@ double grnampt_getSatInfil(TGrnAmpt *infil, double tstep, double irate,
 //
 {
     double ia, c1, dF, F2;
-    double ks = infil->Ks * InfilFactor;                                       //(5.1.013)
-    double lu = infil->Lu * sqrt(InfilFactor);                                 //(5.1.013)
+    double ks = infil->Ks * InfilFactor;
+    double lu = infil->Lu * sqrt(InfilFactor);
 
     // --- get available infiltration rate (rainfall + ponded water)
     ia = irate + depth / tstep;

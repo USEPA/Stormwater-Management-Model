@@ -2,19 +2,19 @@
 //   landuse.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14  (Build 5.1.001)
-//             03/19/15  (Build 5.1.008)
+//   Version:  5.2
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Pollutant buildup and washoff functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - landuse_getWashoffMass() re-named to landuse_getWashoffQual() and
 //     modified to return concentration instead of mass load.
 //   - landuse_getRunoffLoad() re-named to landuse_getWashoffLoad() and
 //     modified to work with landuse_getWashoffQual().
-//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -41,8 +41,6 @@
 //-----------------------------------------------------------------------------
 static double landuse_getBuildupDays(int landuse, int pollut, double buildup);
 static double landuse_getBuildupMass(int landuse, int pollut, double days);
-static double landuse_getRunoffLoad(int landuse, int pollut, double area,
-              TLandFactor landFactor[], double runoff, double tStep);
 static double landuse_getWashoffQual(int landuse, int pollut, double buildup,
               double runoff, double area);
 static double landuse_getExternalBuildup(int i, int p, double buildup,
@@ -201,7 +199,7 @@ int  landuse_readBuildupParams(char* tok[], int ntoks)
 //
 {
     int    i, j, k, n, p;
-    double c[3], tmax;
+    double c[3] = {0, 0, 0}, tmax;
 
     if ( ntoks < 3 ) return 0;
     j = project_findObject(LANDUSE, tok[0]);

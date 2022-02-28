@@ -2,28 +2,20 @@
 //   lidproc.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/12   (Build 5.1.001)
-//             05/19/14   (Build 5.1.006)
-//             09/15/14   (Build 5.1.007)
-//             03/19/15   (Build 5.1.008)
-//             04/30/15   (Build 5.1.009)
-//             08/05/15   (Build 5.1.010)
-//             08/01/16   (Build 5.1.011)
-//             03/14/17   (Build 5.1.012)
-//             05/10/18   (Build 5.1.013)
-//             03/01/20   (Build 5.1.014)
-//   Author:   L. Rossman (US EPA)
+//   Version:  5.2
+//   Date:     11/01/21   (Build 5.2.0)
+//   Author:   L. Rossman
 //
 //   This module computes the hydrologic performance of an LID (Low Impact
 //   Development) unit at a given point in time.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - Euler integration now applied to all LID types except Vegetative
 //     Swale which continues to use successive approximation.
 //   - LID layer flux routines were re-written to more accurately model
 //     flooded conditions.
-//
 //   Build 5.1.008:
 //   - MAX_STATE_VARS replaced with MAX_LAYERS.
 //   - Optional soil layer added to Porous Pavement LID.
@@ -33,13 +25,10 @@
 //   - Detailed reporting procedure fixed.
 //   - Possibile negative head on Bioretention Cell drain avoided.
 //   - Bug in computing flow through Green Roof drainage mat fixed.
-//
 //   Build 5.1.009:
 //   - Fixed typo in net flux rate for vegetative swale LID.
-//
 //   Build 5.1.010:
 //   - New modified version of Green-Ampt used for surface layer infiltration.
-//
 //   Build 5.1.011:
 //   - Re-named STOR_INFIL to STOR_EXFIL and StorageInfil to StorageExfil to
 //     better reflect their meaning.
@@ -48,22 +37,22 @@
 //   - Flux rate routines for LIDs with underdrains modified to produce more
 //     physically meaningful results.
 //   - Reporting of detailed results re-written.
-//
 //   Build 5.1.012:
 //   - Modified upper limit for soil layer percolation.
 //   - Modified upper limit on surface infiltration into rain gardens.
 //   - Modified upper limit on drain flow for LIDs with storage layers.
 //   - Used re-defined wasDry variable for LID reports to fix duplicate lines.
-//
 //   Build 5.1.013:
 //   - Support added for open/closed head levels and multiplier v. head curve
 //     to control underdrain flow.
 //   - Support added for regenerating pavement permeability at fixed intervals.
-//
 //   Build 5.1.014:
 //   - Fixed failure to initialize all LID layer moisture volumes to 0 before
 //     computing LID unit performance in lidproc_getOutflow.
-//
+//   Build 5.2.0:
+//   - Fixed failure to account for effect of Impervious Surface Fraction on
+//     pavement permeability for Permeable Pavement LID
+//   - Fixed units conversion for pavement depth in detailed report file.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -178,7 +167,6 @@ static int    modpuls_solve(int n, double* x, double* xOld, double* xPrev,
                             double* xMin, double* xMax, double* xTol,
                             double* qOld, double* q, double dt, double omega,
                             void (*derivs)(double*, double*));
-
 
 //=============================================================================
 
@@ -379,7 +367,7 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
     double totalVolume;                // total volume stored in LID (ft)
     double rptVars[MAX_RPT_VARS];      // array of reporting variables
     int    isDry = FALSE;              // true if current state of LID is dry
-    char   timeStamp[24];              // date/time stamp
+    char   timeStamp[TIME_STAMP_SIZE + 1]; // date/time stamp
     double elapsedHrs;                 // elapsed hours
 
     //... find total evap. rate and stored volume
@@ -395,7 +383,7 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
          SurfaceOutflow < MINFLOW &&
          StorageDrain   < MINFLOW &&
          StorageExfil   < MINFLOW &&
-		 totalEvap      < MINFLOW
+         totalEvap      < MINFLOW
        ) isDry = TRUE;
 
     //... update status of HasWetLids
@@ -418,7 +406,7 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
         //... convert storage results to original units (in or mm)
         ucf = ucfRainDepth;
         rptVars[SURF_DEPTH] = theLidUnit->surfaceDepth*ucf;
-        rptVars[PAVE_DEPTH] = theLidUnit->paveDepth;
+        rptVars[PAVE_DEPTH] = theLidUnit->paveDepth*ucf;
         rptVars[SOIL_MOIST] = theLidUnit->soilMoisture;
         rptVars[STOR_DEPTH] = theLidUnit->storageDepth*ucf;
 
@@ -428,14 +416,15 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
         if ( !isDry && theLidUnit->rptFile->wasDry > 1)
         {
             fprintf(theLidUnit->rptFile->file, "%s",
-				  theLidUnit->rptFile->results);
+                theLidUnit->rptFile->results);
         }
 
         //... write the current results to a string which is saved between
         //    reporting periods
         elapsedHrs = NewRunoffTime / 1000.0 / 3600.0;
-        datetime_getTimeStamp(M_D_Y, getDateTime(NewRunoffTime), 24, timeStamp);
-        sprintf(theLidUnit->rptFile->results,
+        datetime_getTimeStamp(
+            M_D_Y, getDateTime(NewRunoffTime), TIME_STAMP_SIZE, timeStamp);
+        snprintf(theLidUnit->rptFile->results, sizeof(theLidUnit->rptFile->results),
              "\n%20s\t %8.3f\t %8.3f\t %8.4f\t %8.3f\t %8.3f\t %8.3f\t %8.3f\t"
              "%8.3f\t %8.3f\t %8.3f\t %8.3f\t %8.3f\t %8.3f",
              timeStamp, elapsedHrs, rptVars[0], rptVars[1], rptVars[2],
@@ -450,7 +439,7 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
             if ( theLidUnit->rptFile->wasDry == 0 )
             {
                 fprintf(theLidUnit->rptFile->file, "%s",
-					theLidUnit->rptFile->results);
+                    theLidUnit->rptFile->results);
             }
 
             //... increment the number of successive dry periods
@@ -461,8 +450,8 @@ void lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall, double ucfRainDe
         else
         {
             //... write the current results to the report file
-			fprintf(theLidUnit->rptFile->file, "%s",
-			    theLidUnit->rptFile->results);
+            fprintf(theLidUnit->rptFile->file, "%s",
+                theLidUnit->rptFile->results);
 
             //... re-set the number of successive dry periods to 0
             theLidUnit->rptFile->wasDry = 0; 
@@ -663,8 +652,7 @@ void biocellFluxRates(double x[], double f[])
         maxRate = (soilPorosity - soilTheta) * soilThickness / Tstep +
                   SoilPerc + SoilEvap;
         SurfaceInfil = MIN(SurfaceInfil, maxRate);
-
-	}
+    }
 
     //... storage & soil layers are full
     else if ( soilTheta >= soilPorosity && storageDepth >= storageThickness )
@@ -879,10 +867,10 @@ void pavementFluxRates(double x[], double f[])
     SurfaceInfil = SurfaceInflow + (SurfaceVolume / Tstep);
 
     //... find perc rate out of pavement layer
-    PavePerc = getPavementPermRate();
+    PavePerc = getPavementPermRate() * pervFrac;
 
-    //... surface infiltration can't exceed pavement permeability              //(5.1.013)
-    SurfaceInfil = MIN(SurfaceInfil, PavePerc);                                //
+    //... surface infiltration can't exceed pavement permeability
+    SurfaceInfil = MIN(SurfaceInfil, PavePerc);
 
     //... limit pavement perc by available water
     maxRate = PaveVolume/Tstep + SurfaceInfil - PaveEvap;
@@ -1182,7 +1170,7 @@ void barrelFluxRates(double x[], double f[])
 //
 {
     double storageDepth = x[STOR];
-	double head;
+    double head;
     double maxValue;
 
     //... assign values to layer volumes
@@ -1198,16 +1186,16 @@ void barrelFluxRates(double x[], double f[])
     //... compute outflow if time since last rain exceeds drain delay
     //    (dryTime is updated in lid.evalLidUnit at each time step)
     if ( theLidProc->drain.delay == 0.0 ||
-	     theLidUnit->dryTime >= theLidProc->drain.delay )
-	{
-	    head = storageDepth - theLidProc->drain.offset;
-		if ( head > 0.0 )
-	    {
-	        StorageDrain = getStorageDrainRate(storageDepth, 0.0, 0.0, 0.0);
-		    maxValue = (head/Tstep);
-			StorageDrain = MIN(StorageDrain, maxValue);
-		}
-	}
+        theLidUnit->dryTime >= theLidProc->drain.delay )
+    {
+        head = storageDepth - theLidProc->drain.offset;
+        if ( head > 0.0 )
+        {
+            StorageDrain = getStorageDrainRate(storageDepth, 0.0, 0.0, 0.0);
+            maxValue = (head/Tstep);
+            StorageDrain = MIN(StorageDrain, maxValue);
+        }
+    }
 
     //... limit inflow to available storage
     StorageInflow = SurfaceInflow;
@@ -1357,7 +1345,7 @@ double  getStorageDrainRate(double storageDepth, double soilTheta,
 //           layers above it (soil, pavement, and surface in that order)
 //           minus the drain outlet offset.
 {
-    int    curve = theLidProc->drain.qCurve;                                   //(5.1.013)
+    int    curve = theLidProc->drain.qCurve;
     double head = storageDepth;
     double outflow = 0.0;
     double paveThickness    = theLidProc->pavement.thickness;
@@ -1397,13 +1385,13 @@ double  getStorageDrainRate(double storageDepth, double soilTheta,
         }
     }
 
-    // --- no outflow if:                                                      //(5.1.013)
-    //     a) no prior outflow and head below open threshold                   //
-    //     b) prior outflow and head below closed threshold                    //
-    if ( theLidUnit->oldDrainFlow == 0.0 &&                                    //
-         head <= theLidProc->drain.hOpen ) return 0.0;                         //
-    if ( theLidUnit->oldDrainFlow > 0.0 &&                                     //
-         head <= theLidProc->drain.hClose ) return 0.0;                        //
+    // --- no outflow if:
+    //     a) no prior outflow and head below open threshold
+    //     b) prior outflow and head below closed threshold
+    if ( theLidUnit->oldDrainFlow == 0.0 &&
+         head <= theLidProc->drain.hOpen ) return 0.0;
+    if ( theLidUnit->oldDrainFlow > 0.0 &&
+         head <= theLidProc->drain.hClose ) return 0.0;
 
     // --- make head relative to drain offset
     head -= theLidProc->drain.offset;
@@ -1420,7 +1408,7 @@ double  getStorageDrainRate(double storageDepth, double soilTheta,
                   pow(head, theLidProc->drain.expon);
 
         // --- apply user-supplied control curve to outflow
-        if (curve >= 0)  outflow *= table_lookup(&Curve[curve], head);         //(5.1.013)
+        if (curve >= 0)  outflow *= table_lookup(&Curve[curve], head);
 
         // --- convert outflow to ft/s
         outflow /= UCF(RAINFALL);
@@ -1527,7 +1515,7 @@ void updateWaterBalance(TLidUnit *lidUnit, double inflow, double evap,
 //  Output:  none
 //
 {
-    lidUnit->volTreated += inflow * Tstep;                                     //(5.1.013)
+    lidUnit->volTreated += inflow * Tstep;
     lidUnit->waterBalance.inflow += inflow * Tstep;
     lidUnit->waterBalance.evap += evap * Tstep;
     lidUnit->waterBalance.infil += infil * Tstep;

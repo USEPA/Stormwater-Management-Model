@@ -1,35 +1,75 @@
-#
-#  build-and-test.yml - GitHub Actions CI for swmm-solver
-#
-#  Created: May 19, 2020
-#  Updated: May 31, 2020
-#
-#  Author: Michael E. Tryby
-#          US EPA - ORD/CESER
-#
-
 name: Build and Test
 
 on:
   push:
-    branches: [ master, develop, release, codedrop ]
+    branches: [ develop release ]
   pull_request:
-    branches: [ master, develop, release, codedrop ]
+    branches: [ master develop release ]
+
+env:
+  OMP_NUM_THREADS: 1
+  BUILD_HOME: build
+  TEST_HOME: nrtests
 
 jobs:
-  win_build:
-    runs-on: windows-2016
+  unit_test:
+    name: Build and unit test
+    runs-on: windows-2019
     defaults:
       run:
         shell: cmd
         working-directory: ci-tools/windows
 
-    env:
-      OMP_NUM_THREADS: 1
-      PROJECT: swmm
-      BUILD_HOME: build
-      TEST_HOME: nrtests
-      NRTESTS_URL: https://github.com/SWMM-Project/swmm-nrtestsuite
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Checkout submodule
+      uses: actions/checkout@v2
+      with:
+        repository: michaeltryby/ci-tools
+        path: ci-tools
+
+    - name: Add tar.exe
+      if: ${{ runner.os == 'Windows' }}
+      shell: pwsh
+      run: |
+          "C:\Program Files\Git\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+
+
+    - name: Cache boost
+      id: cache-boost
+      uses: actions/cache@v2
+      env:
+        cache_paths: |
+            C:/ProgramData/chocolatey/lib/boost-*
+            C:/local/boost_*
+        pkg_file_hash: ${{ hashFiles('**/windows/packages.config') }}
+      with:
+        path: ${{ env.cache_paths }}
+        key: ${{ runner.os }}-cache-boost-${{ env.pkg_file_hash }}
+        restore-keys: |
+          ${{ runner.os }}-cache-boost-
+          ${{ runner.os }}-cache-
+          ${{ runner.os }}-
+
+    - name: Install boost
+      if: steps.cache-boost.outputs.cache-hit != 'true'
+      env:
+        pkg_cmnd: choco install -y packages.config
+      run: ${{ env.pkg_cmnd }}
+
+    - name: Build and unit test
+      run: make.cmd /t /g "Visual Studio 16 2019"
+
+
+  reg_test:
+    name: Build and reg test
+    runs-on: windows-2019
+    defaults:
+      run:
+        shell: cmd
+        working-directory: ci-tools/windows
 
     steps:
     - name: Checkout repo
@@ -51,21 +91,20 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r requirements-swmm.txt
 
-    - name: Build and unit test
-      run: make.cmd /t
+    - name: Build
+      run: make.cmd /g "Visual Studio 16 2019"
 
-    - name: Build for reg test
-      run: make.cmd
-
-    - name: Before reg test
+    - name: Before test
+      env:
+        NRTESTS_URL: https://github.com/SWMM-Project/swmm-nrtestsuite
       run: before-nrtest.cmd
 
-    - name: Run reg test
+    - name: Reg test
       run: run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
     - name: Upload artifacts
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
-        name: nrtest-artifacts
-        path: upload/
+        name: build-test-artifacts
+        path: upload/*.*

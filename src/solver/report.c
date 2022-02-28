@@ -2,52 +2,43 @@
 //   report.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/21/2014  (Build 5.1.001)
-//             04/14/14    (Build 5.1.004)
-//             09/15/14    (Build 5.1.007)
-//             04/02/15    (Build 5.1.008)
-//             08/01/16    (Build 5.1.011)
-//             03/14/17    (Build 5.1.012)
-//             05/10/18    (Build 5.1.013)
-//             03/01/20    (Build 5.1.014)
-//             05/18/20    (Build 5.1.015)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     11/01/21    (Build 5.2.0)
+//   Author:   L. Rossman
 //
 //   Report writing functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.004:
 //   - Ignore RDII option reported.
-//
 //   Build 5.1.007:
 //   - Total exfiltration loss reported.
-//
 //   Build 5.1.008:
 //   - Number of threads option reported.
 //   - LID drainage volume and outfall runon reported.
 //   - "Internal Outflow" label changed to "Flooding Loss" in Flow Routing
 //     Continuity table.
 //   - Exfiltration loss added into Quality Routing Continuity table.
-//
 //   Build 5.1.011:
 //   - Blank line added after writing project title.
 //   - Text of error message saved to global variable ErrorMsg.
 //   - Global variable Warnings incremented after warning message issued.
-//
 //   Build 5.1.012:
 //   - System time step statistics adjusted for time in steady state.
-//
 //   Build 5.1.013:
 //   - Parsing of AVERAGES report option added to report_readOptions().
 //   - Name of surcharge method reported in report_writeOptions().
 //   - Missing format specifier added to fprintf() in report_writeErrorCode.
-//
 //   Build 5.1.014:
 //   - Fixed bug in confusing keywords with ID names in report_readOptions().
-//
 //   Build 5.1.015:
 //   - Fixes bug in summary statistics when Report Start date > Start Date.
 //   - Support added for grouped freqency table of routing time steps.
+//   Build 5.2.0:
+//   - Support added for reporting most frequent non-converging links.
+//   - Support added for RptFlags.disabled flag.
+//   - Refactored report_readOptions().
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -80,6 +71,10 @@ extern REAL4* NodeResults;             //  "
 extern REAL4* LinkResults;             //  "
 extern char   ErrString[81];           // defined in ERROR.C
 
+
+extern TNodeStats*     NodeStats;
+
+
 //-----------------------------------------------------------------------------
 //  Local functions
 //-----------------------------------------------------------------------------
@@ -91,7 +86,7 @@ static void report_Nodes(void);
 static void report_NodeHeader(char *id);
 static void report_Links(void);
 static void report_LinkHeader(char *id);
-static void report_RouteStepFreq(TSysStats* sysStats);                         //(5.1.015)
+static void report_RouteStepFreq(TTimeStepStats* timeStepStats);
 
 //=============================================================================
 
@@ -108,63 +103,45 @@ int report_readOptions(char* tok[], int ntoks)
     if ( ntoks < 2 ) return error_setInpError(ERR_ITEMS, "");
     k = (char)findmatch(tok[0], ReportWords);
     if ( k < 0 ) return error_setInpError(ERR_KEYWORD, tok[0]);
-    switch ( k )
+
+    // --- keyword not SUBCATCHMENT, NODE, or LINK
+    if (k < 2 || k > 4)
     {
-      case 0: // Input
         m = findmatch(tok[1], NoYesWords);
-        if      ( m == YES ) RptFlags.input = TRUE;
-        else if ( m == NO )  RptFlags.input = FALSE;
-        else                 return error_setInpError(ERR_KEYWORD, tok[1]);
-        return 0;
-
-      case 1: // Continuity
-        m = findmatch(tok[1], NoYesWords);
-        if      ( m == YES ) RptFlags.continuity = TRUE;
-        else if ( m == NO )  RptFlags.continuity = FALSE;
-        else                 return error_setInpError(ERR_KEYWORD, tok[1]);
-        return 0;
-
-      case 2: // Flow Statistics
-        m = findmatch(tok[1], NoYesWords);
-        if      ( m == YES ) RptFlags.flowStats = TRUE;
-        else if ( m == NO )  RptFlags.flowStats = FALSE;
-        else                 return error_setInpError(ERR_KEYWORD, tok[1]);
-        return 0;
-
-      case 3: // Controls
-        m = findmatch(tok[1], NoYesWords);
-        if      ( m == YES ) RptFlags.controls = TRUE;
-        else if ( m == NO )  RptFlags.controls = FALSE;
-        else                 return error_setInpError(ERR_KEYWORD, tok[1]);
-        return 0;
-
-      case 4:  m = SUBCATCH;  break;  // Subcatchments
-      case 5:  m = NODE;      break;  // Nodes
-      case 6:  m = LINK;      break;  // Links
-
-      case 7: // Node Statistics
-        m = findmatch(tok[1], NoYesWords);
-        if      ( m == YES ) RptFlags.nodeStats = TRUE;
-        else if ( m == NO )  RptFlags.nodeStats = FALSE;
-        else                 return error_setInpError(ERR_KEYWORD, tok[1]);
-        return 0;
-
-      case 8: // Averages                                                      //(5.1.013)
-        m = findmatch(tok[1], NoYesWords);                                     //
-        if      (m == YES) RptFlags.averages = TRUE;                           //
-        else if (m == NO)  RptFlags.averages = FALSE;                          //
-        else               return error_setInpError(ERR_KEYWORD, tok[1]);      //
-        return 0;                                                              //
-
-      default: return error_setInpError(ERR_KEYWORD, tok[1]);
+        if (m < NO || m > YES)
+            return error_setInpError(ERR_KEYWORD, tok[1]);
+        switch (k)
+        {
+        case 0: RptFlags.disabled = m;   return 0; // DISABLED
+        case 1: RptFlags.input = m;      return 0; // INPUT
+        case 5: RptFlags.continuity = m; return 0; // CONTINUITY
+        case 6: RptFlags.flowStats = m;  return 0; // FLOWSTATS
+        case 7: RptFlags.controls = m;   return 0; // CONTROLS
+        case 8: RptFlags.averages = m;   return 0; // AVERAGES
+        case 9: return 0;                          // NODESTATS deprecated
+        default: return error_setInpError(ERR_KEYWORD, tok[1]);
+        }
     }
 
+    // --- SUBCATCHMENT, NODE, & LINK keywords
+    else
+    {
+        switch(k)
+        {
+        case 2:  m = SUBCATCH;  break;  // Subcatchments
+        case 3:  m = NODE;      break;  // Nodes
+        case 4:  m = LINK;      break;  // Links
+        }
+    }
+
+    // --- determine object's reporting flag
     if (strcomp(tok[1], w_NONE))
         k = NONE;
     else if (strcomp(tok[1], w_ALL))
         k = ALL;
     else
     {
+        // --- set reporting flag for individual objects
         k = SOME;
         for (t = 1; t < ntoks; t++)
         {
@@ -178,6 +155,8 @@ int report_readOptions(char* tok[], int ntoks)
             }
         }
     }
+
+    // --- assign object type's reporting flag
     switch ( m )
     {
       case SUBCATCH: RptFlags.subcatchments = k;  break;
@@ -189,7 +168,7 @@ int report_readOptions(char* tok[], int ntoks)
 
 //=============================================================================
 
-void report_writeLine(char *line)
+void report_writeLine(const char *line)
 //
 //  Input:   line = line of text
 //  Output:  none
@@ -268,7 +247,6 @@ void report_writeTitle()
         WRITE(Title[i]);
         lineCount++;
     }
-    if ( lineCount > 0 ) WRITE("");
 }
 
 //=============================================================================
@@ -281,12 +259,6 @@ void report_writeOptions()
 //
 {
     char str[80];
-    WRITE("");
-    WRITE("*********************************************************");
-    WRITE("NOTE: The summary statistics displayed in this report are");
-    WRITE("based on results found at every computational time step,  ");
-    WRITE("not just on results from each reporting time step.");
-    WRITE("*********************************************************");
     WRITE("");
     WRITE("****************");
     WRITE("Analysis Options");
@@ -334,9 +306,9 @@ void report_writeOptions()
     fprintf(Frpt.file, "\n  Flow Routing Method ...... %s",
         RouteModelWords[RouteModel]);
 
-    if (RouteModel == DW)                                                      //(5.1.013)
-    fprintf(Frpt.file, "\n  Surcharge Method ......... %s",                    //(5.1.013)
-        SurchargeWords[SurchargeMethod]);                                      //(5.1.013)
+    if (RouteModel == DW)
+    fprintf(Frpt.file, "\n  Surcharge Method ......... %s",
+        SurchargeWords[SurchargeMethod]);
 
     datetime_dateToStr(StartDate, str);
     fprintf(Frpt.file, "\n  Starting Date ............ %s", str);
@@ -359,18 +331,18 @@ void report_writeOptions()
     if ( Nobjects[LINK] > 0 )
     {
         fprintf(Frpt.file, "\n  Routing Time Step ........ %.2f sec", RouteStep);
-		if ( RouteModel == DW )
-		{
-		fprintf(Frpt.file, "\n  Variable Time Step ....... ");
-		if ( CourantFactor > 0.0 ) fprintf(Frpt.file, "YES");
-		else                       fprintf(Frpt.file, "NO");
-		fprintf(Frpt.file, "\n  Maximum Trials ........... %d", MaxTrials);
-        fprintf(Frpt.file, "\n  Number of Threads ........ %d", NumThreads);
-		fprintf(Frpt.file, "\n  Head Tolerance ........... %.6f ",
-            HeadTol*UCF(LENGTH));
-		if ( UnitSystem == US ) fprintf(Frpt.file, "ft");
-		else                    fprintf(Frpt.file, "m");
-		}
+        if ( RouteModel == DW )
+        {
+            fprintf(Frpt.file, "\n  Variable Time Step ....... ");
+            if ( CourantFactor > 0.0 ) fprintf(Frpt.file, "YES");
+            else                       fprintf(Frpt.file, "NO");
+            fprintf(Frpt.file, "\n  Maximum Trials ........... %d", MaxTrials);
+            fprintf(Frpt.file, "\n  Number of Threads ........ %d", NumThreads);
+            fprintf(Frpt.file, "\n  Head Tolerance ........... %.6f ",
+                HeadTol*UCF(LENGTH));
+            if ( UnitSystem == US ) fprintf(Frpt.file, "ft");
+            else                    fprintf(Frpt.file, "m");
+        }
     }
     WRITE("");
 }
@@ -390,6 +362,8 @@ void report_writeRainStats(int i, TRainStats* r)
 {
     char date1[] = "***********";
     char date2[] = "***********";
+    if (RptFlags.disabled)
+        return;
     if ( i < 0 )
     {
         WRITE("");
@@ -401,16 +375,17 @@ void report_writeRainStats(int i, TRainStats* r)
         fprintf(Frpt.file,
 "\n  ID         Date         Date         Frequency  w/Precip    Missing    Malfunc.");
         fprintf(Frpt.file,
-"\n  -------------------------------------------------------------------------------\n");
+"\n  -------------------------------------------------------------------------------");
     }
     else
     {
         if ( r->startDate != NO_DATE ) datetime_dateToStr(r->startDate, date1);
         if ( r->endDate   != NO_DATE ) datetime_dateToStr(r->endDate, date2);
-        fprintf(Frpt.file, "  %-10s %-11s  %-11s  %5d min    %6ld     %6ld     %6ld\n",
+        fprintf(Frpt.file, "%-10s %10s   %-10s   %5d min    %6ld     %6ld     %6ld\n",
             Gage[i].staID, date1, date2, Gage[i].rainInterval/60,
             r->periodsRain, r->periodsMissing, r->periodsMalfunc);
     }
+    WRITE("");
 }
 
 
@@ -428,6 +403,9 @@ void report_writeRdiiStats(double rainVol, double rdiiVol)
 {
     double ratio;
     double ucf1, ucf2;
+
+    if (RptFlags.disabled)
+        return;
 
     ucf1 = UCF(LENGTH) * UCF(LANDAREA);
     if ( UnitSystem == US) ucf2 = MGDperCFS / SECperDAY;
@@ -482,8 +460,11 @@ void   report_writeControlAction(DateTime aDate, char* linkID, double value,
 //  Purpose: reports action taken by a control rule.
 //
 {
-    char     theDate[12];
-    char     theTime[9];
+    char     theDate[DATE_STR_SIZE];
+    char     theTime[TIME_STR_SIZE];
+
+    if (RptFlags.disabled)
+        return;
     datetime_dateToStr(aDate, theDate);
     datetime_timeToStr(aDate, theTime);
     fprintf(Frpt.file,
@@ -504,7 +485,6 @@ void report_writeRunoffError(TRunoffTotals* totals, double totalArea)
 //  Purpose: writes runoff continuity error to report file.
 //
 {
-
     if ( Frunoff.mode == USE_FILE )
     {
         WRITE("");
@@ -643,7 +623,7 @@ void report_LoadingErrors(int p1, int p2, TLoadingTotals* totals)
     {
         i = UnitSystem;
         if ( Pollut[p].units == COUNT ) i = 2;
-        strcpy(units, LoadUnitsWords[i]);
+        sstrncpy(units, LoadUnitsWords[i], 14);
         fprintf(Frpt.file, "%14s", units);
     }
     fprintf(Frpt.file, "\n  **************************");
@@ -855,7 +835,7 @@ void report_QualErrors(int p1, int p2, TRoutingTotals* QualTotals)
     {
         i = UnitSystem;
         if ( Pollut[p].units == COUNT ) i = 2;
-        strcpy(units, LoadUnitsWords[i]);
+        sstrncpy(units, LoadUnitsWords[i], 14);
         fprintf(Frpt.file, "%14s", units);
     }
     fprintf(Frpt.file, "\n  **************************");
@@ -1028,54 +1008,83 @@ void report_writeMaxFlowTurns(TMaxStats flowTurns[], int nMaxStats)
 
 //=============================================================================
 
-void report_writeSysStats(TSysStats* sysStats)
+void report_writeNonconvergedStats(TMaxStats maxNonconverged[], int nMaxStats)
+{
+    int i, j;
+    if (Nobjects[NODE] == 0 || RouteModel != DW) return;
+    WRITE("");
+    WRITE("*********************************");
+    WRITE("Most Frequent Nonconverging Nodes");
+    WRITE("*********************************");
+    if (nMaxStats <= 0 || maxNonconverged[0].index <= 0 ||
+        maxNonconverged[0].value < 0.00005)
+        fprintf(Frpt.file, "\n  Convergence obtained at all time steps.");
+    else
+    {
+        for (i = 0; i < nMaxStats; i++)
+        {
+            j = maxNonconverged[i].index;
+            if (j < 0 || maxNonconverged[i].value <= 0.0) continue;
+            fprintf(Frpt.file, "\n  Node %s (%.2f%%)",
+                Node[j].ID, 100.0 * maxNonconverged[i].value);
+        }
+    }
+    WRITE("");
+}
+
+//=============================================================================
+
+void report_writeTimeStepStats(TTimeStepStats* timeStepStats)
 //
-//  Input:   sysStats = simulation statistics for overall system
+//  Input:   timeStepStats = routing time step statistics
 //  Output:  none
-//  Purpose: writes simulation statistics for overall system to report file.
+//  Purpose: writes routing time step statistics to report file.
 //
 {
-    double x;
-    double eventStepCount;  // Routing steps taken during reporting period   //(5.1.015)
+    double timeStepCount = timeStepStats->timeStepCount;
+    double totalRoutingTime;      // time taken for all flow routing steps
+    double fSteadyState = 0.0;    // fraction of reporting time in steady state
+ 
+    if ( Nobjects[LINK] == 0 || timeStepStats->timeStepCount == 0.0 )
+        return;
 
-    eventStepCount = ReportStepCount - sysStats->steadyStateCount;           //(5.1.015)
-    if ( Nobjects[LINK] == 0 || TotalStepCount == 0
-        || eventStepCount == 0.0 ) return; 
+    totalRoutingTime = timeStepStats->steadyStateTime + timeStepStats->routingTime;
+    if (totalRoutingTime > 0.0)
+        fSteadyState = 100.0 * timeStepStats->steadyStateTime / totalRoutingTime;
+
     WRITE("");
     WRITE("*************************");
     WRITE("Routing Time Step Summary");
     WRITE("*************************");
     fprintf(Frpt.file,
         "\n  Minimum Time Step           :  %7.2f sec",
-        sysStats->minTimeStep);
+        timeStepStats->minTimeStep);
     fprintf(Frpt.file,
         "\n  Average Time Step           :  %7.2f sec",
-        sysStats->avgTimeStep / eventStepCount);
+        timeStepStats->routingTime / timeStepCount);
     fprintf(Frpt.file,
         "\n  Maximum Time Step           :  %7.2f sec",
-        sysStats->maxTimeStep);
-    x = (1.0 - sysStats->avgTimeStep * 1000.0 / NewRoutingTime) * 100.0;
+        timeStepStats->maxTimeStep);
     fprintf(Frpt.file,
-        "\n  Percent in Steady State     :  %7.2f", MIN(x, 100.0));
+        "\n  %% of Time in Steady State   :  %7.2f", MIN(fSteadyState, 100.0));
     fprintf(Frpt.file,
         "\n  Average Iterations per Step :  %7.2f",
-        sysStats->avgStepCount / eventStepCount);
+        timeStepStats->trialsCount / timeStepCount);
     fprintf(Frpt.file,
-        "\n  Percent Not Converging      :  %7.2f",
-        100.0 * (double)NonConvergeCount / eventStepCount);
+        "\n  %% of Steps Not Converging   :  %7.2f",
+        100.0 * (double)NonConvergeCount / timeStepCount);
 
-    // --- write grouped frequency table of variable routing time steps        //(5.1.015)
-    if (RouteModel == DW && CourantFactor > 0.0)                               //
-        report_RouteStepFreq(sysStats);                                        //
+    // --- write grouped frequency table of variable routing time steps
+    if (RouteModel == DW && CourantFactor > 0.0)
+        report_RouteStepFreq(timeStepStats);
     WRITE("");
 }
 
 //=============================================================================
 
-////  New function added to release 5.1.015.  ////                             //(5.1.015)
-void report_RouteStepFreq(TSysStats* sysStats)
+void report_RouteStepFreq(TTimeStepStats* timeStepStats)
 //
-//  Input:   sysStats = simulation statistics for overall system
+//  Input:   timeStepStats = routing time step statistics
 //  Output:  none
 //  Purpose: writes grouped frequency table of routing time steps to report file.
 //
@@ -1084,14 +1093,16 @@ void report_RouteStepFreq(TSysStats* sysStats)
     int    i;
 
     for (i = 1; i < TIMELEVELS; i++)
-        totalSteps += sysStats->timeStepCounts[i];
+        totalSteps += timeStepStats->timeStepCounts[i];
+    if (totalSteps == 0) return;
     fprintf(Frpt.file,
         "\n  Time Step Frequencies       :");
     for (i = 1; i < TIMELEVELS; i++)
         fprintf(Frpt.file,
             "\n     %6.3f - %6.3f sec      :  %7.2f %%",
-            sysStats->timeStepIntervals[i-1], sysStats->timeStepIntervals[i],
-            100.0 * (double)(sysStats->timeStepCounts[i]) / totalSteps);
+            timeStepStats->timeStepIntervals[i-1],
+            timeStepStats->timeStepIntervals[i],
+            100.0 * (double)(timeStepStats->timeStepCounts[i]) / totalSteps);
 }
 
 
@@ -1131,21 +1142,21 @@ void report_Subcatchments()
     int      j, p, k;
     int      period;
     DateTime days;
-    char     theDate[12];
-    char     theTime[9];
+    char     theDate[DATE_STR_SIZE];
+    char     theTime[TIME_STR_SIZE];
     int      hasSnowmelt = (Nobjects[SNOWMELT] > 0 && !IgnoreSnowmelt);
     int      hasGwater   = (Nobjects[AQUIFER] > 0  && !IgnoreGwater);
     int      hasQuality  = (Nobjects[POLLUT] > 0 && !IgnoreQuality);
 
     if ( Nobjects[SUBCATCH] == 0 ) return;
     WRITE("");
-    WRITE("********************");
-    WRITE("Subcatchment Results");
-    WRITE("********************");
-    k = 0;
+    WRITE("********************************");
+    WRITE("Subcatchment Time Series Results");
+    WRITE("********************************");
     for (j = 0; j < Nobjects[SUBCATCH]; j++)
     {
-        if ( Subcatch[j].rptFlag == TRUE )
+        k = Subcatch[j].rptFlag - 1;
+        if ( k >= 0 )
         {
             report_SubcatchHeader(Subcatch[j].ID);
             for ( period = 1; period <= Nperiods; period++ )
@@ -1172,7 +1183,6 @@ void report_Subcatchments()
                             SubcatchResults[SUBCATCH_WASHOFF+p]);
             }
             WRITE("");
-            k++;
         }
     }
 }
@@ -1258,18 +1268,18 @@ void report_Nodes()
     int      j, p, k;
     int      period;
     DateTime days;
-    char     theDate[20];
-    char     theTime[20];
+    char     theDate[DATE_STR_SIZE];
+    char     theTime[TIME_STR_SIZE];
 
     if ( Nobjects[NODE] == 0 ) return;
     WRITE("");
-    WRITE("************");
-    WRITE("Node Results");
-    WRITE("************");
-    k = 0;
+    WRITE("************************");
+    WRITE("Node Time Series Results");
+    WRITE("************************");
     for (j = 0; j < Nobjects[NODE]; j++)
     {
-        if ( Node[j].rptFlag == TRUE )
+        k = Node[j].rptFlag - 1;
+        if ( k >= 0 )
         {
             report_NodeHeader(Node[j].ID);
             for ( period = 1; period <= Nperiods; period++ )
@@ -1286,7 +1296,6 @@ void report_Nodes()
                     fprintf(Frpt.file, " %9.3f", NodeResults[NODE_QUAL + p]);
             }
             WRITE("");
-            k++;
         }
     }
 }
@@ -1311,8 +1320,8 @@ void  report_NodeHeader(char *id)
     "\n                           Inflow  Flooding     Depth      Head");
     if ( !IgnoreQuality ) for (i = 0; i < Nobjects[POLLUT]; i++)
         fprintf(Frpt.file, "%10s", Pollut[i].ID);
-    if ( UnitSystem == US) strcpy(lengthUnits, "feet");
-    else strcpy(lengthUnits, "meters");
+    if ( UnitSystem == US) sstrncpy(lengthUnits, "feet", 8);
+    else sstrncpy(lengthUnits, "meters", 8);
     fprintf(Frpt.file,
     "\n  Date        Time      %9s %9s %9s %9s",
         FlowUnitWords[FlowUnits], FlowUnitWords[FlowUnits],
@@ -1337,18 +1346,18 @@ void report_Links()
     int      j, p, k;
     int      period;
     DateTime days;
-    char     theDate[12];
-    char     theTime[9];
+    char     theDate[DATE_STR_SIZE];
+    char     theTime[TIME_STR_SIZE];
 
     if ( Nobjects[LINK] == 0 ) return;
     WRITE("");
-    WRITE("************");
-    WRITE("Link Results");
-    WRITE("************");
-    k = 0;
+    WRITE("************************");
+    WRITE("Link Time Series Results");
+    WRITE("************************");
     for (j = 0; j < Nobjects[LINK]; j++)
     {
-        if ( Link[j].rptFlag == TRUE )
+        k = Link[j].rptFlag - 1;
+        if ( k >= 0 )
         {
             report_LinkHeader(Link[j].ID);
             for ( period = 1; period <= Nperiods; period++ )
@@ -1365,7 +1374,6 @@ void report_Links()
                     fprintf(Frpt.file, " %9.3f", LinkResults[LINK_QUAL + p]);
             }
             WRITE("");
-            k++;
         }
     }
 }
@@ -1422,14 +1430,14 @@ void report_writeErrorMsg(int code, char* s)
     if ( Frpt.file )
     {
         WRITE("");
-        fprintf(Frpt.file, error_getMsg(code), s);
+        fprintf(Frpt.file, error_getMsg(code, Msg), s);
     }
     ErrorCode = code;
 
     // --- save message to ErrorMsg if it's not for a line of input data
     if ( ErrorCode <= ERR_INPUT || ErrorCode >= ERR_FILE_NAME )
     {                                                
-        sprintf(ErrorMsg, error_getMsg(ErrorCode), s);
+        snprintf(ErrorMsg, MAXMSG, error_getMsg(ErrorCode, Msg), s);
     }
 }
 
@@ -1447,7 +1455,7 @@ void report_writeErrorCode()
         if ( (ErrorCode >= ERR_MEMORY && ErrorCode <= ERR_TIMESTEP)
         ||   (ErrorCode >= ERR_FILE_NAME && ErrorCode <= ERR_OUT_FILE)
         ||   (ErrorCode == ERR_SYSTEM) )
-            fprintf(Frpt.file, "%s", error_getMsg(ErrorCode));                 //(5.1.013)
+            fprintf(Frpt.file, "%s", error_getMsg(ErrorCode, Msg));
     }
 }
 

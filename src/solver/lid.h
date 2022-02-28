@@ -2,28 +2,23 @@
 //   lid.h
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/20/14   (Build 5.1.001)
-//            03/19/15   (Build 5.1.008)
-//            08/01/16   (Build 5.1.011)
-//            03/14/17   (Build 5.1.012)
-//            05/10/18   (Build 5.1.013)
-//   Author:  L. Rossman (US EPA)
+//   Version: 5.2
+//   Date:    11/01/21   (Build 5.2.0)
+//   Author:  L. Rossman
 //
 //   Public interface for LID functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - Support added for Roof Disconnection LID.
 //   - Support added for separate routing of LID drain flows.
 //   - Detailed LID reporting modified.
-//
 //   Build 5.1.011:
-//   - Water depth replaces moisture content for LID's pavement layer.
+//   - Water depth replaces moisture content for LID's pavement layer. 
 //   - Arguments for lidproc_saveResults() modified.
-//
 //   Build 5.1.012:
 //   - Redefined meaning of wasDry in TLidRptFile structure.
-//
 //   Build 5.1.013:
 //   - New member fromPerv added to TLidUnit structure to allow LID
 //     units to also treat pervious area runoff.
@@ -35,12 +30,12 @@
 //     pollutant removal values.
 //   - New members added to TPavementLayer and TLidUnit to support
 //     unclogging permeable pavement at fixed intervals.
-//
+//   Build 5.2.0:
+//   - Covered property added to RAIN_BARREL parameters
 //-----------------------------------------------------------------------------
 
 #ifndef LID_H
 #define LID_H
-
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -52,8 +47,8 @@
 //-----------------------------------------------------------------------------
 enum LidTypes {
     BIO_CELL,                // bio-retention cell
-    RAIN_GARDEN,             // rain garden
-    GREEN_ROOF,              // green roof
+    RAIN_GARDEN,             // rain garden 
+    GREEN_ROOF,              // green roof 
     INFIL_TRENCH,            // infiltration trench
     POROUS_PAVEMENT,         // porous pavement
     RAIN_BARREL,             // rain barrel
@@ -74,7 +69,7 @@ typedef struct
 {
     double    thickness;          // depression storage or berm ht. (ft)
     double    voidFrac;           // available fraction of storage volume
-    double    roughness;          // surface Mannings n
+    double    roughness;          // surface Mannings n 
     double    surfSlope;          // land surface slope (fraction)
     double    sideSlope;          // swale side slope (run/rise)
     double    alpha;              // slope/roughness term in Manning eqn.
@@ -89,8 +84,8 @@ typedef struct
     double   impervFrac;          // impervious area fraction
     double   kSat;                // permeability (ft/sec)
     double   clogFactor;          // clogging factor
-    double   regenDays;           // clogging regeneration interval (days)     //(5.1.013)
-    double   regenDegree;         // degree of clogging regeneration           //
+    double   regenDays;           // clogging regeneration interval (days)
+    double   regenDegree;         // degree of clogging regeneration 
 }  TPavementLayer;
 
 // LID Soil Layer
@@ -112,6 +107,7 @@ typedef struct
     double    voidFrac;           // void volume / total volume
     double    kSat;               // saturated hydraulic conductivity (ft/sec)
     double    clogFactor;         // clogging factor
+    int       covered;            // TRUE if rain barrel is covered
 }  TStorageLayer;
 
 // Underdrain System (part of Storage Layer)
@@ -121,9 +117,9 @@ typedef struct
     double    expon;              // underdrain head exponent (for in or mm)
     double    offset;             // offset height of underdrain (ft)
     double    delay;              // rain barrel drain delay time (sec)
-    double    hOpen;              // head when drain opens (ft)                //(5.1.013)
-    double    hClose;             // head when drain closes (ft)               //
-    int       qCurve;             // curve controlling flow rate (optional)    //
+    double    hOpen;              // head when drain opens (ft)
+    double    hClose;             // head when drain closes (ft)
+    int       qCurve;             // curve controlling flow rate (optional)
 }  TDrainLayer;
 
 // Drainage Mat Layer (for green roofs)
@@ -146,7 +142,7 @@ typedef struct
     TStorageLayer  storage;       // storage layer parameters
     TDrainLayer    drain;         // underdrain system parameters
     TDrainMatLayer drainMat;      // drainage mat layer
-    double*        drainRmvl;     // underdrain pollutant removals             //(5.1.013)
+    double*        drainRmvl;     // underdrain pollutant removals
 }  TLidProc;
 
 // Water Balance Statistics
@@ -179,13 +175,13 @@ typedef struct
     double   botWidth;       // bottom width of single unit (ft)
     double   initSat;        // initial saturation of soil & storage layers
     double   fromImperv;     // fraction of impervious area runoff treated
-    double   fromPerv;       // fraction of pervious area runoff treated       //(5.1.013)
+    double   fromPerv;       // fraction of pervious area runoff treated
     int      toPerv;         // 1 if outflow sent to pervious area; 0 if not
     int      drainSubcatch;  // subcatchment receiving drain flow
     int      drainNode;      // node receiving drain flow
     TLidRptFile* rptFile;    // pointer to detailed report file
 
-    TGrnAmpt soilInfil;      // infil. object for biocell soil layer
+    TGrnAmpt soilInfil;      // infil. object for biocell soil layer 
     double   surfaceDepth;   // depth of ponded water on surface layer (ft)
     double   paveDepth;      // depth of water in porous pavement layer
     double   soilMoisture;   // moisture content of biocell soil layer
@@ -193,12 +189,12 @@ typedef struct
 
     // net inflow - outflow from previous time step for each LID layer (ft/s)
     double   oldFluxRates[MAX_LAYERS];
-
+                                     
     double   dryTime;        // time since last rainfall (sec)
     double   oldDrainFlow;   // previous drain flow (cfs)
     double   newDrainFlow;   // current drain flow (cfs)
-    double   volTreated;     // total volume treated (ft)                      //(5.1.013)
-    double   nextRegenDay;   // next day when unit regenerated                 //
+    double   volTreated;     // total volume treated (ft)
+    double   nextRegenDay;   // next day when unit regenerated
     TWaterBalance  waterBalance;     // water balance quantites
 }  TLidUnit;
 
@@ -237,5 +233,4 @@ double   lidproc_getOutflow(TLidUnit* lidUnit, TLidProc* lidProc,
 void     lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall,
          double ucfRainDepth);
 
-
-#endif //LID_H
+#endif

@@ -2,29 +2,24 @@
 //   infil.h
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/20/14   (Build 5.1.001)
-//            09/15/14   (Build 5.1.007)
-//            08/05/15   (Build 5.1.010)
-//            05/10/18   (Build 5.1.013)
-//            04/01/20   (Build 5.1.015)
-//   Author:  L. Rossman (US EPA)
+//   Version: 5.2
+//   Date:    11/01/21 (Build 5.2.0)
+//   Author:  L. Rossman
 //
 //   Public interface for infiltration functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.010:
 //   - New Modified Green Ampt infiltration option added.
-//
 //   Build 5.1.013:
 //   - New function infil_setInfilFactor() added.
-//
 //   Build 5.1.015:
 //   - Support added for multiple infiltration methods within a project.
 //-----------------------------------------------------------------------------
 
 #ifndef INFIL_H
 #define INFIL_H
-
 
 //---------------------
 // Enumerated Constants
@@ -114,5 +109,4 @@ void    grnampt_initState(TGrnAmpt *infil);
 double  grnampt_getInfil(TGrnAmpt *infil, double tstep, double irate,
         double depth, int modelType);
 
-
-#endif //INFIL_H
+#endif

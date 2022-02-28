@@ -1,13 +1,14 @@
 /******************************************************************************
 **  MODULE:        MATHEXPR.C
-**  PROJECT:       EPA SWMM 5.1
+**  PROJECT:       EPA SWMM5
 **  DESCRIPTION:   Evaluates symbolic mathematical expression consisting
 **                 of numbers, variable names, math functions & arithmetic
 **                 operators.
 **  AUTHORS:       L. Rossman, US EPA - NRMRL
 **                 F. Shang, University of Cincinnati
-**  VERSION:       5.1.008
-**  LAST UPDATE:   04/01/15
+**  VERSION:       5.2.0
+**  LAST UPDATE:   11/01/21
+**  BUG FIXES:     Problems related to '^' operator (L.Rossman, 11/01/21)
 ******************************************************************************/
 /*
 **   Operand codes:
@@ -148,7 +149,7 @@ int isLetter(char c)
 void getToken()
 {
     char c[] = " ";
-    strcpy(Token, "");
+    Token[0] = '\0';
     while ( Pos <= Len &&
         ( isLetter(S[Pos]) || isDigit(S[Pos]) ) )
     {
@@ -191,7 +192,7 @@ double getNumber()
     int  errflag = 0;
 
     /* --- get whole number portion of number */
-    strcpy(sNumber, "");
+    sNumber[0] = '\0';
     while (Pos < Len && isDigit(S[Pos]))
     {
         c[0] = S[Pos];
@@ -327,11 +328,8 @@ ExprTree * newNode()
 
 ExprTree * getSingleOp(int *lex)
 {
-    int bracket;
     int opcode;
     ExprTree *left;
-    ExprTree *right;
-    ExprTree *node;
 
     /* --- open parenthesis, so continue to grow the tree */
     if ( *lex == 1 )
@@ -376,41 +374,6 @@ ExprTree * getSingleOp(int *lex)
         }
     }   
     *lex = getLex();
-
-    /* --- exponentiation */
-    while ( *lex == 31 )
-    {
-        *lex = getLex();
-        bracket = 0;
-        if ( *lex == 1 )
-        {
-            bracket = 1;
-            *lex = getLex();
-        }
-        if ( *lex != 7 )
-        {
-            Err = 1;
-            return NULL;
-        }
-        right = newNode();
-        right->opcode = *lex;
-        right->fvalue = Fvalue;
-        node = newNode();
-        node->left = left;
-        node->right = right;
-        node->opcode = 31;
-        left = node;
-        if (bracket)
-        {
-            *lex = getLex();
-            if ( *lex != 2 )
-            {
-                Err = 1;
-                return NULL;
-            }
-        }
-        *lex = getLex();
-    }
     return left;
 }
 
@@ -435,7 +398,7 @@ ExprTree * getOp(int *lex)
         else if ( *lex == 3) *lex = getLex();
     }
     left = getSingleOp(lex);
-    while ( *lex == 5 || *lex == 6 )
+    while ( *lex == 5 || *lex == 6 || *lex == 31)
     {
         opcode = *lex;
         *lex = getLex();
@@ -506,11 +469,14 @@ void traverseTree(ExprTree *tree, MathExpr **expr)
     traverseTree(tree->left,  expr);
     traverseTree(tree->right, expr);
     node = (MathExpr *) malloc(sizeof(MathExpr));
-    node->fvalue = tree->fvalue;
-    node->opcode = tree->opcode;
-    node->ivar = tree->ivar;
-    node->next = NULL;
-    node->prev = (*expr);
+    if (node)
+    {
+        node->fvalue = tree->fvalue;
+        node->opcode = tree->opcode;
+        node->ivar = tree->ivar;
+        node->next = NULL;
+        node->prev = (*expr);
+    }
     if (*expr) (*expr)->next = node;
     (*expr) = node;
 }
@@ -545,27 +511,30 @@ double mathexpr_eval(MathExpr *expr, double (*getVariableValue) (int))
     int stackindex = 0;
     
     ExprStack[0] = 0.0;
-    while(node != NULL)
+    while(node != NULL && stackindex >= 0)
     {
 	switch (node->opcode)
 	{
-	    case 3:  
-		r1 = ExprStack[stackindex];
+	    case 3:
+ 		r1 = ExprStack[stackindex];
 		stackindex--;
+        if (stackindex < 0) break;
 		r2 = ExprStack[stackindex];
 		ExprStack[stackindex] = r2 + r1;
 		break;
 
         case 4:  
-		r1 = ExprStack[stackindex];
+        r1 = ExprStack[stackindex];
 		stackindex--;
+        if (stackindex < 0) break;
 		r2 = ExprStack[stackindex];
 		ExprStack[stackindex] = r2 - r1;
 		break;
 
         case 5:  
-		r1 = ExprStack[stackindex];
+        r1 = ExprStack[stackindex];
 		stackindex--;
+        if (stackindex < 0) break;
 		r2 = ExprStack[stackindex];
 		ExprStack[stackindex] = r2 * r1;
 		break;
@@ -573,12 +542,14 @@ double mathexpr_eval(MathExpr *expr, double (*getVariableValue) (int))
         case 6:  
 		r1 = ExprStack[stackindex];
 		stackindex--;
-		r2 = ExprStack[stackindex];
+        if (stackindex < 0) break;
+        r2 = ExprStack[stackindex];
 		ExprStack[stackindex] = r2 / r1;
 		break;				
 
         case 7:  
 		stackindex++;
+        if (stackindex >= MAX_STACK_SIZE) break;
 		ExprStack[stackindex] = node->fvalue;
 		break;
 
@@ -589,7 +560,8 @@ double mathexpr_eval(MathExpr *expr, double (*getVariableValue) (int))
         }
         else r1 = 0.0;
 		stackindex++;
-		ExprStack[stackindex] = r1;
+        if (stackindex >= MAX_STACK_SIZE) break;
+        ExprStack[stackindex] = r1;
 		break;
 
         case 9: 
@@ -719,16 +691,20 @@ double mathexpr_eval(MathExpr *expr, double (*getVariableValue) (int))
                
         case 31: 
 		r1 = ExprStack[stackindex];
-		r2 = ExprStack[stackindex-1];
+        stackindex--;
+        if (stackindex < 0) break;
+        r2 = ExprStack[stackindex];
 		if (r2 <= 0.0) r2 = 0.0;
-		else r2 = exp(r1*log(r2));
-		ExprStack[stackindex-1] = r2;
-		stackindex--;
+		else r2 = pow(r2, r1);
+		ExprStack[stackindex] = r2;
 		break;
         }
         node = node->next;
     }
-    r1 = ExprStack[stackindex];
+    if (stackindex >= 0)
+        r1 = ExprStack[stackindex];
+    else
+        r1 = 0.0;
 
     // Set result to 0 if it is NaN due to an illegal math op
     if ( r1 != r1 ) r1 = 0.0;
@@ -759,7 +735,7 @@ MathExpr * mathexpr_create(char *formula, int (*getVar) (char *))
     PrevLex = 0;
     CurLex = 0;
     S = formula;
-    Len = strlen(S);
+    Len = (int)strlen(S);
     Pos = 0;
     Bc = 0;
     tree = getTree();

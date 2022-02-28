@@ -2,43 +2,34 @@
 //   globals.h
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/19/14  (Build 5.1.000)
-//            04/14/14  (Build 5.1.004)
-//            09/15/14  (Build 5.1.007)
-//            03/19/15  (Build 5.1.008)
-//            08/01/16  (Build 5.1.011)
-//            03/14/17  (Build 5.1.012)
-//            05/10/18  (Build 5.1.013)
-//            04/01/20  (Build 5.1.015)
+//   Version: 5.2
+//   Date:    11/01/21 (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Global Variables
 //
+//   Update History
+//   ==============
 //   Build 5.1.004:
 //   - Ignore RDII option added.
-//
 //   Build 5.1.007:
 //   - Monthly climate variable adjustments added.
-//
 //   Build 5.1.008:
 //   - Number of parallel threads for dynamic wave routing added.
 //   - Minimum dynamic wave routing variable time step added.
-//
 //   Build 5.1.011:
 //   - Changed WarningCode to Warnings (# warnings issued)
-//   - Added error message text as a variable.
+//   - Added error message text as a variable. 
 //   - Added elapsed simulation time (in decimal days) variable.
 //   - Added variables associated with detailed routing events.
-//
 //   Build 5.1.012:
 //   - InSteadyState variable made local to routing_execute in routing.c.
-//
 //   Build 5.1.013:
 //   - CrownCutoff and RuleStep added as analysis option variables.
-//
 //   Build 5.1.015:
 //   - Fixes bug in summary statistics when Report Start date > Start Date.
+//   Build 5.2.0:
+//   - Support for relative file names added.
 //-----------------------------------------------------------------------------
 
 #ifndef GLOBALS_H
@@ -60,15 +51,16 @@ EXTERN TFile
 
 EXTERN long
                   Nperiods,                 // Number of reporting periods
-                  TotalStepCount,           // Total routing steps used        //(5.1.015)
-                  ReportStepCount,          // Reporting routing steps used    //(5.1.015)
+                  TotalStepCount,           // Total routing steps used 
+                  ReportStepCount,          // Reporting routing steps used
                   NonConvergeCount;         // Number of non-converging steps
 
 EXTERN char
                   Msg[MAXMSG+1],            // Text of output message
                   ErrorMsg[MAXMSG+1],       // Text of error message
                   Title[MAXTITLE][MAXMSG+1],// Project title
-                  TempDir[MAXFNAME+1];      // Temporary file directory
+                  TempDir[MAXFNAME+1],      // Temporary file directory
+                  InpDir[MAXFNAME+1];       // Input file directory
 
 EXTERN TRptFlags
                   RptFlags;                 // Reporting options
@@ -83,7 +75,7 @@ EXTERN int
                   RouteModel,               // Flow routing method
                   ForceMainEqn,             // Flow equation for force mains
                   LinkOffsets,              // Link offset convention
-                  SurchargeMethod,          // EXTRAN or SLOT method           //(5.1.013)
+                  SurchargeMethod,          // EXTRAN or SLOT method 
                   AllowPonding,             // Allow water to pond at nodes
                   InertDamping,             // Degree of inertial damping
                   NormalFlowLtd,            // Normal flow limited
@@ -101,13 +93,12 @@ EXTERN int
                   WetStep,                  // Runoff wet time step (sec)
                   DryStep,                  // Runoff dry time step (sec)
                   ReportStep,               // Reporting time step (sec)
-                  RuleStep,                 // Rule evaluation time step (sec) //(5.1.013)
+                  RuleStep,                 // Rule evaluation time step (sec)
                   SweepStart,               // Day of year when sweeping starts
                   SweepEnd,                 // Day of year when sweeping ends
                   MaxTrials,                // Max. trials for DW routing
                   NumThreads,               // Number of parallel threads used
                   NumEvents;                // Number of detailed events
-                //InSteadyState;            // System flows remain constant
 
 EXTERN double
                   RouteStep,                // Routing time step (sec)
@@ -124,7 +115,7 @@ EXTERN double
                   HeadTol,                  // DW routing head tolerance (ft)
                   SysFlowTol,               // Tolerance for steady system flow
                   LatFlowTol,               // Tolerance for steady nodal inflow
-                  CrownCutoff;              // Fractional pipe crown cutoff    //(5.1.013)
+                  CrownCutoff;              // Fractional pipe crown cutoff
 
 EXTERN DateTime
                   StartDate,                // Starting date
@@ -173,6 +164,7 @@ EXTERN TPattern*  Pattern;                  // Array of time patterns
 EXTERN TTable*    Curve;                    // Array of curve tables
 EXTERN TTable*    Tseries;                  // Array of time series tables
 EXTERN TTransect* Transect;                 // Array of transect data
+EXTERN TStreet*   Street;                   // Array of defined Street cross-sections
 EXTERN TShape*    Shape;                    // Array of custom conduit shapes
 EXTERN TEvent*    Event;                    // Array of routing events
 

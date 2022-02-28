@@ -21,7 +21,7 @@
 #define UCHAR(x) (((x) >= 'a' && (x) <= 'z') ? ((x)&~32) : (x))
 
 /* Case-insensitive comparison of strings s1 and s2 */
-int  samestr(char *s1, char *s2)
+int  samestr(const char *s1, const char *s2)
 {
    int i;
    for (i=0; UCHAR(s1[i]) == UCHAR(s2[i]); i++)
@@ -30,7 +30,7 @@ int  samestr(char *s1, char *s2)
 }                                       /*  End of samestr  */
 
 /* Use Fletcher's checksum to compute 2-byte hash of string */
-unsigned int hash(char *str)
+unsigned int hash(const char *str)
 {
     unsigned int sum1= 0, check1;
     unsigned long sum2= 0L;
@@ -70,7 +70,7 @@ int     HTinsert(HTtable *ht, char *key, int data)
         return(1);
 }
 
-int     HTfind(HTtable *ht, char *key)
+int     HTfind(HTtable *ht, const char *key)
 {
         unsigned int i = hash(key);
         struct HTentry *entry;
@@ -84,7 +84,7 @@ int     HTfind(HTtable *ht, char *key)
         return(NOTFOUND);
 }
 
-char    *HTfindKey(HTtable *ht, char *key)
+char    *HTfindKey(HTtable *ht, const char *key)
 {
         unsigned int i = hash(key);
         struct HTentry *entry;

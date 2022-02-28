@@ -2,41 +2,35 @@
 //   enums.h
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/20/14  (Build 5.1.001)
-//            04/14/14  (Build 5.1.004)
-//            09/15/14  (Build 5.1.007)
-//            03/19/15  (Build 5.1.008)
-//            08/05/15  (Build 5.1.010)
-//            08/01/16  (Build 5.1.011)
-//            05/10/18  (Build 5.1.013)
+//   Version: 5.2
+//   Date:    11/01/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //
-//   Enumerated variables
+//   Enumerated constants
 //
+//   Update History
+//   ==============
 //   Build 5.1.004:
 //   - IGNORE_RDII for the ignore RDII option added.
-//
 //   Build 5.1.007:
 //   - s_GWF for [GWF] input file section added.
 //   - s_ADJUST for [ADJUSTMENTS] input file section added.
-//
 //   Build 5.1.008:
 //   - Enumerations for fullness state of a conduit added.
 //   - NUM_THREADS added for number of parallel threads option.
 //   - Runoff flow categories added to represent mass balance components.
-//
 //   Build 5.1.010:
 //   - New ROADWAY_WEIR type of weir added.
 //   - Potential evapotranspiration (PET) added as a system output variable.
-//
 //   Build 5.1.011:
 //   - s_EVENT added to InputSectionType enumeration.
-//
 //   Build 5.1.013:
 //   - SURCHARGE_METHOD and RULE_STEP options added.
-//   - WEIR_CURVE added as a curve type.
-//
+//   - WEIR_CURVE added as a curve type. 
+//   Build 5.2.0:
+//   - Support added for Streets and Inlets.
+//   - Support added for variable speed pumps.
+//   - Support added for analytical storage shapes.
 //-----------------------------------------------------------------------------
 
 #ifndef ENUMS_H
@@ -63,12 +57,14 @@
       SNOWMELT,                        // snowmelt parameter set
       SHAPE,                           // custom conduit shape
       LID,                             // LID treatment units
+      STREET,                          // street cross section
+      INLET,                           // street inlet design
       MAX_OBJ_TYPES};
 
 //-------------------------------------
 // Names of Node sub-types
 //-------------------------------------
- #define MAX_NODE_TYPES 4
+ #define MAX_NODE_TYPES 5
  enum NodeType {
       JUNCTION,
       OUTFALL,
@@ -117,18 +113,18 @@
 // Cross section shape types
 //-------------------------------------
  enum XsectType {
-      DUMMY,                           // 0
+      DUMMY,                           // 0      
       CIRCULAR,                        // 1      closed
       FILLED_CIRCULAR,                 // 2      closed
       RECT_CLOSED,                     // 3      closed
-      RECT_OPEN,                       // 4
-      TRAPEZOIDAL,                     // 5
-      TRIANGULAR,                      // 6
+      RECT_OPEN,                       // 4       
+      TRAPEZOIDAL,                     // 5       
+      TRIANGULAR,                      // 6       
       PARABOLIC,                       // 7
-      POWERFUNC,                       // 8
-      RECT_TRIANG,                     // 9
+      POWERFUNC,                       // 8      
+      RECT_TRIANG,                     // 9       
       RECT_ROUND,                      // 10
-      MOD_BASKET,                      // 11
+      MOD_BASKET,                      // 11      
       HORIZ_ELLIPSE,                   // 12     closed
       VERT_ELLIPSE,                    // 13     closed
       ARCH,                            // 14     closed
@@ -141,7 +137,8 @@
       SEMICIRCULAR,                    // 21     closed
       IRREGULAR,                       // 22
       CUSTOM,                          // 23     closed
-      FORCE_MAIN};                     // 24     closed
+      FORCE_MAIN,                      // 24     closed
+      STREET_XSECT};                   // 25
 
 //-------------------------------------
 // Measurement units types
@@ -197,7 +194,7 @@
 //-------------------------------------
 // Computed node quantities
 //-------------------------------------
- #define MAX_NODE_RESULTS 7
+ #define MAX_NODE_RESULTS 7 
  enum NodeResultType {
       NODE_DEPTH,                      // water depth above invert
       NODE_HEAD,                       // hydraulic head
@@ -220,7 +217,7 @@
       LINK_QUAL};                      // concentration of each pollutant
 
 //-------------------------------------
-// System-wide flow quantities
+// System-wide quantities
 //-------------------------------------
 #define MAX_SYS_RESULTS 15
 enum SysFlowType {
@@ -306,7 +303,7 @@ enum  WindType {
       DRYONLY};                        // evap. allowed only in dry periods
 
  enum NormalizerType {
-      PER_AREA,                        // buildup is per unit or area
+      PER_AREA,                        // buildup is per unit of area
       PER_CURB};                       // buildup is per unit of curb length
 
  enum BuildupType {
@@ -366,7 +363,6 @@ enum  CompatibilityType {
       PARTIAL_DAMPING,                 // partial damping
       FULL_DAMPING};                   // full damping
 
-////  Added to release 5.1.013.  ////                                          //(5.1.013)
  enum  SurchargeMethodType {
       EXTRAN,                          // original EXTRAN method
       SLOT};                           // Preissmann slot method
@@ -396,7 +392,11 @@ enum  CompatibilityType {
 
  enum StorageType {
       TABULAR,                         // area v. depth from table
-      FUNCTIONAL};                     // area v. depth from power function
+      FUNCTIONAL,                      // area v. depth from power function
+      CYLINDRICAL,                     // area v. depth from elliptical cylinder
+      CONICAL,                         // area v. depth from elliptical cone
+      PARABOLOID,                      // area v. depth from elliptical paraboloid
+      PYRAMIDAL};                      // area v. depth from rectangular pyramid
 
  enum ReactorType {
       CSTR,                            // completely mixed reactor
@@ -414,9 +414,10 @@ enum  CompatibilityType {
 
  enum PumpCurveType {
       TYPE1_PUMP,                      // flow varies stepwise with wet well volume
-      TYPE2_PUMP,                      // flow varies stepwise with inlet depth
+      TYPE2_PUMP,                      // flow varies stepwise with inlet depth 
       TYPE3_PUMP,                      // flow varies with head delivered
       TYPE4_PUMP,                      // flow varies with inlet depth
+      TYPE5_PUMP,                      // variable speed version of TYPE3 pump 
       IDEAL_PUMP};                     // outflow equals inflow
 
  enum OrificeType {
@@ -437,11 +438,18 @@ enum  CompatibilityType {
       RATING_CURVE,                    // flow rate v. head for outlet link
       CONTROL_CURVE,                   // control setting v. controller variable
       SHAPE_CURVE,                     // width v. depth for custom x-section
-      WEIR_CURVE,                      // discharge coeff. v. head for weir    //(5.1.013)
+      WEIR_CURVE,                      // discharge coeff. v. head for weir
       PUMP1_CURVE,                     // flow v. wet well volume for pump
       PUMP2_CURVE,                     // flow v. depth for pump (discrete)
       PUMP3_CURVE,                     // flow v. head for pump (continuous)
-      PUMP4_CURVE};                    // flow v. depth for pump (continuous)
+      PUMP4_CURVE,                     // flow v. depth for pump (continuous)
+      PUMP5_CURVE};                    // variable speed version of TYPE3 pump
+
+ enum NodeInletType {
+     NO_INLET,
+     BYPASS,
+     CAPTURE
+ };
 
  enum InputSectionType {
       s_TITLE,        s_OPTION,       s_FILE,         s_RAINGAGE,
@@ -457,14 +465,15 @@ enum  CompatibilityType {
       s_COORDINATE,   s_VERTICES,     s_POLYGON,      s_LABEL,
       s_SYMBOL,       s_BACKDROP,     s_TAG,          s_PROFILE,
       s_MAP,          s_LID_CONTROL,  s_LID_USAGE,    s_GWF,
-      s_ADJUST,       s_EVENT};
+      s_ADJUST,       s_EVENT,        s_STREET,       s_INLET_USAGE,
+      s_INLET};
 
  enum InputOptionType {
     FLOW_UNITS, INFIL_MODEL, ROUTE_MODEL,
     START_DATE, START_TIME, END_DATE,
     END_TIME, REPORT_START_DATE, REPORT_START_TIME,
     SWEEP_START, SWEEP_END, START_DRY_DAYS,
-    WET_STEP, DRY_STEP, ROUTE_STEP, RULE_STEP,                                   //(5.1.013)
+    WET_STEP, DRY_STEP, ROUTE_STEP, RULE_STEP,
     REPORT_STEP, ALLOW_PONDING, INERT_DAMPING,
     SLOPE_WEIGHTING, VARIABLE_STEP, NORMAL_FLOW_LTD,
     LENGTHENING_STEP, MIN_SURFAREA, COMPATIBILITY,
@@ -473,7 +482,7 @@ enum  CompatibilityType {
     IGNORE_SNOWMELT, IGNORE_GWATER, IGNORE_ROUTING,
     IGNORE_QUALITY, MAX_TRIALS, HEAD_TOL,
     SYS_FLOW_TOL, LAT_FLOW_TOL, IGNORE_RDII,
-    MIN_ROUTE_STEP, NUM_THREADS, SURCHARGE_METHOD};                              //(5.1.013)
+    MIN_ROUTE_STEP, NUM_THREADS, SURCHARGE_METHOD};
 
 enum  NoYesType {
       NO,

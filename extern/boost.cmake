@@ -18,7 +18,10 @@ endif()
 
 
 # Environment variable "BOOST_ROOT_X_XX_X" points to local install location
-if (DEFINED ENV{BOOST_ROOT_1_72_0})
+if(DEFINED ENV{BOOST_ROOT_1_74_0})
+    set(BOOST_ROOT $ENV{BOOST_ROOT_1_74_0})
+
+elseif(DEFINED ENV{BOOST_ROOT_1_72_0})
     set(BOOST_ROOT $ENV{BOOST_ROOT_1_72_0})
 
 elseif(DEFINED ENV{BOOST_ROOT_1_67_0})

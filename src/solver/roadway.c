@@ -2,20 +2,22 @@
 //   roadway.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     08/05/15   (Build 5.1.010)
-//             03/14/17   (Build 5.1.012)
+//   Version:  5.2
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Roadway Weir module for SWMM5
 //
 //   Computes flow overtopping a roadway (with a ROADWAY_WEIR object) using
 //   the FWHA HDS-5 methodology.
+//
 //   Typically used in conjuction with a culvert crossing where the culvert
 //   conduit is placed at zero offset at the upstream node and the Roadway
 //   weir has the same upstream node but with an offset equal to the height
 //   of the roadway.
 //
+//   Update History
+//   ==============
 //   Build 5.1.012:
 //   - Entries in discharge coeff. table for gravel roadways corrected.
 //-----------------------------------------------------------------------------

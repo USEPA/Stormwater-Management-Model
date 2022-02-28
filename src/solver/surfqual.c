@@ -2,18 +2,18 @@
 //   surfqual.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/19/15  (Build 5.1.008)
-//             03/01/20  (Build 5.1.014)
+//   Version:  5.2
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Subcatchment water quality functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - Pollutant surface buildup and washoff functions were moved here from
 //     subcatch.c.
 //   - Support for separate accounting of LID drain flows included. 
-//
 //   Build 5.1.014:
 //   - Fixed bug in computing effective BMP removal by LIDs.
 //-----------------------------------------------------------------------------

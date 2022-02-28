@@ -2,29 +2,24 @@
 //   dwflow.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             03/19/15   (Build 5.1.008)
-//             03/14/17   (Build 5.1.012)
-//             05/10/18   (Build 5.1.013)
-//             03/01/20   (Build 5.1.014)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     11/01/21  (Build 5.2.0)
+//   Author:   L. Rossman
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
 //
 //   Solves the momentum equation for flow in a conduit under dynamic wave
 //   flow routing.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - Bug in finding if conduit was upstrm/dnstrm full was fixed.
-//
 //   Build 5.1.012:
 //   - Modified uniform loss rate term of conduit momentum equation.
-//
 //   Build 5.1.013:
 //   - Preissmann slot surcharge option implemented.
 //   - Changed sign of uniform loss rate term (dq6) in flow updating equation.
-//
 //   Build 5.1.014:
 //   - Conduit evap. and seepage loss initialized to 0 in dwflow_findConduitFlow.
 //   - Most current flow (qLast) used instead of previous time period flow
@@ -32,8 +27,8 @@
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
-#include "headers.h"
 #include <math.h>
+#include "headers.h"
 
 static const  double MAXVELOCITY =  50.;     // max. allowable velocity (ft/sec)
 
@@ -46,8 +41,8 @@ static double findLocalLosses(int link, double a1, double a2, double aMid,
               double q);
 
 static double getWidth(TXsect* xsect, double y);
-static double getSlotWidth(TXsect* xsect, double y);                           //(5.1.013)
-static double getArea(TXsect* xsect, double y, double wSlot);                  //(5.1.013)
+static double getSlotWidth(TXsect* xsect, double y);
+static double getArea(TXsect* xsect, double y, double wSlot);
 static double getHydRad(TXsect* xsect, double y);
 
 static double checkNormalFlow(int j, double q, double y1, double y2,
@@ -82,7 +77,7 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     double rho;                        // upstream weighting factor
     double sigma;                      // inertial damping factor
     double length;                     // effective conduit length (ft)
-    double wSlot;                      // Preissmann slot width (ft)           //(5.1.013)
+    double wSlot;                      // Preissmann slot width (ft)
     double dq1, dq2, dq3, dq4, dq5,    // terms in momentum eqn.
            dq6;                        // term for evap and infil losses
     double denom;                      // denominator of flow update formula
@@ -102,8 +97,8 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     barrels = Conduit[k].barrels;
     qOld = Link[j].oldFlow / barrels;
     qLast = Conduit[k].q1;
-    Conduit[k].evapLossRate = 0.0;                                             //(5.1.014)
-    Conduit[k].seepLossRate = 0.0;                                             //(5.1.014)
+    Conduit[k].evapLossRate = 0.0; 
+    Conduit[k].seepLossRate = 0.0;
 
     // --- get most current heads at upstream and downstream ends of conduit
     n1 = Link[j].node1;
@@ -123,7 +118,7 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     y2 = MAX(y2, FUDGE);
 
     // --- flow depths can't exceed full depth of conduit if slot not used
-    if ( SurchargeMethod != SLOT )                                             //(5.1.013)
+    if ( SurchargeMethod != SLOT )
     {
         y1 = MIN(y1, xsect->yFull);
         y2 = MIN(y2, xsect->yFull);
@@ -141,16 +136,16 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     findSurfArea(j, qLast, length, &h1, &h2, &y1, &y2);
 
     // --- compute area at each end of conduit & hyd. radius at upstream end
-    wSlot = getSlotWidth(xsect, y1);                                           //(5.1.013)
-    a1 = getArea(xsect, y1, wSlot);                                            //(5.1.013)
+    wSlot = getSlotWidth(xsect, y1);
+    a1 = getArea(xsect, y1, wSlot);
     r1 = getHydRad(xsect, y1);
-    wSlot = getSlotWidth(xsect, y2);                                           //(5.1.013)
-    a2 = getArea(xsect, y2, wSlot);                                            //(5.1.013)
+    wSlot = getSlotWidth(xsect, y2);
+    a2 = getArea(xsect, y2, wSlot);
 
     // --- compute area & hyd. radius at midpoint
     yMid = 0.5 * (y1 + y2);
-    wSlot = getSlotWidth(xsect, yMid);                                         //(5.1.013)
-    aMid = getArea(xsect, yMid, wSlot);                                        //(5.1.013)
+    wSlot = getSlotWidth(xsect, yMid);
+    aMid = getArea(xsect, yMid, wSlot);
     rMid = getHydRad(xsect, yMid);
 
     // --- alternate approach not currently used, but might produce better
@@ -234,11 +229,11 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     }
 
     // --- 6. term for evap and seepage losses per unit length
-    dq6 = link_getLossRate(j, qLast) * 2.5 * dt * v / link_getLength(j);       //(5.1.014)
+    dq6 = link_getLossRate(j, qLast) * 2.5 * dt * v / link_getLength(j);
 
     // --- combine terms to find new conduit flow
     denom = 1.0 + dq1 + dq5;
-    q = (qOld - dq2 + dq3 + dq4 + dq6) / denom;                                //(5.1.013)
+    q = (qOld - dq2 + dq3 + dq4 + dq6) / denom;
 
     // --- compute derivative of flow w.r.t. head
     Link[j].dqdh = 1.0 / denom  * GRAVITY * dt * aWtd / length * barrels;
@@ -288,7 +283,7 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     Conduit[k].q2 = q;
     Link[j].newDepth  = MIN(yMid, xsect->yFull);
     aMid = (a1 + a2) / 2.0;
-//  aMid = MIN(aMid, xsect->aFull);  //Slot can have aMid > aFull              //(5.1.013)
+//  aMid = MIN(aMid, xsect->aFull);  //Slot can have aMid > aFull 
     Conduit[k].fullState = link_getFullState(a1, a2, xsect->aFull);
     Link[j].newVolume = aMid * link_getLength(j) * barrels;
     Link[j].newFlow = q * barrels;
@@ -454,7 +449,6 @@ void findSurfArea(int j, double q, double length, double* h1, double* h2,
     normalDepth = (flowDepth1 + flowDepth2) / 2.0;
     criticalDepth = normalDepth;
 
-////  Following code segment modified for release 5.1.013.  ////               //(5.1.013)    
     // --- find conduit's flow classification
     fullDepth = xsect->yFull;
     if (flowDepth1 >= fullDepth && flowDepth2 >= fullDepth)
@@ -463,7 +457,6 @@ void findSurfArea(int j, double q, double length, double* h1, double* h2,
     }
     else Link[j].flowClass = getFlowClass(j, q, *h1, *h2, *y1, *y2,
                              &criticalDepth, &normalDepth, &fasnh);
-///////////////////////////////////////////////////////////////
 
     // --- add conduit's surface area to its end nodes depending on flow class
     switch ( Link[j].flowClass )
@@ -576,8 +569,6 @@ double findLocalLosses(int j, double a1, double a2, double aMid, double q)
 
 //=============================================================================
 
-////  New function added to release 5.1.013.  ////                             //(5.1.013)
-
 double getSlotWidth(TXsect* xsect, double y)
 {
     double yNorm = y / xsect->yFull;
@@ -594,8 +585,6 @@ double getSlotWidth(TXsect* xsect, double y)
 }
 
 //=============================================================================
-
-////  This function was re-written for release 5.1.013.  ////                  //(5.1.013)
 
 double getWidth(TXsect* xsect, double y)
 //
@@ -614,8 +603,6 @@ double getWidth(TXsect* xsect, double y)
 
 //=============================================================================
 
-////  This function was re-written for release 5.1.013.  ////                  //(5.1.013)
-
 double getArea(TXsect* xsect, double y, double wSlot)
 //
 //  Input:   xsect = ptr. to conduit cross section
@@ -629,8 +616,6 @@ double getArea(TXsect* xsect, double y, double wSlot)
 }
 
 //=============================================================================
-
-////  This function was re-written for release 5.1.013.  ////                  //(5.1.013)
 
 double getHydRad(TXsect* xsect, double y)
 //
