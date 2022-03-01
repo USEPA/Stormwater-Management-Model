@@ -2,13 +2,9 @@
 //   rdii.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             04/04/14   (Build 5.1.003)
-//             04/14/14   (Build 5.1.004)
-//             09/15/14   (Build 5.1.007)
-//             03/01/20   (Build 5.1.014)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     11/01/21   (Build 5.2.0)
+//   Author:   L. Rossman
 //             R. Dickinson (CDM)
 //
 //   RDII processing functions.
@@ -16,10 +12,11 @@
 //   Note: RDII means rainfall dependent infiltration/inflow,
 //         UH means unit hydrograph.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - Ignore RDII option implemented.
 //   - Rainfall climate adjustment implemented.
-//
 //   Build 5.1.014:
 //   - Fixes bug related to isUsed property of a unit hydrograph's rain gage.
 //-----------------------------------------------------------------------------
@@ -602,15 +599,15 @@ int readRdiiTextFileHeader()
 //  Purpose: reads header information from a text RDII file.
 //
 {
-    int   i;
+    int   i, j;
     char  line[MAXLINE+1];             // line from RDII data file
-    char  s1[MAXLINE+1];               // general string variable
+    char  s1[MAXLINE+1] = "";          // general string variable
     char  s2[MAXLINE+1];
 
     // --- check for correct file type
     fgets(line, MAXLINE, Frdii.file);
-    sscanf(line, "%s", s1);
-    if ( strcmp(s1, "SWMM5") != 0 ) return ERR_RDII_FILE_FORMAT;
+    if ( !sscanf(line, "%s", s1) || strcmp(s1, "SWMM5") != 0 )
+        return ERR_RDII_FILE_FORMAT;
 
     // --- skip title line
     fgets(line, MAXLINE, Frdii.file);
@@ -618,21 +615,23 @@ int readRdiiTextFileHeader()
     // --- read RDII UH time step interval (sec)
     RdiiStep = 0;
     fgets(line, MAXLINE, Frdii.file);
-    sscanf(line, "%d", &RdiiStep);
-    if ( RdiiStep <= 0 ) return ERR_RDII_FILE_FORMAT;
+    if ( !sscanf(line, "%d", &RdiiStep) || RdiiStep <= 0 )
+        return ERR_RDII_FILE_FORMAT;
 
     // --- skip over line with number of constituents (= 1 for RDII)
     fgets(line, MAXLINE, Frdii.file);
 
     // --- read flow units
     fgets(line, MAXLINE, Frdii.file);
-    sscanf(line, "%s %s", s1, s2);
+    if ( sscanf(line, "%s %s", s1, s2) < 2 )
+        return ERR_RDII_FILE_FORMAT;
     RdiiFlowUnits = findmatch(s2, FlowUnitWords);
     if ( RdiiFlowUnits < 0 ) return ERR_RDII_FILE_FORMAT;
 
     // --- read number of RDII nodes
     fgets(line, MAXLINE, Frdii.file);
-    if ( sscanf(line, "%d", &NumRdiiNodes) < 1 ) return ERR_RDII_FILE_FORMAT;
+    if ( sscanf(line, "%d", &NumRdiiNodes) < 1 || NumRdiiNodes <= 0 )
+        return ERR_RDII_FILE_FORMAT;
 
     // --- allocate memory for RdiiNodeIndex & RdiiNodeFlow arrays
     RdiiNodeIndex = (int *) calloc(NumRdiiNodes, sizeof(int));
@@ -645,8 +644,12 @@ int readRdiiTextFileHeader()
     {
         if ( feof(Frdii.file) ) return ERR_RDII_FILE_FORMAT;
         fgets(line, MAXLINE, Frdii.file);
-        sscanf(line, "%s", s1);
-        RdiiNodeIndex[i] = project_findObject(NODE, s1);
+        if ( !sscanf(line, "%s", s1) )
+            return ERR_RDII_FILE_FORMAT;
+        j = project_findObject(NODE, s1);
+        if ( j < 0 )
+            return ERR_RDII_FILE_FORMAT;
+        RdiiNodeIndex[i] = j; 
     }
 
     // --- skip column heading line
@@ -906,7 +909,7 @@ void openRdiiProcessor()
     n = 0;
     for (j=0; j<Nobjects[NODE]; j++)
     {
-        if ( Node[j].rdiiInflow )
+        if ( Node[j].rdiiInflow && RdiiNodeIndex != NULL )
         {
             RdiiNodeIndex[n] = j;
             n++;

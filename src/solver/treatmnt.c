@@ -2,16 +2,18 @@
 //   treatmnt.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             03/19/15   (Build 5.1.008)
+//   Version:  5.2
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Pollutant treatment functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - A bug in evaluating recursive calls to treatment functions was fixed. 
-//
+//   Build 5.2.0:
+//   - Changed enumerated constant used to indicate a math expression error.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -119,11 +121,11 @@ int  treatmnt_readExpression(char* tok[], int ntoks)
     if ( p < 0 ) return error_setInpError(ERR_NAME, tok[1]);
 
     // --- concatenate remaining tokens into a single string
-    strcpy(s, tok[2]);
+    sstrncpy(s, tok[2], MAXLINE);
     for ( i=3; i<ntoks; i++)
     {
-        strcat(s, " ");
-        strcat(s, tok[i]);
+        sstrcat(s, " ", MAXLINE);
+        sstrcat(s, tok[i], MAXLINE);
     }
 
     // --- check treatment type
@@ -147,11 +149,14 @@ int  treatmnt_readExpression(char* tok[], int ntoks)
     //      variable's name into an index number) 
     equation = mathexpr_create(expr, getVariableIndex);
     if ( equation == NULL )
-        return error_setInpError(ERR_TREATMENT_EXPR, "");
+        return error_setInpError(ERR_MATH_EXPR, "");
 
     // --- save the treatment parameters in the node's treatment object
-    Node[j].treatment[p].treatType = k;
-    Node[j].treatment[p].equation = equation;
+    if (Node[j].treatment != NULL)
+    {
+        Node[j].treatment[p].treatType = k;
+        Node[j].treatment[p].equation = equation;
+    }
     return 0;
 }
 
@@ -449,5 +454,3 @@ double  getRemoval(int p)
     }
     return R[p];
 }
-
-//=============================================================================

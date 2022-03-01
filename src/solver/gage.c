@@ -2,20 +2,22 @@
 //   gage.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/10  (Build 5.1.001)
-//             09/15/14  (Build 5.1.007)
-//             05/10/18  (Build 5.1.013)
+//   Version:  5.2
+//   Date:     11/01/21 (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Rain gage functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - Support for monthly rainfall adjustments added.
-//
 //   Build 5.1.013:
 //   - Validation no longer performed on unused gages.
-//
+//   Build 5.2.0:
+//   - Support added for tracking a gage's prior n-hour rainfall total.
+//   - Support added for relative file names.
+//   - Support added for setting rainfall through API call.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -37,6 +39,9 @@ const double OneSecond = 1.1574074e-5;
 //  gage_setState          (called by runoff_execute & getRainfall in rdii.c)
 //  gage_getPrecip         (called by subcatch_getRunoff)
 //  gage_getNextRainDate   (called by runoff_getTimeStep)
+//  gage_updatePastRain    (called by runoff_execute)
+//  gage_getPastRain       (called by getRainValue in controls.c)
+//  gage_setReportRainfall (called by output_saveSubcatchResults)
 
 //-----------------------------------------------------------------------------
 //  Local functions
@@ -46,7 +51,7 @@ static int    readGageFileFormat(char* tok[], int ntoks, double x[]);
 static int    getFirstRainfall(int gage);
 static int    getNextRainfall(int gage);
 static double convertRainfall(int gage, double rain);
-
+static void   initPastRain(int gage);
 
 //=============================================================================
 
@@ -82,16 +87,16 @@ int gage_readParams(int j, char* tok[], int ntoks)
     x[4] = NO_DATE;      // Default is no start/end date
     x[5] = NO_DATE;
     x[6] = 0.0;          // US units
-    strcpy(fname, "");
-    strcpy(staID, "");
+    fname[0] = '\0';
+    staID[0] = '\0';
 
     if ( ntoks < 5 ) return error_setInpError(ERR_ITEMS, "");
     k = findmatch(tok[4], GageDataWords);
-    if      ( k == RAIN_TSERIES )
+    if ( k == RAIN_TSERIES )
     {
         err = readGageSeriesFormat(tok, ntoks, x);
     }
-    else if ( k == RAIN_FILE    )
+    else if ( k == RAIN_FILE )
     {
         if ( ntoks < 8 ) return error_setInpError(ERR_ITEMS, "");
         sstrncpy(fname, tok[5], MAXFNAME);
@@ -112,7 +117,7 @@ int gage_readParams(int j, char* tok[], int ntoks)
     else                        Gage[j].dataSource = RAIN_FILE;
     if ( Gage[j].dataSource == RAIN_FILE )
     {
-        sstrncpy(Gage[j].fname, fname, MAXFNAME);
+        sstrncpy(Gage[j].fname, addAbsolutePath(fname), MAXFNAME);
         sstrncpy(Gage[j].staID, staID, MAXMSG);
         Gage[j].startFileDate = x[4];
         Gage[j].endFileDate = x[5];
@@ -154,7 +159,7 @@ int readGageSeriesFormat(char* tok[], int ntoks, double x[])
     ts = project_findObject(TSERIES, tok[5]);
     if ( ts < 0 ) return error_setInpError(ERR_NAME, tok[5]);
     x[0] = (double)ts;
-    strcpy(tok[2], "");
+    sstrncpy(tok[2], "", 0);
     return 0;
 }
 
@@ -269,8 +274,9 @@ void  gage_initState(int j)
 //  Purpose: initializes state of rain gage.
 //
 {
-    // --- initialize actual and reported rainfall                             //(5.1.013)
+    // --- initialize actual and reported rainfall
     Gage[j].rainfall = 0.0;
+    Gage[j].apiRainfall = MISSING;
     Gage[j].reportRainfall = 0.0;
     if ( IgnoreRainfall ) return;
 
@@ -309,6 +315,7 @@ void  gage_initState(int j)
         else if ( !getNextRainfall(j) ) Gage[j].nextDate = NO_DATE;
     }
     else Gage[j].startDate = NO_DATE;
+    initPastRain(j);
 }
 
 //=============================================================================
@@ -336,6 +343,14 @@ void gage_setState(int j, DateTime t)
     if ( Gage[j].coGage >= 0)
     {
         Gage[j].rainfall = Gage[Gage[j].coGage].rainfall;
+        return;
+    }
+
+    // --- use rainfall supplied by API function call
+    //     (where constant ZERO (1.e-10) is used for 0 rainfall)
+    if (Gage[j].apiRainfall != MISSING)
+    {
+        Gage[j].rainfall = Gage[j].apiRainfall;
         return;
     }
 
@@ -384,6 +399,86 @@ void gage_setState(int j, DateTime t)
         Gage[j].rainfall = Gage[j].nextRainfall;
         if ( !getNextRainfall(j) ) Gage[j].nextDate = NO_DATE;
     }
+}
+
+//=============================================================================
+
+void initPastRain(int j)
+{
+    // --- initialize past hourly rain accumulation
+    int i;
+    for (i = 0; i <= MAXPASTRAIN; i++)
+        Gage[j].pastRain[i] = 0.0;
+    Gage[j].pastInterval = 0;
+}
+
+//=============================================================================
+
+void gage_updatePastRain(int j, int tStep)
+//
+//  Input:   j = rain gage index
+//           tStep = current runoff time step (sec)
+//  Output:  none
+//  Purpose: updates past MAXPASTRAIN hourly rain totals.
+//
+//  Note: pastRain[0] is past rain volume prior to 1 hour,
+//        pastRain[n] is past rain volume after n hours,
+//        pastInterval is time since last hour was reached.
+{
+    int    i, t;
+    double r;
+
+    // --- current rainfall intensity (in/sec or mm/sec) 
+    r = Gage[j].rainfall / 3600.;
+
+    // --- process each hourly interval of current time step
+    while (tStep > 0)
+    {
+        // --- time for most recent rainfall interval to reach 1 hr
+        t = 3600 - Gage[j].pastInterval;
+
+        // --- remaining time step is greater than this time
+        if (tStep > t)
+        {
+            // --- add current rain to most recent interval
+            Gage[j].pastRain[0] += t * r;
+
+            // --- shift all prior hourly rain amounts by 1 hour
+            for (i = MAXPASTRAIN; i > 0; i-- )
+                Gage[j].pastRain[i] = Gage[j].pastRain[i-1];
+
+            // --- begin a new most recent interval
+            Gage[j].pastInterval = 0;
+            Gage[j].pastRain[0] = 0.0;
+            tStep -= t;
+        }
+        // --- time to reach 1 hr in most recent interval is greater
+        //     than remaining time step so update most recent interval
+        else
+        {
+            Gage[j].pastRain[0] += tStep * r;
+            Gage[j].pastInterval += tStep;
+            tStep = 0;
+        }
+    }
+}
+
+//=============================================================================
+
+double gage_getPastRain(int j, int n)
+//
+//  Input:   j = rain gage index
+//           n = number of hours prior to current date
+//  Output:  cumulative rain volume (inches or mm) in last n hours
+//  Purpose: retrieves rainfall total over some previous number of hours.
+//
+{
+    int i;
+    double result = 0.0;
+    if (n < 1 || n > MAXPASTRAIN) return 0.0;
+    for (i = 1; i <= n; i++)
+        result += Gage[j].pastRain[i];
+    return result;
 }
 
 //=============================================================================
@@ -440,6 +535,13 @@ void gage_setReportRainfall(int j, DateTime reportDate)
     if ( Gage[j].coGage >= 0)
     {
         Gage[j].reportRainfall = Gage[Gage[j].coGage].reportRainfall;
+        return;
+    }
+
+    // --- rainfall set by API call
+    if (Gage[j].apiRainfall != MISSING)
+    {
+        Gage[j].reportRainfall = Gage[j].apiRainfall;
         return;
     }
 
@@ -590,7 +692,7 @@ double convertRainfall(int j, double r)
 
       case CUMULATIVE_RAINFALL:
         if ( r  < Gage[j].rainAccum )
-             r1 = r / Gage[j].rainInterval * 3600.0;
+            r1 = r / Gage[j].rainInterval * 3600.0;
         else r1 = (r - Gage[j].rainAccum) / Gage[j].rainInterval * 3600.0;
         Gage[j].rainAccum = r;
         break;

@@ -2,48 +2,41 @@
 //   routing.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/19/14  (Build 5.1.000)
-//             09/15/14  (Build 5.1.007)
-//             04/02/15  (Build 5.1.008)
-//             08/05/15  (Build 5.1.010)
-//             08/01/16  (Build 5.1.011)
-//             03/14/17  (Build 5.1.012)
-//             05/10/18  (Build 5.1.013)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     11/01/21  (Build 5.2.0)
+//   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
 //   Conveyance system routing functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - Nodal evap/seepage losses computed using conditions at start of time step.
 //   - DWF pollutant concentrations ignored if DWF is negative.
 //   - Separate mass balance accounting made for storage evap. & seepage.
 //   - Nodal mass balance accounting for negative lateral inflows corrected.
-//
 //   Build 5.1.008:
 //   - Initialization of flow and quality routing systems moved here from swmm5.c.
 //   - Lateral inflows now evaluated at start (not end) of time step.
 //   - Flows from LID drains included in lateral inflows.
 //   - Conduit evap/seepage losses multiplied by number of barrels before
 //     being added into mass balances.
-//
 //   Build 5.1.010:
 //   - Time when a link's setting is changed is recorded.
-//
 //   Build 5.1.011:
 //   - Support added for limiting flow routing to specific events.
-//
 //   Build 5.1.012:
 //   - routing_execute() was re-written so that Routing Events and
 //     Skip Steady Flow options work together correctly.
-//
 //   Build 5.1.013:
 //   - Support added for evaluating controls rules at RuleStep time interval.
 //   - Back flow through Outfall nodes now treated as External Inflows for
 //     mass balance purposes.
 //   - Global infiltration factor for storage seepage set in routing_execute.
-//
+//   Build 5.2.0:
+//   - Support added for street flow capture and sewer backflow thru inlets.
+//   - Shell sort replaces insertion sort for sorting Event array.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -59,7 +52,7 @@
 static int* SortedLinks;
 static int  NextEvent;
 static int  BetweenEvents;
-static double NewRuleTime;                                                     //(5.1.013)
+static double NewRuleTime;
 
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)
@@ -72,6 +65,14 @@ static double NewRuleTime;                                                     /
 //-----------------------------------------------------------------------------
 // Function declarations
 //-----------------------------------------------------------------------------
+static int  evaluateControlRules(DateTime currentDate, double routingStep);
+static void sortEvents(void);
+static int  isBetweenEvents(DateTime currentDate);
+static int  isInSteadyState(int actionCount, double stepFlowError);
+static int  inflowHasChanged(void);
+
+static void initSystemInflows();
+static void addSystemInflows(DateTime currentDate, double routingStep);
 static void addExternalInflows(DateTime currentDate);
 static void addDryWeatherInflows(DateTime currentDate);
 static void addWetWeatherInflows(double routingTime);
@@ -79,11 +80,13 @@ static void addGroundwaterInflows(double routingTime);
 static void addRdiiInflows(DateTime currentDate);
 static void addIfaceInflows(DateTime currentDate);
 static void addLidDrainInflows(double routingTime);
+
+static int  routeFlow(int routingModel, double routingStep);
+static void removeSystemOutflows(double routingStep);
 static void removeStorageLosses(double tStep);
 static void removeConduitLosses(void);
 static void removeOutflows(double tStep);
-static int  inflowHasChanged(void);
-static void sortEvents(void);
+
 
 //=============================================================================
 
@@ -122,7 +125,7 @@ int routing_open()
     if ( NumEvents > 0 ) sortEvents();
     NextEvent = 0;
     BetweenEvents = (NumEvents > 0);
-    NewRuleTime = 0.0;                                                         //(5.1.013)
+    NewRuleTime = 0.0;
     return ErrorCode;
 }
 
@@ -145,8 +148,6 @@ void routing_close(int routingModel)
 }
 
 //=============================================================================
-
-////  This function was modified for release 5.1.013.  ////                    //(5.1.013)
 
 double routing_getRoutingStep(int routingModel, double fixedStep)
 //
@@ -207,31 +208,79 @@ void routing_execute(int routingModel, double routingStep)
 //  Purpose: executes the routing process at the current time period.
 //
 {
-    int      j;
-    int      stepCount = 1;
-    int      actionCount = 0;
-    int      inSteadyState = FALSE;
-    DateTime currentDate;
-    double   stepFlowError;
+    int      trialsCount = 1;          // trials required to solve flow routing
+    int      actionCount = 0;          // number of control actions taken
+    int      inSteadyState = TRUE;     // system is in steady state
+    DateTime currentDate;              // date at start of routing step
+    double   stepFlowError;            // 1 - (system outflow) / (system inflow)
 
-    // --- update continuity with current state
-    //     applied over 1/2 of time step
     if ( ErrorCode ) return;
+
+    // --- update mass balance totals over previous half time step
     massbal_updateRoutingTotals(routingStep/2.);
+
+    // --- take any applicable control rule actions
+    currentDate = getDateTime(NewRoutingTime);
+    actionCount = evaluateControlRules(currentDate, routingStep);
+
+    // --- initialize mass balance and system inflow variables
+    stepFlowError = massbal_getStepFlowError();
+    massbal_initTimeStepTotals();
+    initSystemInflows();
+
+    // --- check that current date falls within a user-speficied event period
+    BetweenEvents = isBetweenEvents(currentDate);
+    if (BetweenEvents == FALSE)
+    {
+        // --- apply current inflows to conveyance system
+        addSystemInflows(currentDate, routingStep);
+        inlet_findCapturedFlows(routingStep);
+
+        // --- route flows if system is not in steady state
+        inSteadyState = isInSteadyState(actionCount, stepFlowError);
+        if (inSteadyState == FALSE)
+            trialsCount = routeFlow(routingModel, routingStep);
+
+        // --- route water quality constituents
+        if (Nobjects[POLLUT] > 0 && !IgnoreQuality)
+        {
+            inlet_adjustQualInflows();
+            qualrout_execute(routingStep);
+        }
+
+        // --- update mass balance totals for flows leaving the system
+        removeSystemOutflows(routingStep);
+        inlet_adjustQualOutflows();
+
+        // --- update time step & flow routing statistics
+        if (Nobjects[LINK] > 0)
+        {
+            stats_updateFlowStats(routingStep, getDateTime(NewRoutingTime));
+            stats_updateTimeStepStats(routingStep, trialsCount, inSteadyState);
+        }
+    }
+
+    // --- update mass balance totals over the current half time step
+    massbal_updateRoutingTotals(routingStep / 2.);
+}
+
+//=============================================================================
+
+ int  evaluateControlRules(DateTime currentDate, double routingStep)
+{
+    int j;
+    int actionCount = 0;
 
     // --- find new link target settings that are not related to
     // --- control rules (e.g., pump on/off depth limits)
     for (j=0; j<Nobjects[LINK]; j++) link_setTargetSetting(j);
 
-    // --- find date of start of current time period                           //(5.1.013)
-    currentDate = getDateTime(NewRoutingTime);                                 //
-                                                                               //
-    // --- evaluate control rules if next evluation time reached               //
-    if (RuleStep == 0 || fabs(NewRoutingTime - NewRuleTime) < 1.0)             //
-    {                                                                          //   
-        controls_evaluate(currentDate, currentDate - StartDateTime,            //
-            routingStep / SECperDAY);                                          //
-    }                                                                          //
+    // --- evaluate control rules if next evaluation time reached
+    if (RuleStep == 0 || fabs(NewRoutingTime - NewRuleTime) < 1.0)
+    {  
+        controls_evaluate(currentDate, currentDate - StartDateTime,
+            routingStep / SECperDAY);
+    }
 
     // --- change each link's actual setting if it differs from its target
     for (j=0; j<Nobjects[LINK]; j++)
@@ -252,13 +301,17 @@ void routing_execute(int routingModel, double routingStep)
     OldRoutingTime = NewRoutingTime;
     NewRoutingTime = NewRoutingTime + 1000.0 * routingStep;
 
-    // --- see if control rule evaluation time should be advanced              //(5.1.013)
-    if (fabs(NewRoutingTime - (NewRuleTime + 1000.0*RuleStep)) < 1)            //
-        NewRuleTime += 1000.0 * RuleStep;                                      //
+    // --- see if control rule evaluation time should be advanced
+    if (fabs(NewRoutingTime - (NewRuleTime + 1000.0*RuleStep)) < 1)
+        NewRuleTime += 1000.0 * RuleStep;
+    return actionCount;
+}
 
-    // --- initialize mass balance totals for time step
-    stepFlowError = massbal_getStepFlowError();
-    massbal_initTimeStepTotals();
+//=============================================================================
+
+void  initSystemInflows()
+{
+    int j;
 
     // --- replace old water quality state with new state
     if ( Nobjects[POLLUT] > 0 )
@@ -267,9 +320,9 @@ void routing_execute(int routingModel, double routingStep)
         for (j=0; j<Nobjects[LINK]; j++) link_setOldQualState(j);
     }
 
-    // --- set infiltration factor for storage unit seepage                    //(5.1.013)
-    //     (-1 argument indicates global factor is used)                       //(5.1.013)
-    infil_setInfilFactor(-1);                                                  //(5.1.013)
+    // --- set infiltration factor for storage unit seepage
+    //     (-1 argument indicates global factor is used)
+    infil_setInfilFactor(-1);
 
     // --- initialize lateral inflows at nodes
     for (j = 0; j < Nobjects[NODE]; j++)
@@ -277,90 +330,104 @@ void routing_execute(int routingModel, double routingStep)
         Node[j].oldLatFlow  = Node[j].newLatFlow;
         Node[j].newLatFlow  = 0.0;
     }
+}
 
-    // --- check if can skip non-event periods
-    if ( NumEvents > 0 )
+//=============================================================================
+
+int isBetweenEvents(DateTime currentDate)
+{
+    // --- if no events defined then result is always false
+    if ( NumEvents == 0 ) return FALSE;
+
+    // --- currrent event period has ended so result is true
+    if ( currentDate > Event[NextEvent].end )
     {
-        if ( currentDate > Event[NextEvent].end )
-        {
-            BetweenEvents = TRUE;
-            NextEvent++;
-        }
-        else if ( currentDate >= Event[NextEvent].start && BetweenEvents == TRUE )
-        {
-			BetweenEvents = FALSE;
-        }
+        NextEvent++;
+        return TRUE;
     }
 
-    // --- if not between routing events
-    if ( BetweenEvents == FALSE )
+    // --- we've entered the next event period so result is false
+    else if ( currentDate >= Event[NextEvent].start )
     {
-        // --- find evap. & seepage losses from storage nodes
-        for (j = 0; j < Nobjects[NODE]; j++)
-        {
-            Node[j].losses = node_getLosses(j, routingStep); 
-        }
-
-        // --- add lateral inflows and evap/seepage losses at nodes
-        addExternalInflows(currentDate);
-        addDryWeatherInflows(currentDate);
-        addWetWeatherInflows(OldRoutingTime);
-        addGroundwaterInflows(OldRoutingTime);
-        addLidDrainInflows(OldRoutingTime);
-        addRdiiInflows(currentDate);
-        addIfaceInflows(currentDate);
-
-        // --- check if can skip steady state periods based on flows
-        if ( SkipSteadyState )
-        {
-            if ( OldRoutingTime == 0.0
-            ||   actionCount > 0
-            ||   fabs(stepFlowError) > SysFlowTol
-            ||   inflowHasChanged() ) inSteadyState = FALSE;
-            else inSteadyState = TRUE;
-        }
-
-        // --- find new hydraulic state if system has changed
-        if ( inSteadyState == FALSE )
-        {
-            // --- replace old hydraulic state values with current ones
-            for (j = 0; j < Nobjects[LINK]; j++) link_setOldHydState(j);
-            for (j = 0; j < Nobjects[NODE]; j++)
-            {
-                node_setOldHydState(j);
-                node_initInflow(j, routingStep);
-            }
-
-            // --- route flow through the drainage network
-            if ( Nobjects[LINK] > 0 )
-            {
-                stepCount = flowrout_execute(SortedLinks, routingModel, routingStep);
-            }
-        }
-
-        // --- route quality through the drainage network
-        if ( Nobjects[POLLUT] > 0 && !IgnoreQuality ) 
-        {
-            qualrout_execute(routingStep);
-        }
-
-        // --- remove evaporation, infiltration & outflows from system
-        removeStorageLosses(routingStep);
-        removeConduitLosses();
-        removeOutflows(routingStep);
+        return FALSE;
     }
-    else inSteadyState = TRUE;
-	
-    // --- update continuity with new totals
-    //     applied over 1/2 of routing step
-    massbal_updateRoutingTotals(routingStep/2.);
+    return TRUE;
+}
 
-    // --- update summary statistics
-    if ( RptFlags.flowStats && Nobjects[LINK] > 0 )
+//=============================================================================
+
+void  addSystemInflows(DateTime currentDate, double routingStep)
+{
+    int j;
+
+    // --- find evap. & seepage losses from storage nodes
+    for (j = 0; j < Nobjects[NODE]; j++)
+        Node[j].losses = node_getLosses(j, routingStep); 
+
+    // --- add lateral inflows at nodes
+    addExternalInflows(currentDate);
+    addDryWeatherInflows(currentDate);
+    addWetWeatherInflows(OldRoutingTime);
+    addGroundwaterInflows(OldRoutingTime);
+    addLidDrainInflows(OldRoutingTime);
+    addRdiiInflows(currentDate);
+    addIfaceInflows(currentDate);
+
+    // --- initialize node inflow for quality routing
+    for (j = 0; j < Nobjects[NODE]; j++)
+        Node[j].qualInflow = MAX(0.0, Node[j].newLatFlow);
+}
+
+//=============================================================================
+
+int isInSteadyState(int actionCount, double stepFlowError)
+{
+    // --- check if can skip steady state periods based on flows
+    if ( SkipSteadyState )
     {
-        stats_updateFlowStats(routingStep, getDateTime(NewRoutingTime),
-                              stepCount, inSteadyState);
+        if ( OldRoutingTime == 0.0
+        ||   actionCount > 0
+        ||   fabs(stepFlowError) > SysFlowTol
+        ||   inflowHasChanged() ) return FALSE;
+        else return TRUE;
     }
+    return FALSE;
+}
+
+//=============================================================================
+
+int  routeFlow(int routingModel, double routingStep)
+{
+    int j;
+    int stepCount = 1;
+
+    // --- replace old hydraulic state values with current ones
+    for (j = 0; j < Nobjects[LINK]; j++) link_setOldHydState(j);
+    for (j = 0; j < Nobjects[NODE]; j++) node_setOldHydState(j);
+
+    // --- initialize node inflows to lateral flows, outflows to evap +
+    //     seepage losses, & overflows to excess stored volume
+    for (j = 0; j < Nobjects[NODE]; j++)
+        node_initFlows(j, routingStep);
+
+    // --- route flow through the drainage network
+    if ( Nobjects[LINK] > 0 )
+    {
+        stepCount = flowrout_execute(SortedLinks, routingModel, routingStep);
+    }
+
+    // --- save overflows at inlet capture nodes as inlet backflow
+    return stepCount;
+}
+
+//=============================================================================
+
+void removeSystemOutflows(double routingStep)
+{
+    // --- remove evaporation, infiltration & outflows from system
+    removeStorageLosses(routingStep);
+    removeConduitLosses();
+    removeOutflows(routingStep);
 }
 
 //=============================================================================
@@ -379,16 +446,14 @@ void addExternalInflows(DateTime currentDate)
     // --- for each node with a defined external inflow
     for (j = 0; j < Nobjects[NODE]; j++)
     {
-        inflow = Node[j].extInflow;
-        if ( !inflow ) continue;
-
         // --- get flow inflow
-        q = 0.0;
+        q = Node[j].apiExtInflow;
+        inflow = Node[j].extInflow;
         while ( inflow )
         {
             if ( inflow->type == FLOW_INFLOW )
             {
-                q = inflow_getExtInflow(inflow, currentDate);
+                q += inflow_getExtInflow(inflow, currentDate);
                 break;
             }
             else inflow = inflow->next;
@@ -397,7 +462,13 @@ void addExternalInflows(DateTime currentDate)
 
         // --- add flow inflow to node's lateral inflow
         Node[j].newLatFlow += q;
-        massbal_addInflowFlow(EXTERNAL_INFLOW, q);
+        if (q >= 0.0)
+            massbal_addInflowFlow(EXTERNAL_INFLOW, q);   
+        else
+        {
+            massbal_addOutflowFlow(-q, FALSE);
+            continue;
+        }
 
         // --- add on any inflow (i.e., reverse flow) through an outfall
         if ( Node[j].type == OUTFALL && Node[j].oldNetInflow < 0.0 ) 
@@ -700,8 +771,6 @@ void addIfaceInflows(DateTime currentDate)
     }
 }
 
-
-
 //=============================================================================
 
 int  inflowHasChanged()
@@ -780,11 +849,11 @@ void removeConduitLosses()
     int i, k;
     double barrels,
            evapLoss = 0.0,
-	       seepLoss = 0.0;
+           seepLoss = 0.0;
 
     for ( i = 0; i < Nobjects[LINK]; i++ )
     {
-	    if (Link[i].type == CONDUIT)
+        if (Link[i].type == CONDUIT)
         {
             // --- retrieve number of barrels
             k = Link[i].subIndex;
@@ -830,7 +899,7 @@ void removeOutflows(double tStep)
         // --- update mass balance with flow and mass leaving the system
         //     through outfalls and flooded interior nodes
         q = node_getSystemOutflow(i, &isFlooded);
-        if ( q > 0.0 )                                                         //(5.1.013)
+        if ( q > 0.0 )
         {
             massbal_addOutflowFlow(q, isFlooded);
             for ( p = 0; p < Nobjects[POLLUT]; p++ )
@@ -839,7 +908,7 @@ void removeOutflows(double tStep)
                 massbal_addOutflowQual(p, w, isFlooded);
             }
         }
-        else massbal_addInflowFlow(EXTERNAL_INFLOW, -q);                       //(5.1.013)
+        else massbal_addInflowFlow(EXTERNAL_INFLOW, -q);
 
         // --- update mass balance with mass leaving system through negative
         //     lateral inflows (lateral flow was previously accounted for)
@@ -852,7 +921,6 @@ void removeOutflows(double tStep)
                 massbal_addOutflowQual(p, w, FALSE);
             }
         }
-
     }
 }
 
@@ -865,20 +933,22 @@ void sortEvents()
 //  Purpose: sorts the entries of the Event array in chronological order.
 //
 {
-    int i, j;
+    int i, j, gap;
     TEvent temp;
 
-    // Apply simple exchange sort to event list
-    for (i = 0; i < NumEvents-1; i++)
+    // Apply shell sort to event list
+    for (gap = NumEvents/2; gap >= 1; gap /= 2)
     {
-        for (j = i+1; j < NumEvents; j++)
+        for (i = gap; i < NumEvents; i += gap)
         {
-            if ( Event[i].start > Event[j].start )
+            temp = Event[i];
+            j = i - gap;
+            while (j >= 0 && Event[j].start > temp.start)
             {
-                temp = Event[j];
-                Event[j] = Event[i];
-                Event[i] = temp;
+                Event[j+gap] = Event[j];
+                j -= gap;
             }
+            if (j != i-gap) Event[j+gap] = temp;
         }
     }
 

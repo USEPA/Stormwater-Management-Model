@@ -2,37 +2,32 @@
 //   runoff.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             09/15/14   (Build 5.1.007)
-//             03/19/15   (Build 5.1.008)
-//             08/01/16   (Build 5.1.011)
-//             03/14/17   (Build 5.1.012)
-//             03/01/20   (Build 5.1.014)
+//   Version:  5.2
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //             M. Tryby
 //
 //   Runoff analysis functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - Climate file now opened in climate.c module.
-//
 //   Build 5.1.008:
 //   - Memory for runoff pollutant load now allocated and freed in this module.
 //   - Runoff time step chosen so that simulation does not exceed total duration.
 //   - State of LIDs considered when choosing wet or dry time step.
 //   - More checks added to skip over subcatchments with zero area.
 //   - Support added for sending outfall node discharge onto a subcatchment.
-//
 //   Build 5.1.011:
 //   - Runoff wet time step kept aligned with reporting times.
 //   - Prior runoff time step used to convert returned outfall volume to flow.
-//
 //   Build 5.1.012:
 //   - Runoff wet time step no longer kept aligned with reporting times.
-//
 //   Build 5.1.014:
 //   - Fixed street sweeping bug.
+//   Build 5.2.0:
+//   - Support added for saving rainfall amounts in previous 48 hours. 
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -185,7 +180,7 @@ void runoff_execute()
     if ( Nobjects[SUBCATCH] == 0 )
     {
         OldRunoffTime = NewRunoffTime;
-        NewRunoffTime += (double)(1000 * DryStep);
+        NewRunoffTime += (double)(DryStep) * 1000.;
         NewRunoffTime = MIN(NewRunoffTime, TotalDuration);
         return;
     }
@@ -234,6 +229,10 @@ void runoff_execute()
         runoffStep = (TotalDuration - OldRunoffTime) / 1000.0;
         NewRunoffTime = TotalDuration;
     }
+
+    // --- update past n-hour rain totals
+    for (j = 0; j < Nobjects[GAGE]; j++)
+        gage_updatePastRain(j, (int)runoffStep);
 
     // --- update old state of each subcatchment, 
     for (j = 0; j < Nobjects[SUBCATCH]; j++) subcatch_setOldState(j);
@@ -433,7 +432,7 @@ void  runoff_readFromFile(void)
 
     // --- read runoff time step
     kount = 0;
-    kount += fread(&tStep, sizeof(float), 1, Frunoff.file);
+    kount += (int)fread(&tStep, sizeof(float), 1, Frunoff.file);
 
     // --- compute number of results saved for each subcatchment
     nResults = MAX_SUBCATCH_RESULTS + Nobjects[POLLUT] - 1;
@@ -442,7 +441,7 @@ void  runoff_readFromFile(void)
     for (j = 0; j < Nobjects[SUBCATCH]; j++)
     {
         // --- read vector of saved results
-        kount += fread(SubcatchResults, sizeof(float), nResults, Frunoff.file);
+        kount += (int)fread(SubcatchResults, sizeof(float), nResults, Frunoff.file);
 
         // --- extract hydrologic results, converting units where necessary
         //     (results were saved to file in user's units)

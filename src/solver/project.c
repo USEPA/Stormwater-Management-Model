@@ -2,16 +2,8 @@
 //   project.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/19/14  (Build 5.1.000)
-//             04/14/14  (Build 5.1.004)
-//             09/15/14  (Build 5.1.007)
-//             03/19/15  (Build 5.1.008)
-//             04/30/15  (Build 5.1.009)
-//             08/01/16  (Build 5.1.011)
-//             03/14/17  (Build 5.1.012)
-//             05/10/18  (Build 5.1.013)
-//             04/01/20  (Build 5.1.015)
+//   Version:  5.2
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -23,54 +15,53 @@
 //   o initializing the internal state of all objects
 //   o managing hash tables for identifying objects by ID name
 //
+//   Update History
+//   ==============
 //   Build 5.1.004:
 //   - Ignore RDII option added.
-//
 //   Build 5.1.007:
 //   - Default monthly adjustments for climate variables included.
 //   - User-supplied GW flow equations initialized to NULL.
 //   - Storage node exfiltration object initialized to NULL.
 //   - Freeing of memory used for storage node exfiltration included.
-//
 //   Build 5.1.008:
 //   - Constants used for dynamic wave routing moved to dynwave.c.
 //   - Input processing of minimum time step & number of
 //     parallel threads for dynamic wave routing added.
 //   - Default values of hyd. conductivity adjustments added.
 //   - Freeing of memory used for outfall pollutant load added.
-//
 //   Build 5.1.009:
 //   - Fixed bug in computing total duration introduced in 5.1.008.
-//
 //   Build 5.1.011:
 //   - Memory management of hydraulic event dates array added.
-//
 //   Build 5.1.012:
 //   - Minimum conduit slope option initialized to 0 (none).
 //   - NO/YES no longer accepted as options for NORMAL_FLOW_LIMITED.
-//
 //   Build 5.1.013:
 //   - omp_get_num_threads function protected against lack of compiler
 //     support for OpenMP.
 //   - Rain gage validation now performed after subcatchment validation.
 //   - More robust parsing of MinSurfarea option provided.
 //   - Support added for new RuleStep analysis option.
-//
 //   Build 5.1.015: 
 //   - Support added for multiple infiltration methods within a project.
+//   Build 5.2.0:
+//   - Support added for Streets and Inlets.
+//   - Support added for RptFlags.disabled option.
+//   - Object's rptFlag changed to record its index in output file.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdlib.h>
 #include <math.h>
 
-#if defined(_OPENMP)                                                           //(5.1.013)
-  #include <omp.h>                                                             //     
-#else                                                                          //
-  int omp_get_num_threads(void) { return 1;}                                   //
-#endif                                                                         //
+// Protect against lack of compiler support for OpenMP
+#if defined(_OPENMP)
+  #include <omp.h>     
+#else
+  int omp_get_max_threads(void) { return 1;}
+#endif
 
 #include "headers.h"
 #include "lid.h" 
@@ -103,7 +94,7 @@ static char     MemPoolAllocated;      // TRUE if memory pool allocated
 //-----------------------------------------------------------------------------
 static void initPointers(void);
 static void setDefaults(void);
-static void openFiles(char *f1, char *f2, char *f3);
+static void openFiles(const char *f1, const char *f2, const char *f3);
 static void createObjects(void);
 static void deleteObjects(void);
 static void createHashTables(void);
@@ -112,7 +103,7 @@ static void deleteHashTables(void);
 
 //=============================================================================
 
-void project_open(char *f1, char *f2, char *f3)
+void project_open(const char *f1, const char *f2, const char *f3)
 //
 //  Input:   f1 = pointer to name of input file
 //           f2 = pointer to name of report file
@@ -216,7 +207,7 @@ void project_validate()
     if ( Nobjects[AQUIFER]  == 0 ) IgnoreGwater   = TRUE;
     for ( i=0; i<Nobjects[AQUIFER]; i++ )  gwater_validateAquifer(i);
     for ( i=0; i<Nobjects[SUBCATCH]; i++ ) subcatch_validate(i);
-    for ( i=0; i<Nobjects[GAGE]; i++ )     gage_validate(i);                   //(5.1.013)
+    for ( i=0; i<Nobjects[GAGE]; i++ )     gage_validate(i);
     for ( i=0; i<Nobjects[SNOWMELT]; i++ ) snow_validateSnowmelt(i);
 
     // --- compute geometry tables for each shape curve
@@ -253,23 +244,22 @@ void project_validate()
 
     // --- adjust individual reporting flags to match global reporting flag
     if ( RptFlags.subcatchments == ALL )
-        for (i=0; i<Nobjects[SUBCATCH]; i++) Subcatch[i].rptFlag = TRUE;
-    if ( RptFlags.nodes == ALL )
-        for (i=0; i<Nobjects[NODE]; i++) Node[i].rptFlag = TRUE;
+        for (i=0; i<Nobjects[SUBCATCH]; i++) Subcatch[i].rptFlag = 1;
+    if (RptFlags.nodes == ALL)
+        for (i = 0; i < Nobjects[NODE]; i++) Node[i].rptFlag = 1;
     if ( RptFlags.links == ALL )
-        for (i=0; i<Nobjects[LINK]; i++) Link[i].rptFlag = TRUE;
+        for (i=0; i<Nobjects[LINK]; i++) Link[i].rptFlag = 1;
 
     // --- validate dynamic wave options
     if ( RouteModel == DW ) dynwave_validate();
 
-    // --- adjust number of parallel threads to be used                        //(5.1.013)
-#pragma omp parallel                                                           //(5.1.008)
-{
-    if ( NumThreads == 0 ) NumThreads = omp_get_num_threads();                 //(5.1.008)
-    else NumThreads = MIN(NumThreads, omp_get_num_threads());                  //(5.1.008)
-}
-    if ( Nobjects[LINK] < 4 * NumThreads ) NumThreads = 1;                     //(5.1.008)
+    // --- validate street/channel inlets
+    inlet_validate();
 
+    // --- adjust number of parallel threads to be used
+    if ( NumThreads == 0 ) NumThreads = omp_get_max_threads();
+    else NumThreads = MIN(NumThreads, omp_get_max_threads());
+    if ( Nobjects[LINK] < 4 * NumThreads ) NumThreads = 1;
 }
 
 //=============================================================================
@@ -294,14 +284,41 @@ int  project_init(void)
 //  Purpose: initializes the internal state of all objects.
 // 
 {
-    int j;
+    int j, k;
     climate_initState();
     lid_initState();
     for (j=0; j<Nobjects[TSERIES]; j++)  table_tseriesInit(&Tseries[j]);
     for (j=0; j<Nobjects[GAGE]; j++)     gage_initState(j);
-    for (j=0; j<Nobjects[SUBCATCH]; j++) subcatch_initState(j);
-    for (j=0; j<Nobjects[NODE]; j++)     node_initState(j);
-    for (j=0; j<Nobjects[LINK]; j++)     link_initState(j);
+    k = 1;
+    for (j=0; j<Nobjects[SUBCATCH]; j++)
+    {
+        subcatch_initState(j);
+        if (Subcatch[j].rptFlag > 0)
+        {
+            Subcatch[j].rptFlag = k;
+            k++;
+        }
+    }
+    k = 1;
+    for (j=0; j<Nobjects[NODE]; j++)
+    {
+        node_initState(j);
+        if (Node[j].rptFlag > 0)
+        {
+            Node[j].rptFlag = k;
+            k++;
+        }
+    }
+    k = 1;        
+    for (j=0; j<Nobjects[LINK]; j++)
+    {
+        link_initState(j);
+        if (Link[j].rptFlag > 0)
+        {
+            Link[j].rptFlag = k;
+            k++;
+        }
+    }
     return ErrorCode;
 }
 
@@ -317,7 +334,7 @@ int   project_addObject(int type, char *id, int n)
 //
 {
     int  result;
-    int  len;
+    long  len;
     char *newID;
 
     // --- do nothing if object already placed in hash table
@@ -325,9 +342,9 @@ int   project_addObject(int type, char *id, int n)
 
     // --- use memory from the hash tables' common memory pool to store
     //     a copy of the object's ID string
-    len = strlen(id) + 1;
-    newID = (char *) Alloc(len*sizeof(char));
-    strcpy(newID, id);
+    len = (long)strlen(id);
+    newID = (char *) Alloc((len+1)*sizeof(char));
+    sstrncpy(newID, id, len);
 
     // --- insert object's ID into the hash table for that type of object
     result = HTinsert(Htable[type], newID, n);
@@ -337,7 +354,7 @@ int   project_addObject(int type, char *id, int n)
 
 //=============================================================================
 
-int project_findObject(int type, char *id)
+int project_findObject(int type, const char *id)
 //
 //  Input:   type = object type
 //           id   = object ID
@@ -371,23 +388,31 @@ double ** project_createMatrix(int nrows, int ncols)
 //  Purpose: allocates memory for a matrix of doubles.
 //
 {
-    int i,j;
+    int i;
     double **a;
 
+    size_t size = (size_t)nrows * (size_t)ncols;
+
     // --- allocate pointers to rows
+    if (nrows < 1 || ncols < 1)
+        return NULL;
     a = (double **) malloc(nrows * sizeof(double *));
-    if ( !a ) return NULL;
+    if ( !a )
+        return NULL;
     
     // --- allocate rows and set pointers to them
-    a[0] = (double *) malloc (nrows * ncols * sizeof(double));
-    if ( !a[0] ) return NULL;
-    for ( i = 1; i < nrows; i++ ) a[i] = a[i-1] + ncols;
-
-    for ( i = 0; i < nrows; i++)
+    a[0] = (double *) malloc (size * sizeof(double));
+    if ( !a[0] )
     {
-        for ( j = 0; j < ncols; j++) a[i][j] = 0.0;
+        free(a);
+        return NULL;
     }
-    
+    for ( i = 1; i < nrows; i++ )
+        a[i] = a[i-1] + ncols;
+
+    // --- fill matrix with zeroes
+    memset(a[0], 0, size);
+
     // --- return pointer to array of pointers to rows
     return a;
 }
@@ -510,8 +535,8 @@ int project_readOption(char* s1, char* s2)
       //      function can be applied)
       case SWEEP_START:
       case SWEEP_END:
-        strcpy(strDate, s2);
-        strcat(strDate, "/1947");
+        sstrncpy(strDate, s2, 24);
+        sstrcat(strDate, "/1947", 25);
         if ( !datetime_strToDate(strDate, &aDate) )
         {
             return error_setInpError(ERR_DATETIME, s2);
@@ -535,7 +560,7 @@ int project_readOption(char* s1, char* s2)
       case WET_STEP:
       case DRY_STEP:
       case REPORT_STEP:
-      case RULE_STEP:                                                          //(5.1.013)
+      case RULE_STEP:
         if ( !datetime_strToTime(s2, &aTime) )
         {
             return error_setInpError(ERR_DATETIME, s2);
@@ -544,19 +569,19 @@ int project_readOption(char* s1, char* s2)
         h += 24*(int)aTime;
         s = s + 60*m + 3600*h;
 
-        // --- RuleStep allowed to be 0 while other time steps must be > 0     //(5.1.013)
-        if (k == RULE_STEP)                                                    //      
-        {                                                                      //
-            if (s < 0) return error_setInpError(ERR_NUMBER, s2);               //
-        }                                                                      //
-        else if ( s <= 0 ) return error_setInpError(ERR_NUMBER, s2);           //
+        // --- RuleStep allowed to be 0 while other time steps must be > 0
+        if (k == RULE_STEP)     
+        {
+            if (s < 0) return error_setInpError(ERR_NUMBER, s2);
+        }
+        else if ( s <= 0 ) return error_setInpError(ERR_NUMBER, s2);
 
         switch ( k )
         {
           case WET_STEP:     WetStep = s;     break;
           case DRY_STEP:     DryStep = s;     break;
           case REPORT_STEP:  ReportStep = s;  break;
-          case RULE_STEP:    RuleStep = s;    break;                           //(5.1.013)
+          case RULE_STEP:    RuleStep = s;    break;
         }
         break;
 
@@ -673,10 +698,10 @@ int project_readOption(char* s1, char* s2)
       // --- minimum surface area (ft2 or sq. meters) associated with nodes
       //     under dynamic wave flow routing 
       case MIN_SURFAREA:
-        if (!getDouble(s2, &MinSurfArea))                                      //(5.1.013)
-            return error_setInpError(ERR_NUMBER, s2);                          //(5.1.013)
-        if (MinSurfArea < 0.0)                                                 //(5.1.013)
-            return error_setInpError(ERR_NUMBER, s2);                          //(5.1.013)
+        if (!getDouble(s2, &MinSurfArea))
+            return error_setInpError(ERR_NUMBER, s2);
+        if (MinSurfArea < 0.0)
+            return error_setInpError(ERR_NUMBER, s2);
         break;
 
       // --- minimum conduit slope (%)
@@ -721,7 +746,7 @@ int project_readOption(char* s1, char* s2)
         LatFlowTol /= 100.0;
         break;
 
-      // --- method used for surcharging in dynamic wave flow routing          //(5.1.013)
+      // --- method used for surcharging in dynamic wave flow routing
       case SURCHARGE_METHOD:
           m = findmatch(s2, SurchargeWords);
           if (m < 0) return error_setInpError(ERR_KEYWORD, s2);
@@ -764,10 +789,10 @@ void initPointers()
     Tseries  = NULL;
     Transect = NULL;
     Shape    = NULL;
-    Aquifer    = NULL;
-    UnitHyd    = NULL;
-    Snowmelt   = NULL;
-    Event      = NULL;
+    Aquifer  = NULL;
+    UnitHyd  = NULL;
+    Snowmelt = NULL;
+    Event    = NULL;
     MemPoolAllocated = FALSE;
 }
 
@@ -783,8 +808,8 @@ void setDefaults()
    int i, j;
 
    // Project title & temp. file path
-   for (i = 0; i < MAXTITLE; i++) strcpy(Title[i], "");
-   strcpy(TempDir, "");
+   for (i = 0; i < MAXTITLE; i++) sstrncpy(Title[i], "", 0);
+   sstrncpy(TempDir, "", 0);
 
    // Interface files
    Frain.mode      = SCRATCH_FILE;     // Use scratch rainfall file
@@ -810,9 +835,9 @@ void setDefaults()
    UnitSystem      = US;               // US unit system
    FlowUnits       = CFS;              // CFS flow units
    InfilModel      = HORTON;           // Horton infiltration method
-   RouteModel      = KW;               // Kin. wave flow routing method
-   SurchargeMethod = EXTRAN;           // Use EXTRAN method for surcharging    //(5.1.013)
-   CrownCutoff     = 0.96;                                                     //(5.1.013)
+   RouteModel      = DW;               // Dynamic wave flow routing method
+   SurchargeMethod = EXTRAN;           // Use EXTRAN method for surcharging
+   CrownCutoff     = 0.96;             // Fractional pipe crown cutoff 
    AllowPonding    = FALSE;            // No ponding at nodes
    InertDamping    = SOME;             // Partial inertial damping
    NormalFlowLtd   = BOTH;             // Default normal flow limitation
@@ -832,7 +857,7 @@ void setDefaults()
    WetStep         = 300;              // Runoff wet time step (secs)
    DryStep         = 3600;             // Runoff dry time step (secs)
    RuleStep        = 0;                // Rules evaluated at each routing step
-   RouteStep       = 300.0;            // Routing time step (secs)
+   RouteStep       = 20;               // Routing time step (secs)
    MinRouteStep    = 0.5;              // Minimum variable time step (sec)
    ReportStep      = 900;              // Reporting time step (secs)
    StartDryDays    = 0.0;              // Antecedent dry days
@@ -859,6 +884,7 @@ void setDefaults()
    SweepEnd        = 365;
 
    // Reporting options
+   RptFlags.disabled      = FALSE;
    RptFlags.input         = FALSE;
    RptFlags.continuity    = TRUE;
    RptFlags.flowStats     = TRUE;
@@ -866,7 +892,6 @@ void setDefaults()
    RptFlags.subcatchments = FALSE;
    RptFlags.nodes         = FALSE;
    RptFlags.links         = FALSE;
-   RptFlags.nodeStats     = FALSE;
    RptFlags.averages      = FALSE;
 
    // Temperature data
@@ -919,7 +944,7 @@ void setDefaults()
 
 //=============================================================================
 
-void openFiles(char *f1, char *f2, char *f3)
+void openFiles(const char *f1, const char *f2, const char *f3)
 //
 //  Input:   f1 = name of input file
 //           f2 = name of report file
@@ -1001,7 +1026,7 @@ void createObjects()
     Shape    = (TShape *)    calloc(Nobjects[SHAPE],    sizeof(TShape));
 
     // --- create array of detailed routing event periods
-    Event = (TEvent *) calloc(NumEvents+1, sizeof(TEvent));
+    Event = (TEvent *) calloc((size_t)NumEvents+1, sizeof(TEvent));
     Event[NumEvents].start = BIG;
     Event[NumEvents].end = BIG + 1.0;
 
@@ -1016,8 +1041,14 @@ void createObjects()
     ErrorCode = transect_create(Nobjects[TRANSECT]);
     if ( ErrorCode ) return;
 
+    // --- create street cross sections & inlet designs
+    ErrorCode = street_create(Nobjects[STREET]);
+    if ( ErrorCode ) return;
+    ErrorCode = inlet_create(Nobjects[INLET]);
+    if ( ErrorCode ) return;
+
     // --- allocate memory for infiltration data
-    infil_create(Nobjects[SUBCATCH]);                                          //(5.1.015)
+    infil_create(Nobjects[SUBCATCH]);
 
     // --- allocate memory for water quality state variables
     for (j = 0; j < Nobjects[SUBCATCH]; j++)
@@ -1040,6 +1071,7 @@ void createObjects()
     }
     for (j = 0; j < Nobjects[LINK]; j++)
     {
+        Link[j].inlet = NULL;
         Link[j].oldQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
         Link[j].newQual = (double *) calloc(Nobjects[POLLUT], sizeof(double));
         Link[j].totalLoad = (double *) calloc(Nobjects[POLLUT], sizeof(double));
@@ -1081,7 +1113,7 @@ void createObjects()
     for (j = 0; j < Nobjects[GAGE]; j++)
     {
         Gage[j].tSeries = -1;
-        strcpy(Gage[j].fname, "");
+        sstrncpy(Gage[j].fname, "", 0);
     }
 
     // --- initialize subcatchment properties
@@ -1186,6 +1218,7 @@ void deleteObjects()
         FREE(Link[j].oldQual);
         FREE(Link[j].newQual);
         FREE(Link[j].totalLoad);
+        // Any inlet assigned to Link[j].inlet is freed in inlet_delete().
     }
 
     // --- free memory used for rainfall infiltration
@@ -1223,6 +1256,10 @@ void deleteObjects()
 
     // --- delete cross section transects
     transect_delete();
+
+    // --- delete street and inlet design objects
+    street_delete();
+    inlet_delete();
 
     // --- delete control rules
     controls_delete();

@@ -2,24 +2,22 @@
 //   exfil.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     09/15/14  (Build 5.1.007)
-//             03/19/15  (Build 5.1.008)
-//             08/05/15  (Build 5.1.010)
-//             08/01/16  (Build 5.1.011)
+//   Version:  5.2
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Storage unit exfiltration functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - Monthly conductivity adjustment applied to exfiltration rate.
-//
 //   Build 5.1.010:
 //   - New modified Green-Ampt infiltration option used.
-//
 //   Build 5.1.011:
 //   - Fixed units conversion error for storage units with surface area curves.
-//
+//   Build 5.2.0:
+//   - Support added for analytical storage shapes.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -92,48 +90,65 @@ void  exfil_initState(int k)
         grnampt_initState(exfil->btmExfil);
         grnampt_initState(exfil->bankExfil);
 
-        // --- shape given by a Storage Curve
-        i = Storage[k].aCurve;
-        if ( i >= 0 )
+        switch (Storage[k].shape)
         {
-            // --- get bottom area
-            aCurve = &Curve[i];
-            Storage[k].exfil->btmArea = table_lookupEx(aCurve, 0.0);
-
-            // --- find min/max bank depths and max. bank area
-            table_getFirstEntry(aCurve, &d, &a);
+            // --- shape given by a Storage Curve
+            case TABULAR:
+            i = Storage[k].aCurve;
+            exfil->btmArea = 0.0;
             exfil->bankMinDepth = 0.0;
             exfil->bankMaxDepth = 0.0;
             exfil->bankMaxArea = 0.0;
-            alast = a;
-            while ( table_getNextEntry(aCurve, &d, &a) )
+            if ( i >= 0 )
             {
-                if ( a < alast ) break;
-                else if ( a > alast )
-                {
-                    exfil->bankMaxArea = a;
-                    exfil->bankMaxDepth = d;
-                }
-                else if ( exfil->bankMaxArea == 0.0 ) exfil->bankMinDepth = d;
-                else break;
+                // --- get bottom area
+                aCurve = &Curve[i];
+                Storage[k].exfil->btmArea = table_lookupEx(aCurve, 0.0);
+
+                // --- find min/max bank depths and max. bank area
+                table_getFirstEntry(aCurve, &d, &a);
                 alast = a;
+                while ( table_getNextEntry(aCurve, &d, &a) )
+                {
+                    if ( a < alast ) break;
+                    else if ( a > alast )
+                    {
+                        exfil->bankMaxArea = a;
+                        exfil->bankMaxDepth = d;
+                    }
+                    else if ( exfil->bankMaxArea == 0.0 )
+                        exfil->bankMinDepth = d;
+                    else break;
+                    alast = a;
+                }
+
+                // --- convert from user units to internal units
+                exfil->btmArea /= UCF(LENGTH) * UCF(LENGTH);
+                exfil->bankMaxArea /= UCF(LENGTH) * UCF(LENGTH);
+                exfil->bankMinDepth /= UCF(LENGTH);
+                exfil->bankMaxDepth /= UCF(LENGTH);
             }
+            break;
 
-            // --- convert from user units to internal units
-            exfil->btmArea /= UCF(LENGTH) * UCF(LENGTH);
-            exfil->bankMaxArea /= UCF(LENGTH) * UCF(LENGTH);
-            exfil->bankMinDepth /= UCF(LENGTH);
-            exfil->bankMaxDepth /= UCF(LENGTH);
-        }
+            // --- functional storage shape curve
+            case FUNCTIONAL:
+                exfil->btmArea = Storage[k].a0;
+                if ( Storage[k].a2 == 0.0 )
+                    exfil->btmArea +=Storage[k].a1;
+                exfil->bankMinDepth = 0.0;
+                exfil->bankMaxDepth = BIG;
+                exfil->bankMaxArea = BIG;
+                break;
 
-        // --- functional storage shape curve
-        else
-        {
-            exfil->btmArea = Storage[k].aConst;
-            if ( Storage[k].aExpon == 0.0 ) exfil->btmArea +=Storage[k].aCoeff;
-            exfil->bankMinDepth = 0.0;
-            exfil->bankMaxDepth = BIG;
-            exfil->bankMaxArea = BIG;
+            // --- cylindrical, conical & prismatic shapes
+            case CYLINDRICAL:
+            case CONICAL:
+            case PYRAMIDAL:
+                exfil->btmArea = Storage[k].a0;
+                exfil->bankMinDepth = 0.0;
+                exfil->bankMaxDepth = BIG;
+                exfil->bankMaxArea = BIG;
+                break;
         }
     }
 }

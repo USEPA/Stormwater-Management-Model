@@ -2,17 +2,17 @@
 //   datetime.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             08/01/16   (Build 5.1.011)
+//   Version:  5.2
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   DateTime functions.
 //
-//   Build 5.1.011
+//   Update History
+//   ==============
+//   Build 5.1.011:
 //   - decodeTime() no longer rounds up.
 //   - New getTimeStamp function added.
-//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -125,7 +125,8 @@ DateTime datetime_encodeDate(int year, int month, int day)
     {
         for (j = 0; j < month-1; j++) day += DaysPerMonth[i][j];
         i = year - 1;
-        return i*365 + i/4 - i/100 + i/400 + day - DateDelta;
+        i = i*365 + i/4 - i/100 + i/400 + day - DateDelta;
+        return i;
     }
     else return -DateDelta;
 }
@@ -249,26 +250,22 @@ void datetime_dateToStr(DateTime date, char* s)
 
 {
     int  y, m, d;
-    char dateStr[DATE_STR_SIZE];
     datetime_decodeDate(date, &y, &m, &d);
     switch (DateFormat)
     {
       case Y_M_D:
-        sprintf(dateStr, "%4d-%3s-%02d", y, MonthTxt[m-1], d);
+        snprintf(s, DATE_STR_SIZE, "%4d-%3s-%02d", y, MonthTxt[m-1], d);
         break;
 
       case M_D_Y:
         //sprintf(dateStr, "%3s-%02d-%4d", MonthTxt[m-1], d, y);
-        sprintf(dateStr, "%02d/%02d/%04d", m, d, y);
+        snprintf(s, DATE_STR_SIZE, "%02d/%02d/%04d", m, d, y);
         break;
 
       default:
-        sprintf(dateStr, "%02d-%3s-%4d", d, MonthTxt[m-1], y);
+        snprintf(s, DATE_STR_SIZE, "%02d-%3s-%4d", d, MonthTxt[m-1], y);
     }
-    strcpy(s, dateStr);
 }
-
-//=============================================================================
 
 void datetime_timeToStr(DateTime time, char* s)
 
@@ -278,10 +275,8 @@ void datetime_timeToStr(DateTime time, char* s)
 
 {
     int  hr, min, sec;
-    char timeStr[TIME_STR_SIZE];
     datetime_decodeTime(time, &hr, &min, &sec);
-    sprintf(timeStr, "%02d:%02d:%02d", hr, min, sec);
-    strcpy(s, timeStr);
+    snprintf(s, TIME_STR_SIZE, "%02d:%02d:%02d", hr, min, sec);
 }
 
 //=============================================================================
@@ -524,10 +519,10 @@ void datetime_getTimeStamp(int fmt, DateTime aDate, int stampSize, char* timeSta
     char timeStr[TIME_STR_SIZE];
     int  oldDateFormat = DateFormat;
     
-    if ( stampSize < DATE_STR_SIZE + TIME_STR_SIZE + 2 ) return;
+    if ( stampSize < TIME_STAMP_SIZE ) return;
     datetime_setDateFormat(fmt);     
     datetime_dateToStr(aDate, dateStr);
     DateFormat = oldDateFormat;
     datetime_timeToStr(aDate, timeStr);
-    sprintf(timeStamp, "%s %s", dateStr, timeStr);
+    snprintf(timeStamp, stampSize, "%s %s", dateStr, timeStr);
 }

@@ -1,16 +1,12 @@
 
-
-
 .DS_Store
 
-build*/
-nrtest*/
-
-*_export.h
-
-src/outfile/include/*_export.h
-src/solver/include/*_export.h
+# Eclipse Stuff
+.metadata/
+.settings/
 
 build/
 nrtests/
 upload/
+
+*_export.h

@@ -2,28 +2,24 @@
 //   gwater.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/19/14  (Build 5.1.000)
-//             09/15/14  (Build 5.1.007)
-//             03/19/15  (Build 5.1.008)
-//             08/05/15  (Build 5.1.010)
+//   Version:  5.2
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Groundwater functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - User-supplied function for deep GW seepage flow added.
 //   - New variable names for use in user-supplied GW flow equations added.
-//
 //   Build 5.1.008:
 //   - More variable names for user-supplied GW flow equations added.
 //   - Subcatchment area made into a shared variable.
 //   - Evaporation loss initialized to 0.
 //   - Support for collecting GW statistics added.
-//
 //   Build 5.1.010:
 //   - Unsaturated hydraulic conductivity added to GW flow equation variables.
-//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -291,11 +287,11 @@ int gwater_readFlowExpression(char* tok[], int ntoks)
     else return error_setInpError(ERR_KEYWORD, tok[1]);
 
     // --- concatenate remaining tokens into a single string
-    strcpy(exprStr, tok[2]);
+    sstrncpy(exprStr, tok[2], MAXLINE);
     for ( i = 3; i < ntoks; i++)
     {
-        strcat(exprStr, " ");
-        strcat(exprStr, tok[i]);
+        sstrcat(exprStr, " ", MAXLINE+1);
+        sstrcat(exprStr, tok[i], MAXLINE+1);
     }
 
     // --- delete any previous flow eqn.
@@ -306,7 +302,7 @@ int gwater_readFlowExpression(char* tok[], int ntoks)
     //     (getVariableIndex is the function that converts a GW
     //      variable's name into an index number) 
     expr = mathexpr_create(exprStr, getVariableIndex);
-    if ( expr == NULL ) return error_setInpError(ERR_TREATMENT_EXPR, "");
+    if ( expr == NULL ) return error_setInpError(ERR_MATH_EXPR, "");
 
     // --- save expression tree with the subcatchment
     if ( k == 1 ) Subcatch[j].gwLatFlowExpr = expr;

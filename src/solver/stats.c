@@ -2,46 +2,41 @@
 //   stats.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             09/15/14   (Build 5.1.007)
-//             03/19/15   (Build 5.1.008)
-//             08/01/16   (Build 5.1.011)
-//             03/14/17   (Build 5.1.012)
-//             05/10/18   (Build 5.1.013)
-//             04/01/20   (Build 5.1.015)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     11/01/21   (Build 5.2.0)
+//   Author:   L. Rossman
 //             R. Dickinson (CDM)
 //
 //   Simulation statistics functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - Exfiltration losses added to storage node statistics.
-//
 //   Build 5.1.008:
 //   - Support for updating groundwater statistics added.
 //   - Support for updating maximum reported nodal depths added.
 //   - OpenMP parallelization applied to updating node and link flow statistics.
 //   - Updating of time that conduit is upstrm/dnstrm full was modified.
-//
 //   Build 5.1.011:
 //   - Surcharging is now evaluated only under dynamic wave flow routing and
 //     storage nodes cannot be classified as surcharged.
-//
 //   Build 5.1.012:
 //   - Time step statistics now evaluated only in non-steady state periods.
 //   - Check for full conduit flow now accounts for number of barrels.
-//
 //   Build 5.1.013:
 //   - Include omp.h protected against lack of compiler support for OpenMP.
 //   - Statistics on impervious and pervious runoff totals added.
 //   - Storage nodes with a non-zero surcharge depth (e.g. enclosed tanks)
 //     can now be classified as being surcharged.
-//
 //   Build 5.1.015:
 //   - Fixes bug in summary statistics when Report Start date > Start Date.
 //   - Fixes failure to initialize all subcatchment groundwater statistics.
 //   - Support added for grouped freqency table of routing time steps.
+//   Build 5.2.0:
+//   - Support added for reporting most frequent non-converging nodes.
+//   - Support added for RptFlags.disabled option.
+//   - Fixed display of routing statistics report for RptFlags.flowStats = FALSE.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -49,19 +44,16 @@
 #include <string.h>
 #include <math.h>
 #include "headers.h"
-#include "swmm5.h"
-#if defined(_OPENMP)                                                           //(5.1.013)
-#include <omp.h>
-#endif
 
 //-----------------------------------------------------------------------------
 //  Shared variables
 //-----------------------------------------------------------------------------
 #define MAX_STATS 5
-static TSysStats       SysStats;
+static TTimeStepStats  TimeStepStats;
 static TMaxStats       MaxMassBalErrs[MAX_STATS];
 static TMaxStats       MaxCourantCrit[MAX_STATS];
 static TMaxStats       MaxFlowTurns[MAX_STATS];
+static TMaxStats       MaxNonConverged[MAX_STATS];
 static double          SysOutfallFlow;
 
 //-----------------------------------------------------------------------------
@@ -75,6 +67,7 @@ TOutfallStats*  OutfallStats;
 TPumpStats*     PumpStats;
 double          MaxOutfallFlow;
 double          MaxRunoffFlow;
+double          RoutingTimeSpan;
 
 //-----------------------------------------------------------------------------
 //  Imported variables
@@ -91,8 +84,10 @@ extern double*         NodeOutflow;    // defined in massbal.c
 //  stats_updateSubcatchStats     (called from subcatch_getRunoff)
 //  stats_updateGwaterStats       (called from gwater_getGroundwater)
 //  stats_updateFlowStats         (called from routing_execute)
+//  stats_updateTimeStepStats     (called from routing_execute)
 //  stats_updateCriticalTimeCount (called from getVariableStep in dynwave.c)
 //  stats_updateMaxNodeDepth      (called from output_saveNodeResults)
+//  stats_updateConvergenceStats  (called from updateConvergenceStats in dynwave.c)
 
 //-----------------------------------------------------------------------------
 //  Local functions
@@ -112,9 +107,9 @@ int  stats_open()
 //
 {
     int j, k;
-    double timeStepDelta;                                                      //(5.1.015)
-    double logMaxTimeStep;                                                     //(5.1.015)
-    double logMinTimeStep;                                                     //(5.1.015)
+    double timeStepDelta;
+    double logMaxTimeStep;
+    double logMinTimeStep;
 
     // --- set all pointers to NULL
     NodeStats = NULL;
@@ -142,8 +137,8 @@ int  stats_open()
             SubcatchStats[j].infil   = 0.0;
             SubcatchStats[j].runoff  = 0.0;
             SubcatchStats[j].maxFlow = 0.0;
-            SubcatchStats[j].impervRunoff = 0.0;                               //(5.1.013)
-            SubcatchStats[j].pervRunoff   = 0.0;                               //
+            SubcatchStats[j].impervRunoff = 0.0;
+            SubcatchStats[j].pervRunoff   = 0.0;
         }
 
         for (j=0; j<Nobjects[SUBCATCH]; j++)
@@ -156,8 +151,8 @@ int  stats_open()
             Subcatch[j].groundwater->stats.deepFlow = 0.0;
             Subcatch[j].groundwater->stats.evap = 0.0;
             Subcatch[j].groundwater->stats.maxFlow = 0.0;
-            Subcatch[j].groundwater->stats.finalUpperMoist = 0.0;              //(5.1.015)
-            Subcatch[j].groundwater->stats.finalWaterTable = 0.0;              //
+            Subcatch[j].groundwater->stats.finalUpperMoist = 0.0;
+            Subcatch[j].groundwater->stats.finalWaterTable = 0.0;
         }
     }
 
@@ -189,6 +184,7 @@ int  stats_open()
         NodeStats[j].maxInflow = 0.0;
         NodeStats[j].maxOverflow = 0.0;
         NodeStats[j].maxPondedVol = 0.0;
+        NodeStats[j].nonConvergedCount = 0;
         NodeStats[j].maxInflowDate = StartDateTime;
         NodeStats[j].maxOverflowDate = StartDateTime;
     }
@@ -199,6 +195,7 @@ int  stats_open()
         LinkStats[j].maxFlow = 0.0;
         LinkStats[j].maxVeloc = 0.0;
         LinkStats[j].maxDepth = 0.0;
+        LinkStats[j].maxStreetFilled = 0.0;
         LinkStats[j].timeSurcharged = 0.0;
         LinkStats[j].timeFullUpstream = 0.0;
         LinkStats[j].timeFullDnstream = 0.0;
@@ -292,25 +289,27 @@ int  stats_open()
     // --- initialize system stats
     MaxRunoffFlow = 0.0;
     MaxOutfallFlow = 0.0;
-    SysStats.maxTimeStep = 0.0;
-    SysStats.minTimeStep = RouteStep;
-    SysStats.avgTimeStep = 0.0;
-    SysStats.avgStepCount = 0.0;
-    SysStats.steadyStateCount = 0.0;
+    TimeStepStats.maxTimeStep = 0.0;
+    TimeStepStats.minTimeStep = RouteStep;
+    TimeStepStats.routingTime = 0.0;
+    TimeStepStats.trialsCount = 0.0;
+    TimeStepStats.steadyStateTime = 0.0;
+    TimeStepStats.timeStepCount = 0;
 
-    // --- divide range between min and max routing time steps into            //(5.1.015)
-    //     equal intervals using a logarithmic scale                           //
-    logMaxTimeStep = log10(RouteStep);                                         //
-    logMinTimeStep = log10(MinRouteStep);                                      //
-    timeStepDelta = (logMaxTimeStep - logMinTimeStep) / (TIMELEVELS-1);        //
-    SysStats.timeStepIntervals[0] = RouteStep;                                 //
-    for (j = 1; j < TIMELEVELS; j++)                                           //
-    {                                                                          //
-        SysStats.timeStepIntervals[j] =                                        //
-            pow(10., logMaxTimeStep - j * timeStepDelta);                      //
-        SysStats.timeStepCounts[j] = 0;                                        //
-    }                                                                          //
-    SysStats.timeStepIntervals[TIMELEVELS - 1] = MinRouteStep;                 //
+    // --- divide range between min and max routing time steps into
+    //     equal intervals using a logarithmic scale
+    logMaxTimeStep = log10(RouteStep);
+    logMinTimeStep = log10(MinRouteStep);
+    timeStepDelta = (logMaxTimeStep - logMinTimeStep) / (double)(TIMELEVELS-1);
+    TimeStepStats.timeStepIntervals[0] = RouteStep;
+    for (j = 1; j < TIMELEVELS; j++)
+    {
+        TimeStepStats.timeStepIntervals[j] =
+            pow(10., logMaxTimeStep - j * timeStepDelta);
+        TimeStepStats.timeStepCounts[j] = 0;
+    }
+    TimeStepStats.timeStepIntervals[TIMELEVELS - 1] = MinRouteStep;
+    RoutingTimeSpan = 0.0;
     return 0;
 }
 
@@ -351,13 +350,18 @@ void  stats_report()
     if ( Nobjects[LINK] > 0 && RouteModel != NO_ROUTING )
     {
         stats_findMaxStats();
-        report_writeMaxStats(MaxMassBalErrs, MaxCourantCrit, MAX_STATS);
-        report_writeMaxFlowTurns(MaxFlowTurns, MAX_STATS);
-        report_writeSysStats(&SysStats);
+        if (!RptFlags.disabled && RptFlags.flowStats)
+        {
+            report_writeMaxStats(MaxMassBalErrs, MaxCourantCrit, MAX_STATS);
+            report_writeMaxFlowTurns(MaxFlowTurns, MAX_STATS);
+            report_writeNonconvergedStats(MaxNonConverged, MAX_STATS);
+            report_writeTimeStepStats(&TimeStepStats);
+        }
     }
 
     // --- report summary statistics
-    statsrpt_writeReport();
+    if (!RptFlags.disabled)
+        statsrpt_writeReport();
 }
 
 //=============================================================================
@@ -386,8 +390,8 @@ void   stats_updateSubcatchStats(int j, double rainVol, double runonVol,
     SubcatchStats[j].infil  += infilVol;
 	SubcatchStats[j].runoff += runoffVol;
     SubcatchStats[j].maxFlow = MAX(SubcatchStats[j].maxFlow, runoff);
-	SubcatchStats[j].impervRunoff += impervVol;                                //(5.1.013)
-	SubcatchStats[j].pervRunoff += pervVol;                                    //
+	SubcatchStats[j].impervRunoff += impervVol;
+	SubcatchStats[j].pervRunoff += pervVol;
 }
 
 //=============================================================================
@@ -442,13 +446,10 @@ void   stats_updateMaxNodeDepth(int j, double depth)
 
 //=============================================================================
 
-void   stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
-                             int steadyState)
+void   stats_updateFlowStats(double tStep, DateTime aDate)
 //
 //  Input:   tStep = routing time step (sec)
 //           aDate = current date/time
-//           stepCount = # steps required to solve routing at current time period
-//           steadyState = TRUE if steady flow conditions exist
 //  Output:  none
 //  Purpose: updates various flow routing statistics at current time period.
 //
@@ -460,46 +461,60 @@ void   stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
     SysOutfallFlow = 0.0;
 
     // --- update node & link stats
-#pragma omp parallel num_threads(NumThreads)
+//#pragma omp parallel num_threads(NumThreads)
 {
-    #pragma omp for
+//    #pragma omp for
     for ( j=0; j<Nobjects[NODE]; j++ )
         stats_updateNodeStats(j, tStep, aDate);
-    #pragma omp for
+//    #pragma omp for
     for ( j=0; j<Nobjects[LINK]; j++ )
         stats_updateLinkStats(j, tStep, aDate);
 }
 
-    // --- update count of times in steady state
+    // --- update count of time steps taken after reporting begins
     ReportStepCount++;
-    SysStats.steadyStateCount += steadyState;
-
-    // --- update time step stats if not in steady state
-	if ( steadyState == FALSE )
-	{
-        // --- skip initial time step for min. value)
-        if ( OldRoutingTime > 0 )
-        {
-            SysStats.minTimeStep = MIN(SysStats.minTimeStep, tStep);
-
-            // --- locate interval that logged time step falls in              //(5.1.015)
-            //     and update its count                                        //
-            for (j = 1; j < TIMELEVELS; j++)                                   //
-                if (tStep >= SysStats.timeStepIntervals[j])                    //
-                {                                                              //
-                    SysStats.timeStepCounts[j]++;                              //
-                    break;                                                     //
-                }                                                              //
-        }
-        SysStats.avgTimeStep += tStep;
-        SysStats.maxTimeStep = MAX(SysStats.maxTimeStep, tStep);
-
-        // --- update iteration step count stats
-        SysStats.avgStepCount += stepCount;
-	}
+    RoutingTimeSpan += tStep;
 
     // --- update max. system outfall flow
     MaxOutfallFlow = MAX(MaxOutfallFlow, SysOutfallFlow);
+}
+
+//=============================================================================
+
+void stats_updateTimeStepStats(double tStep, int trialsCount, int steadyState)
+//
+//  Input:   tStep = current flow routing time step (sec)
+//           trialsCount = number of trials used to solve routing
+//           steadyState = TRUE if steady flow conditions exist
+//  Output:  none
+//  Purpose: updates flow routing time step statistics.
+//
+{
+    int j;
+
+    // --- update time step stats if not in steady state
+    TimeStepStats.steadyStateTime += steadyState * tStep;
+    if (steadyState == FALSE)
+    {
+        // --- skip initial time step for min. value)
+        if (OldRoutingTime > 0)
+        {
+            TimeStepStats.minTimeStep = MIN(TimeStepStats.minTimeStep, tStep);
+
+            // --- locate interval that logged time step falls in 
+            //     and update its count
+            for (j = 1; j < TIMELEVELS; j++)
+                if (tStep >= TimeStepStats.timeStepIntervals[j])
+                {
+                    TimeStepStats.timeStepCounts[j]++;
+                    break;
+                }
+        }
+        TimeStepStats.maxTimeStep = MAX(TimeStepStats.maxTimeStep, tStep);
+        TimeStepStats.routingTime += tStep;
+        TimeStepStats.timeStepCount++;
+        TimeStepStats.trialsCount += trialsCount;
+    }
 }
 
 //=============================================================================
@@ -518,6 +533,13 @@ void stats_updateCriticalTimeCount(int node, int link)
 
 //=============================================================================
 
+void stats_updateConvergenceStats(int node, int converged)
+{
+    if (converged == FALSE) NodeStats[node].nonConvergedCount++;
+}
+
+//=============================================================================
+
 void stats_updateNodeStats(int j, double tStep, DateTime aDate)
 //
 //  Input:   j = node index
@@ -530,7 +552,6 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
     int    k, p;
     double newVolume = Node[j].newVolume;
     double newDepth = Node[j].newDepth;
-    double yCrown = Node[j].crownElev - Node[j].invertElev;
     int    canPond = (AllowPonding && Node[j].pondedArea > 0.0);
 
     // --- update depth statistics
@@ -553,11 +574,11 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
                     (newVolume - Node[j].fullVolume));
         }
 
-        // --- for dynamic wave routing, classify a node as                    //(5.1.013)
+        // --- for dynamic wave routing, classify a node as
         //     surcharged if its water level exceeds its crown elev.
-        if (RouteModel == DW)                                                  //(5.1.013)
+        if (RouteModel == DW)
         {
-            if ((Node[j].type != STORAGE || Node[j].surDepth > 0.0) &&         //(5.1.013)
+            if ((Node[j].type != STORAGE || Node[j].surDepth > 0.0) &&
                 newDepth + Node[j].invertElev + FUDGE >= Node[j].crownElev)
             {
                 NodeStats[j].timeSurcharged += tStep;
@@ -596,15 +617,15 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
         }
         for (p=0; p<Nobjects[POLLUT]; p++)
         {
-            OutfallStats[k].totalLoad[p] += Node[j].inflow * 
-            Node[j].newQual[p] * tStep;
+            OutfallStats[k].totalLoad[p] += 
+                Node[j].inflow * Node[j].newQual[p] * tStep;
         }
         SysOutfallFlow += Node[j].inflow;
     }
 
     // --- update inflow statistics
-    NodeStats[j].totLatFlow += ( (Node[j].oldLatFlow + Node[j].newLatFlow) * 
-                                 0.5 * tStep );
+    NodeStats[j].totLatFlow +=
+        ((Node[j].oldLatFlow + Node[j].newLatFlow) * 0.5 * tStep );
     if ( fabs(Node[j].newLatFlow) > fabs(NodeStats[j].maxLatFlow) )
         NodeStats[j].maxLatFlow = Node[j].newLatFlow;
     if ( Node[j].inflow > NodeStats[j].maxInflow )
@@ -685,7 +706,6 @@ void  stats_updateLinkStats(int j, double tStep, DateTime aDate)
     }
     else if ( Link[j].type == CONDUIT )
     {
-
         // --- update time under normal flow & inlet control 
         if ( Link[j].normalFlow ) LinkStats[j].timeNormalFlow += tStep;
         if ( Link[j].inletControl ) LinkStats[j].timeInletControl += tStep;
@@ -694,7 +714,7 @@ void  stats_updateLinkStats(int j, double tStep, DateTime aDate)
         k = Link[j].flowClass;
         if ( k >= 0 && k < MAX_FLOW_CLASSES )
         {
-            ++LinkStats[j].timeInFlowClass[k];
+            LinkStats[j].timeInFlowClass[k] += tStep;
         }
 
         // --- update time conduit is full
@@ -717,6 +737,11 @@ void  stats_updateLinkStats(int j, double tStep, DateTime aDate)
         case DN_FULL:
             LinkStats[j].timeFullDnstream += tStep;
         }
+
+        // --- update max. degree filled for streets
+        if (Link[j].xsect.type == STREET_XSECT)
+            LinkStats[j].maxStreetFilled =
+                MAX(LinkStats[j].maxStreetFilled, street_getExtentFilled(j));
     }
 
     // --- update flow turn count
@@ -737,8 +762,8 @@ void  stats_findMaxStats()
 //
 {
     int    j;
-    double x;
-    double stepCount = ReportStepCount - SysStats.steadyStateCount;            //(5.1.015)
+    double x, z;
+    double stepCount;
 
     // --- initialize max. stats arrays
     for (j=0; j<MAX_STATS; j++)
@@ -750,14 +775,18 @@ void  stats_findMaxStats()
         MaxCourantCrit[j].value   = -1.0;
         MaxFlowTurns[j].index     = -1; 
         MaxFlowTurns[j].value     = -1.0;
+        MaxNonConverged[j].index  = -1;
+        MaxNonConverged[j].value  = 0.0;
     }
 
-    // --- find links with most flow turns 
-    if ( stepCount > 2 )                                                       //(5.1.015)
+    // --- find links with most flow turns during reporting period
+    if ( ReportStepCount > 2 )
     {
+        stepCount = ReportStepCount;
+        z = 100.0 / (2./3. * (stepCount - 2.));
         for (j=0; j<Nobjects[LINK]; j++)
         {
-            x = 100.0 * LinkStats[j].flowTurns / (2./3.*(stepCount-2));        //(5.1.015)
+            x = LinkStats[j].flowTurns * z;
             stats_updateMaxStats(MaxFlowTurns, LINK, j, x);
         }
     }
@@ -779,21 +808,30 @@ void  stats_findMaxStats()
         stats_updateMaxStats(MaxMassBalErrs, NODE, j, 100.0*x);
     }
 
+    // --- following stats apply to all (startup + reporting) time periods
+    stepCount = TimeStepStats.timeStepCount;
+
+    // --- find nodes with highest nonconvergence frequency
+    if ( RouteModel == DW )
+        for (j = 0; j < Nobjects[NODE]; j++)
+            stats_updateMaxStats(MaxNonConverged, NODE, j,
+                NodeStats[j].nonConvergedCount / stepCount);
+    
     // --- stop if not using a variable time step
     if ( RouteModel != DW || CourantFactor == 0.0 ) return;
 
     // --- find nodes most frequently Courant critical
-    if ( stepCount == 0 ) return;                                              //(5.1.015)
+    if ( stepCount == 0 ) return;
     for (j=0; j<Nobjects[NODE]; j++)
     {
-        x = NodeStats[j].timeCourantCritical / stepCount;                      //(5.1.015)
+        x = NodeStats[j].timeCourantCritical / stepCount;
         stats_updateMaxStats(MaxCourantCrit, NODE, j, 100.0*x);
     }
 
     // --- find links most frequently Courant critical
     for (j=0; j<Nobjects[LINK]; j++)
     {
-        x = LinkStats[j].timeCourantCritical / stepCount;                      //(5.1.015)
+        x = LinkStats[j].timeCourantCritical / stepCount;
         stats_updateMaxStats(MaxCourantCrit, LINK, j, 100.0*x);
     }
 }

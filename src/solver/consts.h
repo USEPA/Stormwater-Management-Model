@@ -2,12 +2,8 @@
 //   consts.h
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/20/14  (Build 5.1.001)
-//            08/01/16  (Build 5.1.011)
-//            05/10/18  (Build 5.1.013)
-//            03/01/20  (Build 5.1.014)
-//            04/01/20  (Build 5.1.015)
+//   Version: 5.2
+//   Date:    11/01/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Various Constants
@@ -16,12 +12,11 @@
 #ifndef CONSTS_H
 #define CONSTS_H
 
-
 //------------------
 // General Constants
 //------------------
 
-#define   VERSION            51015
+#define   VERSION            52000 
 #define   MAGICNUMBER        516114522
 #define   EOFMARK            0x1A           // Use 0x04 for UNIX systems
 #define   MAXTITLE           3              // Max. # title lines
@@ -41,7 +36,9 @@
 #define   PI                 3.141592654    // Value of pi
 #define   GRAVITY            32.2           // accel. of gravity in US units
 #define   SI_GRAVITY         9.81           // accel of gravity in SI units
+/* DEPRECATED
 #define   MAXFILESIZE        2147483647L    // largest file size in bytes
+*/
 
 //-----------------------------
 // Units factor in Manning Eqn.
@@ -72,7 +69,7 @@
 //-----------------------------------------------------
 // Minimum flow depth and area for dynamic wave routing
 //-----------------------------------------------------
-#define   FUDGE    0.0001    // ft or ft2
+#define   FUDGE   0.0001    // ft or ft2
 
 //---------------------------
 // Various conversion factors
@@ -98,8 +95,8 @@
 
 //---------------------------
 // Token separator characters
-//---------------------------
-#define   SEPSTR    " \t\n\r"
+//--------------------------- 
+#define   SEPSTR    " \t\n\r" 
 
 
 #endif //CONSTS_H

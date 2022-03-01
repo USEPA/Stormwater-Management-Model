@@ -2,11 +2,14 @@
 //   iface.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
+//   Version:  5.2
+//   Date:     11/01/21 (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Routing interface file functions.
+//
+//   Build 5.2.0:
+//   - Support added for relative file names.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -58,7 +61,6 @@ static void  setOldIfaceValues(void);
 static void  readNewIfaceValues(void);
 static int   isOutletNode(int node);
 
-
 //=============================================================================
 
 int iface_readFileParams(char* tok[], int ntoks)
@@ -74,6 +76,7 @@ int iface_readFileParams(char* tok[], int ntoks)
 {
     char  k;
     int   j;
+    char  fname[MAXFNAME+1];
 
     // --- determine file disposition and type
     if ( ntoks < 2 ) return error_setInpError(ERR_ITEMS, "");
@@ -82,48 +85,49 @@ int iface_readFileParams(char* tok[], int ntoks)
     j = findmatch(tok[1], FileTypeWords);
     if ( j < 0 ) return error_setInpError(ERR_KEYWORD, tok[1]);
     if ( ntoks < 3 ) return 0;
+    sstrncpy(fname, tok[2], MAXFNAME);
 
     // --- process file name
     switch ( j )
     {
       case RAINFALL_FILE:
         Frain.mode = k;
-        sstrncpy(Frain.name, tok[2], MAXFNAME);
+        sstrncpy(Frain.name, addAbsolutePath(fname), MAXFNAME);
         break;
 
       case RUNOFF_FILE:
         Frunoff.mode = k;
-        sstrncpy(Frunoff.name, tok[2], MAXFNAME);
+        sstrncpy(Frunoff.name, addAbsolutePath(fname), MAXFNAME);
         break;
 
       case HOTSTART_FILE:
         if ( k == USE_FILE )
         {
             Fhotstart1.mode = k;
-            sstrncpy(Fhotstart1.name, tok[2], MAXFNAME);
+            sstrncpy(Fhotstart1.name, addAbsolutePath(fname), MAXFNAME);
         }
         else if ( k == SAVE_FILE )
         {
             Fhotstart2.mode = k;
-            sstrncpy(Fhotstart2.name, tok[2], MAXFNAME);
+            sstrncpy(Fhotstart2.name, addAbsolutePath(fname), MAXFNAME);
         }
         break;
 
       case RDII_FILE:
         Frdii.mode = k;
-        sstrncpy(Frdii.name, tok[2], MAXFNAME);
+        sstrncpy(Frdii.name, fname, MAXFNAME);
         break;
 
       case INFLOWS_FILE:
         if ( k != USE_FILE ) return error_setInpError(ERR_ITEMS, "");
         Finflows.mode = k;
-        sstrncpy(Finflows.name, tok[2], MAXFNAME);
+        sstrncpy(Finflows.name, addAbsolutePath(fname), MAXFNAME);
         break;
 
       case OUTFLOWS_FILE:
         if ( k != SAVE_FILE ) return error_setInpError(ERR_ITEMS, "");
         Foutflows.mode = k;
-        sstrncpy(Foutflows.name, tok[2], MAXFNAME);
+        sstrncpy(Foutflows.name, addAbsolutePath(fname), MAXFNAME);
         break;
     }
     return 0;
@@ -283,10 +287,10 @@ void iface_saveOutletResults(DateTime reportDate, FILE* file)
 //
 {
     int i, p, yr, mon, day, hr, min, sec;
-    char theDate[25];
+    char theDate[26];
     datetime_decodeDate(reportDate, &yr, &mon, &day);
     datetime_decodeTime(reportDate, &hr, &min, &sec);
-    sprintf(theDate, " %04d %02d  %02d  %02d  %02d  %02d ",
+    snprintf(theDate, 26, " %04d %02d  %02d  %02d  %02d  %02d ",
             yr, mon, day, hr, min, sec);
     for (i=0; i<Nobjects[NODE]; i++)
     {
@@ -391,8 +395,7 @@ void openFileForInput()
 
     // --- check for correct file type
     fgets(line, MAXLINE, Finflows.file);
-    sscanf(line, "%s", s);
-    if ( !strcomp(s, "SWMM5") )
+    if ( !sscanf(line, "%s", s) || !strcomp(s, "SWMM5") )
     {
         report_writeErrorMsg(ERR_ROUTING_FILE_FORMAT, Finflows.name);
         return;
@@ -404,8 +407,7 @@ void openFileForInput()
     // --- read reporting time step (sec)
     IfaceStep = 0;
     fgets(line, MAXLINE, Finflows.file);
-    sscanf(line, "%d", &IfaceStep);
-    if ( IfaceStep <= 0 )
+    if ( !sscanf(line, "%d", &IfaceStep) || IfaceStep <= 0 )
     {
         report_writeErrorMsg(ERR_ROUTING_FILE_FORMAT, Finflows.name);
         return;
@@ -459,16 +461,20 @@ int  getIfaceFilePolluts()
 
     // --- read number of pollutants (minus FLOW)
     fgets(line, MAXLINE, Finflows.file);
-    sscanf(line, "%d", &NumIfacePolluts);
-    NumIfacePolluts--;
+    NumIfacePolluts = -1;
+    if (sscanf(line, "%d", &NumIfacePolluts))
+        NumIfacePolluts--;
     if ( NumIfacePolluts < 0 ) return ERR_ROUTING_FILE_FORMAT;
 
     // --- read flow units
     fgets(line, MAXLINE, Finflows.file);
-    sscanf(line, "%s %s", s1, s2);
-    if ( !strcomp(s1, "FLOW") )  return ERR_ROUTING_FILE_FORMAT;
+    if (sscanf(line, "%s %s", s1, s2) < 2)
+        return ERR_ROUTING_FILE_FORMAT;
+    if ( !strcomp(s1, "FLOW") )
+        return ERR_ROUTING_FILE_FORMAT;
     IfaceFlowUnits = findmatch(s2, FlowUnitWords);
-    if ( IfaceFlowUnits < 0 ) return ERR_ROUTING_FILE_FORMAT;
+    if ( IfaceFlowUnits < 0 )
+        return ERR_ROUTING_FILE_FORMAT;
 
     // --- allocate memory for pollutant index array
     if ( Nobjects[POLLUT] > 0 )
@@ -479,22 +485,21 @@ int  getIfaceFilePolluts()
     }
 
     // --- read pollutant names & units
-    if ( NumIfacePolluts > 0 )
+    if ( NumIfacePolluts > 0 && Nobjects[POLLUT] > 0 )
     {
         // --- check each pollutant name on file with project's pollutants
         for (i=0; i<NumIfacePolluts; i++)
         {
-            if ( feof(Finflows.file) ) return ERR_ROUTING_FILE_FORMAT;
+            if ( feof(Finflows.file) )
+                return ERR_ROUTING_FILE_FORMAT;
             fgets(line, MAXLINE, Finflows.file);
-            sscanf(line, "%s %s", s1, s2);
-            if ( Nobjects[POLLUT] > 0 )
-            {
-                j = project_findObject(POLLUT, s1);
-                if ( j < 0 ) continue;
-                if ( !strcomp(s2, QualUnitsWords[Pollut[j].units]) )
-                    return ERR_ROUTING_FILE_NOMATCH;
-                IfacePolluts[j] = i;
-            }
+            if ( sscanf(line, "%s %s", s1, s2) < 2 )
+                return ERR_ROUTING_FILE_FORMAT;
+            j = project_findObject(POLLUT, s1);
+            if ( j < 0 ) continue;
+            if ( !strcomp(s2, QualUnitsWords[Pollut[j].units]) )
+                return ERR_ROUTING_FILE_NOMATCH;
+            IfacePolluts[j] = i;
         }
     }
     return 0;
@@ -515,8 +520,8 @@ int getIfaceFileNodes()
 
     // --- read number of interface nodes
     fgets(line, MAXLINE, Finflows.file);
-    sscanf(line, "%d", &NumIfaceNodes);
-    if ( NumIfaceNodes <= 0 ) return ERR_ROUTING_FILE_FORMAT;
+    if ( !sscanf(line, "%d", &NumIfaceNodes) || NumIfaceNodes <= 0 )
+        return ERR_ROUTING_FILE_FORMAT;
 
     // --- allocate memory for interface nodes index array
     IfaceNodes = (int *) calloc(NumIfaceNodes, sizeof(int));
@@ -525,9 +530,12 @@ int getIfaceFileNodes()
     // --- read names of interface nodes from file & save their indexes
     for ( i=0; i<NumIfaceNodes; i++ )
     {
-        if ( feof(Finflows.file) ) return ERR_ROUTING_FILE_FORMAT;
+        if ( feof(Finflows.file) )
+            return ERR_ROUTING_FILE_FORMAT;
+        IfaceNodes[i] = 0;
         fgets(line, MAXLINE, Finflows.file);
-        sscanf(line, "%s", s);
+        if (!sscanf(line, "%s", s))
+            return ERR_ROUTING_FILE_FORMAT;
         IfaceNodes[i] = project_findObject(NODE, s);
     }
 

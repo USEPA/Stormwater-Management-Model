@@ -2,11 +2,9 @@
 //   xsect.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             03/14/17   (Build 5.1.012)
-//             05/10/18   (Build 5.1.013)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     11/01/21   (Build 5.2.0)
+//   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
 //   Cross section geometry functions.
@@ -26,11 +24,14 @@
 //      R = hyd. radius
 //      S = section factor = A*R^(2/3)
 //
+//   Update History
+//   ==============
 //   Build 5.1.012:
 //   - Height at max. width for Modified Baskethandle shape corrected.
-//
 //   Build 5.1.013:
 //   - Width at full height set to 0 for closed rectangular shape.
+//   Build 5.2.0:
+//   - Support added for Street cross sections.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -74,7 +75,8 @@ double  Amax[] = {
                      0.96,    //  SEMICIRCULAR
                      1.0,     //  IRREGULAR
                      0.96,    //  CUSTOM
-                     0.9756}; //  FORCE_MAIN
+                     0.9756,  //  FORCE_MAIN
+                     1.0};    //  STREET_XSECT
 
 //-----------------------------------------------------------------------------
 //  Shared variables
@@ -92,6 +94,7 @@ typedef struct
 //  xsect_isOpen
 //  xsect_setParams
 //  xsect_setIrregXsectParams
+//  xsect_setStreetXsectParams
 //  xsect_setCustomXsectParams
 //  xsect_getAmax
 //  xsect_getSofA
@@ -107,6 +110,8 @@ typedef struct
 //-----------------------------------------------------------------------------
 //  Local functions
 //-----------------------------------------------------------------------------
+static void   getTransectParams(TXsect *xsect, TTransect *transect);
+
 static double generic_getAofS(TXsect* xsect, double s);
 static void   evalSofA(double a, double* f, double* df, void* p);
 static double tabular_getdSdA(TXsect* xsect, double a, double *table, int nItems);
@@ -210,7 +215,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
 //
 //  Input:   xsect = ptr. to a cross section data structure
 //           type = xsection shape type
-//           p[] = vector or xsection parameters
+//           p[] = vector of xsection parameters
 //           ucf = units correction factor
 //  Output:  returns TRUE if successful, FALSE if not
 //  Purpose: assigns parameters to a cross section's data structure.
@@ -496,7 +501,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
     case TRIANGULAR:
         if ( p[1] <= 0.0 ) return FALSE;
         xsect->yFull = p[0]/ucf;
-		xsect->wMax  = p[1]/ucf;
+        xsect->wMax  = p[1]/ucf;
         xsect->ywMax = xsect->yFull;
 
         // --- slope of side walls
@@ -634,30 +639,20 @@ void xsect_setIrregXsectParams(TXsect *xsect)
 //
 {
     int index = xsect->transect;
-    int     i, iMax;
-    double  wMax;
-    double* wTbl = Transect[index].widthTbl;
+    getTransectParams(xsect, &Transect[index]);
+}
 
-    xsect->yFull = Transect[index].yFull;
-    xsect->wMax  = Transect[index].wMax;
-    xsect->aFull = Transect[index].aFull;
-    xsect->rFull = Transect[index].rFull;
-    xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
-    xsect->sMax = Transect[index].sMax;
-    xsect->aBot = Transect[index].aMax;
+//=============================================================================
 
-    // Search transect's width table up to point where width decreases
-    iMax = 0;
-    wMax = wTbl[0];
-    for (i = 1; i < N_TRANSECT_TBL; i++)
-    {
-	if ( wTbl[i] < wMax ) break;
-	wMax = wTbl[i];
-	iMax = i;
-    }
-
-    // Determine height at lowest widest point
-    xsect->ywMax = xsect->yFull * (double)iMax / (double)(N_TRANSECT_TBL-1);
+void xsect_setStreetXsectParams(TXsect *xsect)
+//
+//  Input:   xsect = ptr. to a cross section data structure
+//  Output:  none
+//  Purpose: assigns transect parameters to a street cross section.
+//
+{
+    int index = xsect->transect;
+    getTransectParams(xsect, &Street[index].transect);
 }
 
 //=============================================================================
@@ -687,9 +682,9 @@ void xsect_setCustomXsectParams(TXsect *xsect)
     wMax = wTbl[0];
     for (i = 1; i < N_SHAPE_TBL; i++)
     {
-	if ( wTbl[i] < wMax ) break;
-	wMax = wTbl[i];
-	iMax = i;
+        if ( wTbl[i] < wMax ) break;
+        wMax = wTbl[i];
+        iMax = i;
     }
 
     // Determine height at lowest widest point
@@ -823,6 +818,11 @@ double xsect_getYofA(TXsect *xsect, double a)
         return xsect->yFull * invLookup(alpha,
             Shape[Curve[xsect->transect].refersTo].areaTbl, N_SHAPE_TBL);
 
+      case STREET_XSECT:
+        return xsect->yFull * invLookup(alpha,
+            Street[xsect->transect].transect.areaTbl, 
+            Street[xsect->transect].transect.nTbl);
+
       case ARCH:
         return xsect->yFull * invLookup(alpha, A_Arch, N_A_Arch);
 
@@ -907,6 +907,11 @@ double xsect_getAofY(TXsect *xsect, double y)
         return xsect->aFull * lookup(yNorm,
             Shape[Curve[xsect->transect].refersTo].areaTbl, N_SHAPE_TBL);
 
+      case STREET_XSECT:
+          return xsect->aFull * lookup(yNorm,
+              Street[xsect->transect].transect.areaTbl,
+              Street[xsect->transect].transect.nTbl);
+
      case RECT_CLOSED:  return y * xsect->wMax;
 
       case RECT_TRIANG: return rect_triang_getAofY(xsect, y);
@@ -988,8 +993,13 @@ double xsect_getWofY(TXsect *xsect, double y)
         return xsect->wMax * lookup(yNorm,
             Shape[Curve[xsect->transect].refersTo].widthTbl, N_SHAPE_TBL);
 
+      case STREET_XSECT:
+          return xsect->wMax * lookup(yNorm,
+              Street[xsect->transect].transect.widthTbl,
+              Street[xsect->transect].transect.nTbl);
+
       case RECT_CLOSED: 
-          if (yNorm == 1.0) return 0.0;                                        //(5.1.013)
+          if (yNorm == 1.0) return 0.0;
           return xsect->wMax;
 
       case RECT_TRIANG: return rect_triang_getWofY(xsect, y);
@@ -1060,6 +1070,11 @@ double xsect_getRofY(TXsect *xsect, double y)
         return xsect->rFull * lookup(yNorm,
             Shape[Curve[xsect->transect].refersTo].hradTbl, N_SHAPE_TBL);
 
+      case STREET_XSECT:
+          return xsect->rFull * lookup(yNorm,
+              Street[xsect->transect].transect.hradTbl,
+              Street[xsect->transect].transect.nTbl);
+
       case RECT_TRIANG:  return rect_triang_getRofY(xsect, y);
 
       case RECT_ROUND:   return rect_round_getRofY(xsect, y);
@@ -1096,6 +1111,7 @@ double xsect_getRofA(TXsect *xsect, double a)
       case IRREGULAR:
       case FILLED_CIRCULAR:
       case CUSTOM:
+      case STREET_XSECT:
         return xsect_getRofY( xsect, xsect_getYofA(xsect, a) );
 
       case RECT_CLOSED:  return rect_closed_getRofA(xsect, a);
@@ -1214,19 +1230,19 @@ double xsect_getdSdA(TXsect* xsect, double a)
         return rect_open_getdSdA(xsect, a);
 
       case RECT_TRIANG:
-	return rect_triang_getdSdA(xsect, a);
+        return rect_triang_getdSdA(xsect, a);
 
       case RECT_ROUND:
-	return rect_round_getdSdA(xsect, a);
+        return rect_round_getdSdA(xsect, a);
 
       case MOD_BASKET:
-	return mod_basket_getdSdA(xsect, a);
+        return mod_basket_getdSdA(xsect, a);
 
       case TRAPEZOIDAL:
-	return trapez_getdSdA(xsect, a);
+        return trapez_getdSdA(xsect, a);
 
       case TRIANGULAR:
-	return triang_getdSdA(xsect, a);
+        return triang_getdSdA(xsect, a);
 
       default: return generic_getdSdA(xsect, a);
     }
@@ -1296,6 +1312,42 @@ double xsect_getYcrit(TXsect* xsect, double q)
 
     // --- do not allow yCritical to be > yFull
     return MIN(y, xsect->yFull);
+}
+
+//=============================================================================
+
+void getTransectParams(TXsect *xsect, TTransect *transect)
+//
+//  Input:   xsect = ptr. to a cross section data structure
+//           transect = ptr. to a transect data structure
+//  Output:  none
+//  Purpose: gets a cross section's properties from its transect's properties.
+//
+{
+    int     i, iMax;
+    double  wMax;
+    double* wTbl = transect->widthTbl;
+
+    xsect->yFull = transect->yFull;
+    xsect->wMax = transect->wMax;
+    xsect->aFull = transect->aFull;
+    xsect->rFull = transect->rFull;
+    xsect->sFull = xsect->aFull * pow(xsect->rFull, 2. / 3.);
+    xsect->sMax = transect->sMax;
+    xsect->aBot = transect->aMax;
+
+    // Search transect's width table up to point where width decreases
+    iMax = 0;
+    wMax = wTbl[0];
+    for (i = 1; i < transect->nTbl; i++)
+    {
+        if (wTbl[i] < wMax) break;
+        wMax = wTbl[i];
+        iMax = i;
+    }
+
+    // Determine height at lowest widest point
+    xsect->ywMax = xsect->yFull * (double)iMax / ((double)(transect->nTbl) - 1);
 }
 
 //=============================================================================
@@ -1378,7 +1430,7 @@ double tabular_getdSdA(TXsect* xsect, double a, double *table, int nItems)
 {
     int    i;
     double alpha = a / xsect->aFull;
-    double delta = 1.0 / (nItems-1);
+    double delta = 1.0 / ((double)nItems-1);
     double dSdA;
 
     // --- find which segment of table contains alpha
@@ -1428,13 +1480,13 @@ double lookup(double x, double *table, int nItems)
     int     i;
 
     // --- find which segment of table contains x
-    delta = 1.0 / (nItems-1);
+    delta = 1.0 / ((double)nItems-1);
     i = (int)(x / delta);
     if ( i >= nItems - 1 ) return table[nItems-1];
 
     // --- compute x at start and end of segment
     x0 = i * delta;
-    x1 = (i+1) * delta;
+    x1 = ((double)i+1) * delta;
 
     // --- linearly interpolate a y-value
     y = table[i] + (x - x0) * (table[i+1] - table[i]) / delta;
@@ -1480,7 +1532,7 @@ double invLookup(double y, double *table, int nItems)
     int    i;                // lower table index that brackets y
 
     // --- compute table's uniform x-increment
-    dx = 1.0 / (double)(nItems-1);
+    dx = 1.0 / (double)((double)nItems-1);
 
     // --- truncate item count if last 2 table entries are decreasing
     n = nItems;
@@ -1489,14 +1541,14 @@ double invLookup(double y, double *table, int nItems)
     // --- check if y falls in decreasing portion of table
     if ( n < nItems && y > table[nItems-1])
     {
-        if ( y >= table[nItems-3] ) return (n-1) * dx;
+        if ( y >= table[nItems-3] ) return ((double)n-1) * dx;
 	    if ( y <= table[nItems-2] ) i = nItems - 2;
 	    else i = nItems - 3;
     }
 
     // --- otherwise locate the interval where y falls in the table
     else i = locate(y, table, n-1);
-    if ( i >= n - 1 ) return (n-1) * dx;
+    if ( i >= n - 1 ) return ((double)n-1) * dx;
 
     // --- compute x at start and end of segment
     x0 = i * dx;
@@ -1537,13 +1589,13 @@ int locate(double y, double *table, int jLast)
     // While a portion of the table still remains
     while ( j2 - j1 > 1)
     {
-	// Find midpoint of remaining portion of table
+        // Find midpoint of remaining portion of table
         j = (j1 + j2) >> 1;
 
-	// Value is greater or equal to midpoint: search from midpoint to j2
+        // Value is greater or equal to midpoint: search from midpoint to j2
         if ( y >= table[j] ) j1 = j;
 
-	// Value is less than midpoint: search from j1 to midpoint
+        // Value is less than midpoint: search from j1 to midpoint
         else j2 = j;
     }
 
@@ -1611,7 +1663,7 @@ double getYcritEnum(TXsect* xsect, double q, double y0)
             qc = getQcritical(i*dy, &xsectStar);
             if ( qc >= q )
             {
-                yc = ( (q-q0) / (qc - q0) + (double)(i-1) ) * dy;
+                yc = ( (q-q0) / (qc - q0) + ((double)i-1) ) * dy;
                 break;
             }
             q0 = qc;
@@ -2381,7 +2433,7 @@ double circ_getdSdA(TXsect* xsect, double a)
     if ( a1 < 0.0 )
     {
         a1 = 0.0;
-    	da = alpha + 0.001;
+        da = alpha + 0.001;
     }
     s1 = getScircular(a1);
     s2 = getScircular(a2);
@@ -2560,5 +2612,3 @@ double getThetaOfPsi(double psi)
     }
     return theta1;
 }
-
-//=============================================================================
