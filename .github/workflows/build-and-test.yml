@@ -102,8 +102,8 @@ jobs:
 
     - name: Run reg test
       env:
-        BUILD_ID: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
-      run: run-nrtests.cmd ${{ env.BUILD_ID }}
+        SUT_BUILD_ID: ${{ GITHUB_RUN_ID }}_${{ GITHUB_RUN_NUMBER }}
+      run: run-nrtests.cmd ${{ env.SUT_BUILD_ID }}
 
     - name: Upload artifacts
       if: ${{ always() }}
