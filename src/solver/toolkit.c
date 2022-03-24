@@ -1920,20 +1920,24 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
                 *pollutArray = result;
                 *length = Nobjects[POLLUT];
             } break;
-	    case SM_NODECIN:
-	    {
-		for (p=0; p < Nobjects[POLLUT]; p++)
-		{
-		    result[p] = Node[index].inQual[p];
-		} *pollutArray = result;
-	    } break;
-	    case SM_NODEREACTORC:
-	    {
-		for (p=0; p < Nobjects[POLLUT]; p++)
-		{
-		    result[p] = Node[index].reactorQual[p];
-		} *pollutArray = result;
-	    } break;
+            case SM_NODECIN:
+            {
+                for (p=0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Node[index].inQual[p];
+                }
+                *pollutArray = result;
+                *length = Nobjects[POLLUT];
+            } break;
+            case SM_NODEREACTORC:
+            {
+                for (p=0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Node[index].reactorQual[p];
+                }
+                *pollutArray = result;
+                *length = Nobjects[POLLUT];
+            } break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         }
     }
@@ -2073,6 +2077,15 @@ EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **po
                         result[p] = LOG10(result[p]);
                     }
                 } 
+                *pollutArray = result;
+                *length = Nobjects[POLLUT];
+            } break;
+            case SM_LINKREACTORC:
+            {
+                for (p = 0; p < Nobjects[POLLUT]; p++)
+                {
+                    result[p] = Link[index].reactorQual[p];
+                }
                 *pollutArray = result;
                 *length = Nobjects[POLLUT];
             } break;
