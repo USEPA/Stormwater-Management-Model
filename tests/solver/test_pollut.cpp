@@ -164,7 +164,10 @@ BOOST_FIXTURE_TEST_CASE(get_node_pollutant_values_cin, FixtureBeforeStep_Pollut_
     step_ind = 0;
     do
     {
-
+    // Check length is set correctly
+    BOOST_CHECK_EQUAL(length == 1)
+        
+    // Get inflow concentration
 	error = swmm_getNodePollut(1, SM_NODECIN, &node_qual, &length);
 	BOOST_REQUIRE(error == ERR_NONE);
 
@@ -182,7 +185,7 @@ BOOST_FIXTURE_TEST_CASE(get_node_pollutant_values_cin, FixtureBeforeStep_Pollut_
     swmm_end();
 }
 
-// Testing Reactor Concentration
+// Testing Reactor Concentration in Node
 BOOST_FIXTURE_TEST_CASE(get_node_reactor_pollutant, FixtureBeforeStep_Pollut_Node){
 
     int error, step_ind;
@@ -198,7 +201,10 @@ BOOST_FIXTURE_TEST_CASE(get_node_reactor_pollutant, FixtureBeforeStep_Pollut_Nod
     step_ind = 0;
     do
     {
-	// Check for steady state after 1000 steps.
+    // Check length is set correctly
+    BOOST_CHECK_EQUAL(length == 1)
+        
+    // Check for steady state after 1000 steps.
 	// 1000 is a aribitarly long time duration, it can be any value as long
 	// the system reaches a steady state
 
@@ -212,6 +218,48 @@ BOOST_FIXTURE_TEST_CASE(get_node_reactor_pollutant, FixtureBeforeStep_Pollut_Nod
 	}
 
 	old_qual = new_qual;
+
+        // Route Model Forward
+        error = swmm_step(&elapsedTime);
+        step_ind+=1;
+    }while (elapsedTime != 0 && !error);
+    BOOST_REQUIRE(error == ERR_NONE);
+    swmm_end();
+}
+
+// Testing Reactor Concentration in Link
+BOOST_FIXTURE_TEST_CASE(get_link_reactor_pollutant, FixtureBeforeStep_Pollut_Link){
+
+    int error, step_ind;
+    double* old_qual;
+    double* new_qual;
+    double elapsedTime = 0.0;
+    double total_pollutant = 0.0;
+    int length;
+
+    // Pollutant IDs
+    int P1 = 0;
+
+    step_ind = 0;
+    do
+    {
+    // Check length is set correctly
+    BOOST_CHECK_EQUAL(length == 1)
+        
+    // Check for steady state after 1000 steps.
+    // 1000 is a aribitarly long time duration, it can be any value as long
+    // the system reaches a steady state
+
+    // Get reactor concentration
+    error = swmm_getLinkPollut(1, SM_LINKREACTORC, &new_qual, &length);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    if (step_ind > 1000)
+    {
+        BOOST_CHECK_CLOSE(old_qual[P1], new_qual[P1], 0.001);
+    }
+
+    old_qual = new_qual;
 
         // Route Model Forward
         error = swmm_step(&elapsedTime);
