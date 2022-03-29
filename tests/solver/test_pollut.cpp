@@ -60,6 +60,8 @@ BOOST_FIXTURE_TEST_CASE(get_pollut_values, FixtureBeforeStep){
         {
             // subcatchment buildup
             error = swmm_getSubcatchPollut(subc_ind, SM_BUILDUP, &buildup_array, &length);
+            // Check length is set correctly
+            BOOST_CHECK(length == 2);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(buildup_array[TSS] - 31.906912, 0.0001);
             BOOST_CHECK_SMALL(buildup_array[Lead] - 0.0, 0.0001);
@@ -164,11 +166,11 @@ BOOST_FIXTURE_TEST_CASE(get_node_pollutant_values_cin, FixtureBeforeStep_Pollut_
     step_ind = 0;
     do
     {
-    // Check length is set correctly
-    BOOST_CHECK_EQUAL(length == 1)
-        
+       
     // Get inflow concentration
 	error = swmm_getNodePollut(1, SM_NODECIN, &node_qual, &length);
+    // Check length is set correctly
+    BOOST_CHECK(length == 1);
 	BOOST_REQUIRE(error == ERR_NONE);
 
 	// Check for constant influent
@@ -201,15 +203,14 @@ BOOST_FIXTURE_TEST_CASE(get_node_reactor_pollutant, FixtureBeforeStep_Pollut_Nod
     step_ind = 0;
     do
     {
-    // Check length is set correctly
-    BOOST_CHECK_EQUAL(length == 1)
-        
     // Check for steady state after 1000 steps.
 	// 1000 is a aribitarly long time duration, it can be any value as long
 	// the system reaches a steady state
 
 	// Get reactor concentration
 	error = swmm_getNodePollut(1, SM_NODEREACTORC, &new_qual, &length);
+    // Check length is set correctly
+    BOOST_CHECK(length == 1);
 	BOOST_REQUIRE(error == ERR_NONE);
 
 	if (step_ind > 1000)
@@ -243,18 +244,17 @@ BOOST_FIXTURE_TEST_CASE(get_link_reactor_pollutant, FixtureBeforeStep_Pollut_Lin
     step_ind = 0;
     do
     {
-    // Check length is set correctly
-    BOOST_CHECK_EQUAL(length == 1)
-        
     // Check for steady state after 1000 steps.
     // 1000 is a aribitarly long time duration, it can be any value as long
     // the system reaches a steady state
 
     // Get reactor concentration
     error = swmm_getLinkPollut(1, SM_LINKREACTORC, &new_qual, &length);
+    // Check length is set correctly
+    BOOST_CHECK(length == 1);
     BOOST_REQUIRE(error == ERR_NONE);
 
-    if (step_ind > 1000)
+    if (step_ind > 1500)
     {
         BOOST_CHECK_CLOSE(old_qual[P1], new_qual[P1], 0.001);
     }
@@ -268,7 +268,6 @@ BOOST_FIXTURE_TEST_CASE(get_link_reactor_pollutant, FixtureBeforeStep_Pollut_Lin
     BOOST_REQUIRE(error == ERR_NONE);
     swmm_end();
 }
-
 
 // Testing Pollutant Setter - Node - Cumulative and mass balance
 BOOST_FIXTURE_TEST_CASE(set_node_pollutant_cumulative_values, FixtureBeforeStep_Pollut_Node){
