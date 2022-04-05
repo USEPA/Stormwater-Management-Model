@@ -285,7 +285,7 @@ BOOST_FIXTURE_TEST_CASE(set_node_pollutant_cumulative_values, FixtureBeforeStep_
     do
     {
 	// Set pollutant
-	error = swmm_setNodePollut(1, P1, 0);
+	error = swmm_setNodePollut(1, SM_NODEQUAL, P1, 0);
 	BOOST_REQUIRE(error == ERR_NONE);
         // Route Model Forward
         error = swmm_step(&elapsedTime);
@@ -320,7 +320,7 @@ BOOST_FIXTURE_TEST_CASE(set_node_pollutant_stepwise_values, FixtureBeforeStep_Po
     do
     {
 	// Set pollutant
-	error = swmm_setNodePollut(1, P1, 1.234);
+	error = swmm_setNodePollut(1, SM_NODEQUAL, P1, 1.234);
 	BOOST_REQUIRE(error == ERR_NONE);
 
 	// Route Model Forward
@@ -357,7 +357,7 @@ BOOST_FIXTURE_TEST_CASE(set_node_pollutant_stepwise_values_2, FixtureBeforeStep_
     do
     {
 	// Set pollutant
-	error = swmm_setNodePollut(1, P1, 50.0);
+	error = swmm_setNodePollut(1, SM_NODEQUAL, P1, 50.0);
 	BOOST_REQUIRE(error == ERR_NONE);
 
 	// Route Model Forward
