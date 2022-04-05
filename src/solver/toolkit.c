@@ -1944,11 +1944,12 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
     return error_getCode(error_code_index);
 }
 
-EXPORT_TOOLKIT int swmm_setNodePollut(int index, int pollutant_index, double pollutant_value)
+EXPORT_TOOLKIT int swmm_setNodePollut(int index, SM_NodePollut type, int pollutant_index, double pollutant_value)
 ///
 /// Input:   index = Index of desired ID
+///          type = SM_NODEQUAL - Set's node's qual and allows accounting for loss and mixing calculation
 ///          pollutant_index = Index of desired polluant
-//           pollutant_value = Value of the pollutant
+///          pollutant_value = Value of the pollutant
 /// Return:  API Error
 /// Purpose: Set pollutant concentration in nodes at the current time step
 {
@@ -1972,8 +1973,16 @@ EXPORT_TOOLKIT int swmm_setNodePollut(int index, int pollutant_index, double pol
 		}
 		if (pollutant_index <= Nobjects[POLLUT])
 		{
-			Node[index].extQual[pollutant_index] = pollutant_value;
-	    		Node[index].extPollutFlag[pollutant_index] = 1;
+            switch(type)
+            {
+                case SM_NODEQUAL:
+                {
+                    Node[index].extQual[pollutant_index] = pollutant_value;
+	    		    Node[index].extPollutFlag[pollutant_index] = 1;
+                } break;
+                default: error_code_index = ERR_API_OUTBOUNDS; break;
+            }
+			
 		}
 	}
 	return error_getCode(error_code_index);
@@ -2102,7 +2111,7 @@ EXPORT_TOOLKIT int swmm_setLinkPollut(int index, SM_LinkPollut type, int polluta
 /// 	    type = SM_LINKQUAL - Sets link's qual and allows accounting for loss and mixing calculation
 ///         pollutant_index = index of pollutant to set
 ///         pollutant_value = concentration to set
-///  Output: API error
+///  Return: API error
 ///  Purponse: Set pollutant concentration in links 
 {
 	int error_code_index = 0;
