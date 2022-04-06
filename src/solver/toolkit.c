@@ -1909,6 +1909,7 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
 
     else
     {
+        *length = Nobjects[POLLUT];
         switch (type)
         {
             case SM_NODEQUAL:
@@ -1918,7 +1919,6 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
                     result[p] = Node[index].newQual[p];
                 } 
                 *pollutArray = result;
-                *length = Nobjects[POLLUT];
             } break;
             case SM_NODECIN:
             {
@@ -1936,7 +1936,6 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
                     result[p] = Node[index].reactorQual[p];
                 }
                 *pollutArray = result;
-                *length = Nobjects[POLLUT];
             } break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         }
@@ -2065,6 +2064,8 @@ EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **po
 
     else
     {
+        *length = Nobjects[POLLUT];
+
         switch (type)
         {
             case SM_LINKQUAL:
@@ -2074,7 +2075,6 @@ EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **po
                     result[p] = Link[index].newQual[p];
                 } 
                 *pollutArray = result;
-                *length = Nobjects[POLLUT];
             } break;
             case SM_TOTALLOAD:
             {
@@ -2087,7 +2087,6 @@ EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **po
                     }
                 } 
                 *pollutArray = result;
-                *length = Nobjects[POLLUT];
             } break;
             case SM_LINKREACTORC:
             {
@@ -2096,7 +2095,6 @@ EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **po
                     result[p] = Link[index].reactorQual[p];
                 }
                 *pollutArray = result;
-                *length = Nobjects[POLLUT];
             } break;
             default: error_code_index = ERR_API_OUTBOUNDS; break;
         } 
