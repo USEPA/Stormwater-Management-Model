@@ -20,15 +20,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2016, ubuntu-16.04, macos-10.15]
+        os: [windows-2022, ubuntu-20.04, macos-10.15]
         requirements: [requirements-swmm.txt]
         include:
-          - os: windows-2016
+          - os: windows-2022
             sys_pkgs: choco install boost-msvc-14.1
-            build_unit_test: make.cmd -t -g "Visual Studio 15 2017 Win64"
-            build_reg_test:  make.cmd -g "Visual Studio 15 2017 Win64"
+            build_unit_test: make.cmd -t -g "Visual Studio 17 2022" -A x64
+            build_reg_test: make.cmd -g "Visual Studio 17 2022" -A x64
             before_reg_test: before-nrtest.cmd
-            run_reg_test:    run-nrtests.cmd
+            run_reg_test: run-nrtests.cmd
             build_id: "%GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%"
             experimental: false
             artifacts_ext: zip
@@ -38,12 +38,12 @@ jobs:
                 shell: cmd
                 working-directory: ./ci-tools/windows
 
-          - os: ubuntu-16.04
+          - os: ubuntu-20.04
             sys_pkgs: sudo apt install libboost-dev libboost-all-dev
-            build_unit_test: make.sh -t -g "Unix Makefiles"
-            build_reg_test:  make.sh -g "Unix Makefiles"
+            build_unit_test: make.sh -s -t -g "Unix Makefiles"
+            build_reg_test: make.sh -s -g "Unix Makefiles"
             before_reg_test: before-nrtest.sh
-            run_reg_test:    run-nrtests.sh
+            run_reg_test: run-nrtests.sh
             build_id: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
             experimental: true
             artifacts_ext: tar.gz
@@ -56,9 +56,9 @@ jobs:
           - os: macos-10.15
             sys_pkgs: brew install libomp boost
             build_unit_test: make.zsh -t -g "Xcode"
-            build_reg_test:  make.zsh -g "Xcode"
+            build_reg_test: make.zsh -g "Xcode"
             before_reg_test: before-nrtest.zsh
-            run_reg_test:    run-nrtests.zsh
+            run_reg_test: run-nrtests.zsh
             build_id: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
             experimental: true
             artifacts_ext: tar.gz
@@ -79,7 +79,6 @@ jobs:
       PROJECT: swmm
       BUILD_HOME: build
       TEST_HOME: nrtests
-
 
     steps:
       - name: Checkout repo

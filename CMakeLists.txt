@@ -48,7 +48,7 @@ set(CONFIG_DIST  "cmake")
 # Define build options
 option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
 option(BUILD_DOCS "Build toolkit docs (requires Doxygen)" OFF)
-
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 # Add project subdirectories
 if(BUILD_DOCS)
