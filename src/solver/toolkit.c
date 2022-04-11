@@ -2120,7 +2120,7 @@ EXPORT_TOOLKIT int swmm_setLinkPollut(int index, SM_LinkPollut type, int polluta
 	    error_code_index = ERR_API_INPUTNOTOPEN;
 	}
 	// Check if object index is within bounds
-	else if (index < 0 || index >= Nobjects[NODE])
+	else if (index < 0 || index >= Nobjects[LINK])
 	{
 	    error_code_index = ERR_API_OBJECT_INDEX;
 	}
