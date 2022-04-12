@@ -113,7 +113,7 @@ jobs:
       - name: Before reg test
         env:
           NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
-          BENCHMARK_TAG: v1.0.4-dev
+          BENCHMARK_TAG: v2.0.1
         run: ./${{ matrix.before_reg_test }} ${{ env.BENCHMARK_TAG }}
 
       - name: Run reg test
