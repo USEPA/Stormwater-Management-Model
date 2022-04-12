@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "headers.h"
 
 //-----------------------------------------------------------------------------
@@ -267,6 +268,7 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
 	else if( Node[j].extPollutFlag[p] == 1)
 	{
 	    cOut = Node[j].extQual[p];
+        printf("treatmnt_treat value: %f\n", cOut);
 	}
 
         // --- concentration-type equations get applied to nodal concentration
