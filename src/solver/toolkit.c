@@ -1911,7 +1911,6 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
     else
     {
         *length = Nobjects[POLLUT];
-        printf("test_getNodePollut");
         switch (type)
         {
             case SM_NODEQUAL:
@@ -1919,8 +1918,7 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
                     result[p] = Node[index].newQual[p];
-                    printf("swmm_getNodePollut nodeQual = %f\n", result[p]);
-                } 
+                }
                 *pollutArray = result;
             } break;
             case SM_NODECIN:
@@ -1928,7 +1926,6 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
                 for (p=0; p < Nobjects[POLLUT]; p++)
                 {
                     result[p] = Node[index].inQual[p];
-                    printf("swmm_getNodePollut inflowQual = %f\n", result[p]);
                 }
                 *pollutArray = result;
                 *length = Nobjects[POLLUT];
@@ -1938,7 +1935,6 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
                 for (p=0; p < Nobjects[POLLUT]; p++)
                 {
                     result[p] = Node[index].reactorQual[p];
-                    printf("swmm_getNodePollut reactorQual = %f\n", result[p]);
                 }
                 *pollutArray = result;
             } break;
@@ -1983,7 +1979,6 @@ EXPORT_TOOLKIT int swmm_setNodePollut(int index, SM_NodePollut type, int polluta
                 {
                     Node[index].extQual[pollutant_index] = pollutant_value;
 	    		    Node[index].extPollutFlag[pollutant_index] = 1;
-                    printf("swmm_setNodePollut value = %f\n", pollutant_value);
                 } break;
                 default: error_code_index = ERR_API_OUTBOUNDS; break;
             }
@@ -2071,7 +2066,6 @@ EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **po
     else
     {
         *length = Nobjects[POLLUT];
-        printf("test_print");
         switch (type)
         {
             case SM_LINKQUAL:
@@ -2079,8 +2073,7 @@ EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **po
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
                     result[p] = Link[index].newQual[p];
-                    printf("swmm_getLinkPollut linkQual = %f\n", result[p]);
-                } 
+                }
                 *pollutArray = result;
             } break;
             case SM_TOTALLOAD:
@@ -2100,7 +2093,6 @@ EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **po
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
                     result[p] = Link[index].reactorQual[p];
-                    printf("swmm_getLinkPollut reactorQual = %f\n", result[p]);
                 }
                 *pollutArray = result;
             } break;
@@ -2121,8 +2113,7 @@ EXPORT_TOOLKIT int swmm_setLinkPollut(int index, SM_LinkPollut type, int polluta
 ///  Purponse: Set pollutant concentration in links 
 {
 	int error_code_index = 0;
-    printf("test_setLinkPollut");
-
+    
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE)
 	{
@@ -2147,7 +2138,6 @@ EXPORT_TOOLKIT int swmm_setLinkPollut(int index, SM_LinkPollut type, int polluta
 					{
 						Link[index].extQual[pollutant_index] = pollutant_value;
 						Link[index].extPollutFlag[pollutant_index] = 1;
-                        printf("swmm_setLinkPollut value = %f\n", pollutant_value);
 					} break;
 				default: error_code_index = ERR_API_OUTBOUNDS; break;
 			}
