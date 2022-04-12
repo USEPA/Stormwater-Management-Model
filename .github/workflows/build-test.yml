@@ -25,8 +25,8 @@ jobs:
         include:
           - os: windows-2022
             sys_pkgs: choco install boost-msvc-14.1
-            build_unit_test: make.cmd -t -g "Visual Studio 17 2022" -A x64
-            build_reg_test: make.cmd -g "Visual Studio 17 2022" -A x64
+            build_unit_test: make.cmd /g "Visual Studio 17 2022" /A "x64" /t
+            build_reg_test: make.cmd /g "Visual Studio 17 2022" /A "x64"
             before_reg_test: before-nrtest.cmd
             run_reg_test: run-nrtests.cmd
             build_id: "%GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%"
