@@ -38,8 +38,7 @@ if(BUILD_DEF)
         PROPERTIES_HEADER_FILE_ONLY TRUE
     )
 
-    add_library(swmm5
-        SHARED
+    add_library(swmm5        
             ${SWMM_SOURCES}
             ${PROJECT_SOURCE_DIR/bindings/swmm5.def}
             $<TARGET_OBJECTS:shared_objs>
@@ -47,8 +46,7 @@ if(BUILD_DEF)
 
 else()
     # Performs standard library build
-    add_library(swmm5
-        SHARED
+    add_library(swmm5        
             ${SWMM_SOURCES}
             $<TARGET_OBJECTS:shared_objs>
     )

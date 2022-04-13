@@ -49,6 +49,8 @@ set(CONFIG_DIST  "cmake")
 option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
 option(BUILD_DOCS "Build toolkit docs (requires Doxygen)" OFF)
 
+# Added option to statically link libraries to address GitHub Ubuntu 20.04 symbol errors (issue #340)
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 # Add project subdirectories
 if(BUILD_DOCS)

@@ -18,8 +18,7 @@ set(SWMM_OUT_PUBLIC_HEADERS
 
 
 # the binary output file API
-add_library(swmm-output
-    SHARED
+add_library(swmm-output    
         swmm_output.c
         errormanager.c
 )
