@@ -40,6 +40,7 @@ jobs:
 
           - os: ubuntu-20.04
             sys_pkgs: sudo apt install libboost-dev libboost-all-dev
+            # Statically link libraries with -s switch to address GitHub Ubuntu 20.04 symbol errors (issue #340)
             build_unit_test: make.sh -s -t -g "Unix Makefiles"
             build_reg_test: make.sh -s -g "Unix Makefiles"
             before_reg_test: before-nrtest.sh
