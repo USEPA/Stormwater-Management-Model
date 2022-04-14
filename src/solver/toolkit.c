@@ -15,6 +15,7 @@
 
 #include <math.h>
 #include <time.h>
+#include <stdio.h>
 
 #include "headers.h"
 #include "version.h"
@@ -1910,6 +1911,7 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
     else
     {
         *length = Nobjects[POLLUT];
+
         switch (type)
         {
             case SM_NODEQUAL:
@@ -1917,7 +1919,7 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
                     result[p] = Node[index].newQual[p];
-                } 
+                }
                 *pollutArray = result;
             } break;
             case SM_NODECIN:
@@ -1927,7 +1929,6 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
                     result[p] = Node[index].inQual[p];
                 }
                 *pollutArray = result;
-                *length = Nobjects[POLLUT];
             } break;
             case SM_NODEREACTORC:
             {
@@ -2073,7 +2074,7 @@ EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **po
                 for (p = 0; p < Nobjects[POLLUT]; p++)
                 {
                     result[p] = Link[index].newQual[p];
-                } 
+                }
                 *pollutArray = result;
             } break;
             case SM_TOTALLOAD:
@@ -2113,7 +2114,7 @@ EXPORT_TOOLKIT int swmm_setLinkPollut(int index, SM_LinkPollut type, int polluta
 ///  Purponse: Set pollutant concentration in links 
 {
 	int error_code_index = 0;
-
+    
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE)
 	{
