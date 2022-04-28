@@ -2015,7 +2015,7 @@ EXPORT_TOOLKIT int swmm_getLinkResult(int index, SM_LinkResult type, double *res
         switch (type)
         {
             case SM_LINKFLOW:
-                *result = Link[index].newFlow * UCF(FLOW) ; break;
+                *result = Link[index].newFlow * (double) Link[index].direction * UCF(FLOW); break;
             case SM_LINKDEPTH:
                 *result = Link[index].newDepth * UCF(LENGTH); break;
             case SM_LINKVOL:
