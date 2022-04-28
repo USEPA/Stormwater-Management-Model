@@ -951,7 +951,7 @@ double storage_getLosses(int j, double tStep)
                 exfilRate *= lossRatio; 
             }
         }
- 
+
     // --- save evap & infil losses at the node
     Storage[Node[j].subIndex].evapLoss = evapRate * tStep;
     Storage[Node[j].subIndex].exfilLoss = exfilRate * tStep;
