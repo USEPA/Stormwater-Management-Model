@@ -946,7 +946,43 @@ BOOST_FIXTURE_TEST_CASE(get_result_during_sim, FixtureBeforeStep){
     swmm_end();
 }
 
+// Testing link flow direction is accounted for in link result getter
+BOOST_FIXTURE_TEST_CASE(test_flow_dir_during_sim, FixtureBeforeStep_Flow_Dir){
+    int error, step_ind;
+    int neg_lnk_ind, pos_lnk_ind;
+    double val;
+    double elapsedTime = 0.0;
 
+    char neglnkid[] = "negative";
+    char poslnkid[] = "positive";
+
+    error = swmm_getObjectIndex(SM_LINK, poslnkid, &pos_lnk_ind);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    error = swmm_getObjectIndex(SM_LINK, neglnkid, &neg_lnk_ind);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    step_ind = 0;
+
+    do
+    {
+        error = swmm_step(&elapsedTime);
+
+        if (step_ind == 200) // (Jan 1, 1998 3:20am)
+        {
+            error = swmm_getLinkResult(pos_lnk_ind, SM_LINKFLOW, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_CLOSE(val,5.0,0.001);
+
+            error = swmm_getLinkResult(neg_lnk_ind, SM_LINKFLOW, &val);
+            BOOST_REQUIRE(error == ERR_NONE);
+            BOOST_CHECK_CLOSE(val,-5.0,0.001);
+        }
+        step_ind+=1;
+    }while (elapsedTime != 0 && !error);
+    BOOST_REQUIRE(error == ERR_NONE);
+    swmm_end();
+}
 // Testing Results Getters (Before End Simulation)
 // BOOST_FIXTURE_TEST_CASE(get_results_after_sim, FixtureBeforeEnd){
 //     int error;
