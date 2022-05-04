@@ -9,11 +9,12 @@ Water Analytics group.
 SWMM is a dynamic hydrology-hydraulic water quality simulation model. It is
 used for single event or long-term (continuous) simulation of runoff quantity
 and quality from primarily urban areas. SWMM source code is written in the C
-Programming Language and released in the Public Domain.
+Programming Language and released under combination a of MIT-License and Public
+Domain. For more information on licensing, please see the [LICENSE](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/LICENSE).
 
 ## Project Information
 
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/LICENSE)
 [![docs](https://img.shields.io/badge/docs-passing-green.svg)](http://wateranalytics.org/Stormwater-Management-Model/)
 
 ![build](https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/workflows/Build%20and%20Test/badge.svg?branch=master)
