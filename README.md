@@ -1,9 +1,8 @@
-Stormwater-Management-Model
-===========================
+ORD Stormwater-Management-Model Solver
+==================================
 
-ORD Stormwater Management Model (aka "SWMM")
+Stormwater Management Model (aka "SWMM") solver only
 
-This repository contains the source code to the solver. 
 
 ## Build Status
 [![Build and Test](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml)
