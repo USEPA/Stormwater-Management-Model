@@ -3,13 +3,14 @@ Stormwater-Management-Model
 
 ORD Stormwater Management Model (aka "SWMM")
 
-<img src="https://user-images.githubusercontent.com/2470152/154559241-8aac70b5-f8c1-41d8-8cf7-e26bbb38c0fc.png" title="EPANET_UI_Example" width="500px" />
-
-This repository contains the source code to the model. A user interface for the model is here: [USEPA/SWMM-EPANET_User_Interface](https://github.com/USEPA/SWMM-EPANET_User_Interface)
-
+This repository contains the source code to the solver. 
 
 ## Build Status
 [![Build and Test](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml)
+
+## Disclaimer 
+The United States Environmental Protection Agency (EPA) GitHub project code is provided on an "as is" basis and the user assumes responsibility for its use. EPA has relinquished control of the information and no longer has responsibility to protect the integrity, confidentiality, or availability of the information. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favoring by EPA. The EPA seal and logo shall not be used in any manner to imply endorsement of any commercial product or activity by EPA or the United States Government.
+
 
 ## Introduction
 This is the official SWMM source code repository maintained by US EPA Office of Research and Development, Center For Environmental Solutions & Emergency Response, Water Infrastructure Division located in Cincinnati, Ohio.
