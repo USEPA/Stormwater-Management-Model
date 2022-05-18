@@ -2,9 +2,11 @@
  *  swmm_output_enums.h
  *
  *  Created on: October 18, 2019
+ *  Updated on: January 14, 2020
  *
  *  Author: Michael E. Tryby
  *          US EPA - ORD/CESER
+ * 
  */
 
 
@@ -91,8 +93,8 @@ typedef enum {
     SMO_flood_losses,           // (flow units),
     SMO_outfall_flows,          // (flow units),
     SMO_volume_stored,          // (ft3 or m3),
-    SMO_evap_rate               // (in/day or mm/day),
-	//p_evap_rate             // (in/day or mm/day)
+    SMO_evap_rate,              // (in/day or mm/day),
+    SMO_p_evap_rate             // (in/day or mm/day)
 } SMO_systemAttribute;
 
 

@@ -14,6 +14,9 @@ find_package(OpenMP
         C
 )
 
+# Generate version header
+include(../../extern/version.cmake)
+
 
 # configure file groups
 set(SWMM_PUBLIC_HEADERS
@@ -28,29 +31,29 @@ file(GLOB
         RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.c *.h
 )
 
+
 if(BUILD_DEF)
-    # Build library with def file interface for backward compatibility
+    # Builds library with def file interface for backward compatibility
     set_source_files_properties(${PROJECT_SOURCE_DIR}/bindings/swmm5.def
         PROPERTIES_HEADER_FILE_ONLY TRUE
     )
 
-    add_library(swmm5
-        SHARED
+    add_library(swmm5        
             ${SWMM_SOURCES}
             ${PROJECT_SOURCE_DIR/bindings/swmm5.def}
             $<TARGET_OBJECTS:shared_objs>
     )
 
 else()
-
-    add_library(swmm5
-        SHARED
+    # Performs standard library build
+    add_library(swmm5        
             ${SWMM_SOURCES}
             $<TARGET_OBJECTS:shared_objs>
     )
 
 endif()
 
+# Sets MSVC compiler flags
 target_compile_options(swmm5
     PUBLIC
         "$<$<C_COMPILER_ID:MSVC>:"
@@ -84,6 +87,29 @@ target_include_directories(swmm5
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
+
+include(GenerateExportHeader)
+generate_export_header(swmm5
+    BASE_NAME toolkit  
+    EXPORT_MACRO_NAME EXPORT_TOOLKIT
+    EXPORT_FILE_NAME toolkit_export.h
+    STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC
+)
+
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}/toolkit_export.h
+    DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+
+set_target_properties(swmm5
+    PROPERTIES
+        MACOSX_RPATH TRUE
+        SKIP_BUILD_RPATH FALSE
+        BUILD_WITH_INSTALL_RPATH FALSE
+        INSTALL_RPATH "${PACKAGE_RPATH}"
+        INSTALL_RPATH_USE_LINK_PATH TRUE
+)
+
 
 install(TARGETS swmm5 EXPORT swmm5Targets
     RUNTIME    DESTINATION "${TOOL_DIST}"

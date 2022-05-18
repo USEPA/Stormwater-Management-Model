@@ -12,6 +12,8 @@
 #ifndef SWMM_OUTPUT_H_
 #define SWMM_OUTPUT_H_
 
+
+
 #define MAXFILENAME 259    // Max characters in file path
 #define MAXELENAME 31      // Max characters in element name
 
@@ -25,6 +27,7 @@ typedef struct Handle *SMO_Handle;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 int EXPORT_OUT_API SMO_init(SMO_Handle *p_handle);
 int EXPORT_OUT_API SMO_close(SMO_Handle p_handle);
@@ -56,8 +59,11 @@ void EXPORT_OUT_API SMO_freeMemory(void *array);
 void EXPORT_OUT_API SMO_clearError(SMO_Handle p_handle_in);
 int EXPORT_OUT_API SMO_checkError(SMO_Handle p_handle_in, char **msg_buffer);
 
+
 #ifdef __cplusplus
 }
 #endif
+
+
 
 #endif /* SWMM_OUTPUT_H_ */

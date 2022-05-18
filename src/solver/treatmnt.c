@@ -208,7 +208,7 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
     double cOut;                       // concentration after treatment
     double massLost;                   // mass lost by treatment per time step
     TTreatment* treatment;             // pointer to treatment object
-
+ 
     // --- set locally shared variables for node j
     if ( Node[j].treatment == NULL ) return;
     ErrCode = 0;
@@ -216,7 +216,6 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
     Dt = tStep;                        // current time step
     Q  = q;                            // current inflow rate
     V  = v;                            // current node volume
-
     // --- initialze each removal to indicate no value 
     for ( p = 0; p < Nobjects[POLLUT]; p++) R[p] = -1.0;
 
@@ -228,7 +227,10 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
         if ( treatment->equation == NULL ) R[p] = 0.0;
 
         // --- no removal for removal-type expression when there is no inflow 
-	    else if ( treatment->treatType == REMOVAL && q <= ZERO ) R[p] = 0.0;
+	else if ( treatment->treatType == REMOVAL && q <= ZERO ) R[p] = 0.0;
+
+	// --- check for external treatment
+	else if ( Node[j].extPollutFlag[p] == 1) R[p] = 0.0;
 
         // --- otherwise evaluate the treatment expression to find R[p]
         else getRemoval(p);
@@ -239,16 +241,16 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
     {
          report_writeErrorMsg(ERR_CYCLIC_TREATMENT, Node[J].ID);
     }
-
+   
     // --- update nodal concentrations and mass balances
     else for ( p = 0; p < Nobjects[POLLUT]; p++ )
     {
-        if ( R[p] == 0.0 ) continue;
+        if ( R[p] == 0.0 && Node[j].extPollutFlag[p] != 1) continue;
         treatment = &Node[j].treatment[p];
 
         // --- removal-type treatment equations get applied to inflow stream
 
-        if ( treatment->treatType == REMOVAL )
+        if ( treatment->treatType == REMOVAL && Node[j].extPollutFlag[p] != 1)
         {
             // --- if no pollutant in inflow then cOut is current nodal concen.
             if ( Cin[p] == 0.0 ) cOut = Node[j].newQual[p];
@@ -261,16 +263,30 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
             cOut = MIN(cOut, Node[j].newQual[p]);
         }
 
+	// --- water quality set externally 
+	else if( Node[j].extPollutFlag[p] == 1)
+	{
+	    cOut = Node[j].extQual[p];
+	}
+
         // --- concentration-type equations get applied to nodal concentration
         else
         {
             cOut = (1.0 - R[p]) * Node[j].newQual[p];
         }
+	
+       	// --- store inflow concentration for the timestep 	
+	Node[j].inQual[p] = Cin[p];
 
-        // --- mass lost must account for any initial mass in storage 
+ 	// --- mass lost must account for any initial mass in storage 
         massLost = (Cin[p]*q*tStep + Node[j].oldQual[p]*Node[j].oldVolume - 
-                   cOut*(q*tStep + Node[j].oldVolume)) / tStep; 
-        massLost = MAX(0.0, massLost); 
+                   cOut*(q*tStep + Node[j].oldVolume)) / tStep;
+
+	// --- mass can be gained in external treatment
+	if (Node[j].extPollutFlag[p] != 1) massLost = MAX(0.0, massLost);
+
+	// --- reset the flag to default to swmm treatment
+	if (Node[j].extPollutFlag[p] == 1) Node[j].extPollutFlag[p] = 0;
 
         // --- add mass loss to mass balance totals and revise nodal concentration
         massbal_addReactedMass(p, massLost);

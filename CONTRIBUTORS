@@ -1,0 +1,111 @@
+#
+# CONTRIBUTORS
+#
+# List of people whose contributions reside in the default branch
+# of OWA SWMM ordered alphabetically by last name. This file is modeled after
+# the CREDITS file maintained by the Linux project.
+#
+# Fields are:
+#   name (N), email (E), license (L), description (D)
+#
+
+N: Colleen Barr
+E: barr.colleen@epa.gov
+L: Public Domain
+D: Output file API
+
+N: Caleb Buahin
+E: caleb.buahin@gmail.com
+L: MIT License
+D: Development operations, bug fix, v5.1.14 merge, review
+
+N: Laurent Courty
+E: lrntct@gmail.com
+L: MIT License
+D: Bug fix, testing
+
+N: Robert Dickinson
+E: robert.dickinson@gmail.com
+L: Public Domain
+D: Legacy maintainer
+
+N: Adam Erispaha
+E: aerispaha@gmail.com
+L: MIT License
+D: Linux makefile
+
+N: Sam Hatchett
+E: samhatchett@gmail.com
+L: MIT License
+D: Development operations
+
+N: Constantine Karos
+E: ckaros@outlook.com
+L: MIT License
+D: Bug fix, testing, development operations, Water quality API
+
+N: Dominik Leutnant
+E: leutnant@fh-muenster.de
+L: MIT License
+D: Mac OS build
+
+N: Brooke Mason
+E: bemason@umich.edu
+L: MIT License
+D: Water quality API, testing
+
+N: Bryant McDonnell
+E: bemcdonnell@gmail.com
+L: MIT License
+D: Founder, maintainer, toolkit API, testing, review, bug fix, documentation
+
+N: Abhiram Mullapudi
+E: abhiramm@umich.edu
+L: MIT License
+D: Rain API, testing, water quality API, development operations, review
+
+N: Gonzalo Peña-Castellanos
+E: goanpeca@gmail.com
+L: MIT License
+D: Development operations, testing, documentation
+
+N: Katherine Ratliff
+E: ratliff.katherine@epa.gov
+L: MIT License
+D: Stats API, bug fix, testing, review
+
+N: Lewis Rossman
+E: LRossman@cinci.rr.com
+L: Public Domain
+D: Legacy developer
+
+N: Michelle Simon
+E: simon.michelle@epa.gov
+L: Public Domain
+D: Documentation
+
+N: Hsi-Nien Tan
+E: hsi-nien.tan@vumc.org
+L: MIT License
+D: Bug fix, testing
+
+N: Michael Tryby
+E: tryby.michael@epa.gov
+L: Public Domain
+D: Mentor, development operations, review
+D: Output library, testing framework, CLI, versioning, Python wrapper
+
+N: Jia Xin Wu
+E: wuu.jennifer@gmail.com
+L: MIT License
+D: Maintainer, LID API, bug fixes, testing, development operations, Python wrapper, review
+
+N: Xu Xi
+E: 12907470@qq.com
+L: MIT License
+D: Bug fix
+
+N: Mingda Zhang
+E: mingda_zhang@163.com
+L: MIT License
+D: Bug fix, testing

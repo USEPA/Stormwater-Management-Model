@@ -6,6 +6,7 @@
 //   Date:    03/20/14  (Build 5.1.001)
 //            08/01/16  (Build 5.1.011)
 //            05/10/18  (Build 5.1.013)
+//            03/01/20  (Build 5.1.014)
 //   Author:  L. Rossman
 //
 //   Various Constants
@@ -14,14 +15,6 @@
 //------------------
 // General Constants
 //------------------
-
-// Update VERSION and SEMVERSION Simultaneously
-#define   VERSION            51013          // Eventually will be deprecated.
-#define   SEMVERSION_MAJOR   "5"            // Major Semantic Version
-#define   SEMVERSION_MINOR   "1"            // Minor Semantic Version
-#define   SEMVERSION_PATCH   "13"           // Patch Semantic Version
-#define   SEMVERSION_LEN     20             // Version String Len
-
 #define   MAGICNUMBER        516114522
 #define   EOFMARK            0x1A           // Use 0x04 for UNIX systems
 #define   MAXTITLE           3              // Max. # title lines

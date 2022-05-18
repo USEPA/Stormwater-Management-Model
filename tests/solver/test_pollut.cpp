@@ -60,6 +60,8 @@ BOOST_FIXTURE_TEST_CASE(get_pollut_values, FixtureBeforeStep){
         {
             // subcatchment buildup
             error = swmm_getSubcatchPollut(subc_ind, SM_BUILDUP, &buildup_array, &length);
+            // Check length is set correctly
+            BOOST_CHECK(length == 2);
             BOOST_REQUIRE(error == ERR_NONE);
             BOOST_CHECK_SMALL(buildup_array[TSS] - 31.906912, 0.0001);
             BOOST_CHECK_SMALL(buildup_array[Lead] - 0.0, 0.0001);
@@ -146,6 +148,342 @@ BOOST_FIXTURE_TEST_CASE(get_pollut_values, FixtureBeforeStep){
     swmm_freeMemory(ponded_array);
 
     swmm_end();
+}
+
+// Testing Node influent concentration- storage assets
+BOOST_FIXTURE_TEST_CASE(get_node_pollutant_values_cin, FixtureBeforeStep_Pollut_Node){
+
+    int error, step_ind;
+    double* node_qual;
+    double elapsedTime = 0.0;
+    double total_pollutant = 0.0;
+    int length;
+
+    // Pollutant IDs
+    int P1 = 0;
+    double cin = 10;
+
+    step_ind = 0;
+    do
+    {
+       
+    // Get inflow concentration
+	error = swmm_getNodePollut(1, SM_NODECIN, &node_qual, &length);
+    // Check length is set correctly
+    BOOST_CHECK(length == 1);
+	BOOST_REQUIRE(error == ERR_NONE);
+
+	// Check for constant influent
+	if (step_ind > 5)
+        BOOST_CHECK_CLOSE(cin, node_qual[P1], 0.001);
+
+	// Route Model Forward
+        error = swmm_step(&elapsedTime);
+        step_ind+=1;
+
+    }while (elapsedTime != 0 && !error);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    swmm_end();
+}
+
+// Testing Reactor Concentration in Node
+BOOST_FIXTURE_TEST_CASE(get_node_reactor_pollutant, FixtureBeforeStep_Pollut_Node){
+
+    int error, step_ind;
+    double* old_qual;
+    double* new_qual;
+    double elapsedTime = 0.0;
+    double total_pollutant = 0.0;
+    int length;
+
+    // Pollutant IDs
+    int P1 = 0;
+
+    step_ind = 0;
+    do
+    {
+    // Check for steady state after 1000 steps.
+	// 1000 is a aribitarly long time duration, it can be any value as long
+	// the system reaches a steady state
+
+	// Get reactor concentration
+	error = swmm_getNodePollut(1, SM_NODEREACTORC, &new_qual, &length);
+    // Check length is set correctly
+    BOOST_CHECK(length == 1);
+	BOOST_REQUIRE(error == ERR_NONE);
+
+	if (step_ind > 1000)
+	{
+		BOOST_CHECK_CLOSE(old_qual[P1], new_qual[P1], 0.001);
+	}
+
+	old_qual = new_qual;
+
+        // Route Model Forward
+        error = swmm_step(&elapsedTime);
+        step_ind+=1;
+    }while (elapsedTime != 0 && !error);
+    BOOST_REQUIRE(error == ERR_NONE);
+    swmm_end();
+}
+
+// Testing Reactor Concentration in Link
+BOOST_FIXTURE_TEST_CASE(get_link_reactor_pollutant, FixtureBeforeStep_Pollut_Link){
+
+    int error, step_ind;
+    double* old_qual;
+    double* new_qual;
+    double elapsedTime = 0.0;
+    double total_pollutant = 0.0;
+    int length;
+
+    // Pollutant IDs
+    int P1 = 0;
+
+    step_ind = 0;
+    do
+    {
+    // Check for steady state after 1000 steps.
+    // 1000 is a aribitarly long time duration, it can be any value as long
+    // the system reaches a steady state
+
+    // Get reactor concentration
+    error = swmm_getLinkPollut(1, SM_LINKREACTORC, &new_qual, &length);
+    // Check length is set correctly
+    BOOST_CHECK(length == 1);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    if (step_ind > 1500)
+    {
+        BOOST_CHECK_CLOSE(old_qual[P1], new_qual[P1], 0.001);
+    }
+
+    old_qual = new_qual;
+
+        // Route Model Forward
+        error = swmm_step(&elapsedTime);
+        step_ind+=1;
+    }while (elapsedTime != 0 && !error);
+    BOOST_REQUIRE(error == ERR_NONE);
+    swmm_end();
+}
+
+// Testing Pollutant Setter - Node - Cumulative and mass balance
+BOOST_FIXTURE_TEST_CASE(set_node_pollutant_cumulative_values, FixtureBeforeStep_Pollut_Node){
+
+    int error;
+    double* node_qual;
+    float runoff_error, flow_error, qual_error;
+    double elapsedTime = 0.0;
+    double total_pollutant = 0.0;
+    int length;
+
+    // Pollutant IDs
+    int P1 = 0;
+
+    do
+    {
+	// Set pollutant
+	error = swmm_setNodePollut(1, SM_NODEQUAL, P1, 0);
+	BOOST_REQUIRE(error == ERR_NONE);
+        // Route Model Forward
+        error = swmm_step(&elapsedTime);
+	// Get pollutant
+	error = swmm_getNodePollut(1, SM_NODEQUAL, &node_qual, &length);
+	BOOST_REQUIRE(error == ERR_NONE);
+	// Record cumulative pollutant
+	total_pollutant = total_pollutant + node_qual[P1];
+
+    }while (elapsedTime != 0 && !error);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    // Cumulative must be 0.00
+    BOOST_CHECK_SMALL(total_pollutant, 1.0e-06);
+    swmm_end();
+    // check mass balance error less than 5%
+    swmm_getMassBalErr(&runoff_error, &flow_error, &qual_error);
+    BOOST_CHECK(abs(qual_error) <= 1.0);
+}
+
+// Testing Pollutant Setter - Node - Stepwise and Mass balance less than inflow concentration of 10
+BOOST_FIXTURE_TEST_CASE(set_node_pollutant_stepwise_values, FixtureBeforeStep_Pollut_Node){
+
+    int error;
+    double* node_qual;
+    float runoff_error, flow_error, qual_error;
+    double elapsedTime = 0.0;
+    int length;
+
+    // Pollutant IDs
+    int P1 = 0;
+    do
+    {
+	// Set pollutant
+	error = swmm_setNodePollut(1, SM_NODEQUAL, P1, 1.234);
+	BOOST_REQUIRE(error == ERR_NONE);
+
+	// Route Model Forward
+        error = swmm_step(&elapsedTime);
+
+	// Get pollutant
+	error = swmm_getNodePollut(1, SM_NODEQUAL, &node_qual, &length);
+	BOOST_REQUIRE(error == ERR_NONE);
+
+	// Check
+    	BOOST_CHECK_CLOSE(node_qual[P1], 1.234, 0.001);
+
+    }while (elapsedTime != 0 && !error);
+    BOOST_REQUIRE(error == ERR_NONE);
+    swmm_end();
+
+    // check mass balance error less than 1%
+    swmm_getMassBalErr(&runoff_error, &flow_error, &qual_error);
+    BOOST_CHECK(abs(qual_error) <= 1.0);
+}
+
+
+// Testing Pollutant Setter - Node - Stepwise and Mass balance greater than inflow concentration of 10
+BOOST_FIXTURE_TEST_CASE(set_node_pollutant_stepwise_values_2, FixtureBeforeStep_Pollut_Node){
+
+    int error;
+    double* node_qual;
+    float runoff_error, flow_error, qual_error;
+    double elapsedTime = 0.0;
+    int length;
+
+    // Pollutant IDs
+    int P1 = 0;
+    do
+    {
+	// Set pollutant
+	error = swmm_setNodePollut(1, SM_NODEQUAL, P1, 50.0);
+	BOOST_REQUIRE(error == ERR_NONE);
+
+	// Route Model Forward
+        error = swmm_step(&elapsedTime);
+
+	// Get pollutant
+	error = swmm_getNodePollut(1, SM_NODEQUAL, &node_qual, &length);
+	BOOST_REQUIRE(error == ERR_NONE);
+
+	// Check
+    	BOOST_CHECK_CLOSE(node_qual[P1], 50.0, 0.001);
+
+    }while (elapsedTime != 0 && !error);
+    BOOST_REQUIRE(error == ERR_NONE);
+    swmm_end();
+
+    // check mass balance error less than 1%
+    swmm_getMassBalErr(&runoff_error, &flow_error, &qual_error);
+    BOOST_CHECK(abs(qual_error) <= 1.0);
+}
+
+
+
+// Testing Pollutant Setter - Link - Stepwise - mass balance concentation less than 10
+BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values, FixtureBeforeStep_Pollut_Link){
+
+    int error, link_ind, node_ind;
+    int step = 0;
+    double* link_qual;
+    double* node_qual;
+    double elapsedTime = 0.0;
+    double node_inflow;
+    float runoff_error, flow_error, qual_error;
+    char linkid[] = "C1";
+    char nodeid[] = "J1";
+    int length;
+
+    // Pollutant ID
+    int P1 = 0;
+
+    error = swmm_getObjectIndex(SM_LINK, linkid, &link_ind);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getObjectIndex(SM_NODE, nodeid, &node_ind);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    do{	    
+	    if (step > 1000 && step < 2000){
+	    	// Set pollutant in link and check the pollutant in the node
+	    	error = swmm_setLinkPollut(link_ind, SM_LINKQUAL, P1, 1.0);
+	    	BOOST_REQUIRE(error == ERR_NONE);
+	    }
+	    // Route Model Forward
+            error = swmm_step(&elapsedTime);
+	    BOOST_REQUIRE(error == ERR_NONE);
+	    if (step > 1500 && step < 2000) // Wait for water to reach node
+            {
+	    // Get infows concentration in node
+            error = swmm_getNodePollut(node_ind,  SM_NODEQUAL, &node_qual, &length);
+	    BOOST_REQUIRE(error == ERR_NONE);
+
+	    error = swmm_getLinkPollut(link_ind, SM_LINKQUAL, &link_qual, &length);
+
+	    // Check
+            BOOST_CHECK_CLOSE(node_qual[P1], link_qual[P1], 0.01);
+    	    }step += 1;
+
+    }while (elapsedTime != 0 && !error);
+    BOOST_REQUIRE(error == ERR_NONE);
+    swmm_end();
+
+    // check mass balance error less than 5%
+    swmm_getMassBalErr(&runoff_error, &flow_error, &qual_error);
+    BOOST_CHECK(abs(qual_error) <= 5.0);
+}
+
+
+// Testing Pollutant Setter - Link - Stepwise - mass balance concentation greater than 10
+BOOST_FIXTURE_TEST_CASE(set_link_pollutant_stepwise_values_2, FixtureBeforeStep_Pollut_Link){
+
+    int error, link_ind, node_ind;
+    int step = 0;
+    double* link_qual;
+    double* node_qual;
+    double elapsedTime = 0.0;
+    double node_inflow;
+    float runoff_error, flow_error, qual_error;
+    char linkid[] = "C1";
+    char nodeid[] = "J1";
+    int length;
+
+    // Pollutant ID
+    int P1 = 0;
+
+    error = swmm_getObjectIndex(SM_LINK, linkid, &link_ind);
+    BOOST_REQUIRE(error == ERR_NONE);
+    error = swmm_getObjectIndex(SM_NODE, nodeid, &node_ind);
+    BOOST_REQUIRE(error == ERR_NONE);
+
+    do{	    
+	    if (step > 1000 & step < 2000){
+	    	// Set pollutant in link and check the pollutant in the node
+	    	error = swmm_setLinkPollut(link_ind, SM_LINKQUAL, P1, 20.0);
+	    	BOOST_REQUIRE(error == ERR_NONE);
+	    }
+	    // Route Model Forward
+            error = swmm_step(&elapsedTime);
+	    BOOST_REQUIRE(error == ERR_NONE);
+
+	     // Wait for water to reach node
+	    if (step > 1500 & step < 2000){
+	    // Get infows concentration in node
+            error = swmm_getNodePollut(node_ind,  SM_NODEQUAL, &node_qual, &length);
+	    BOOST_REQUIRE(error == ERR_NONE);
+
+	    error = swmm_getLinkPollut(link_ind, SM_LINKQUAL, &link_qual, &length);
+
+	    // Check
+            BOOST_CHECK_CLOSE(node_qual[P1], link_qual[P1], 0.01);
+    	    }step += 1;
+
+    }while (elapsedTime != 0 && !error);
+    BOOST_REQUIRE(error == ERR_NONE);
+    swmm_end();
+
+    swmm_getMassBalErr(&runoff_error, &flow_error, &qual_error);
+    BOOST_CHECK(abs(qual_error) <= 5.0);
 }
 
 

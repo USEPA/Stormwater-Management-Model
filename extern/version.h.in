@@ -1,0 +1,39 @@
+/*
+ *  version.h - SWMM version header file
+ *
+ *  Created on: Nov 2, 2021
+ *  
+ *  Author:     see CONTRIBUTORS
+ *
+ *  Note: 
+ *    The cmake build process automatically generates this file. Do not edit.
+ */
+
+
+#ifndef VERSION_H_
+#define VERSION_H_
+
+
+
+#define PROJECT             "SWMM"
+#define ORGANIZATION        "Open_Water_Analytics"
+
+#define VERSION             "@swmm-solver_VERSION@"
+#define VERSION_MAJOR       @swmm-solver_VERSION_MAJOR@
+#define VERSION_MINOR       @swmm-solver_VERSION_MINOR@
+#define VERSION_PATCH       @swmm-solver_VERSION_PATCH@
+#define GIT_HASH            "@GIT_HASH@"
+
+#define PLATFORM            "@CMAKE_SYSTEM_NAME@"
+#define COMPILER            "@CMAKE_C_COMPILER_ID@"
+#define COMPILER_VERSION    "@CMAKE_C_COMPILER_VERSION@"
+#define BUILD_ID            "@BUILD_ID@"
+
+
+static inline int get_version_legacy() { \
+    return VERSION_MAJOR * 10000 + VERSION_MINOR * 1000 + VERSION_PATCH; \
+}
+
+
+
+#endif /* VERSION_H_ */

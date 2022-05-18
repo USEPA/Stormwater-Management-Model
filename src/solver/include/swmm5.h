@@ -1,14 +1,15 @@
-/** @file swmm5.h
- @see http://github.com/openwateranalytics/stormwater-management-model
-
- swmm5.h
- @brief Prototypes for SWMM5 functions exported to swmm5.dll.
- @date 03/24/14  (Build 5.1.001)
- @date 08/01/16  (Build 5.1.011)
- @version 5.1
- @authors L. Rossman, OpenWaterAnalytics members: 
- see <a href="https://github.com/OpenWaterAnalytics/Stormwater-Management-Model/blob/develop/AUTHORS">AUTHORS</a>.
-*/
+//-----------------------------------------------------------------------------
+//   swmm5.h
+//
+//   Project: EPA SWMM5
+//   Version: 5.1
+//   Date:    03/24/14  (Build 5.1.001)
+//            08/01/16  (Build 5.1.011)
+//   Author:  L. Rossman
+//
+//   Prototypes for SWMM5 functions exported to swmm5.dll.
+//
+//-----------------------------------------------------------------------------
 
 #ifndef SWMM5_H
 #define SWMM5_H
@@ -51,10 +52,10 @@ int swmm_IsStartedFlag(void);
 
 
 // --- use "C" linkage for C++ programs
-#ifdef __cplusplus
-extern "C" {
-#endif
 
+#ifdef __cplusplus
+extern "C" { 
+#endif 
 
 /**
  @brief Opens SWMM input file, reads in network data, runs, and closes
@@ -116,8 +117,8 @@ int DLLEXPORT swmm_getMassBalErr(float* runoffErr, float* flowErr, float* qualEr
 int DLLEXPORT swmm_close(void);
 
 /**
- @brief Get Legacy SWMM version number
- @return Version
+ @brief Get SWMM version number
+ @return Version as integer
 */
 int DLLEXPORT swmm_getVersion(void);
 
@@ -126,9 +127,8 @@ int DLLEXPORT swmm_getError(char* errMsg, int msgLen);
 
 int DLLEXPORT swmm_getWarnings(void);
 
-
-#ifdef __cplusplus
-}   // matches the linkage specification from above */
+#ifdef __cplusplus 
+}   // matches the linkage specification from above */ 
 #endif
 
 #endif

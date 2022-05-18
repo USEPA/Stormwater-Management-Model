@@ -14,12 +14,16 @@
 #ifndef TEST_SOLVER_HPP
 #define TEST_SOLVER_HPP
 
+extern "C" {
 #include "swmm5.h"
 #include "toolkit.h"
-
+}
 
 // Add shared data paths here
 #define DATA_PATH_INP "test_example1.inp"
+#define DATA_PATH_INP_POLLUT_NODE "node_constantinflow_constanteffluent.inp"
+#define DATA_PATH_INP_POLLUT_LINK "link_constantinflow.inp"
+#define DATA_PATH_INP_LINK_DIR "link_flow_dir.inp"
 #define DATA_PATH_RPT "tmp.rpt"
 #define DATA_PATH_OUT "tmp.out"
 
@@ -67,6 +71,37 @@ struct FixtureBeforeEnd{
         swmm_close();
     }
 };
+
+struct FixtureBeforeStep_Pollut_Node{
+    FixtureBeforeStep_Pollut_Node() {
+        swmm_open(DATA_PATH_INP_POLLUT_NODE, DATA_PATH_RPT, DATA_PATH_OUT);
+        swmm_start(0);
+    }
+    ~FixtureBeforeStep_Pollut_Node() {
+        swmm_close();
+    }
+};
+
+struct FixtureBeforeStep_Pollut_Link{
+    FixtureBeforeStep_Pollut_Link() {
+        swmm_open(DATA_PATH_INP_POLLUT_LINK, DATA_PATH_RPT, DATA_PATH_OUT);
+        swmm_start(0);
+    }
+    ~FixtureBeforeStep_Pollut_Link() {
+        swmm_close();
+    }
+};
+
+struct FixtureBeforeStep_Flow_Dir{
+    FixtureBeforeStep_Flow_Dir() {
+        swmm_open(DATA_PATH_INP_LINK_DIR, DATA_PATH_RPT, DATA_PATH_OUT);
+        swmm_start(0);
+    }
+    ~FixtureBeforeStep_Flow_Dir() {
+        swmm_close();
+    }
+};
+
 
 // Declare shared test predicates here
 boost::test_tools::predicate_result check_cdd_double(std::vector<double>& test,

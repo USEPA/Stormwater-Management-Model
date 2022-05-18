@@ -7,6 +7,7 @@
 //             03/19/15  (Build 5.1.008)
 //             08/05/15  (Build 5.1.010)
 //             05/10/18  (Build 5.1.013)
+//             03/01/20  (Build 5.1.014)
 //   Author:   L. Rossman (EPA)
 //
 //   Binary output file access functions.
@@ -24,14 +25,18 @@
 //   - Support added for saving average node & link routing results to
 //     binary file in each reporting period.
 //
+//   Build 5.1.014:
+//   - Incorrect loop limit fixed in function output_saveAvgResults.
+//
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "headers.h"
 
+#include "headers.h"
+#include "version.h"
 
 // Definition of 4-byte integer, 4-byte real and 8-byte real types
 #define INT4  int
@@ -178,7 +183,7 @@ int output_open()
     fseek(Fout.file, 0, SEEK_SET);
     k = MAGICNUMBER;
     fwrite(&k, sizeof(INT4), 1, Fout.file);   // Magic number
-    k = VERSION;
+    k = get_version_legacy();
     fwrite(&k, sizeof(INT4), 1, Fout.file);   // Version number
     k = FlowUnits;
     fwrite(&k, sizeof(INT4), 1, Fout.file);   // Flow units
@@ -936,7 +941,7 @@ void output_saveAvgResults(FILE* file)
     }
  
     // --- add each link's volume to total system storage
-    for (i = 0; i < Nobjects[NODE]; i++)
+    for (i = 0; i < Nobjects[LINK]; i++)                                       //(5.1.014)
     {
         SysResults[SYS_STORAGE] += (REAL4)(Link[i].newVolume * UCF(VOLUME));
     }

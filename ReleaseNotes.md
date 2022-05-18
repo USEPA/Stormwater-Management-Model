@@ -6,15 +6,17 @@ official USEPA SWMM release.
 
 See the AUTHORS file for a list of contributors.
 
-
-## Toolkit API (new functions):
+## Toolkit API (new functions) 
+--------------------------------
 
 ### Projects
+
 swmm_project_findObject()  
 swmm_getObjectId()  
 swmm_countObjects()  
 
 ### Simulation Settings
+
 swmm_getSimulationDateTime()  
 swmm_getCurrentDateTime()  
 swmm_setSimulationDateTime()  
@@ -23,6 +25,7 @@ swmm_getSimulationParam()
 swmm_getSimulationUnit()  
 
 ### Nodes
+
 swmm_getNodeType()  
 swmm_getNodeParam()  
 swmm_setNodeParam()  
@@ -33,13 +36,16 @@ swmm_setNodeInflow()
 swmm_getNodeStats()  
 
 ### Storage
+
 swmm_getStorageStats()  
 
 ### Outfall
+
 swmm_setOutfallStage()  
 swmm_getOutfallStats()  
 
 ### Links
+
 swmm_getLinkType()  
 swmm_getLinkConnections()  
 swmm_getLinkDirection()  
@@ -51,9 +57,11 @@ swmm_setLinkSetting()
 swmm_getLinkStats()  
 
 ### Pumps
+
 swmm_getPumpStats()  
 
 ### Subcatchments
+
 swmm_getSubcatchOutConnection()  
 swmm_getSubcatchParam()  
 swmm_setSubcatchParam()  
@@ -62,10 +70,12 @@ swmm_getSubcatchPollut()
 swmm_getSubcatchStats()  
 
 ### System
+
 swmm_getSystemRoutingTotals()  
 swmm_getSystemRunoffTotals()  
 
 ### LIDs
+
 swmm_getLidUCount()  
 swmm_getLidUParam()  
 swmm_setLidUParam()  
@@ -79,8 +89,10 @@ swmm_setLidCParam()
 swmm_getLidGResult()  
 
 ### Rain Gages
+
 swmm_getGagePrecip()  
 swmm_setGagePrecip()  
 
 ### Utility
+
 swmm_getVersionInfo()  

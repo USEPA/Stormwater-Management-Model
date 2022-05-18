@@ -4,9 +4,13 @@
 # Created: July 11, 2019
 # Updated: May 19, 2021
 #
-# Author: Michael E. Tryby
-#         US EPA ORD/CESER
+# Authors: Michael E. Tryby
+#          US EPA ORD/CESER
 #
+
+################################################################################
+##################    CMAKELISTS FOR SWMM-SOLVER PROJECT    ####################
+################################################################################
 
 
 cmake_minimum_required (VERSION 3.13)
@@ -18,9 +22,9 @@ endif()
 
 
 project(swmm-solver
-    VERSION 5.1.13
+    VERSION 5.1.14
     LANGUAGES C CXX
-    )
+)
 
 # Append local dir to module search path
 # list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -41,9 +45,12 @@ set(LIBRARY_DIST "lib")
 set(CONFIG_DIST  "cmake")
 
 
+# Define build options
 option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
 option(BUILD_DOCS "Build toolkit docs (requires Doxygen)" OFF)
 
+# Added option to statically link libraries to address GitHub Ubuntu 20.04 symbol errors (issue #340)
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 # Add project subdirectories
 if(BUILD_DOCS)
@@ -68,11 +75,11 @@ endif()
 include(InstallRequiredSystemLibraries)
 
 
-# Create install target for License and Authors files
+# Create install target for License and Contributors files
 install(
     FILES
         "LICENSE"
-        "AUTHORS"
+        "CONTRIBUTORS"
     DESTINATION
         "."
 )
@@ -80,7 +87,7 @@ install(
 
 # Configure CPack driven installer package
 set(CPACK_GENERATOR "ZIP;TGZ")
-set(CPACK_PACKAGE_VENDOR "US_EPA")
+set(CPACK_PACKAGE_VENDOR "OWA")
 set(CPACK_ARCHIVE_FILE_NAME "swmm")
 
 include(CPack)
