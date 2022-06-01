@@ -3,7 +3,7 @@
 //
 //   Project: EPA SWMM5
 //   Version: 5.2
-//   Date:    11/01/21  (Build 5.2.0)
+//   Date:    06/01/22  (Build 5.2.1)
 //   Author:  L. Rossman
 //
 //   Text strings
@@ -25,7 +25,7 @@
 #define FMT03 " There are errors.\n"
 #define FMT04 " There are warnings.\n"
 #define FMT08 \
-  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.2 (Build 5.2.0)"
+  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.2 (Build 5.2.1)"
 #define FMT09 \
   "\n  ------------------------------------------------------------"
 #define FMT10 "\n"

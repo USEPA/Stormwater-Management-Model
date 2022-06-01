@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21  (Build 5.2.0)
+//   Date:     05/02/22  (Build 5.2.1)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
@@ -24,6 +24,9 @@
 //   - Arguments to function link_getLossRate changed.
 //   Build 5.2.0:
 //   - Correction made to updating state of terminal storage nodes.
+//   Build 5.2.1:
+//   - For storage routing, after convergence the reported depth is now
+//     based on the last volume found rather than the next trial depth. 
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -587,7 +590,6 @@ void updateStorageState(int i, int j, int links[], double dt)
         if ( fabs(d2 - d1) <= STOPTOL ) stopped = TRUE;
 
         // --- update old depth with new value and continue to iterate
-        Node[i].newDepth = d2;
         d1 = d2;
         iter++;
     }

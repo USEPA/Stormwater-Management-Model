@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21   (Build 5.2.0)
+//   Date:     06/01/22   (Build 5.2.1)
 //   Author:   L. Rossman
 //
 //   Conveyance system node functions.
@@ -27,9 +27,13 @@
 //   Build 5.1.015:
 //   - Fatal error issued if a storage node's area curve produces a negative
 //     volume when extrapolated to the node's full depth.
-//  Build 5.2.0:
-//  - Support added Streets and Inlets.
-//  - Support added for analytical storage shapes.
+//   Build 5.2.0:
+//   - Support added Streets and Inlets.
+//   - Support added for analytical storage shapes.
+//   Build 5.2.1:
+//   - Warning no longer issued when node full depth is increased to match
+//     crown of highest connecting link.
+//   - a2 term for paraboloid shaped storage units was corrected
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -200,11 +204,12 @@ void  node_validate(int j)
     TDwfInflow* inflow;
 
     // --- see if full depth was increased to accommodate conduit crown
+/*  Deprecated as of v.5.2.1
     if ( Node[j].fullDepth > Node[j].oldDepth && Node[j].oldDepth > 0.0 )
     {
         report_writeWarningMsg(WARN02, Node[j].ID);
     }
-
+*/
     // --- check that initial depth does not exceed max. depth
     if ( Node[j].initDepth > Node[j].fullDepth + Node[j].surDepth )
         report_writeErrorMsg(ERR_NODE_DEPTH, Node[j].ID);
