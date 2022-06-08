@@ -94,8 +94,6 @@ jobs:
     - name: Build
       run: make.cmd /g "Visual Studio 16 2019"
 
-    - name: Before test
-      run: before-nrtest.cmd
     - name: Before reg test
       env:
         NRTESTS_URL: https://github.com/SWMM-Project/swmm-nrtestsuite
