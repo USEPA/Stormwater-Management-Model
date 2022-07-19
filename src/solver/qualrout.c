@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     06/01/22   (Build 5.2.1)
+//   Date:     08/01/22   (Build 5.2.1)
 //   Author:   L. Rossman
 //
 //   Water quality routing functions.
@@ -24,6 +24,7 @@
 //   - Support added for flow capture by inlet structures.
 //   - Definition of a dry node/link modified.
 //   Build 5.2.1:
+//   - Dry non-storage nodes now have quality determined by inflow.   
 //   - Wet non-storage nodes with no inflow now have no change in quality.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
@@ -229,7 +230,7 @@ void findNodeQual(int j)
 
     // --- if there is flow into node then concen. = mass inflow/node flow
     qNode = Node[j].qualInflow;
-    if ( qNode > ZERO && Node[j].newDepth > ZeroDepth)
+    if ( qNode > ZERO )
     {
         for (p = 0; p < Nobjects[POLLUT]; p++)
         {
@@ -237,7 +238,7 @@ void findNodeQual(int j)
         }
     }
 
-    // --- otherwise concen. remains the same                                  //5.2.1
+    // --- otherwise concen. remains the same
     else for (p = 0; p < Nobjects[POLLUT]; p++)
     {
         if (Node[j].newDepth > ZeroDepth)

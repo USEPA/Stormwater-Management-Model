@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     04/02/22  (Build 5.2.1)
+//   Date:     08/01/22  (Build 5.2.1)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -656,7 +656,7 @@ double checkNormalFlow(int j, double q, double y1, double y2, double a1,
     // --- check if water surface slope < conduit slope
     if ( NormalFlowLtd == SLOPE || NormalFlowLtd == BOTH || hasOutfall )
     {
-        if ( y1 < y2 ) check = TRUE;
+        if ( y1 < y2) check = TRUE;
     }
 
     // --- check if Fr >= 1.0 at upstream end of conduit
