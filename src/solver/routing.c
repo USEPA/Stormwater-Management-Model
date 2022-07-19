@@ -234,6 +234,23 @@ void routing_execute(int routingModel, double routingStep)
     {
         // --- apply current inflows to conveyance system
         addSystemInflows(currentDate, routingStep);
+
+        //-------------------------15JULY2022-----------------------------------//
+        if (ADDLINK == 1 || ADDLINK == 2)
+        {
+            double tq = 0.0, toutq = 0.0;
+            for (int i = 0; i < Nobjects[NODE]; i++)
+            {
+                tq = NodeInflow1[i] / UCF(FLOW);
+                Node[i].newLatFlow += tq;
+                massbal_addInflowFlow(EXTERNAL_INFLOW, tq);
+
+                toutq = NodeInoverflow1[i] / UCF(FLOW);
+                Node[i].newLatFlow -= toutq;
+                massbal_addInflowFlow(EXTERNAL_INFLOW, -toutq);
+            }
+        }
+
         inlet_findCapturedFlows(routingStep);
 
         // --- route flows if system is not in steady state

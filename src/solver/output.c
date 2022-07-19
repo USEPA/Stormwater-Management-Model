@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------
+            //-----------------------------------------------------------------------------
 //   output.c
 //
 //   Project:  EPA SWMM5
@@ -33,8 +33,10 @@
 #ifdef _MSC_VER    // Windows (32-bit and 64-bit)
   #define F_OFF __int64
   #define F_SEEK _fseeki64
-#elif              // Other platforms
-  #define F_OFF off64_t
+//#elif              // Other platforms
+  //#define F_OFF off64_t  //THE original swmm published one
+#else
+  #define F_OFF off_t
   #define F_SEEK fseeko
 #endif
 
@@ -463,6 +465,10 @@ void output_saveResults(double reportTime)
     extern TRoutingTotals StepFlowTotals;  // defined in massbal.c
     DateTime reportDate = getDateTime(reportTime);
     REAL8 date;
+    //---------------------15JULY2022------------------//
+    //------------hms  data and time-------------------//
+    datetime_dateToStr(reportDate, hmsDate);
+    datetime_timeToStr(reportDate, hmsTime);
 
     // --- initialize system-wide results
     if ( reportDate < ReportStart ) return;
@@ -652,6 +658,41 @@ void output_saveNodeResults(double reportTime, FILE* file)
         node_getResults(j, f, NodeResults);
         if ( Node[j].rptFlag )
             fwrite(NodeResults, sizeof(REAL4), NumNodeVars, file);
+        if (Resultout == 1)
+        {
+            //	fprintf(NodeResult, "%s %s %s %s %s %s %s %s %s", "Node_name", "Data", "Time", "Depth", "Head","Volume", "Lateral_inflow", "Total_inflow", "Flooding");
+            //printf("\n in output_saveNodeResults  NodeResult; \n");
+            noderesult    getnode;
+            strcpy(getnode.ID_node, Node[j].ID);
+            strcpy(getnode.nodedata, hmsDate);
+            strcpy(getnode.nodetime, hmsTime);
+            getnode.NODE_depth = NodeResults[NODE_DEPTH];
+            getnode.NODE_head = NodeResults[NODE_HEAD];
+            getnode.NODE_volume = NodeResults[NODE_VOLUME];
+            getnode.NODE_lateral_inflow = NodeResults[NODE_LATFLOW];
+            getnode.NODE_inflow = NodeResults[NODE_INFLOW];
+            getnode.NODE_overflow = NodeResults[NODE_OVERFLOW];
+            //if (Nobjects[POLLUT] > 0)
+            //{
+            //	for (int p = 0; p < Nobjects[POLLUT]; p++)
+            //	{	
+            //		getnode.NodeQual[p] = NodeResults[NODE_QUAL + p];
+            //	}
+            //}
+
+            fprintf(NodeResultdatatime.file, "%s %s %s %10.6f %10.6f %10.6f %10.6f %10.6f %10.6f", getnode.ID_node, getnode.nodedata, getnode.nodetime,
+                getnode.NODE_depth, getnode.NODE_head, getnode.NODE_volume,
+                getnode.NODE_lateral_inflow, getnode.NODE_inflow, getnode.NODE_overflow);
+            //if (Nobjects[POLLUT] > 0)
+            //{
+            //	for (int p = 0; p < Nobjects[POLLUT]; p++)
+            //	{
+            //		fprintf(NodeResultdatatime.file, "%10.6f ", getnode.NodeQual[p]);
+            //	}
+            //}
+            fprintf(NodeResultdatatime.file, "\n");
+        }
+    
         stats_updateMaxNodeDepth(j, NodeResults[NODE_DEPTH]);
 
         // --- update system-wide storage volume 
@@ -672,6 +713,8 @@ void output_saveLinkResults(double reportTime, FILE* file)
     int j;
     double f;
     double z;
+    //------------------15JULY2022-------------------------//
+    linkresult    getlink;
 
     // --- find where current reporting time lies between latest routing times
     f = (reportTime - OldRoutingTime) / (NewRoutingTime - OldRoutingTime);
@@ -684,6 +727,31 @@ void output_saveLinkResults(double reportTime, FILE* file)
         {
             link_getResults(j, f, LinkResults);
             fwrite(LinkResults, sizeof(REAL4), NumLinkVars, file);
+
+            if (Resultout == 1)
+            {
+                strcpy(getlink.ID_link, Link[j].ID);
+                strcpy(getlink.linkdata, hmsDate);
+                strcpy(getlink.linktime, hmsTime);
+                getlink.Flow_link = LinkResults[LINK_FLOW];
+                getlink.Depth_link = LinkResults[LINK_DEPTH];
+                getlink.Velocity_link = LinkResults[LINK_VELOCITY];
+                getlink.Volume_link = LinkResults[LINK_VOLUME];
+                getlink.Capacity_link = LinkResults[LINK_CAPACITY];
+
+                //fprintf(LinkResult, "%s %s %s %s %s %s %s %s %s", "Line_name", "Length", "Data", "Time", "Flow", "Depth", "Velocity", "Volume", "Capacity");
+                fprintf(LinkResultdatatime.file, "%s %10.6f %s %s %10.6f %10.6f %10.6f %10.6f %10.6f", Link[j].ID, Conduit[Link[j].subIndex].length * UCF(LENGTH),
+                    getlink.linkdata, getlink.linktime,
+                    getlink.Flow_link, getlink.Depth_link, getlink.Velocity_link, getlink.Volume_link, getlink.Capacity_link);
+                //if (Nobjects[POLLUT] > 0)
+                //{
+                //	for (int p = 0; p < Nobjects[POLLUT]; p++)
+                //	{
+                //		fprintf(LinkResultdatatime.file, "%10.6f ", LinkResults[LINK_QUAL + p]);
+                //	}
+                //}
+                fprintf(LinkResultdatatime.file, "\n");
+            }
         }
 
         // --- update system-wide results

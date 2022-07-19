@@ -171,7 +171,7 @@ int flowrout_execute(int links[], int routingModel, double tStep)
         n1 = Link[j].node1;
         if ( Node[n1].type == STORAGE ) updateStorageState(n1, i, links, tStep);
 
-        // --- retrieve inflow at upstream end of link
+        // --- retrieve inflow at upstream end of link //
         qin  = getLinkInflow(j, tStep);
 
         // --- route flow through link

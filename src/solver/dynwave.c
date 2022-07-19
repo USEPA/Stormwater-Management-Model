@@ -744,6 +744,9 @@ void setNodeDepth(int i, double dt)
     // --- compute change in depth w.r.t. time
     Xnode[i].dYdT = fabs(yNew - yOld) / dt;
 
+    // -------15JULY2022---------------------//
+    NodeSurfaceArea[i] = Xnode[i].dYdT;
+
     // --- save new depth for node
     Node[i].newDepth = yNew;
 }

@@ -150,6 +150,21 @@ void   DLLEXPORT swmm_writeLine(const char *line);
 void   DLLEXPORT swmm_decodeDate(double date, int *year, int *month, int *day,
                  int *hour, int *minute, int *second, int *dayOfWeek);
 
+
+//------------------------------15JULY2022-----------------------------
+int DLLEXPORT swmm_stepcouple(double* elapsedTime, double timeStep);
+int DLLEXPORT swmmNodeAndPipeNum(int* numnode, int* numlink, int* numcatchment);
+int DLLEXPORT swmm_Nodesxy(int ID_node, double* x_coord_node, double* y_coord_node);
+int DLLEXPORT Get_invertElev_node(int ID_node, double* invertElev_node);
+int DLLEXPORT Get_type_node(int ID_node, int* type_node);
+int DLLEXPORT Get_topElev_node(int ID_node, double* topElev_node);
+int DLLEXPORT Get_PandArea_node(int ID_node, double* PandArea);
+int DLLEXPORT Get_swmm_Node_Depth(int ID_node, double* Depth_Node);
+int DLLEXPORT Get_swmm_Node_Flooding(int ID_node, double* Flooding_Node);
+int DLLEXPORT Get_swmm_Node_lateralflow(int ID_node, double* lateralflow_Node);
+int DLLEXPORT Get_swmm_Node_Tinflow(int ID_node, double* Tinflow_Node);
+int DLLEXPORT Set_swmm_Node_flow_Input(int ID_node, double* inflow, double* overflow);
+
 #ifdef __cplusplus 
 }   // matches the linkage specification from above */ 
 #endif

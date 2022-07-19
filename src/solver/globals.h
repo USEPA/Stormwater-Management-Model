@@ -169,4 +169,32 @@ EXTERN TShape*    Shape;                    // Array of custom conduit shapes
 EXTERN TEvent*    Event;                    // Array of routing events
 
 
+//-------------------15JULY2022----------------------------//
+EXTERN double** NodeXY;
+EXTERN double* NodeInflow1;
+EXTERN double* NodeInoverflow1;
+EXTERN double* NodeSurfaceArea;
+EXTERN double linkDt;
+EXTERN int ADDLINK;
+EXTERN int Resultout;
+EXTERN int SummaryResult;
+
+
+EXTERN char     hmsDate[64];
+EXTERN char     hmsTime[64];
+EXTERN char SubcatchResult[MAXFNAME + 1];
+EXTERN char NodeResult[MAXFNAME + 1];
+EXTERN char LinkResult[MAXFNAME + 1];
+EXTERN char SummarySubcatchmentTotal[MAXFNAME + 1];
+EXTERN char SummaryNodeTotal[MAXFNAME + 1];
+EXTERN char SummaryLinkTotal[MAXFNAME + 1];
+
+
+EXTERN noderesult* Tnoderesult;                     // Array of nodes
+EXTERN linkresult* Tlinkresult;                     // Array of nodes
+EXTERN Subcatchmentresult* TSubcmresult;
+EXTERN TFile SubResultdatatime;                    // Input file
+EXTERN TFile NodeResultdatatime;                   // Output file
+EXTERN TFile LinkResultdatatime;
+
 #endif //GLOBALS_H

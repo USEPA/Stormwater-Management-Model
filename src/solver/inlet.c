@@ -1567,7 +1567,7 @@ double getOnSagCapturedFlow(TInlet* inlet, double q, double d)
 //
 {
     int    linkIndex, designIndex, totalInlets;
-    double qCaptured = 0.0, qMax = HUGE;
+    double qCaptured = 0.0, qMax = BIG;
 
     if (inlet->numInlets == 0) return 0.0;
     totalInlets = Nsides * inlet->numInlets;
@@ -1895,7 +1895,7 @@ double getCustomCapturedFlow(TInlet* inlet, double q, double d)
             qBypassed,                 // inlet's bypassed flow (cfs)
             qCaptured,                 // inlet's captured flow (cfs)
             qIncrement,                // increment to captured flow (cfs)
-            qMax = HUGE;               // user-supplied flow capture limit (cfs)
+            qMax = BIG;               // user-supplied flow capture limit (cfs)
 
     if (inlet->numInlets == 0) return 0.0;
 

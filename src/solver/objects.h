@@ -1087,4 +1087,87 @@ typedef struct
    int           Precision;       // number of decimal places when reported
 }  TRptField;
 
+//----------------------15JULY2022----------------------//
+//------------------Node info------------------
+//----------------------15JULY2022----------------------//
+typedef struct
+{
+    char ID_node[256];//node name
+    char nodedata[64];
+    char nodetime[64];
+    float NODE_depth;
+    float NODE_head;
+    float NODE_volume;
+    float NODE_inflow;
+    float NODE_lateral_inflow;
+    float NODE_overflow;
+    float* NodeQual;         //  quality state
+} noderesult;
+
+//----------------------15JULY2022----------------------//
+//------------------Conduits info------------------
+//----------------------15JULY2022----------------------//
+typedef struct
+{
+    char  ID_link[256];//link name
+    char linkdata[64];
+    char linktime[64];
+    float Flow_link;
+    float Depth_link;
+    float Velocity_link;
+    float Volume_link;
+    float Capacity_link;
+    float* LinkQual;         //  quality state
+} linkresult;
+
+//----------------------15JULY2022----------------------//
+//------------------Subcatchment info------------------
+//----------------------15JULY2022----------------------//
+typedef struct
+{
+    char ID_Subcm[256];//catchment name
+    char Subcmdata[64];
+    char Subcmtime[64];
+    float Precipitation;
+    float Evaporation;
+    float Infiltration;
+    float Runoff;
+    float* SubcatchQual;         //  quality state
+} Subcatchmentresult;
+
+//----------------------15JULY2022----------------------//
+//------------------node depth info------------------
+//----------------------15JULY2022----------------------//
+typedef struct
+{
+    char Name[256];
+    double AverageDepth;
+    double MaximumDepth;
+    double MaximumHGL;
+    int type;
+    int MaxOccurrenceDays;
+    int MaxOccurrenceHours;
+    int MaxOccurrenceMinutes;
+} NodeDepthSummary;
+
+//----------------------15JULY2022----------------------//
+//------------------link flow info------------------
+//----------------------15JULY2022----------------------//
+typedef struct
+{
+    char Link[256];
+    char Type[256];
+    double Max_FullDepth;
+    double Maximum_Flow;
+    double Maximum_Veloc;
+    double Max_FullFlow;
+    int HasMax_FullDepth;
+    int MaxOccurrenceDays;
+    int MaxOccurrenceHours;
+    int MaxOccurrenceMinutes;
+    int HasMaximum_Veloc;
+    int HasMax_FullFlow;
+} LinkFlowSummary;
+
+
 #endif //OBJECTS_H

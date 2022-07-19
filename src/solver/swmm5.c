@@ -212,6 +212,9 @@ int DLLEXPORT  swmm_run(const char *f1, const char *f2, const char *f3)
         // --- initialize values
         swmm_start(TRUE);
 
+        // --- yw ---5.Jul.2022 ---//
+        // --- swmm drainage data_get ---//
+   
         // --- execute each time step until elapsed time is re-set to 0
         if ( !ErrorCode )
         {
@@ -415,6 +418,9 @@ int DLLEXPORT swmm_step(double *elapsedTime)
 //  Purpose: advances the simulation by one routing time step.
 //
 {
+    //------------------15JULY2022-----------------------------------
+    ADDLINK = 2;
+
     // --- check that simulation can proceed
     *elapsedTime = 0.0;
     if ( ErrorCode ) 
@@ -530,6 +536,16 @@ void execRouting()
         TotalStepCount++;
         if ( !DoRouting ) routingStep = MIN(WetStep, ReportStep);
         else routingStep = routing_getRoutingStep(RouteModel, RouteStep);
+
+        //------------------15JULY2022----------------------------
+        // add for link with 2D Model, set the time step as the timestep of 2D model
+        if (ADDLINK == 1)
+        {
+            routingStep = linkDt;
+        }
+        //----------------------------------------------
+
+
         if ( routingStep <= 0.0 )
         {
             ErrorCode = ERR_TIMESTEP;
@@ -1647,6 +1663,259 @@ void  writecon(const char *s)
 }
 
 //=============================================================================
+
+//------------------------------------15JULY2022-----------------------------------//
+
+int DLLEXPORT swmm_stepcouple(double* elapsedTime, double timeStep)
+//
+//  Input:   elapsedTime = current elapsed time in decimal days
+//  Output:  updated value of elapsedTime,
+//           returns error code
+//  Purpose: advances the simulation by one routing time step.
+//
+{
+    //--------------------15JULY2022----------------------------------//
+    ADDLINK = 1;
+    linkDt = timeStep;
+    //printf("swmm_stepcouple");
+    //printf("\nelapsedTime start %f\n", *elapsedTime);
+
+    // --- check that simulation can proceed
+    *elapsedTime = 0.0;
+    if (ErrorCode)
+        return ErrorCode;
+    if (!IsOpenFlag)
+        return (ErrorCode = ERR_API_NOT_OPEN);
+    if (!IsStartedFlag)
+        return (ErrorCode = ERR_API_NOT_STARTED);
+
+#ifdef EXH
+    // --- begin exception handling loop here
+    __try
+#endif
+    {
+        // --- if routing time has not exceeded total duration
+        if (NewRoutingTime < RoutingDuration)
+        {
+            // --- route flow & WQ through drainage system
+            //     (runoff will be calculated as needed)
+            //     (NewRoutingTime is updated)
+            execRouting();
+        }
+
+        // --- if saving results to the binary file
+        if (SaveResultsFlag)
+            saveResults();
+
+        // --- update elapsed time (days)
+        if (NewRoutingTime < RoutingDuration)
+            ElapsedTime = NewRoutingTime / MSECperDAY;
+
+        // --- otherwise end the simulation
+        else ElapsedTime = 0.0;
+        *elapsedTime = ElapsedTime;
+    }
+
+#ifdef EXH
+    // --- end of try loop; handle exception here
+    __except (xfilter(GetExceptionCode(), "swmm_step", ElapsedTime, TotalStepCount))
+    {
+        ErrorCode = ERR_SYSTEM;
+    }
+#endif
+    return ErrorCode;
+}
+
+
+int DLLEXPORT swmmNodeAndPipeNum(int* numnode, int* numlink, int* numcatchment)
+{
+    *numnode = Nobjects[NODE];
+    *numlink = Nobjects[LINK];
+    *numcatchment = Nobjects[SUBCATCH];
+
+
+    NodeInflow1 = (double*)malloc(sizeof(double) * Nobjects[NODE]);
+    NodeInoverflow1 = (double*)malloc(sizeof(double) * Nobjects[NODE]);
+    NodeSurfaceArea = (double*)malloc(sizeof(double) * Nobjects[NODE]);
+
+    for (int i = 0; i < Nobjects[NODE]; i++)
+    {
+        NodeInflow1[i] = 0.0;
+        NodeInoverflow1[i] = 0.0;
+    }
+
+    return 0;
+}
+
+int DLLEXPORT swmm_Nodesxy(int ID_node, double* x_coord_node, double* y_coord_node)
+{
+	x_coord_node[ID_node] = NodeXY[ID_node][0];
+	y_coord_node[ID_node] = NodeXY[ID_node][1];
+	return 0;
+}
+
+int DLLEXPORT Get_invertElev_node(int ID_node, double* invertElev_node)
+{
+	invertElev_node[ID_node] = Node[ID_node].invertElev*UCF(LENGTH);
+	return 0;
+}
+
+int DLLEXPORT Get_type_node(int ID_node, int* type_node)
+{
+	type_node[ID_node] = Node[ID_node].type;
+	return 0;
+}
+
+int DLLEXPORT Get_topElev_node(int ID_node, double* topElev_node)
+{
+	topElev_node[ID_node] = Node[ID_node].invertElev*UCF(LENGTH) + Node[ID_node].fullDepth *UCF(LENGTH);
+	return 0;
+}
+
+int DLLEXPORT Get_PandArea_node(int ID_node, double* PandArea)
+{
+	PandArea[ID_node] = Node[ID_node].pondedArea*UCF(LENGTH)*UCF(LENGTH);
+	return 0;
+}
+
+int DLLEXPORT Get_swmm_Node_Depth(int ID_node, double *Depth_Node)
+{
+	Depth_Node[ID_node] = (Node[ID_node].newDepth + Node[ID_node].invertElev)*UCF(LENGTH);
+	return 0;
+}
+
+
+int DLLEXPORT Get_swmm_Node_Flooding(int ID_node, double *Flooding_Node)
+{
+	Flooding_Node[ID_node] = Node[ID_node].overflow * UCF(FLOW);
+	return 0;
+}
+
+int DLLEXPORT Get_swmm_Node_lateralflow(int ID_node, double *lateralflow_Node)
+{
+	lateralflow_Node[ID_node] = Node[ID_node].newLatFlow * UCF(FLOW);
+	return 0;
+}
+
+int DLLEXPORT Get_swmm_Node_Tinflow(int ID_node, double *Tinflow_Node)
+{
+	Tinflow_Node[ID_node] = Node[ID_node].inflow * UCF(FLOW);
+	return 0;
+}
+
+
+int DLLEXPORT Set_swmm_Node_flow_Input(int ID_node, double *inflow, double *overflow)
+{
+	NodeInflow1[ID_node] = inflow[ID_node];
+	NodeInoverflow1[ID_node] = overflow[ID_node];
+}
+
+
+
+int DLLEXPORT Resultouttofile(char* ReusltfilenameSub, char* ReusltfilenameNode, char* ReusltfilenameLink)
+{
+    Resultout = 1;
+
+    SubResultdatatime.file = NULL;
+    NodeResultdatatime.file = NULL;
+    LinkResultdatatime.file = NULL;
+
+    //char * Hou1 = "_catchment.dat";
+    //char * Hou2 = "_node.dat";
+    //char * Hou3 = "_link.dat";
+
+    //char *name1 = (char *)malloc(strlen(Reusltfilename) + strlen(Hou1));
+    //sprintf(name1, "%s%s", Reusltfilename, Hou1);
+    //sstrncpy(SubcatchResult, name1, MAXFNAME);
+
+    //char *name2 = (char *)malloc(strlen(Reusltfilename) + strlen(Hou2));
+    //sprintf(name2, "%s%s", Reusltfilename, Hou2);
+    //sstrncpy(NodeResult, name2, MAXFNAME);
+
+    //char *name3 = (char *)malloc(strlen(Reusltfilename) + strlen(Hou3));
+    //sprintf(name3, "%s%s", Reusltfilename, Hou3);
+    //sstrncpy(LinkResult, name3, MAXFNAME);
+
+    //sstrncpy(SubResultdatatime.name, SubcatchResult, MAXFNAME);
+    //sstrncpy(NodeResultdatatime.name, NodeResult, MAXFNAME);
+    //sstrncpy(LinkResultdatatime.name, LinkResult, MAXFNAME);
+
+    //SubResultdatatime.file = fopen(ReusltfilenameSub, "wt");
+    //NodeResultdatatime.file = fopen(ReusltfilenameNode, "wt");
+    //LinkResultdatatime.file = fopen(ReusltfilenameLink, "wt");
+
+
+    sstrncpy(SubResultdatatime.name, ReusltfilenameSub, MAXFNAME);
+    sstrncpy(NodeResultdatatime.name, ReusltfilenameNode, MAXFNAME);
+    sstrncpy(LinkResultdatatime.name, ReusltfilenameLink, MAXFNAME);
+
+
+    //printf("%s \n", SubResultdatatime.name);
+
+    if ((SubResultdatatime.file = fopen(ReusltfilenameSub, "wt")) == NULL)
+    {
+        writecon(FMT13);
+        ErrorCode = ERR_RPT_FILE;
+        return;
+    }
+
+    if ((NodeResultdatatime.file = fopen(ReusltfilenameNode, "wt")) == NULL)
+    {
+        writecon(FMT13);
+        ErrorCode = ERR_RPT_FILE;
+        return;
+    }
+
+    if ((LinkResultdatatime.file = fopen(ReusltfilenameLink, "wt")) == NULL)
+    {
+        writecon(FMT13);
+        ErrorCode = ERR_RPT_FILE;
+        return;
+    }
+
+
+    fprintf(SubResultdatatime.file, "%s %s %s %s %s %s %s %s", "Sub_name", "Area", "Data", "Time", "Precipitation", "Evaporation", "Infiltration", "Runoff");
+    if (Nobjects[POLLUT] > 0)
+    {
+        for (int i = 0; i < Nobjects[POLLUT]; i++)
+        {
+            fprintf(SubResultdatatime.file, "%s ", Pollut[i].ID);
+        }
+    }
+    fprintf(SubResultdatatime.file, "\n");
+
+
+    fprintf(NodeResultdatatime.file, "%s %s %s %s %s %s %s %s %s", "Node_name", "Data", "Time", "Depth", "Head", "Volume", "Lateral_inflow", "Total_inflow", "Flooding");
+    if (Nobjects[POLLUT] > 0)
+    {
+        for (int i = 0; i < Nobjects[POLLUT]; i++)
+        {
+            fprintf(NodeResultdatatime.file, "%s ", Pollut[i].ID);
+        }
+
+    }
+    fprintf(NodeResultdatatime.file, "\n");
+
+
+
+
+    fprintf(LinkResultdatatime.file, "%s %s %s %s %s %s %s %s %s", "Line_name", "Length", "Data", "Time", "Flow", "Depth", "Velocity", "Volume", "Capacity");
+    if (Nobjects[POLLUT] > 0)
+    {
+        for (int i = 0; i < Nobjects[POLLUT]; i++)
+        {
+            fprintf(LinkResultdatatime.file, "%s ", Pollut[i].ID);
+        }
+    }
+    fprintf(LinkResultdatatime.file, "\n");
+
+
+    printf("Resultouttofile over");
+
+}
+
+
+
 
 #ifdef EXH
 int xfilter(int xc, char* module, double elapsedTime, long step)

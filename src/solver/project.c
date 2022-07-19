@@ -1025,6 +1025,14 @@ void createObjects()
     Snowmelt = (TSnowmelt *) calloc(Nobjects[SNOWMELT], sizeof(TSnowmelt));
     Shape    = (TShape *)    calloc(Nobjects[SHAPE],    sizeof(TShape));
 
+    //--------------------15JULY2022----------------------------
+    NodeXY = project_createMatrix(Nobjects[NODE], 2);
+    Tnoderesult = (noderesult*)calloc(Nobjects[NODE] * 1, sizeof(noderesult));
+    Tlinkresult = (linkresult*)calloc(Nobjects[LINK] * 1, sizeof(linkresult));
+    TSubcmresult = (Subcatchmentresult*)calloc(Nobjects[SUBCATCH] * 1, sizeof(Subcatchmentresult));
+
+
+
     // --- create array of detailed routing event periods
     Event = (TEvent *) calloc((size_t)NumEvents+1, sizeof(TEvent));
     Event[NumEvents].start = BIG;
@@ -1290,6 +1298,16 @@ void deleteObjects()
     FREE(Snowmelt);
     FREE(Shape);
     FREE(Event);
+    //--------------------15JULY2022----------------------------------
+    project_freeMatrix(NodeXY);
+    FREE(NodeInflow1);
+    FREE(NodeInoverflow1);
+    FREE(Tnoderesult);
+    FREE(Tlinkresult);
+    FREE(TSubcmresult);
+    FREE(NodeSurfaceArea);
+
+
 }
 
 //=============================================================================
