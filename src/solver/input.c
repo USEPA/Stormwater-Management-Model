@@ -716,6 +716,7 @@ int readTitle(char* line)
 
 //=============================================================================
     
+    //------------------------15JULY2022------------------------------------//
 int readNode(int type)
 //
 //  Input:   type = type of node
@@ -729,6 +730,24 @@ int readNode(int type)
     Mobjects[NODE]++;
     Mnodes[type]++;
     return err;
+}
+
+int readCoordinate(char* tok[], int Ntoken)
+{
+    if (Ntoken < 3)return error_setInpError(ERR_ITEMS, "");
+    char* id = project_findID(NODE, Tok[0]);
+    if (id == NULL)return error_setInpError(ERR_NAME, tok[0]);
+    int index = project_findObject(NODE, Tok[0]);
+    double x;
+    if (index > -1)
+    {
+        if (!getDouble(Tok[1], &x)) return error_setInpError(ERR_NUMBER, tok[1]);
+        NodeXY[index][0] = x;
+
+        if (!getDouble(Tok[2], &x)) return error_setInpError(ERR_NUMBER, tok[2]);
+        NodeXY[index][1] = x;
+    }
+    return 0;
 }
 
 //=============================================================================

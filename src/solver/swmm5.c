@@ -1812,7 +1812,7 @@ int DLLEXPORT Set_swmm_Node_flow_Input(int ID_node, double *inflow, double *over
 
 
 
-int DLLEXPORT Resultouttofile(char* ReusltfilenameSub, char* ReusltfilenameNode, char* ReusltfilenameLink)
+/* void DLLEXPORT Resultouttofile(char* ReusltfilenameSub, char* ReusltfilenameNode, char* ReusltfilenameLink)
 {
     Resultout = 1;
 
@@ -1912,7 +1912,7 @@ int DLLEXPORT Resultouttofile(char* ReusltfilenameSub, char* ReusltfilenameNode,
 
     printf("Resultouttofile over");
 
-}
+} */
 
 
 
