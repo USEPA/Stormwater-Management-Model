@@ -672,24 +672,12 @@ void output_saveNodeResults(double reportTime, FILE* file)
             getnode.NODE_lateral_inflow = NodeResults[NODE_LATFLOW];
             getnode.NODE_inflow = NodeResults[NODE_INFLOW];
             getnode.NODE_overflow = NodeResults[NODE_OVERFLOW];
-            //if (Nobjects[POLLUT] > 0)
-            //{
-            //	for (int p = 0; p < Nobjects[POLLUT]; p++)
-            //	{	
-            //		getnode.NodeQual[p] = NodeResults[NODE_QUAL + p];
-            //	}
-            //}
+ 
 
             fprintf(NodeResultdatatime.file, "%s %s %s %10.6f %10.6f %10.6f %10.6f %10.6f %10.6f", getnode.ID_node, getnode.nodedata, getnode.nodetime,
                 getnode.NODE_depth, getnode.NODE_head, getnode.NODE_volume,
                 getnode.NODE_lateral_inflow, getnode.NODE_inflow, getnode.NODE_overflow);
-            //if (Nobjects[POLLUT] > 0)
-            //{
-            //	for (int p = 0; p < Nobjects[POLLUT]; p++)
-            //	{
-            //		fprintf(NodeResultdatatime.file, "%10.6f ", getnode.NodeQual[p]);
-            //	}
-            //}
+
             fprintf(NodeResultdatatime.file, "\n");
         }
     

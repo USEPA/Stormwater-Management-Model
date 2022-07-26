@@ -1812,7 +1812,7 @@ int DLLEXPORT Set_swmm_Node_flow_Input(int ID_node, double *inflow, double *over
 
 
 
-/* void DLLEXPORT Resultouttofile(char* ReusltfilenameSub, char* ReusltfilenameNode, char* ReusltfilenameLink)
+void DLLEXPORT Resultouttofile(char* ReusltfilenameSub, char* ReusltfilenameNode, char* ReusltfilenameLink)
 {
     Resultout = 1;
 
@@ -1820,37 +1820,10 @@ int DLLEXPORT Set_swmm_Node_flow_Input(int ID_node, double *inflow, double *over
     NodeResultdatatime.file = NULL;
     LinkResultdatatime.file = NULL;
 
-    //char * Hou1 = "_catchment.dat";
-    //char * Hou2 = "_node.dat";
-    //char * Hou3 = "_link.dat";
-
-    //char *name1 = (char *)malloc(strlen(Reusltfilename) + strlen(Hou1));
-    //sprintf(name1, "%s%s", Reusltfilename, Hou1);
-    //sstrncpy(SubcatchResult, name1, MAXFNAME);
-
-    //char *name2 = (char *)malloc(strlen(Reusltfilename) + strlen(Hou2));
-    //sprintf(name2, "%s%s", Reusltfilename, Hou2);
-    //sstrncpy(NodeResult, name2, MAXFNAME);
-
-    //char *name3 = (char *)malloc(strlen(Reusltfilename) + strlen(Hou3));
-    //sprintf(name3, "%s%s", Reusltfilename, Hou3);
-    //sstrncpy(LinkResult, name3, MAXFNAME);
-
-    //sstrncpy(SubResultdatatime.name, SubcatchResult, MAXFNAME);
-    //sstrncpy(NodeResultdatatime.name, NodeResult, MAXFNAME);
-    //sstrncpy(LinkResultdatatime.name, LinkResult, MAXFNAME);
-
-    //SubResultdatatime.file = fopen(ReusltfilenameSub, "wt");
-    //NodeResultdatatime.file = fopen(ReusltfilenameNode, "wt");
-    //LinkResultdatatime.file = fopen(ReusltfilenameLink, "wt");
-
-
     sstrncpy(SubResultdatatime.name, ReusltfilenameSub, MAXFNAME);
     sstrncpy(NodeResultdatatime.name, ReusltfilenameNode, MAXFNAME);
     sstrncpy(LinkResultdatatime.name, ReusltfilenameLink, MAXFNAME);
 
-
-    //printf("%s \n", SubResultdatatime.name);
 
     if ((SubResultdatatime.file = fopen(ReusltfilenameSub, "wt")) == NULL)
     {
@@ -1912,7 +1885,7 @@ int DLLEXPORT Set_swmm_Node_flow_Input(int ID_node, double *inflow, double *over
 
     printf("Resultouttofile over");
 
-} */
+}
 
 
 

@@ -164,6 +164,7 @@ int DLLEXPORT Get_swmm_Node_Flooding(int ID_node, double* Flooding_Node);
 int DLLEXPORT Get_swmm_Node_lateralflow(int ID_node, double* lateralflow_Node);
 int DLLEXPORT Get_swmm_Node_Tinflow(int ID_node, double* Tinflow_Node);
 int DLLEXPORT Set_swmm_Node_flow_Input(int ID_node, double* inflow, double* overflow);
+void DLLEXPORT Resultouttofile(char* ReusltfilenameSub, char* ReusltfilenameNode, char* ReusltfilenameLink);
 
 #ifdef __cplusplus 
 }   // matches the linkage specification from above */ 
