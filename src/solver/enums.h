@@ -3,7 +3,7 @@
 //
 //   Project: EPA SWMM5
 //   Version: 5.2
-//   Date:    11/01/21  (Build 5.2.0)
+//   Date:    06/01/22  (Build 5.2.1)
 //   Author:  L. Rossman
 //
 //   Enumerated constants
@@ -31,6 +31,8 @@
 //   - Support added for Streets and Inlets.
 //   - Support added for variable speed pumps.
 //   - Support added for analytical storage shapes.
+//   Build 5.2.1:
+//   - Adds a NEITHER option to the NormalFlowType enumeration. 
 //-----------------------------------------------------------------------------
 
 #ifndef ENUMS_H
@@ -356,7 +358,8 @@ enum  CompatibilityType {
  enum NormalFlowType {
       SLOPE,                           // based on slope only
       FROUDE,                          // based on Fr only
-      BOTH};                           // based on slope & Fr
+      BOTH,                            // based on slope & Fr
+      NEITHER};
 
  enum InertialDampingType {
       NO_DAMPING,                      // no inertial damping

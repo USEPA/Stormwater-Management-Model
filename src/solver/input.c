@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21  (Build 5.2.0)
+//   Date:     06/01/22  (Build 5.2.1)
 //   Author:   L. Rossman
 //
 //   Input data processing functions.
@@ -19,6 +19,8 @@
 //   Build 5.2.0:
 //   - Support added for Streets and Inlets.
 //   - Support added for named variables & math expressions in control rules.
+//   Build 5.2.1:
+//   - Possible integer underflow avoided in getTokens() function.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -889,8 +891,8 @@ int  getTokens(char *s)
 //           in CONSTS.H. Text between quotes is treated as a single token.
 //
 {
-    int    n;
-    size_t len, m;
+    int  len, n;
+    int  m;
     char *c;
 
     // --- begin with no tokens
@@ -905,7 +907,7 @@ int  getTokens(char *s)
     // --- scan s for tokens until nothing left
     while (len > 0 && n < MAXTOKS)
     {
-        m = strcspn(s,SEPSTR);              // find token length 
+        m = (int)strcspn(s,SEPSTR);         // find token length 
         if (m == 0) s++;                    // no token found
         else
         {
@@ -913,7 +915,7 @@ int  getTokens(char *s)
             {
                 s++;                        // start token after quote
                 len--;                      // reduce length of s
-                m = strcspn(s,"\"\n");      // find end quote or new line
+                m = (int)strcspn(s,"\"\n"); // find end quote or new line
             }
             s[m] = '\0';                    // null-terminate the token
             Tok[n] = s;                     // save pointer to token 
