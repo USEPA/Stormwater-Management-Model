@@ -26,7 +26,6 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v2
 
-
     - name: Install boost-test
       env:
         REMOTE_STORE: "https://nuget.pkg.github.com/michaeltryby/index.json"
@@ -42,7 +41,7 @@ jobs:
         cmake -B.\build -DBUILD_TESTS=ON -DCMAKE_TOOLCHAIN_FILE=.\${{env.PACKAGE_NAME}}${{env.TOOL_CHAIN_PATH}} .
         cmake --build .\build --config DEBUG
 
-     -name: Unit Test
+    - name: Unit Test
       run: ctest -B.\build -C Debug --output-on-failure
 
 
