@@ -72,13 +72,14 @@ jobs:
         working-directory: ci-tools/windows
 
     steps:
-    - name: Checkout repo
+    - name: Checkout swmm repo
       uses: actions/checkout@v2
 
-    - name: Checkout submodule
+    - name: Checkout ci-tools repo
       uses: actions/checkout@v2
       with:
         repository: michaeltryby/ci-tools
+        ref: master
         path: ci-tools
 
     - name: Setup python
@@ -100,7 +101,7 @@ jobs:
         BENCHMARK_TAG: v2.1.0
       run: before-nrtest.cmd ${{ env.BENCHMARK_TAG }}
 
-    - name: Reg test
+    - name: Run reg test
       run: run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
     - name: Upload artifacts
