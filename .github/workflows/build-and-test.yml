@@ -39,9 +39,8 @@ jobs:
       env:
         TOOL_CHAIN_PATH: \scripts\buildsystems\vcpkg.cmake
       run: |
-        cd build
-        cmake -DBUILD-TESTS=ON -DCMAKE_TOOLCHAIN_FILE=..\${{env.PACKAGE_NAME_LONG}}${{env.TOOL_CHAIN_PATH}} ..
-        cmake --build .
+        cmake -B.\build -DBUILD-TESTS=ON -DCMAKE_TOOLCHAIN_FILE=.\${{env.PACKAGE_NAME_LONG}}${{env.TOOL_CHAIN_PATH}} .
+        cmake --build .\build --config DEBUG
 
 
   reg_test:
