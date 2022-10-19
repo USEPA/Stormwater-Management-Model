@@ -26,6 +26,7 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v2
 
+
     - name: Install boost-test
       env:
         REMOTE_STORE: "https://nuget.pkg.github.com/michaeltryby/index.json"
@@ -39,7 +40,7 @@ jobs:
         TOOL_CHAIN_PATH: \scripts\buildsystems\vcpkg.cmake
       run: |
         cd build
-        cmake .. -DBUILD-TESTS=ON -DCMAKE_TOOLCHAIN_FILE=.\${{env.PACKAGE_NAME_LONG}}\scripts\buildsystems\vcpkg.cmake
+        cmake -DBUILD-TESTS=ON -DCMAKE_TOOLCHAIN_FILE=..\${{env.PACKAGE_NAME_LONG}}${{env.TOOL_CHAIN_PATH}} ..
         cmake --build .
 
 
