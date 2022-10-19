@@ -42,7 +42,7 @@ jobs:
         cmake --build .\build --config DEBUG
 
     - name: Unit Test
-      run: ctest -B.\build -C Debug --output-on-failure
+      run: ctest --test-dir .\build -C Debug --output-on-failure
 
 
   reg_test:
