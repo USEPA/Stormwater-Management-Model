@@ -2,9 +2,9 @@ name: Build and Test
 
 on:
   push:
-    branches: [ master, develop, release ]
+    branches: [ master, develop, release, lew-develop ]
   pull_request:
-    branches: [ master, develop, release ]
+    branches: [ master, develop, release, lew-develop ]
 
 env:
   OMP_NUM_THREADS: 1
@@ -95,14 +95,14 @@ jobs:
     - name: Build
       run: make.cmd /g "Visual Studio 16 2019"
 
-    - name: Before test
+    - name: Before reg test
       env:
-        NRTESTS_URL: https://github.com/SWMM-Project/swmm-nrtestsuite
-        BENCHMARK_TAG: v2.0.0
+        NRTESTS_URL: https://github.com/USEPA/swmm-nrtestsuite
+        BENCHMARK_TAG: v2.1.0
       run: before-nrtest.cmd ${{ env.BENCHMARK_TAG }}
 
     - name: Run reg test
-      run: run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER% 
+      run: run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
     - name: Upload artifacts
       if: ${{ always() }}

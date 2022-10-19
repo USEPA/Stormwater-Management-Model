@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21   (Build 5.2.0)
+//   Date:     08/01/22   (Build 5.2.1)
 //   Author:   L. Rossman
 //
 //   Water quality routing functions.
@@ -23,6 +23,9 @@
 //   Build 5.2.0:
 //   - Support added for flow capture by inlet structures.
 //   - Definition of a dry node/link modified.
+//   Build 5.2.1:
+//   - Dry non-storage nodes now have quality determined by inflow.   
+//   - Wet non-storage nodes with no inflow now have no change in quality.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -110,10 +113,10 @@ void qualrout_execute(double tStep)
 
     // --- find new water quality concentration at each node  
     for (j = 0; j < Nobjects[NODE]; j++)
-    {
+    {        
         // --- get node inflow and average volume
+        Node[j].qualInflow = Node[j].inflow;
         qIn = Node[j].qualInflow;
-
         vAvg = (Node[j].oldVolume + Node[j].newVolume) / 2.0;
         
         // --- save inflow concentrations if treatment applied
@@ -227,7 +230,7 @@ void findNodeQual(int j)
 
     // --- if there is flow into node then concen. = mass inflow/node flow
     qNode = Node[j].qualInflow;
-    if ( qNode > ZERO && Node[j].newDepth > ZeroDepth)
+    if ( qNode > ZERO )
     {
         for (p = 0; p < Nobjects[POLLUT]; p++)
         {
@@ -235,8 +238,14 @@ void findNodeQual(int j)
         }
     }
 
-    // --- otherwise concen. is 0
-    else for (p = 0; p < Nobjects[POLLUT]; p++) Node[j].newQual[p] = 0.0;
+    // --- otherwise concen. remains the same
+    else for (p = 0; p < Nobjects[POLLUT]; p++)
+    {
+        if (Node[j].newDepth > ZeroDepth)
+            Node[j].newQual[p] = Node[j].oldQual[p];
+        else
+            Node[j].newQual[p] = 0.0;
+    }
 }
 
 //=============================================================================

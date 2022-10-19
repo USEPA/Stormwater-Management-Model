@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21 (Build 5.2.0)
+//   Date:     06/01/22 (Build 5.2.1)
 //   Author:   L. Rossman
 //
 //   Report writing functions for summary statistics.
@@ -25,6 +25,8 @@
 //   Build 5.2.0:
 //   - Adds a new Street & Inlet Summary table.
 //   - Fixes value used for total reporting time.
+//   Build 5.2.1:
+//   - Replaces the "3" in "ft3" and "m3" with ANSI superscript (\xB3).
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -87,7 +89,7 @@ void statsrpt_writeReport()
     if ( FlowUnits == MGD || FlowUnits == CMS ) sstrncpy(FlowFmt, "%9.3f", 5);
     else sstrncpy(FlowFmt, "%9.2f", 5);
 
-    // --- volume conversion factor from ft3 to Mgal or Mliters
+    // --- conversion factor from cu. ft. to mil. gallons or megaliters
     if (UnitSystem == US) Vcf = 7.48 / 1.0e6;
     else                  Vcf = 28.317 / 1.0e6;
 
@@ -524,9 +526,9 @@ void writeStorageVolumes()
 "\n                         Average     Avg  Evap Exfil       Maximum     Max    Time of Max    Maximum"
 "\n                          Volume    Pcnt  Pcnt  Pcnt        Volume    Pcnt     Occurrence    Outflow");
         if ( UnitSystem == US ) fprintf(Frpt.file,
-"\n  Storage Unit          1000 ft3    Full  Loss  Loss      1000 ft3    Full    days hr:min        ");
+"\n  Storage Unit          1000 ft\xB3    Full  Loss  Loss      1000 ft\xB3    Full    days hr:min        ");
         else fprintf(Frpt.file,
-"\n  Storage Unit           1000 m3    Full  Loss  Loss       1000 m3    Full    days hr:min        ");
+"\n  Storage Unit           1000 m\xB3    Full  Loss  Loss       1000 m\xB3    Full    days hr:min        ");
         fprintf(Frpt.file, "%3s", FlowUnitWords[FlowUnits]);
         fprintf(Frpt.file,
 "\n  --------------------------------------------------------------------------------------------------");
