@@ -525,16 +525,16 @@ void writeStorageVolumes()
         WRITE("");
 
         fprintf(Frpt.file,
-"\n  --------------------------------------------------------------------------------------------------"
-"\n                         Average     Avg  Evap Exfil       Maximum     Max    Time of Max    Maximum"
-"\n                          Volume    Pcnt  Pcnt  Pcnt        Volume    Pcnt     Occurrence    Outflow");
+"\n  ------------------------------------------------------------------------------------------------"
+"\n                         Average    Avg   Evap  Exfil     Maximum    Max    Time of Max    Maximum"
+"\n                          Volume   Pcnt   Pcnt   Pcnt      Volume   Pcnt     Occurrence    Outflow");
         if ( UnitSystem == US ) fprintf(Frpt.file,
-"\n  Storage Unit          1000 ft\xB3    Full  Loss  Loss      1000 ft\xB3    Full    days hr:min        ");
+"\n  Storage Unit          1000 ft\xB3   Full   Loss   Loss    1000 ft\xB3   Full    days hr:min        ");
         else fprintf(Frpt.file,
-"\n  Storage Unit           1000 m\xB3    Full  Loss  Loss       1000 m\xB3    Full    days hr:min        ");
+"\n  Storage Unit           1000 m\xB3   Full   Loss   Loss     1000 m\xB3   Full    days hr:min        ");
         fprintf(Frpt.file, "%3s", FlowUnitWords[FlowUnits]);
         fprintf(Frpt.file,
-"\n  --------------------------------------------------------------------------------------------------");
+"\n  ------------------------------------------------------------------------------------------------");
 
         for ( j = 0; j < Nobjects[NODE]; j++ )
         {
@@ -558,7 +558,7 @@ void writeStorageVolumes()
                 pctSeepLoss = StorageStats[k].exfilLosses / NodeInflow[j] * 100.0;
             }
 
-            fprintf(Frpt.file, "%10.3f    %4.1f  %4.1f  %4.1f    %10.3f    %4.1f",
+            fprintf(Frpt.file, "%10.3f  %5.1f  %5.1f  %5.1f  %10.3f  %5.1f",
                 avgVol*UCF(VOLUME)/1000.0, pctAvgVol, pctEvapLoss, pctSeepLoss,
                 maxVol*UCF(VOLUME)/1000.0, pctMaxVol);
 
