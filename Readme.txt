@@ -1,8 +1,8 @@
-CONTENTS OF SWMM520_ENGINE.ZIP
+CONTENTS OF SWMM522_ENGINE.ZIP
 ==============================
 
 The 'src' folder of this archive contains the C source code for
-version 5.2.0 of the Storm Water Management Model's computational
+version 5.2.2 of the Storm Water Management Model's computational
 engine. Consult the included 'Roadmap.txt' file for an overview of
 the various code modules. The code can be compiled into both a shared
 object library and a command line executable. Under Windows, the 

@@ -592,7 +592,7 @@ void stats_updateNodeStats(int j, double tStep, DateTime aDate)
         k = Node[j].subIndex;
         StorageStats[k].avgVol += newVolume;
         StorageStats[k].evapLosses += 
-            Storage[Node[j].subIndex].evapLoss; 
+            Storage[Node[j].subIndex].evapLoss;
         StorageStats[k].exfilLosses +=
             Storage[Node[j].subIndex].exfilLoss; 
 

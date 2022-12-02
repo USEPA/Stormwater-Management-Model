@@ -6,9 +6,9 @@
 **                 operators.
 **  AUTHORS:       L. Rossman, US EPA - NRMRL
 **                 F. Shang, University of Cincinnati
-**  VERSION:       5.2.0
-**  LAST UPDATE:   11/01/21
-**  BUG FIXES:     Problems related to '^' operator (L.Rossman, 11/01/21)
+**  VERSION:       5.2.2
+**  LAST UPDATE:   09/02/2022
+**  BUG FIXES:     Problems related to '^' operator (F. Shang, 09/02/2022)
 ******************************************************************************/
 /*
 **   Operand codes:
@@ -34,12 +34,12 @@
 **	  20 = acos
 **	  21 = atan
 **	  22 = acot
-**    23 = sinh
+**        23 = sinh
 **	  24 = cosh
 **	  25 = tanh
 **	  26 = coth
 **	  27 = log10
-**    28 = step (x<=0 ? 0 : 1)
+**        28 = step (x<=0 ? 0 : 1)
 **	  31 = ^
 ******************************************************************************/
 #define _CRT_SECURE_NO_DEPRECATE
@@ -190,6 +190,7 @@ double getNumber()
     char c[] = " ";
     char sNumber[255];
     int  errflag = 0;
+    int  decimalCount = 0;
 
     /* --- get whole number portion of number */
     sNumber[0] = '\0';
@@ -205,6 +206,8 @@ double getNumber()
     {
         if (S[Pos] == '.')
         {
+            decimalCount++;
+            if (decimalCount > 1) Err = 1;
             strcat(sNumber, ".");
             Pos++;
             while (Pos < Len && isDigit(S[Pos]))
@@ -257,7 +260,7 @@ int getOperand()
       case '-': code = 4;
         if (Pos < Len-1 &&
             isDigit(S[Pos+1]) &&
-            (CurLex == 0 || CurLex == 1))
+            (CurLex <= 6 || CurLex == 31))
         {
             Pos++;
             Fvalue = -getNumber();
@@ -294,7 +297,7 @@ int getLex()
             n = getMathFunc();
             if ( n == 0 ) n = getVariable();
         }
-        else if ( isDigit(S[Pos]) )
+        else if ( S[Pos] == '.' || isDigit(S[Pos]) )
         {
             n = 7;
             Fvalue = getNumber();
@@ -330,6 +333,7 @@ ExprTree * getSingleOp(int *lex)
 {
     int opcode;
     ExprTree *left;
+    ExprTree *node;
 
     /* --- open parenthesis, so continue to grow the tree */
     if ( *lex == 1 )
@@ -374,6 +378,17 @@ ExprTree * getSingleOp(int *lex)
         }
     }   
     *lex = getLex();
+
+    /* --- exponentiation */
+	if (*lex == 31)
+	{
+		node = newNode();
+		node->left = left;
+		node->opcode = *lex;
+		*lex = getLex();
+		node->right = getSingleOp(lex);
+		left = node;
+    }
     return left;
 }
 
@@ -398,7 +413,7 @@ ExprTree * getOp(int *lex)
         else if ( *lex == 3) *lex = getLex();
     }
     left = getSingleOp(lex);
-    while ( *lex == 5 || *lex == 6 || *lex == 31)
+    while ( *lex == 5 || *lex == 6)
     {
         opcode = *lex;
         *lex = getLex();
@@ -518,88 +533,88 @@ double mathexpr_eval(MathExpr *expr, double (*getVariableValue) (int))
 	    case 3:
  		r1 = ExprStack[stackindex];
 		stackindex--;
-        if (stackindex < 0) break;
+                if (stackindex < 0) break;
 		r2 = ExprStack[stackindex];
 		ExprStack[stackindex] = r2 + r1;
 		break;
 
-        case 4:  
-        r1 = ExprStack[stackindex];
+            case 4:  
+                r1 = ExprStack[stackindex];
 		stackindex--;
-        if (stackindex < 0) break;
+                if (stackindex < 0) break;
 		r2 = ExprStack[stackindex];
 		ExprStack[stackindex] = r2 - r1;
 		break;
 
-        case 5:  
-        r1 = ExprStack[stackindex];
+            case 5:  
+                r1 = ExprStack[stackindex];
 		stackindex--;
-        if (stackindex < 0) break;
+                if (stackindex < 0) break;
 		r2 = ExprStack[stackindex];
 		ExprStack[stackindex] = r2 * r1;
 		break;
 
-        case 6:  
+            case 6:  
 		r1 = ExprStack[stackindex];
 		stackindex--;
-        if (stackindex < 0) break;
-        r2 = ExprStack[stackindex];
+                if (stackindex < 0) break;
+                r2 = ExprStack[stackindex];
 		ExprStack[stackindex] = r2 / r1;
 		break;				
 
-        case 7:  
+            case 7:  
 		stackindex++;
-        if (stackindex >= MAX_STACK_SIZE) break;
+                if (stackindex >= MAX_STACK_SIZE) break;
 		ExprStack[stackindex] = node->fvalue;
 		break;
 
-        case 8:
-        if (getVariableValue != NULL)
-        {
-           r1 = getVariableValue(node->ivar);
-        }
-        else r1 = 0.0;
+            case 8:
+                if (getVariableValue != NULL)
+                {
+                    r1 = getVariableValue(node->ivar);
+                }
+                else r1 = 0.0;
 		stackindex++;
-        if (stackindex >= MAX_STACK_SIZE) break;
-        ExprStack[stackindex] = r1;
+                if (stackindex >= MAX_STACK_SIZE) break;
+                ExprStack[stackindex] = r1;
 		break;
 
-        case 9: 
+            case 9: 
 		ExprStack[stackindex] = -ExprStack[stackindex];
 		break;
 
-        case 10: 
+            case 10: 
 		r1 = ExprStack[stackindex];
 		r2 = cos(r1);
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 11: 
+            case 11: 
 		r1 = ExprStack[stackindex];
 		r2 = sin(r1);
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 12: 
+            case 12: 
 		r1 = ExprStack[stackindex];
 		r2 = tan(r1);
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 13: 
+            case 13: 
 		r1 = ExprStack[stackindex];
 		if (r1 == 0.0) r2 = 0.0;
 		else r2 = 1.0/tan( r1 );    
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 14: 
+            case 14: 
 		r1 = ExprStack[stackindex];
 		r2 = fabs( r1 );       
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 15: 
+            case 15: 
 		r1 = ExprStack[stackindex];
 		if (r1 < 0.0) r2 = -1.0;
 		else if (r1 > 0.0) r2 = 1.0;
@@ -607,93 +622,93 @@ double mathexpr_eval(MathExpr *expr, double (*getVariableValue) (int))
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 16: 
+            case 16: 
 		r1 = ExprStack[stackindex];
 		if (r1 < 0.0) r2 = 0.0;
 		else r2 = sqrt( r1 );     
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 17: 
+            case 17: 
 		r1 = ExprStack[stackindex];
 		if (r1 <= 0) r2 = 0.0;
 		else r2 = log(r1);
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 18: 
+            case 18: 
 		r1 = ExprStack[stackindex];
 		r2 = exp(r1);
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 19: 
+            case 19: 
 		r1 = ExprStack[stackindex];
 		r2 = asin( r1 );
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 20: 
+            case 20: 
 		r1 = ExprStack[stackindex];
 		r2 = acos( r1 );      
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 21: 
+            case 21: 
 		r1 = ExprStack[stackindex];
 		r2 = atan( r1 );      
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 22: 
+            case 22: 
 		r1 = ExprStack[stackindex];
 		r2 = 1.57079632679489661923 - atan(r1);  
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 23:
+            case 23:
 		r1 = ExprStack[stackindex];
 		r2 = (exp(r1)-exp(-r1))/2.0;
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 24: 
+            case 24: 
 		r1 = ExprStack[stackindex];
 		r2 = (exp(r1)+exp(-r1))/2.0;
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 25: 
+            case 25: 
 		r1 = ExprStack[stackindex];
 		r2 = (exp(r1)-exp(-r1))/(exp(r1)+exp(-r1));
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 26: 
+            case 26: 
 		r1 = ExprStack[stackindex];
 		r2 = (exp(r1)+exp(-r1))/(exp(r1)-exp(-r1));
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 27: 
+            case 27: 
 		r1 = ExprStack[stackindex];
 		if (r1 == 0.0) r2 = 0.0;
 		else r2 = log10( r1 );     
 		ExprStack[stackindex] = r2;
 		break;
 
-        case 28:
+            case 28:
  		r1 = ExprStack[stackindex];
 		if (r1 <= 0.0) r2 = 0.0;
 		else           r2 = 1.0;
 		ExprStack[stackindex] = r2;
 		break;
                
-        case 31: 
+            case 31: 
 		r1 = ExprStack[stackindex];
-        stackindex--;
-        if (stackindex < 0) break;
-        r2 = ExprStack[stackindex];
+                stackindex--;
+                if (stackindex < 0) break;
+                r2 = ExprStack[stackindex];
 		if (r2 <= 0.0) r2 = 0.0;
 		else r2 = pow(r2, r1);
 		ExprStack[stackindex] = r2;
@@ -741,9 +756,9 @@ MathExpr * mathexpr_create(char *formula, int (*getVar) (char *))
     tree = getTree();
     if (Bc == 0 && Err == 0)
     {
-	    traverseTree(tree, &expr);
-	    while (expr)
-	    {
+        traverseTree(tree, &expr);
+        while (expr)
+        {
             result = expr;
             expr = expr->prev;
         }
