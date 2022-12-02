@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     06/01/22 (Build 5.2.1)
+//   Date:     11/19/22 (Build 5.2.2)
 //   Author:   L. Rossman
 //
 //   Report writing functions for summary statistics.
@@ -27,6 +27,9 @@
 //   - Fixes value used for total reporting time.
 //   Build 5.2.1:
 //   - Replaces the "3" in "ft3" and "m3" with ANSI superscript (\xB3).
+//   Build 5.2.2
+//   - Calculation of % Evaporation and % Exfiltration losses for storage
+//     units was corrected.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -511,7 +514,7 @@ void writeStorageVolumes()
 {
     int    j, k, days, hrs, mins;
     double avgVol, maxVol, pctAvgVol, pctMaxVol;
-    double addedVol, pctEvapLoss, pctSeepLoss;
+    double pctEvapLoss, pctSeepLoss;
 
     if ( Nnodes[STORAGE] > 0 )
     {
@@ -522,16 +525,16 @@ void writeStorageVolumes()
         WRITE("");
 
         fprintf(Frpt.file,
-"\n  --------------------------------------------------------------------------------------------------"
-"\n                         Average     Avg  Evap Exfil       Maximum     Max    Time of Max    Maximum"
-"\n                          Volume    Pcnt  Pcnt  Pcnt        Volume    Pcnt     Occurrence    Outflow");
+"\n  ------------------------------------------------------------------------------------------------"
+"\n                         Average    Avg   Evap  Exfil     Maximum    Max    Time of Max    Maximum"
+"\n                          Volume   Pcnt   Pcnt   Pcnt      Volume   Pcnt     Occurrence    Outflow");
         if ( UnitSystem == US ) fprintf(Frpt.file,
-"\n  Storage Unit          1000 ft\xB3    Full  Loss  Loss      1000 ft\xB3    Full    days hr:min        ");
+"\n  Storage Unit          1000 ft\xB3   Full   Loss   Loss    1000 ft\xB3   Full    days hr:min        ");
         else fprintf(Frpt.file,
-"\n  Storage Unit           1000 m\xB3    Full  Loss  Loss       1000 m\xB3    Full    days hr:min        ");
+"\n  Storage Unit           1000 m\xB3   Full   Loss   Loss     1000 m\xB3   Full    days hr:min        ");
         fprintf(Frpt.file, "%3s", FlowUnitWords[FlowUnits]);
         fprintf(Frpt.file,
-"\n  --------------------------------------------------------------------------------------------------");
+"\n  ------------------------------------------------------------------------------------------------");
 
         for ( j = 0; j < Nobjects[NODE]; j++ )
         {
@@ -549,14 +552,13 @@ void writeStorageVolumes()
             }
             pctEvapLoss = 0.0;
             pctSeepLoss = 0.0;
-            addedVol = NodeInflow[j] + StorageStats[k].initVol;
-            if ( addedVol > 0.0 )
+            if ( NodeInflow[j] > 0.0 )
             {
-                pctEvapLoss = StorageStats[k].evapLosses / addedVol * 100.0;
-                pctSeepLoss = StorageStats[k].exfilLosses / addedVol * 100.0;
+                pctEvapLoss = StorageStats[k].evapLosses / NodeInflow[j] * 100.0;
+                pctSeepLoss = StorageStats[k].exfilLosses / NodeInflow[j] * 100.0;
             }
 
-            fprintf(Frpt.file, "%10.3f    %4.0f  %4.0f  %4.0f    %10.3f    %4.0f",
+            fprintf(Frpt.file, "%10.3f  %5.1f  %5.1f  %5.1f  %10.3f  %5.1f",
                 avgVol*UCF(VOLUME)/1000.0, pctAvgVol, pctEvapLoss, pctSeepLoss,
                 maxVol*UCF(VOLUME)/1000.0, pctMaxVol);
 

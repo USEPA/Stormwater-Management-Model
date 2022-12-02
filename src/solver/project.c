@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21  (Build 5.2.0)
+//   Date:     11/21/22  (Build 5.2.2)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -49,6 +49,9 @@
 //   - Support added for Streets and Inlets.
 //   - Support added for RptFlags.disabled option.
 //   - Object's rptFlag changed to record its index in output file.
+//   Build 5.2.2:
+//   - Default number of threads changed from OMP max. number to 1
+//     to be consistent with User Manual.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -865,7 +868,7 @@ void setDefaults()
    HeadTol         = 0.0;              // Force use of default head tolerance
    SysFlowTol      = 0.05;             // System flow tolerance for steady state
    LatFlowTol      = 0.05;             // Lateral flow tolerance for steady state
-   NumThreads      = 0;                // Number of parallel threads to use
+   NumThreads      = 1;                // Number of parallel threads to use
    NumEvents       = 0;                // Number of detailed routing events
 
    // Deprecated options
