@@ -2,65 +2,47 @@ name: Build and Test
 
 on:
   push:
-    branches: [ lew-develop ]
+    branches: [ master, develop, release, lew-develop ]
   pull_request:
-    branches: [ lew-develop ]
+    branches: [ master, develop, release, lew-develop ]
 
 env:
   OMP_NUM_THREADS: 1
   BUILD_HOME: build
   TEST_HOME: nrtests
+  PACKAGE_NAME:  vcpkg-export-20220826-200052.1.0.0
+  PKG_NAME: vcpkg-export-20220826-200052
 
 jobs:
   unit_test:
     name: Build and unit test
     runs-on: windows-2019
+    environment: testing
     defaults:
       run:
         shell: cmd
-        working-directory: ci-tools/windows
 
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
 
-    - name: Checkout submodule
-      uses: actions/checkout@v2
-      with:
-        repository: michaeltryby/ci-tools
-        path: ci-tools
-
-    - name: Add tar.exe
-      if: ${{ runner.os == 'Windows' }}
-      shell: pwsh
+    - name: Install boost-test
+      env:
+        REMOTE_STORE: "https://nuget.pkg.github.com/michaeltryby/index.json"
+        USERNAME: michaeltryby
       run: |
-          "C:\Program Files\Git\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+        nuget sources add -Name github -Source ${{ env.REMOTE_STORE }} -Username ${{ env.USERNAME }} -Password ${{ secrets.ACCESS_TOKEN }}
+        nuget install ${{env.PKG_NAME}} -Source github
 
-
-    - name: Cache boost
-      id: cache-boost
-      uses: actions/cache@v2
+    - name: Build
       env:
-        cache_paths: |
-            C:/ProgramData/chocolatey/lib/boost-*
-            C:/local/boost_*
-        pkg_file_hash: ${{ hashFiles('**/windows/packages.config') }}
-      with:
-        path: ${{ env.cache_paths }}
-        key: ${{ runner.os }}-cache-boost-${{ env.pkg_file_hash }}
-        restore-keys: |
-          ${{ runner.os }}-cache-boost-
-          ${{ runner.os }}-cache-
-          ${{ runner.os }}-
+        TOOL_CHAIN_PATH: \scripts\buildsystems\vcpkg.cmake
+      run: |
+        cmake -B.\build -DBUILD_TESTS=ON -DCMAKE_TOOLCHAIN_FILE=.\${{env.PACKAGE_NAME}}${{env.TOOL_CHAIN_PATH}} .
+        cmake --build .\build --config DEBUG
 
-    - name: Install boost
-      if: steps.cache-boost.outputs.cache-hit != 'true'
-      env:
-        pkg_cmnd: choco install -y packages.config
-      run: ${{ env.pkg_cmnd }}
-
-    - name: Build and unit test
-      run: make.cmd /t /g "Visual Studio 16 2019"
+    - name: Unit Test
+      run: ctest --test-dir .\build -C Debug --output-on-failure
 
 
   reg_test:
@@ -72,13 +54,14 @@ jobs:
         working-directory: ci-tools/windows
 
     steps:
-    - name: Checkout repo
+    - name: Checkout swmm repo
       uses: actions/checkout@v2
 
-    - name: Checkout submodule
+    - name: Checkout ci-tools repo
       uses: actions/checkout@v2
       with:
         repository: michaeltryby/ci-tools
+        ref: master
         path: ci-tools
 
     - name: Setup python
@@ -96,12 +79,12 @@ jobs:
 
     - name: Before reg test
       env:
-        NRTESTS_URL: https://github.com/SWMM-Project/swmm-nrtestsuite
-        BENCHMARK_TAG: v2.0.0
+        NRTESTS_URL: https://github.com/USEPA/swmm-nrtestsuite
+        BENCHMARK_TAG: v2.1.0
       run: before-nrtest.cmd ${{ env.BENCHMARK_TAG }}
 
-    - name: Reg test
-      run: run-nrtests.cmd %GITHUB_SHA% %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+    - name: Run reg test
+      run: run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
     - name: Upload artifacts
       if: ${{ always() }}
