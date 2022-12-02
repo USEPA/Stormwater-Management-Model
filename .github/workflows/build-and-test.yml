@@ -100,8 +100,8 @@ jobs:
         BENCHMARK_TAG: v2.0.0
       run: before-nrtest.cmd ${{ env.BENCHMARK_TAG }}
 
-#    - name: Reg test
-#      run: run-nrtests.cmd %GITHUB_SHA% %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+    - name: Reg test
+      run: run-nrtests.cmd %GITHUB_SHA% %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
 
     - name: Upload artifacts
       if: ${{ always() }}
