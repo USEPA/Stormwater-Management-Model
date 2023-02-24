@@ -9,6 +9,7 @@
 //             04/30/15 (Build 5.1.009)
 //             08/01/16 (Build 5.1.011)
 //             05/10/18 (Build 5.1.013)
+//             04/01/20 (Build 5.1.015)
 //   Author:   L. Rossman
 //
 //   Report writing functions for summary statistics.
@@ -26,6 +27,9 @@
 //
 //   Build 5.1.013:
 //   - Pervious and impervious runoff added to Subcatchment Runoff Summary.
+//
+//   Build 5.1.015:
+//   - Fixes bug in summary statistics when Report Start date > Start Date.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -337,7 +341,7 @@ void writeNodeDepths()
         fprintf(Frpt.file, " %-9s ", NodeTypeWords[Node[j].type]);
         getElapsedTime(NodeStats[j].maxDepthDate, &days, &hrs, &mins);
         fprintf(Frpt.file, "%7.2f  %7.2f  %7.2f  %4d  %02d:%02d  %10.2f",
-            NodeStats[j].avgDepth / StepCount * UCF(LENGTH),
+            NodeStats[j].avgDepth / ReportStepCount * UCF(LENGTH),             //(5.1.015)
             NodeStats[j].maxDepth * UCF(LENGTH),
             (NodeStats[j].maxDepth + Node[j].invertElev) * UCF(LENGTH),
             days, hrs, mins, NodeStats[j].maxRptDepth);
@@ -538,7 +542,7 @@ void writeStorageVolumes()
             if ( Node[j].type != STORAGE ) continue;
             k = Node[j].subIndex;
             fprintf(Frpt.file, "\n  %-20s", Node[j].ID);
-            avgVol = StorageStats[k].avgVol / StepCount;
+            avgVol = StorageStats[k].avgVol / (double)ReportStepCount;         //(5.1.015)
             maxVol = StorageStats[k].maxVol;
             pctMaxVol = 0.0;
             pctAvgVol = 0.0;
@@ -634,7 +638,7 @@ void writeOutfallLoads()
 
             // --- print node ID, flow freq., avg. flow, max. flow & flow vol.
             fprintf(Frpt.file, "\n  %-20s", Node[j].ID);
-            x = 100.*flowCount/(double)StepCount;
+            x = 100.*flowCount/(double)ReportStepCount;                        //(5.1.015)
             fprintf(Frpt.file, "%7.2f", x);
             freqSum += x;
             if ( flowCount > 0 )
@@ -804,7 +808,7 @@ void writeFlowClass()
         for ( i=0; i<MAX_FLOW_CLASSES; i++ )
         {
             fprintf(Frpt.file, "  %4.2f",
-                LinkStats[j].timeInFlowClass[i] /= StepCount);
+                LinkStats[j].timeInFlowClass[i] /= (double)ReportStepCount);   //(5.1.015)
         }
         fprintf(Frpt.file, "  %4.2f", LinkStats[j].timeNormalFlow /
                                       (NewRoutingTime/1000.0));

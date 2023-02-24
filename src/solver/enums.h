@@ -35,9 +35,13 @@
 //
 //   Build 5.1.013:
 //   - SURCHARGE_METHOD and RULE_STEP options added.
-//   - WEIR_CURVE added as a curve type. 
+//   - WEIR_CURVE added as a curve type.
 //
 //-----------------------------------------------------------------------------
+
+#ifndef ENUMS_H
+#define ENUMS_H
+
 
 //-------------------------------------
 // Names of major object types
@@ -114,18 +118,18 @@
 // Cross section shape types
 //-------------------------------------
  enum XsectType {
-      DUMMY,                           // 0      
+      DUMMY,                           // 0
       CIRCULAR,                        // 1      closed
       FILLED_CIRCULAR,                 // 2      closed
       RECT_CLOSED,                     // 3      closed
-      RECT_OPEN,                       // 4       
-      TRAPEZOIDAL,                     // 5       
-      TRIANGULAR,                      // 6       
+      RECT_OPEN,                       // 4
+      TRAPEZOIDAL,                     // 5
+      TRIANGULAR,                      // 6
       PARABOLIC,                       // 7
-      POWERFUNC,                       // 8      
-      RECT_TRIANG,                     // 9       
+      POWERFUNC,                       // 8
+      RECT_TRIANG,                     // 9
       RECT_ROUND,                      // 10
-      MOD_BASKET,                      // 11      
+      MOD_BASKET,                      // 11
       HORIZ_ELLIPSE,                   // 12     closed
       VERT_ELLIPSE,                    // 13     closed
       ARCH,                            // 14     closed
@@ -194,7 +198,7 @@
 //-------------------------------------
 // Computed node quantities
 //-------------------------------------
- #define MAX_NODE_RESULTS 7 
+ #define MAX_NODE_RESULTS 7
  enum NodeResultType {
       NODE_DEPTH,                      // water depth above invert
       NODE_HEAD,                       // hydraulic head
@@ -411,7 +415,7 @@ enum  CompatibilityType {
 
  enum PumpCurveType {
       TYPE1_PUMP,                      // flow varies stepwise with wet well volume
-      TYPE2_PUMP,                      // flow varies stepwise with inlet depth 
+      TYPE2_PUMP,                      // flow varies stepwise with inlet depth
       TYPE3_PUMP,                      // flow varies with head delivered
       TYPE4_PUMP,                      // flow varies with inlet depth
       IDEAL_PUMP};                     // outflow equals inflow
@@ -480,3 +484,6 @@ enum  NoneAllType {
       NONE,
       ALL,
       SOME};
+
+
+#endif //ENUMS_H

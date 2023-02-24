@@ -24,7 +24,7 @@ jobs:
         requirements: [requirements-swmm.txt]
         include:
           - os: windows-2022
-            sys_pkgs: choco install boost-msvc-14.1
+            sys_pkgs: choco install boost-msvc-14.3
             build_unit_test: make.cmd /g "Visual Studio 17 2022" /A "x64" /t
             build_reg_test: make.cmd /g "Visual Studio 17 2022" /A "x64"
             before_reg_test: before-nrtest.cmd
@@ -83,17 +83,17 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Clone ci-tools repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: OpenWaterAnalytics/ci-tools
           ref: master
           path: ci-tools
 
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.7"
 
@@ -114,7 +114,7 @@ jobs:
       - name: Before reg test
         env:
           NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
-          BENCHMARK_TAG: v2.0.1
+          BENCHMARK_TAG: v2.0.2
         run: ./${{ matrix.before_reg_test }} ${{ env.BENCHMARK_TAG }}
 
       - name: Run reg test
@@ -122,7 +122,7 @@ jobs:
 
       - name: Upload artifacts
         if: ${{ always() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: build-test-artifacts
           path: upload/*.*

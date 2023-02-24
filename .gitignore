@@ -1,10 +1,20 @@
-
 # Eclipse Stuff
 .metadata/
 .settings/
 .cproject
 .project
 .pydevproject
+
+
+.DS_Store
+
+build*/
+nrtest*/
+
+*_export.h
+
+src/outfile/include/*_export.h
+src/solver/include/*_export.h
 
 
 # Mac Stuff

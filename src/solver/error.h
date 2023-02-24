@@ -4,11 +4,16 @@
 //   Project: EPA SWMM5
 //   Version: 5.1
 //   Date:    03/20/14  (Build 5.1.001)
+//            04/14/20  (Build 5.1.015)
 //   Author:  L. Rossman
 //
 //   Error codes
 //
 //-----------------------------------------------------------------------------
+
+#ifndef ERROR_H
+#define ERROR_H
+
 
 enum  ErrorType {
 
@@ -173,9 +178,14 @@ enum  ErrorType {
       ERR_API_LIDUNIT_INDEX,    //510  113
       ERR_API_UNDEFINED_LID,    //511  114
       ERR_API_MEMORY,           //512  115
+  //... Additional Errors
+      ERR_STORAGE_VOLUME,       //140  116                                     //(5.1.015)
       MAXERRMSG};
 
 char* error_getMsg(int i);
 int   error_getCode(int i);
 int   error_getErrorIndex(int ErrorCode);
 int   error_setInpError(int errcode, char* s);
+
+
+#endif //ERROR_H

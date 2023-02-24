@@ -6,7 +6,7 @@
 #
 # Author: Michael E. Tryby
 #         US EPA ORD/CESER
-#         
+#
 #
 
 # configure file groups
@@ -18,7 +18,7 @@ set(SWMM_OUT_PUBLIC_HEADERS
 
 
 # the binary output file API
-add_library(swmm-output    
+add_library(swmm-output
         swmm_output.c
         errormanager.c
 )

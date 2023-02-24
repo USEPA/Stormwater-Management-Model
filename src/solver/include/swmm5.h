@@ -14,6 +14,7 @@
 #ifndef SWMM5_H
 #define SWMM5_H
 
+
 // --- define WINDOWS
 
 #undef WINDOWS
@@ -54,8 +55,8 @@ int swmm_IsStartedFlag(void);
 // --- use "C" linkage for C++ programs
 
 #ifdef __cplusplus
-extern "C" { 
-#endif 
+extern "C" {
+#endif
 
 /**
  @brief Opens SWMM input file, reads in network data, runs, and closes
@@ -127,8 +128,9 @@ int DLLEXPORT swmm_getError(char* errMsg, int msgLen);
 
 int DLLEXPORT swmm_getWarnings(void);
 
-#ifdef __cplusplus 
-}   // matches the linkage specification from above */ 
+#ifdef __cplusplus
+}   // matches the linkage specification from above */
 #endif
 
-#endif
+
+#endif //SWMM5_H

@@ -9,7 +9,6 @@
 #
 
 
-
 #Prep ourselves for compiling with boost
 include(../extern/boost.cmake)
 

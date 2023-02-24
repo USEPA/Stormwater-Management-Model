@@ -9,6 +9,7 @@
 //             08/01/16   (Build 5.1.011)
 //             03/14/17   (Build 5.1.012)
 //             05/10/18   (Build 5.1.013)
+//             04/01/20   (Build 5.1.015)
 //   Author:   L. Rossman (EPA)
 //             R. Dickinson (CDM)
 //
@@ -36,6 +37,11 @@
 //   - Statistics on impervious and pervious runoff totals added.
 //   - Storage nodes with a non-zero surcharge depth (e.g. enclosed tanks)
 //     can now be classified as being surcharged.
+//
+//   Build 5.1.015:
+//   - Fixes bug in summary statistics when Report Start date > Start Date.
+//   - Fixes failure to initialize all subcatchment groundwater statistics.
+//   - Support added for grouped freqency table of routing time steps.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -106,6 +112,9 @@ int  stats_open()
 //
 {
     int j, k;
+    double timeStepDelta;                                                      //(5.1.015)
+    double logMaxTimeStep;                                                     //(5.1.015)
+    double logMinTimeStep;                                                     //(5.1.015)
 
     // --- set all pointers to NULL
     NodeStats = NULL;
@@ -147,6 +156,8 @@ int  stats_open()
             Subcatch[j].groundwater->stats.deepFlow = 0.0;
             Subcatch[j].groundwater->stats.evap = 0.0;
             Subcatch[j].groundwater->stats.maxFlow = 0.0;
+            Subcatch[j].groundwater->stats.finalUpperMoist = 0.0;              //(5.1.015)
+            Subcatch[j].groundwater->stats.finalWaterTable = 0.0;              //
         }
     }
 
@@ -286,6 +297,20 @@ int  stats_open()
     SysStats.avgTimeStep = 0.0;
     SysStats.avgStepCount = 0.0;
     SysStats.steadyStateCount = 0.0;
+
+    // --- divide range between min and max routing time steps into            //(5.1.015)
+    //     equal intervals using a logarithmic scale                           //
+    logMaxTimeStep = log10(RouteStep);                                         //
+    logMinTimeStep = log10(MinRouteStep);                                      //
+    timeStepDelta = (logMaxTimeStep - logMinTimeStep) / (TIMELEVELS-1);        //
+    SysStats.timeStepIntervals[0] = RouteStep;                                 //
+    for (j = 1; j < TIMELEVELS; j++)                                           //
+    {                                                                          //
+        SysStats.timeStepIntervals[j] =                                        //
+            pow(10., logMaxTimeStep - j * timeStepDelta);                      //
+        SysStats.timeStepCounts[j] = 0;                                        //
+    }                                                                          //
+    SysStats.timeStepIntervals[TIMELEVELS - 1] = MinRouteStep;                 //
     return 0;
 }
 
@@ -446,6 +471,7 @@ void   stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
 }
 
     // --- update count of times in steady state
+    ReportStepCount++;
     SysStats.steadyStateCount += steadyState;
 
     // --- update time step stats if not in steady state
@@ -455,6 +481,15 @@ void   stats_updateFlowStats(double tStep, DateTime aDate, int stepCount,
         if ( OldRoutingTime > 0 )
         {
             SysStats.minTimeStep = MIN(SysStats.minTimeStep, tStep);
+
+            // --- locate interval that logged time step falls in              //(5.1.015)
+            //     and update its count                                        //
+            for (j = 1; j < TIMELEVELS; j++)                                   //
+                if (tStep >= SysStats.timeStepIntervals[j])                    //
+                {                                                              //
+                    SysStats.timeStepCounts[j]++;                              //
+                    break;                                                     //
+                }                                                              //
         }
         SysStats.avgTimeStep += tStep;
         SysStats.maxTimeStep = MAX(SysStats.maxTimeStep, tStep);
@@ -703,6 +738,7 @@ void  stats_findMaxStats()
 {
     int    j;
     double x;
+    double stepCount = ReportStepCount - SysStats.steadyStateCount;            //(5.1.015)
 
     // --- initialize max. stats arrays
     for (j=0; j<MAX_STATS; j++)
@@ -717,11 +753,11 @@ void  stats_findMaxStats()
     }
 
     // --- find links with most flow turns
-    if ( StepCount > 2 )
+    if ( stepCount > 2 )                                                       //(5.1.015)
     {
         for (j=0; j<Nobjects[LINK]; j++)
         {
-            x = 100.0 * LinkStats[j].flowTurns / (2./3.*(StepCount-2));
+            x = 100.0 * LinkStats[j].flowTurns / (2./3.*(stepCount-2));        //(5.1.015)
             stats_updateMaxStats(MaxFlowTurns, LINK, j, x);
         }
     }
@@ -747,17 +783,17 @@ void  stats_findMaxStats()
     if ( RouteModel != DW || CourantFactor == 0.0 ) return;
 
     // --- find nodes most frequently Courant critical
-    if ( StepCount == 0 ) return;
+    if ( stepCount == 0 ) return;                                              //(5.1.015)
     for (j=0; j<Nobjects[NODE]; j++)
     {
-        x = NodeStats[j].timeCourantCritical / StepCount;
+        x = NodeStats[j].timeCourantCritical / stepCount;                      //(5.1.015)
         stats_updateMaxStats(MaxCourantCrit, NODE, j, 100.0*x);
     }
 
     // --- find links most frequently Courant critical
     for (j=0; j<Nobjects[LINK]; j++)
     {
-        x = LinkStats[j].timeCourantCritical / StepCount;
+        x = LinkStats[j].timeCourantCritical / stepCount;                      //(5.1.015)
         stats_updateMaxStats(MaxCourantCrit, LINK, j, 100.0*x);
     }
 }
@@ -802,9 +838,9 @@ int stats_getNodeStat(int index, TNodeStats **nodeStats)
     // Perform memcopy
     memcpy(*nodeStats, &NodeStats[index], sizeof(TNodeStats));
 
-    // Convert units 
+    // Convert units
     // Current Average Depth
-    (*nodeStats)->avgDepth *= (UCF(LENGTH) / (double)StepCount);
+    (*nodeStats)->avgDepth *= (UCF(LENGTH) / (double)ReportStepCount);
     // Current Maximum Depth
     (*nodeStats)->maxDepth *= UCF(LENGTH);
     // Current Maximum Lateral Inflow
@@ -841,12 +877,12 @@ int stats_getStorageStat(int index, TStorageStats **storageStats)
     int k = Node[index].subIndex;
     // Copy Structure
     memcpy(*storageStats, &StorageStats[k], sizeof(TStorageStats));
-    
+
     // Convert units
     // Initial Volume
     (*storageStats)->initVol *= UCF(VOLUME);
     // Current Average Volume
-    (*storageStats)->avgVol *= (UCF(VOLUME) / (double)StepCount);
+    (*storageStats)->avgVol *= (UCF(VOLUME) / (double)ReportStepCount);
     // Current Maximum Volume
     (*storageStats)->maxVol *= UCF(VOLUME);
     // Current Maximum Flow
@@ -872,7 +908,7 @@ int stats_getOutfallStat(int index, TOutfallStats **outfallStats)
 
     // fetch sub index
     k = Node[index].subIndex;
-    
+
     // Copy Structure
     temp = (*outfallStats)->totalLoad;
     memcpy(*outfallStats, &(OutfallStats[k]), sizeof(TOutfallStats));
@@ -937,7 +973,7 @@ int stats_getLinkStat(int index, TLinkStats **linkStats)
     (*linkStats)->timeCapacityLimited /= 3600.0;
     // Cumulative Time Courant Critical Flow
     (*linkStats)->timeCourantCritical /= 3600.0;
-    
+
 	return 0;
 }
 

@@ -8,6 +8,7 @@
   */
 
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include <string.h>
 #include <math.h>
@@ -124,7 +125,7 @@ int  main(int argc, char *argv[])
 
         else if (strcmp(arg1, "--version") == 0 || strcmp(arg1, "-v") == 0) {
             printf("\nVersion:\n");
-            printf("\tOWA-SWMM v%s (Build %.10s)\n\n", swmm_getSemVersion(), 
+            printf("\tOWA-SWMM v%s (Build %.10s)\n\n", swmm_getSemVersion(),
                 swmm_getBuildId());
         }
 
