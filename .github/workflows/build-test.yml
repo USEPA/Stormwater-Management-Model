@@ -24,7 +24,7 @@ jobs:
         requirements: [requirements-swmm.txt]
         include:
           - os: windows-2022
-            sys_pkgs: choco install boost-msvc-14.1
+            sys_pkgs: choco install boost-msvc-14.3
             build_unit_test: make.cmd /g "Visual Studio 17 2022" /A "x64" /t
             build_reg_test: make.cmd /g "Visual Studio 17 2022" /A "x64"
             before_reg_test: before-nrtest.cmd
