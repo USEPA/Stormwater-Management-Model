@@ -11,6 +11,7 @@
 //             03/14/17    (Build 5.1.012)
 //             05/10/18    (Build 5.1.013)
 //             03/01/20    (Build 5.1.014)
+//             05/18/20    (Build 5.1.015)
 //   Author:   L. Rossman (EPA)
 //
 //   Report writing functions.
@@ -43,6 +44,10 @@
 //
 //   Build 5.1.014:
 //   - Fixed bug in confusing keywords with ID names in report_readOptions().
+//
+//   Build 5.1.015:
+//   - Fixes bug in summary statistics when Report Start date > Start Date.
+//   - Support added for grouped freqency table of routing time steps.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -89,7 +94,7 @@ static void report_Nodes(void);
 static void report_NodeHeader(char *id);
 static void report_Links(void);
 static void report_LinkHeader(char *id);
-
+static void report_RouteStepFreq(TSysStats* sysStats);                         //(5.1.015)
 
 //=============================================================================
 
@@ -1038,10 +1043,11 @@ void report_writeSysStats(TSysStats* sysStats)
 //
 {
     double x;
-    double eventStepCount = (double)StepCount - sysStats->steadyStateCount;
+    double eventStepCount;  // Routing steps taken during reporting period   //(5.1.015)
 
-    if ( Nobjects[LINK] == 0 || StepCount == 0
-	                     || eventStepCount == 0.0 ) return; 
+    eventStepCount = ReportStepCount - sysStats->steadyStateCount;           //(5.1.015)
+    if ( Nobjects[LINK] == 0 || TotalStepCount == 0
+        || eventStepCount == 0.0 ) return; 
     WRITE("");
     WRITE("*************************");
     WRITE("Routing Time Step Summary");
@@ -1064,7 +1070,35 @@ void report_writeSysStats(TSysStats* sysStats)
     fprintf(Frpt.file,
         "\n  Percent Not Converging      :  %7.2f",
         100.0 * (double)NonConvergeCount / eventStepCount);
+
+    // --- write grouped frequency table of variable routing time steps        //(5.1.015)
+    if (RouteModel == DW && CourantFactor > 0.0)                               //
+        report_RouteStepFreq(sysStats);                                        //
     WRITE("");
+}
+
+//=============================================================================
+
+////  New function added to release 5.1.015.  ////                             //(5.1.015)
+void report_RouteStepFreq(TSysStats* sysStats)
+//
+//  Input:   sysStats = simulation statistics for overall system
+//  Output:  none
+//  Purpose: writes grouped frequency table of routing time steps to report file.
+//
+{
+    double totalSteps = 0.0;
+    int    i;
+
+    for (i = 1; i < TIMELEVELS; i++)
+        totalSteps += sysStats->timeStepCounts[i];
+    fprintf(Frpt.file,
+        "\n  Time Step Frequencies       :");
+    for (i = 1; i < TIMELEVELS; i++)
+        fprintf(Frpt.file,
+            "\n     %6.3f - %6.3f sec      :  %7.2f %%",
+            sysStats->timeStepIntervals[i-1], sysStats->timeStepIntervals[i],
+            100.0 * (double)(sysStats->timeStepCounts[i]) / totalSteps);
 }
 
 

@@ -22,7 +22,7 @@ endif()
 
 
 project(swmm-solver
-    VERSION 5.1.14
+    VERSION 5.1.15
     LANGUAGES C CXX
 )
 

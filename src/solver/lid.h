@@ -18,7 +18,7 @@
 //   - Detailed LID reporting modified.
 //
 //   Build 5.1.011:
-//   - Water depth replaces moisture content for LID's pavement layer. 
+//   - Water depth replaces moisture content for LID's pavement layer.
 //   - Arguments for lidproc_saveResults() modified.
 //
 //   Build 5.1.012:
@@ -41,6 +41,7 @@
 #ifndef LID_H
 #define LID_H
 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -51,8 +52,8 @@
 //-----------------------------------------------------------------------------
 enum LidTypes {
     BIO_CELL,                // bio-retention cell
-    RAIN_GARDEN,             // rain garden 
-    GREEN_ROOF,              // green roof 
+    RAIN_GARDEN,             // rain garden
+    GREEN_ROOF,              // green roof
     INFIL_TRENCH,            // infiltration trench
     POROUS_PAVEMENT,         // porous pavement
     RAIN_BARREL,             // rain barrel
@@ -73,7 +74,7 @@ typedef struct
 {
     double    thickness;          // depression storage or berm ht. (ft)
     double    voidFrac;           // available fraction of storage volume
-    double    roughness;          // surface Mannings n 
+    double    roughness;          // surface Mannings n
     double    surfSlope;          // land surface slope (fraction)
     double    sideSlope;          // swale side slope (run/rise)
     double    alpha;              // slope/roughness term in Manning eqn.
@@ -160,7 +161,7 @@ typedef struct
     double         finalVol;      // final stored volume (ft)
 }  TWaterBalance;
 
-// 
+//
 typedef struct
 {
     double         evap;           // evaporation rate (ft/s)
@@ -203,7 +204,7 @@ typedef struct
     int      drainNode;      // node receiving drain flow
     TLidRptFile* rptFile;    // pointer to detailed report file
 
-    TGrnAmpt soilInfil;      // infil. object for biocell soil layer 
+    TGrnAmpt soilInfil;      // infil. object for biocell soil layer
     double   surfaceDepth;   // depth of ponded water on surface layer (ft)
     double   paveDepth;      // depth of water in porous pavement layer
     double   soilMoisture;   // moisture content of biocell soil layer
@@ -211,7 +212,7 @@ typedef struct
 
     // net inflow - outflow from previous time step for each LID layer (ft/s)
     double   oldFluxRates[MAX_LAYERS];
-                                     
+
     double   dryTime;        // time since last rainfall (sec)
     double   oldDrainFlow;   // previous drain flow (cfs)
     double   newDrainFlow;   // current drain flow (cfs)
@@ -268,7 +269,7 @@ void     lid_writeWaterBalance(void);
 int         lid_getLidUnitCount(int index);
 TLidUnit*   lid_getLidUnit(int index, int lidIndex, int* errcode);
 TLidProc*   lid_getLidProc(int index);
-TLidGroup   lid_getLidGroup(int index);   
+TLidGroup   lid_getLidGroup(int index);
 void        lid_validateLidProc(int index);
 void        lid_validateLidGroup(int index);
 void        lid_updateLidUnit(TLidUnit* lidUnit, int subIndex);
@@ -284,4 +285,6 @@ double   lidproc_getOutflow(TLidUnit* lidUnit, TLidProc* lidProc,
 
 void     lidproc_saveResults(TLidUnit* lidUnit, double ucfRainfall,
          double ucfRainDepth);
-#endif
+
+
+#endif //LID_H

@@ -71,11 +71,11 @@ int inflow_readExtInflow(char* tok[], int ntoks)
         Tseries[tseries].refersTo = EXTERNAL_INFLOW;
     }
 
-	// --- assign type & cf values for a FLOW inflow
-	if (param == -1)
-	{
-		type = FLOW_INFLOW;
-	}
+    // --- assign type & cf values for a FLOW inflow
+    if (param == -1)
+    {
+        type = FLOW_INFLOW;
+    }
 
     // --- do the same for a pollutant inflow
     if ( ntoks >= 4 && param > -1)
@@ -115,9 +115,9 @@ int inflow_readExtInflow(char* tok[], int ntoks)
         basePat = project_findObject(TIMEPATTERN, tok[7]);
         if ( basePat < 0 ) return error_setInpError(ERR_NAME, tok[7]);
     }
-	
-	return(inflow_setExtInflow(j, param, type, tseries, basePat,
-		cf, baseline, sf));
+
+    return(inflow_setExtInflow(j, param, type, tseries, basePat,
+        cf, baseline, sf));
 }
 
 int inflow_validate(int param, int type, int tseries, int basePat, double *cf)
@@ -130,49 +130,49 @@ int inflow_validate(int param, int type, int tseries, int basePat, double *cf)
 // Output: cf = Unit Conversion
 // Return: returns Error Code
 {
-	int errcode = 0;
-	// Validate param
-	if (param >= Nobjects[POLLUT])
-	{
-		errcode = ERR_API_POLLUT_INDEX;
-	}
-	// Validate Type
-	else if (type != FLOW_INFLOW 
-	         && type != CONCEN_INFLOW 
-	         && type != MASS_INFLOW)
-	{
-		errcode = ERR_KEYWORD;
-	}
-	// Validate Timeseries Index
-	else if (tseries >= Nobjects[TSERIES])
-	{
-		errcode = ERR_API_TSERIES_INDEX;
-	}
-	// Validate Timepattern Index
-	else if (basePat >= Nobjects[TIMEPATTERN])
-	{
-		errcode = ERR_API_PATTERN_INDEX;
-	}
-	else
-	{
-		// --- assign type & cf values for a FLOW inflow
-		if ( type == FLOW_INFLOW )
-		{
-			*cf = 1.0/UCF(FLOW);
-		}
-		// --- include LperFT3 term in conversion factor for MASS_INFLOW
-		else if ( type == MASS_INFLOW ) 
-		{
-			*cf /= LperFT3;		
-		}
-	}
-	
-	return(errcode);
+    int errcode = 0;
+    // Validate param
+    if (param >= Nobjects[POLLUT])
+    {
+        errcode = ERR_API_POLLUT_INDEX;
+    }
+    // Validate Type
+    else if (type != FLOW_INFLOW 
+             && type != CONCEN_INFLOW 
+             && type != MASS_INFLOW)
+    {
+        errcode = ERR_KEYWORD;
+    }
+    // Validate Timeseries Index
+    else if (tseries >= Nobjects[TSERIES])
+    {
+        errcode = ERR_API_TSERIES_INDEX;
+    }
+    // Validate Timepattern Index
+    else if (basePat >= Nobjects[TIMEPATTERN])
+    {
+        errcode = ERR_API_PATTERN_INDEX;
+    }
+    else
+    {
+        // --- assign type & cf values for a FLOW inflow
+        if ( type == FLOW_INFLOW )
+        {
+            *cf = 1.0/UCF(FLOW);
+        }
+        // --- include LperFT3 term in conversion factor for MASS_INFLOW
+        else if ( type == MASS_INFLOW ) 
+        {
+            *cf /= LperFT3;		
+        }
+    }
+
+    return(errcode);
 }
 
 
 int inflow_setExtInflow(int j, int param, int type, int tseries, int basePat,
-						double cf, double baseline, double sf)
+                        double cf, double baseline, double sf)
 // Purpose:  This function assigns property values to the inflow object 
 // Inputs:   j = Node index
 //           param = FLOW (-1) or pollutant index
@@ -185,45 +185,45 @@ int inflow_setExtInflow(int j, int param, int type, int tseries, int basePat,
 // Return:   returns Error Code
 
 {
-	int errcode = 0;
+    int errcode = 0;
+    TExtInflow* inflow;            // external inflow object
 
-	// Validate Inflow
-	errcode = inflow_validate(param, type, tseries, basePat, &cf);
-	
-	if (errcode == 0)
-	{
-		TExtInflow* inflow;            // external inflow object
+    // Validate Inflow
+    errcode = inflow_validate(param, type, tseries, basePat, &cf);
 
-		// --- check if an external inflow object for this constituent already exists
-		inflow = Node[j].extInflow;
-		while ( inflow )
-		{
-			if ( inflow->param == param ) break;
-			inflow = inflow->next;
-		}
+    if (errcode == 0)
+    {
 
-		// --- if it doesn't exist, then create it
-		if ( inflow == NULL )
-		{
-			inflow = (TExtInflow *) malloc(sizeof(TExtInflow));
-			if ( inflow == NULL ) 
-			{
-				return error_setInpError(ERR_MEMORY, "");
-			}
-			inflow->next = Node[j].extInflow;
-			Node[j].extInflow = inflow;
-		}
-		
-		// Assigning Values to the inflow object 
-		inflow->param    = param;
-		inflow->type     = type;
-		inflow->tSeries  = tseries;
-		inflow->cFactor  = cf;
-		inflow->sFactor  = sf;
-		inflow->baseline = baseline;
-		inflow->basePat  = basePat;
-		inflow->extIfaceInflow = 0.0;
-	}
+        // --- check if an external inflow object for this constituent already exists
+        inflow = Node[j].extInflow;
+        while ( inflow )
+        {
+            if ( inflow->param == param ) break;
+            inflow = inflow->next;
+        }
+
+        // --- if it doesn't exist, then create it
+        if ( inflow == NULL )
+        {
+            inflow = (TExtInflow *) malloc(sizeof(TExtInflow));
+            if ( inflow == NULL ) 
+            {
+                return error_setInpError(ERR_MEMORY, "");
+            }
+            inflow->next = Node[j].extInflow;
+            Node[j].extInflow = inflow;
+        }
+
+        // Assigning Values to the inflow object 
+        inflow->param    = param;
+        inflow->type     = type;
+        inflow->tSeries  = tseries;
+        inflow->cFactor  = cf;
+        inflow->sFactor  = sf;
+        inflow->baseline = baseline;
+        inflow->basePat  = basePat;
+        inflow->extIfaceInflow = 0.0;
+    }
     return(errcode);
 }
 
@@ -265,7 +265,7 @@ double inflow_getExtInflow(TExtInflow* inflow, DateTime aDate)
     double sf = inflow->sFactor;     // scaling factor
     double blv = inflow->baseline;   // baseline value
     double tsv = 0.0;                // time series value
-	double extIfaceInflow = inflow->extIfaceInflow;// external interfacing inflow
+    double extIfaceInflow = inflow->extIfaceInflow;// external interfacing inflow
 
     if ( p >= 0 )
     {

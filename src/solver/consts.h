@@ -7,10 +7,15 @@
 //            08/01/16  (Build 5.1.011)
 //            05/10/18  (Build 5.1.013)
 //            03/01/20  (Build 5.1.014)
+//            04/01/20  (Build 5.1.015)
 //   Author:  L. Rossman
 //
 //   Various Constants
 //-----------------------------------------------------------------------------
+
+#ifndef CONSTS_H
+#define CONSTS_H
+
 
 //------------------
 // General Constants
@@ -93,3 +98,6 @@
 // Token separator characters
 //---------------------------
 #define   SEPSTR    " \t\n\r"
+
+
+#endif //CONSTS_H

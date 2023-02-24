@@ -10,6 +10,7 @@
 //            08/01/16  (Build 5.1.011)
 //            03/14/17  (Build 5.1.012)
 //            05/10/18  (Build 5.1.013)
+//            04/01/20  (Build 5.1.015)
 //   Author:  L. Rossman
 //
 //   Global Variables
@@ -26,7 +27,7 @@
 //
 //   Build 5.1.011:
 //   - Changed WarningCode to Warnings (# warnings issued)
-//   - Added error message text as a variable. 
+//   - Added error message text as a variable.
 //   - Added elapsed simulation time (in decimal days) variable.
 //   - Added variables associated with detailed routing events.
 //
@@ -35,7 +36,14 @@
 //
 //   Build 5.1.013:
 //   - CrownCutoff and RuleStep added as analysis option variables.
+//
+//   Build 5.1.015:
+//   - Fixes bug in summary statistics when Report Start date > Start Date.
 //-----------------------------------------------------------------------------
+
+#ifndef GLOBALS_H
+#define GLOBALS_H
+
 
 EXTERN TFile
                   Finp,                     // Input file
@@ -52,7 +60,8 @@ EXTERN TFile
 
 EXTERN long
                   Nperiods,                 // Number of reporting periods
-                  StepCount,                // Number of routing steps used
+                  TotalStepCount,           // Total routing steps used        //(5.1.015)
+                  ReportStepCount,          // Reporting routing steps used    //(5.1.015)
                   NonConvergeCount;         // Number of non-converging steps
 
 EXTERN char
@@ -167,3 +176,6 @@ EXTERN TTable*    Tseries;                  // Array of time series tables
 EXTERN TTransect* Transect;                 // Array of transect data
 EXTERN TShape*    Shape;                    // Array of custom conduit shapes
 EXTERN TEvent*    Event;                    // Array of routing events
+
+
+#endif //GLOBALS_H

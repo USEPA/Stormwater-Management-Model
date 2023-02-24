@@ -38,7 +38,7 @@ if(BUILD_DEF)
         PROPERTIES_HEADER_FILE_ONLY TRUE
     )
 
-    add_library(swmm5        
+    add_library(swmm5
             ${SWMM_SOURCES}
             ${PROJECT_SOURCE_DIR/bindings/swmm5.def}
             $<TARGET_OBJECTS:shared_objs>
@@ -46,7 +46,7 @@ if(BUILD_DEF)
 
 else()
     # Performs standard library build
-    add_library(swmm5        
+    add_library(swmm5
             ${SWMM_SOURCES}
             $<TARGET_OBJECTS:shared_objs>
     )
@@ -90,7 +90,7 @@ target_include_directories(swmm5
 
 include(GenerateExportHeader)
 generate_export_header(swmm5
-    BASE_NAME toolkit  
+    BASE_NAME toolkit
     EXPORT_MACRO_NAME EXPORT_TOOLKIT
     EXPORT_FILE_NAME toolkit_export.h
     STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC
@@ -118,6 +118,7 @@ install(TARGETS swmm5 EXPORT swmm5Targets
     FRAMEWORK  DESTINATION "${TOOL_DIST}"
 )
 
+# Create target import scripts so other cmake projects can use swmm libraries
 install(
     EXPORT
         swmm5Targets
@@ -125,14 +126,9 @@ install(
         "${CONFIG_DIST}"
     FILE
         swmm5-config.cmake
-)
+    )
 
-install(
-    FILES
-        ${SWMM_PUBLIC_HEADERS}
-    DESTINATION
-        "${INCLUDE_DIST}"
-)
+install(FILES ${SWMM_PUBLIC_HEADERS} DESTINATION "${INCLUDE_DIST}")
 
 
 # copy swmm5 to build tree for testing

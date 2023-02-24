@@ -11,6 +11,7 @@
 //             08/01/16  (Build 5.1.011)
 //             03/14/17  (Build 5.1.012)
 //             05/10/18  (Build 5.1.013)
+//             04/01/20  (Build 5.1.015)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -55,6 +56,8 @@
 //   - More robust parsing of MinSurfarea option provided.
 //   - Support added for new RuleStep analysis option.
 //
+//   Build 5.1.015: 
+//   - Support added for multiple infiltration methods within a project.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -1019,7 +1022,7 @@ void createObjects()
     if ( ErrorCode ) return;
 
     // --- allocate memory for infiltration data
-    infil_create(Nobjects[SUBCATCH], InfilModel);
+    infil_create(Nobjects[SUBCATCH]);                                          //(5.1.015)
 
     // --- allocate memory for water quality state variables
     for (j = 0; j < Nobjects[SUBCATCH]; j++)

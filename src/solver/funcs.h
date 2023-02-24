@@ -33,6 +33,10 @@
 //
 //-----------------------------------------------------------------------------
 
+#ifndef FUNCS_H
+#define FUNCS_H
+
+
 void     project_open(char *f1, char *f2, char *f3);
 void     project_close(void);
 
@@ -360,10 +364,10 @@ int     inflow_readExtInflow(char* tok[], int ntoks);
 int     inflow_readDwfInflow(char* tok[], int ntoks);
 int     inflow_readDwfPattern(char* tok[], int ntoks);
 int     inflow_setExtInflow(int j, int param, int type,
-						int tSeries, int basePat, double cf,
-						double baseline, double sf);
+        int tSeries, int basePat, double cf,
+        double baseline, double sf);
 int     inflow_validate(int param, int type, int tSeries,
-						int basePat, double *cf);
+        int basePat, double *cf);
 
 void    inflow_initDwfInflow(TDwfInflow* inflow);
 void    inflow_initDwfPattern(int pattern);
@@ -521,3 +525,6 @@ void     writecon(char *s);                   // writes string to console
 DateTime getDateTime(double elapsedMsec);     // convert elapsed time to date
 void     getElapsedTime(DateTime aDate,       // convert elapsed date
          int* days, int* hrs, int* mins);
+
+
+#endif //FUNCS_H
