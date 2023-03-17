@@ -25,6 +25,8 @@ jobs:
         include:
           - os: windows-2022
             sys_pkgs: choco install boost-msvc-14.3
+            boost_platform_version: 2022
+            boost_toolsit: mvc
             build_unit_test: make.cmd /g "Visual Studio 17 2022" /A "x64" /t
             build_reg_test: make.cmd /g "Visual Studio 17 2022" /A "x64"
             before_reg_test: before-nrtest.cmd
@@ -40,6 +42,8 @@ jobs:
 
           - os: ubuntu-20.04
             sys_pkgs: sudo apt install libboost-dev libboost-all-dev
+            boost_platform_version: 20.04
+            boost_toolsit: gcc
             # Statically link libraries with -s switch to address GitHub Ubuntu 20.04 symbol errors (issue #340)
             build_unit_test: make.sh -s -t -g "Unix Makefiles"
             build_reg_test: make.sh -s -g "Unix Makefiles"
@@ -55,7 +59,9 @@ jobs:
                 working-directory: ./ci-tools/linux
 
           - os: macos-10.15
-            sys_pkgs: brew install libomp boost
+            sys_pkgs: brew install libomp #boost
+            boost_platform_version: 10.15
+            boost_toolsit: clang
             build_unit_test: make.zsh -t -g "Xcode"
             build_reg_test: make.zsh -g "Xcode"
             before_reg_test: before-nrtest.zsh
@@ -102,19 +108,43 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements-swmm.txt
 
-      - name: Install required system packages
+      # install boost on mac and linux
+      - name: Install required system packages on mac and linux
         run: ${{ matrix.sys_pkgs }}
+        if: ${{ runner.os == 'macOS' }} 
+
+      # boost takes a while to install on windows, so try to cache
+      - name: Install boost
+        # if: ${{runner.os == 'Windows'}} 
+        uses: MarkusJx/install-boost@v2.4.4
+        id: install-boost
+        with:
+            # REQUIRED: Specify the required boost version
+            # A list of supported versions can be found here:
+            # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
+            boost_version: 1.81.0
+            link: shared 
+            # OPTIONAL: Specify a custon install location
+            # boost_install_dir: C:\some_directory
+            # OPTIONAL: Specify a platform version
+            platform_version: ${{ matrix.boost_platform_version }}
+            # OPTIONAL: Specify a toolset
+            toolset: ${{ matrix.boost_toolset }}
 
       - name: Build and unit test
+        env:
+            BOOST_ROOT_1_81_0: ${{ steps.install-boost.outputs.BOOST_ROOT }}
         run: ./${{ matrix.build_unit_test }}
 
       - name: Build for reg test
+        env:
+            BOOST_ROOT_1_81_0: ${{ steps.install-boost.outputs.BOOST_ROOT }}
         run: ./${{ matrix.build_reg_test }}
 
       - name: Before reg test
         env:
           NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
-          BENCHMARK_TAG: v2.0.2
+          BENCHMARK_TAG: v3.0.0
         run: ./${{ matrix.before_reg_test }} ${{ env.BENCHMARK_TAG }}
 
       - name: Run reg test
