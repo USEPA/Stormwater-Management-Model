@@ -2,36 +2,32 @@
 //   climate.c
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/20/10 (Build 5.1.001)
-//            09/15/14 (Build 5.1.007)
-//            03/19/15 (Build 5.1.008)
-//            08/05/15 (Build 5.1.010)
-//            08/01/16 (Build 5.1.011)
-//            05/10/18 (Build 5.1.013)
+//   Version: 5.2
+//   Date:    11/01/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Climate related functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.007:
 //   - NCDC GHCN climate file format added.
 //   - Monthly adjustments for temperature, evaporation & rainfall added.
-//
 //   Build 5.1.008:
 //   - Monthly adjustments for hyd. conductivity added.
 //   - Time series evaporation rates can now vary within a day.
 //   - Evaporation rates are now properly updated when only flow routing
 //     is being simulated.
-//
 //   Build 5.1.010:
 //   - Hargreaves evaporation now computed using 7-day average temperatures.
-//             
 //   Build 5.1.011:
 //   - Monthly adjustment for hyd. conductivity <= 0 is ignored.
-//
 //   Build 5.1.013:
 //   - Reads names of monthly adjustment patterns for various parameters
 //     of a subcatchment from the [ADJUSTMENTS] section of input file.
+//   Build 5.2.0:
+//   - Reads temperature units for use with GHCND climate files.
+//   - Support added for relative file names.
 ///-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -55,8 +51,10 @@ static const int    MAXDAYSPERMONTH = 32;
 // These variables are used when processing climate files.
 enum   ClimateVarType {TMIN, TMAX, EVAP, WIND};
 enum   WindSpeedType  {WDMV, AWND};
+enum   TempUnitsType {DEG_C10, DEG_C, DEG_F};
 static char* ClimateVarWords[] = {"TMIN", "TMAX", "EVAP", "WDMV", "AWND",
                                   NULL};
+static char* TempUnitsWords[] = {"C10", "C", "F", NULL};
 
 //-----------------------------------------------------------------------------
 //  Data Structures
@@ -108,6 +106,7 @@ static char     FileLine[MAXLINE+1];   // line from climate data file
 static int      FileFieldPos[4];       // start of data fields for file record
 static int      FileDateFieldPos;      // start of date field for file record 
 static int      FileWindType;          // wind speed type
+static int      FileTempUnits;         // GHCND file temperature units (C10, C or F)
 
 //-----------------------------------------------------------------------------
 //  External functions (defined in funcs.h)
@@ -147,6 +146,7 @@ static void setTD3200FileValues(int param);
 static int  isGhcndFormat(char* line);
 static void readGhcndFileLine(int *year, int *month);
 static void parseGhcndFileLine(void);
+static double convertGhcndValue(int var, double v);
 
 //=============================================================================
 
@@ -159,7 +159,7 @@ int  climate_readParams(char* tok[], int ntoks)
 //
 //  Format of data can be
 //    TIMESERIES  name
-//    FILE        name
+//    FILE        name  (start)  (units)
 //    WINDSPEED   MONTHLY  v1  v2  ...  v12
 //    WINDSPEED   FILE
 //    SNOWMELT    v1  v2  ...  v6
@@ -169,6 +169,7 @@ int  climate_readParams(char* tok[], int ntoks)
     int      i, j, k;
     double   x[6], y;
     DateTime aDate;
+    char  fname[MAXFNAME + 1];
 
     // --- identify keyword
     k = findmatch(tok[0], TempKeyWords);
@@ -194,7 +195,8 @@ int  climate_readParams(char* tok[], int ntoks)
 
         // --- save name and usage mode of external climate file
         Fclimate.mode = USE_FILE;
-        sstrncpy(Fclimate.name, tok[1], MAXFNAME);
+        sstrncpy(fname, tok[1], MAXFNAME);
+        sstrncpy(Fclimate.name, addAbsolutePath(fname), MAXFNAME);
 
         // --- save starting date to read from file if one is provided
         Temp.fileStartDate = NO_DATE;
@@ -206,6 +208,18 @@ int  climate_readParams(char* tok[], int ntoks)
                     return error_setInpError(ERR_DATETIME, tok[2]);
                 Temp.fileStartDate = aDate;
             }
+        }
+
+        // --- file temperature units
+        FileTempUnits = DEG_F;
+        if (UnitSystem == SI)
+            FileTempUnits = DEG_C;
+        if (ntoks > 3)
+        {
+            i = findmatch(tok[3], TempUnitsWords);
+            if (i < 0)
+                return error_setInpError(ERR_KEYWORD, tok[3]);
+            FileTempUnits = i;
         }
         break;
 
@@ -373,11 +387,11 @@ int climate_readAdjustments(char* tok[], int ntoks)
 //    EVAPORATION   v1 ... v12
 //    RAINFALL      v1 ... v12
 //    CONDUCTIVITY  v1 ... v12
-//    N-PERV        subcatchID  patternID                                      //(5.1.013
-//    DSTORE        subcatchID  patternID                                      //
-//    INFIL         subcatchID  patternID                                      //
+//    N-PERV        subcatchID  patternID 
+//    DSTORE        subcatchID  patternID
+//    INFIL         subcatchID  patternID
 {
-    int i, j;                                                                  //(5.1.013)
+    int i, j;
 
     if (ntoks == 1) return 0;
 
@@ -426,7 +440,6 @@ int climate_readAdjustments(char* tok[], int ntoks)
         return 0;
     }
 
-////  Following code segments added to release 5.1.013.  ////                  //(5.1.013)
     if ( match(tok[0], "N-PERV") )
     {
         if ( ntoks < 3 ) return error_setInpError(ERR_ITEMS, "");
@@ -459,7 +472,6 @@ int climate_readAdjustments(char* tok[], int ntoks)
         Subcatch[i].infilPattern = j;
         return 0;
     }
-////
     return error_setInpError(ERR_KEYWORD, tok[0]);
 }
 
@@ -550,14 +562,14 @@ void climate_openFile()
     // --- position file to begin reading climate file at either user-specified
     //     month/year or at start of simulation period.
     rewind(Fclimate.file);
-    strcpy(FileLine, "");
+    sstrncpy(FileLine, "", 0);
     if ( Temp.fileStartDate == NO_DATE )
         datetime_decodeDate(StartDate, &FileYear, &FileMonth, &FileDay);
     else
         datetime_decodeDate(Temp.fileStartDate, &FileYear, &FileMonth, &FileDay);
     while ( !feof(Fclimate.file) )
     {
-        strcpy(FileLine, "");
+        sstrncpy(FileLine, "", 0);
         readFileLine(&y, &m);
         if ( y == FileYear && m == FileMonth ) break;
     }
@@ -982,7 +994,7 @@ double getTempEvap(int day, double tave, double trng)
     double lamda = 2.50 - 0.002361 * ta;         //latent heat of vaporization
     double dr = 1.0 + 0.033*cos(a*day);          //relative earth-sun distance
     double phi = Temp.anglat*2.0*PI/360.0;       //latitude angle (rad)
-    double del = 0.4093*sin(a*(284+day));        //solar declination angle (rad)
+    double del = 0.4093*sin(a*(284.+(double)day)); //solar declination angle (rad)
     double omega = acos(-tan(phi)*tan(del));     //sunset hour angle (rad)
     double ra = 37.6*dr*                         //extraterrestrial radiation
                 (omega*sin(phi)*sin(del) +
@@ -1097,11 +1109,9 @@ void readTD3200FileLine(int* y, int* m)
     char recdType[4] = "";
     char year[5] = "";
     char month[3] = "";
-    int  len;
 
     // --- check for minimum number of characters
-    len = strlen(FileLine);
-    if ( len < 30 )
+    if ( strlen(FileLine) < 30 )
     {
         report_writeErrorMsg(ERR_CLIMATE_FILE_READ, Fclimate.name);
         return;
@@ -1134,11 +1144,9 @@ void readDLY0204FileLine(int* y, int* m)
 {
     char year[5] = "";
     char month[3] = "";
-    int  len;
 
     // --- check for minimum number of characters
-    len = strlen(FileLine);
-    if ( len < 16 )
+    if ( strlen(FileLine) < 16 )
     {
         report_writeErrorMsg(ERR_CLIMATE_FILE_READ, Fclimate.name);
         return;
@@ -1184,7 +1192,7 @@ void readFileValues()
         case  DLY0204:       parseDLY0204FileLine(); break;
         case  GHCND:         parseGhcndFileLine();   break; 
         }
-        strcpy(FileLine, "");
+        sstrncpy(FileLine, "", 0);
     }
 }
 
@@ -1201,10 +1209,10 @@ void parseUserFileLine()
     int   n;
     int   y, m, d;
     char  staID[80];
-    char  s0[80];
-    char  s1[80];
-    char  s2[80];
-    char  s3[80];
+    char  s0[80] = "";
+    char  s1[80] = "";
+    char  s2[80] = "";
+    char  s3[80] = "";
     double x;
 
     // --- read day, Tmax, Tmin, Evap, & Wind from file line
@@ -1275,15 +1283,13 @@ void setTD3200FileValues(int i)
     double x;
     int  nValues;
     int  j, k, d;
-    int  lineLength;
 
     // --- parse number of days with data from cols. 27-29 of file line
     sstrncpy(valCount, &FileLine[27], 3);
     nValues = atoi(valCount);
-    lineLength = strlen(FileLine);
 
     // --- check for enough characters on line
-    if ( lineLength >= 12*nValues + 30 )
+    if ( (int)strlen(FileLine) >= 12*nValues + 30 )
     {
         // --- for each day's value
         for (j=0; j<nValues; j++)
@@ -1406,18 +1412,18 @@ int isGhcndFormat(char* line)
     // --- find starting position of the DATE field
     ptr = strstr(line, "DATE");
     if ( ptr == NULL ) return FALSE;
-    FileDateFieldPos = ptr - line;
+    FileDateFieldPos = (int)(ptr - line);
 
     // --- initialize starting position of each data field
     for ( i = TMIN; i <= WIND; i++) FileFieldPos[i] = -1;
 
     // --- find starting position of each climate variable's data field
     ptr = strstr(line, "TMIN");
-    if ( ptr ) FileFieldPos[TMIN] = ptr - line;
+    if ( ptr ) FileFieldPos[TMIN] = (int)(ptr - line);
     ptr = strstr(line, "TMAX");
-    if ( ptr ) FileFieldPos[TMAX] = ptr - line;
+    if ( ptr ) FileFieldPos[TMAX] = (int)(ptr - line);
     ptr = strstr(line, "EVAP");
-    if ( ptr ) FileFieldPos[EVAP] = ptr - line;
+    if ( ptr ) FileFieldPos[EVAP] = (int)(ptr - line);
 
     // --- WIND can either be daily movement or average speed
     FileWindType = WDMV;
@@ -1427,7 +1433,7 @@ int isGhcndFormat(char* line)
         FileWindType = AWND;
         ptr = strstr(line, "AWND");
     }
-    if ( ptr ) FileFieldPos[WIND] = ptr - line;
+    if ( ptr ) FileFieldPos[WIND] = (int)(ptr - line);
 
     // --- check if at least one climate variable was found
     for (i = TMIN; i <= WIND; i++) if (FileFieldPos[i] >= 0 ) return TRUE;
@@ -1463,59 +1469,98 @@ void parseGhcndFileLine()
 //           wind speed.
 //
 {
-    int y, m, d, n, v;
-    double x;
+    int y, m, d, n, i;
+    double v;
 
     // --- parse day of month from date field
     n = sscanf(&FileLine[FileDateFieldPos], "%4d%2d%2d", &y, &m, &d);
     if ( n < 3 ) return;
     if ( d < 1 || d > 31 ) return;
 
-    // --- parse temperatures (in tenths of deg. C) to deg F
-    if ( FileFieldPos[TMAX] >= 0 )
+    // --- parse climate variables
+    for (i = TMIN; i <= WIND; i++)
     {
-        if ( sscanf(&FileLine[FileFieldPos[TMAX]], "%8d", &v) > 0 )
+        if ( FileFieldPos[i] >= 0 )
         {
-            if ( abs(v) < 9999 )
-                FileData[TMAX][d] = (double)v*0.1*9.0/5.0 + 32.0;
-        }
-    }
-    if ( FileFieldPos[TMIN] >= 0 )
-    {
-        if ( sscanf(&FileLine[FileFieldPos[TMIN]], "%8d", &v) > 0 )
-        {
-            if ( abs(v) < 9999 )
-                FileData[TMIN][d] = (double)v*0.1*9.0/5.0 + 32.0;
-        }
-    }
-
-    // -- parse evaporation (in tenths of mm) to user units
-    if ( FileFieldPos[EVAP] >= 0 )
-    {
-        if ( sscanf(&FileLine[FileFieldPos[EVAP]], "%8d", &v) > 0 )
-        {
-            if ( abs(v) < 9999 )
+            if ( sscanf(&FileLine[FileFieldPos[i]], "%8lf", &v) > 0 )
             {
-                x = (double)v * 0.1;
-                if ( UnitSystem == US ) x /= MMperINCH;
-                FileData[EVAP][d] = x;
+                if ( fabs(v) < 9999. )
+                    FileData[i][d] = convertGhcndValue(i, v);
             }
         }
     }
+}
 
-    // --- parse wind speed (in km/day for WDMV or tenths of m/s for AWND)
-    //     to miles/hr
-    if ( FileFieldPos[WIND] >= 0 )
+//=============================================================================
+
+double convertGhcndValue(int var, double v)
+//
+//  Input:   var = climate variable code
+//           v = climate variable value
+//  Output:  climate variable value in SWMM's internal units
+//  Purpose: converts a climate variable value read from a NCDC GHCN Daily file
+//           to SWMM's internal units.
+//
+{
+    switch (var)
     {
-        if ( sscanf(&FileLine[FileFieldPos[WIND]], "%8d", &v) > 0 )
-        {
-            if ( abs(v) < 9999 )
+        case TMIN:
+        case TMAX:
+            switch (FileTempUnits)
             {
-                if ( FileWindType == WDMV ) x = (double)v * 0.62137 / 24.;
-                else x = (double)v * 0.1 / 1000. * 0.62137 * 3600.;
-                FileData[WIND][d] = x;
+                case DEG_C10:  // tenths deg. C ==> deg. F
+                    return v / 10. * 9.0 / 5.0 + 32.0;
+
+                case DEG_C:    // deg. C ==> deg. F
+                    return v * 9.0 / 5.0 + 32.0;
+
+                default:       // deg. F
+                    return v;
             }
-        }
+        case EVAP:
+            switch (FileTempUnits)
+            {
+                case DEG_C10:  // tenths mm ==> inches or mm
+                    v /= 10.;
+                    if (UnitSystem == US) v /= MMperINCH;
+                    return v;
+
+                case DEG_C:    // mm ==> inches or mm
+                    if (UnitSystem == US) v /= MMperINCH;
+                    return v;
+
+                default:       // inches ==> inches or mm
+                    if (UnitSystem == SI) v *= MMperINCH;
+                    return v;
+            }
+        case WIND:
+            switch (FileTempUnits)
+            {
+                case DEG_C10:
+                    // km/day ==> miles/hr
+                    if (FileWindType == WDMV)
+                        return v * 0.62137 / 24.;
+                    // tenths m/s ==> miles/hr
+                    else
+                        return v / 10. / 1000. * 0.62137 * 3600.;
+                case DEG_C:
+                    // km/day ==> miles/hr
+                    if (FileWindType == WDMV)
+                        return v * 0.62137 / 24.;
+                    // m/s ==> miles/hr
+                    else
+                        return v / 1000. * 0.62137 * 3600.;
+
+                default:
+                    // miles ==> miles/hr
+                    if (FileWindType == WDMV)
+                        return v / 24.;
+                    // miles/hr
+                    else
+                        return v;
+            }
+        default:
+            return v;
     }
 }
 
@@ -1532,14 +1577,15 @@ void updateTempMoveAve(double tmin, double tmax)
 {
     double ta,               // new day's average temperature (deg F)
            tr;               // new day's temperature range (deg F)
-    int    count = Tma.count;
+    int    kount = Tma.count;
+    double count = kount;
 
     // --- find ta and tr from new day's min and max temperature
     ta = (tmin + tmax) / 2.0;
     tr = fabs(tmax - tmin);
 
     // --- if the array used to store previous days' temperatures is full
-    if ( count == Tma.maxCount )
+    if ( kount == Tma.maxCount )
     {
         // --- update the moving averages with the new day's value
         Tma.tAve = (Tma.tAve * count + ta - Tma.ta[Tma.front]) / count;

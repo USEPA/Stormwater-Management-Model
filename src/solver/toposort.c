@@ -2,8 +2,8 @@
 //   toposort.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
+//   Version:  5.2
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Topological sorting of conveyance network links
@@ -114,7 +114,10 @@ void toposort_sortLinks(int sortedLinks[])
 
         // --- find number of links entering each node
         for (i = 0; i < Nobjects[NODE]; i++) InDegree[i] = 0;
-        for (i = 0; i < Nobjects[LINK]; i++) InDegree[ Link[i].node2 ]++;
+        for (i = 0; i < Nobjects[LINK]; i++)
+        {
+            InDegree[ Link[i].node2 ]++;
+        }
 
         // --- topo sort the links
         n = topoSort(sortedLinks);
@@ -264,7 +267,6 @@ int topoSort(int sortedLinks[])
             // --- reduce in-degree of link's downstream node
             i2 = Link[j].node2;
             InDegree[i2]--;
-
             // --- add downstream node to stack if its in-degree is zero
             if ( InDegree[i2] == 0 )
             {
@@ -290,7 +292,7 @@ void  findCycles()
     int i;
 
     // --- allocate arrays
-    AdjList  = (int *) calloc(2*Nobjects[LINK], sizeof(int));
+    AdjList  = (int *) calloc(2*(size_t)Nobjects[LINK], sizeof(int));
     StartPos = (int *) calloc(Nobjects[NODE], sizeof(int));
     Stack    = (int *) calloc(Nobjects[NODE], sizeof(int));
     Examined = (char *) calloc(Nobjects[NODE], sizeof(char));

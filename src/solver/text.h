@@ -2,25 +2,17 @@
 //   text.h
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/19/14  (Build 5.1.001)
-//            04/02/14  (Build 5.1.003)
-//            04/14/14  (Build 5.1.004)
-//            04/23/14  (Build 5.1.005)
-//            05/19/14  (Build 5.1.006)
-//            09/15/14  (Build 5.1.007)
-//            03/19/15  (Build 5.1.008)
-//            04/30/15  (Build 5.1.009)
-//            08/05/15  (Build 5.1.010)
-//            08/01/16  (Build 5.1.011)
-//            03/14/17  (Build 5.1.012)
-//            05/10/18  (Build 5.1.013)
-//            03/01/20  (Build 5.1.014)
-//            04/01/20  (Build 5.1.015)
-//
+//   Version: 5.2
+//   Date:    11/01/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Text strings
+//
+//   Update History
+//   ==============
+//   Build 5.2.0:
+//   - Moved strings used in swmm_run() (in swmm5.c) to that function.
+//   - Added text strings used for storage shapes, streets & inlets.
 //-----------------------------------------------------------------------------
 
 #ifndef TEXT_H
@@ -32,13 +24,10 @@
 
 #define FMT03 " There are errors.\n"
 #define FMT04 " There are warnings.\n"
-#define FMT05 "\n"
-#define FMT06 "\n o  Retrieving project data"
-#define FMT07 "\n o  Writing output report"
 #define FMT08 \
-  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.1 (Build 5.1.015)"         //(5.1.015)
+  "\n  EPA STORM WATER MANAGEMENT MODEL - VERSION 5.2 (Build 5.2.0)"
 #define FMT09 \
-  "\n  --------------------------------------------------------------"
+  "\n  ------------------------------------------------------------"
 #define FMT10 "\n"
 #define FMT11  "\n    Cannot use duplicate file names."
 #define FMT12  "\n    Cannot open input file "
@@ -46,8 +35,8 @@
 #define FMT14  "\n    Cannot open output file "
 #define FMT15  "\n    Cannot open temporary output file"
 #define FMT16  "\n  ERROR %d detected. Execution halted."
-#define FMT17  "at line %ld of input file:"                                    //(5.1.013)
-#define FMT18  "at line %ld of %s] section:"                                   //(5.1.013)
+#define FMT17  "at line %ld of input file:"
+#define FMT18  "at line %ld of %s] section:"
 #define FMT19  "\n  Maximum error count exceeded."
 #define FMT20  "\n\n  Analysis begun on:  %s"
 #define FMT20a "  Analysis ended on:  %s"
@@ -64,10 +53,12 @@
 #define WARN08 "WARNING 08: elevation drop exceeds length for Conduit"
 #define WARN09 "WARNING 09: time series interval greater than recording interval for Rain Gage"
 #define WARN10a \
-"WARNING 10: crest elevation is below downstream invert for regulator Link"    //(5.1.013)
+"WARNING 10: crest elevation is below downstream invert for regulator Link"
 #define WARN10b \
-"WARNING 10: crest elevation raised to downstream invert for regulator Link"   //(5.1.013)
+"WARNING 10: crest elevation raised to downstream invert for regulator Link"
 #define WARN11 "WARNING 11: non-matching attributes in Control Rule"
+#define WARN12 \
+"WARNING 12: inlet removed due to unsupported shape for Conduit"
 
 // Analysis Option Keywords
 #define  w_FLOW_UNITS        "FLOW_UNITS"
@@ -86,7 +77,7 @@
 #define  w_DRY_STEP          "DRY_STEP"
 #define  w_ROUTE_STEP        "ROUTING_STEP"
 #define  w_REPORT_STEP       "REPORT_STEP"
-#define  w_RULE_STEP         "RULE_STEP"                                       //(5.1.013)
+#define  w_RULE_STEP         "RULE_STEP"
 #define  w_ALLOW_PONDING     "ALLOW_PONDING"
 #define  w_INERT_DAMPING     "INERTIAL_DAMPING"
 #define  w_SLOPE_WEIGHTING   "SLOPE_WEIGHTING"
@@ -112,7 +103,7 @@
 #define  w_IGNORE_RDII       "IGNORE_RDII"
 #define  w_MIN_ROUTE_STEP    "MINIMUM_STEP"
 #define  w_NUM_THREADS       "THREADS"
-#define  w_SURCHARGE_METHOD  "SURCHARGE_METHOD"                                //(5.1.013)
+#define  w_SURCHARGE_METHOD  "SURCHARGE_METHOD"
 
 // Flow Units
 #define  w_CFS               "CFS"
@@ -133,7 +124,7 @@
 #define  w_XKINWAVE          "XKINWAVE"
 #define  w_DYNWAVE           "DYNWAVE"
 
-// Surcharge Methods                                                           //(5.1.013)
+// Surcharge Methods
 #define  w_EXTRAN            "EXTRAN"
 #define  w_SLOT              "SLOT"
 
@@ -197,11 +188,18 @@
 #define  w_CUTOFF            "CUTOFF"
 #define  w_OVERFLOW          "OVERFLOW"
 
+// Storage Node Shapes
+#define  w_CYLINDRICAL       "CYLINDRICAL"
+#define  w_CONICAL           "CONICAL"
+#define  w_PARABOLOID        "PARABOLIC"
+#define  w_PYRAMIDAL         "PYRAMIDAL"
+
 // Pump Curve Types
 #define  w_TYPE1             "TYPE1"
 #define  w_TYPE2             "TYPE2"
 #define  w_TYPE3             "TYPE3"
 #define  w_TYPE4             "TYPE4"
+#define  w_TYPE5             "TYPE5"
 #define  w_IDEAL             "IDEAL"
 
 // Pump Curve Variables
@@ -229,6 +227,7 @@
 #define  w_TRIANGULAR        "TRIANGULAR"
 #define  w_PARABOLIC         "PARABOLIC"
 #define  w_POWERFUNC         "POWER"
+#define  w_STREET            "STREET"
 #define  w_RECT_TRIANG       "RECT_TRIANGULAR"
 #define  w_RECT_ROUND        "RECT_ROUND"
 #define  w_MOD_BASKET        "MODBASKETHANDLE"
@@ -317,14 +316,17 @@
 #define  w_PUMP2             "PUMP2"
 #define  w_PUMP3             "PUMP3"
 #define  w_PUMP4             "PUMP4"
+#define  w_PUMP5             "PUMP5"
+#define  w_INLET             "INLET"
 
 // Reporting Options
+#define  w_DISABLED          "DISABLED"
 #define  w_INPUT             "INPUT"
 #define  w_CONTINUITY        "CONTINUITY"
 #define  w_FLOWSTATS         "FLOWSTATS"
 #define  w_CONTROLS          "CONTROL"
 #define  w_NODESTATS         "NODESTATS"
-#define  w_AVERAGES          "AVERAGES"                                        //(5.1.013)
+#define  w_AVERAGES          "AVERAGES"
 
 // Interface File Types
 #define  w_RAINFALL          "RAINFALL"
@@ -379,6 +381,9 @@
 #define  w_THEN              "THEN"
 #define  w_ELSE              "ELSE"
 #define  w_PRIORITY          "PRIORITY"
+
+#define  w_VARIABLE          "VARIABLE"
+#define  w_EXPRESSION        "EXPRESSION"
 
 // External Inflow Types
 #define  w_FLOW              "FLOW"
@@ -450,6 +455,8 @@
 #define  ws_GWF              "[GWF"
 #define  ws_ADJUST           "[ADJUSTMENT"
 #define  ws_EVENT            "[EVENT"
-
+#define  ws_STREET           "[STREET"
+#define  ws_INLET            "[INLET"
+#define  ws_INLET_USAGE      "[INLET_USAGE"
 
 #endif //TEXT_H

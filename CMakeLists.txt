@@ -22,7 +22,7 @@ endif()
 
 
 project(swmm-solver
-    VERSION 5.1.15
+    VERSION 5.2.0
     LANGUAGES C CXX
 )
 
@@ -48,6 +48,7 @@ set(CONFIG_DIST  "cmake")
 # Define build options
 option(BUILD_TESTS "Build component tests (requires Boost)" OFF)
 option(BUILD_DOCS "Build toolkit docs (requires Doxygen)" OFF)
+option(BUILD_DEF   "Builds library with def file interface" OFF)
 
 # Added option to statically link libraries to address GitHub Ubuntu 20.04 symbol errors (issue #340)
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)

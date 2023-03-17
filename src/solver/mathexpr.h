@@ -1,6 +1,6 @@
 /******************************************************************************
 **  MODULE:        MATHEXPR.H
-**  PROJECT:       SWMM 5.1
+**  PROJECT:       SWMM5
 **  DESCRIPTION:   header file for the math expression parser in mathexpr.c.
 **  AUTHORS:       L. Rossman, US EPA - NRMRL
 **                 F. Shang, University of Cincinnati

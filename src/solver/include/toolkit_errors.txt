@@ -1,0 +1,14 @@
+// OWA toolkit error messages
+
+ERR(2000, "\n API Key Error: Object Type Outside Bonds")
+ERR(2001, "\n API Key Error: Network Not Initialized (Input file open?)")
+ERR(2002, "\n API Key Error: Simulation Not Running")
+ERR(2003, "\n API Key Error: Incorrect object type for parameter chosen")
+ERR(2004, "\n API Key Error: Object index out of Bounds.")
+ERR(2005, "\n API Key Error: Invalid Pollutant Index")
+ERR(2006, "\n API Key Error: Invalid Inflow Type")
+ERR(2007, "\n API Key Error: Invalid Timeseries Index")
+ERR(2008, "\n API Key Error: Invalid Pattern Index")
+ERR(2009, "\n API Key Error: Invalid Lid Unit Index")
+ERR(2010, "\n API Key Error: Undefined Subcatchment Lid")
+ERR(2011, "\n API Key Error: No memory allocated for return value")

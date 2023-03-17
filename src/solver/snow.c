@@ -2,19 +2,21 @@
 //   snow.c
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/20/14   (Build 5.1.001)
-//            03/19/15   (Build 5.1.008)
+//   Version: 5.2
+//   Date:    11/01/21   (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Models snow melt processes.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - Adjustment of snowmelt and subcatchment's net precipitation for area
 //     covered by snow was corrected. 
 //   - Area covered by snow now included in calculation of rate that liquid
 //     water leaves a snowpack.
-//
+//   Build 5.2.0:
+//   - Subcatchment snow pack area should not include LID area.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -399,7 +401,8 @@ void snow_plowSnow(int j, double tStep)
             exc = snowpack->wsnow[SNOW_PLOWABLE];
 
             // --- plow out of system
-            f = snowpack->fArea[SNOW_PLOWABLE] * Subcatch[j].area;
+            f = snowpack->fArea[SNOW_PLOWABLE] *
+                (Subcatch[j].area - Subcatch[j].lidArea);
             Snow.removed += Snowmelt[k].sfrac[0] * exc * f;
             sfracTotal = Snowmelt[k].sfrac[0];
 
@@ -544,7 +547,7 @@ double snow_getSnowCover(int j)
         snowCover += (snowpack->wsnow[i] + snowpack->fw[i]) * 
                       snowpack->fArea[i];
     }
-    return snowCover * Subcatch[j].area;
+    return snowCover * (Subcatch[j].area - Subcatch[j].lidArea);
 }
 
 //=============================================================================

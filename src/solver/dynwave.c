@@ -2,16 +2,9 @@
 //   dynwave.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (5.1.001)
-//             03/28/14   (5.1.002)
-//             09/15/14   (5.1.007)
-//             03/19/15   (5.1.008)
-//             08/01/16   (5.1.011)
-//             05/10/18   (5.1.013)
-//             03/01/20   (5.1.014)
-//             07/10/20   (5.1.015)
-//   Author:   L. Rossman (EPA)
+//   Version:  5.2
+//   Date:     11/01/21  (Build 5.2.0)
+//   Author:   L. Rossman
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
 //
@@ -22,47 +15,41 @@
 //   to solve the explicit form of the continuity and momentum equations
 //   for conduits.
 //
+//   Update History
+//   ==============
 //   Build 5.1.002:
 //   - Only non-ponded nodal surface area is saved for use in
 //     surcharge algorithm.
-//
 //   Build 5.1.007:
 //   - Node losses added to node outflow variable instead of treated
 //     as a separate item when computing change in node flow volume.
-//
 //   Build 5.1.008:
 //   - Module-specific constants moved here from project.c.
 //   - Support added for user-specified minimum variable time step.
 //   - Node crown elevations found here instead of in flowrout.c module.
 //   - OpenMP use to parallelize findLinkFlows() & findNodeDepths().
 //   - Bug in finding complete list of capacity limited links fixed.
-//
 //   Build 5.1.011:
 //   - Added test for failed memory allocation.
 //   - Fixed illegal array index bug for Ideal Pumps.
-//
 //   Build 5.1.013:
 //   - Include omp.h protected against lack of compiler support for OpenMP.
 //   - SurchargeMethod option used to decide how node surcharging is handled.
 //   - Storage nodes allowed to pressurize if their surcharge depth > 0.
 //   - Minimum flow needed to compute a Courant time step modified.
-//
 //   Build 5.1.014:
 //   - updateNodeFlows() modified to subtract conduit evap. and seepage losses
 //     from downstream node inflow instead of upstream node outflow.
-//
 //   Build 5.1.015:
 //   - Roll back the 5.1.014 change for conduit losses in updateNodeFlows().
-//
+//   Build 5.2.0:
+//   - Support added for reporting most frequent non-converging links.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
-#include "headers.h"
 #include <stdlib.h>
 #include <math.h>
-#if defined(_OPENMP)                                                           //(5.1.013)
-#include <omp.h>
-#endif
+#include "headers.h"
 
 //-----------------------------------------------------------------------------
 //     Constants 
@@ -71,9 +58,9 @@ static const double MINTIMESTEP         = 0.001;  // min. time step (sec)
 static const double OMEGA               = 0.5;    // under-relaxation parameter
 static const double DEFAULT_SURFAREA    = 12.566; // Min. nodal surface area (~4 ft diam.)
 static const double DEFAULT_HEADTOL     = 0.005;  // Default head tolerance (ft)
-static const double EXTRAN_CROWN_CUTOFF = 0.96;   // crown cutoff for EXTRAN   //(5.1.013)
-static const double SLOT_CROWN_CUTOFF   = 0.985257; // crown cutoff for SLOT   //(5.1.013)
-static const int    DEFAULT_MAXTRIALS   = 8;       // Max. trials per time step
+static const double EXTRAN_CROWN_CUTOFF = 0.96;   // crown cutoff for EXTRAN
+static const double SLOT_CROWN_CUTOFF   = 0.985257; // crown cutoff for SLOT
+static const int    DEFAULT_MAXTRIALS   = 8;      // Max. trials per time step
 
 
 //-----------------------------------------------------------------------------
@@ -111,6 +98,7 @@ static void   findNonConduitFlow(int link, double dt);
 static void   findNonConduitSurfArea(int link);
 static double getModPumpFlow(int link, double q, double dt);
 static void   updateNodeFlows(int link);
+static void   updateConvergenceStats();
 
 static int    findNodeDepths(double dt);
 static void   setNodeDepth(int node, double dt);
@@ -163,9 +151,9 @@ void dynwave_init()
         Link[i].dqdh = 0.0;
     }
 
-    // --- set crown cutoff for finding top width of closed conduits           //(5.1.013)
-    if ( SurchargeMethod == SLOT ) CrownCutoff = SLOT_CROWN_CUTOFF;            //(5.1.013)
-    else                           CrownCutoff = EXTRAN_CROWN_CUTOFF;          //(5.1.013)
+    // --- set crown cutoff for finding top width of closed conduits
+    if ( SurchargeMethod == SLOT ) CrownCutoff = SLOT_CROWN_CUTOFF;
+    else                           CrownCutoff = EXTRAN_CROWN_CUTOFF;
 }
 
 //=============================================================================
@@ -262,11 +250,21 @@ int dynwave_execute(double tStep)
             findBypassedLinks();
         }
     }
-    if ( !converged ) NonConvergeCount++;
+    if ( !converged ) updateConvergenceStats();
 
     //  --- identify any capacity-limited conduits
     findLimitedLinks();
     return Steps;
+}
+
+//=============================================================================
+
+void updateConvergenceStats()
+{
+    int i;
+    NonConvergeCount++;
+    for (i = 0; i < Nobjects[NODE]; i++)
+        stats_updateConvergenceStats(i, Xnode[i].converged);
 }
 
 //=============================================================================
@@ -313,12 +311,6 @@ void initNodeStates()
             Xnode[i].newSurfArea = node_getSurfArea(i, Node[i].newDepth);
         }
 
-/*      ////  Removed for release 5.1.013.  ///                                //(5.1.013)
-        if ( Xnode[i].newSurfArea < MinSurfArea )
-        {
-            Xnode[i].newSurfArea = MinSurfArea;
-        }
-*/
         // --- initialize nodal inflow & outflow
         Node[i].inflow = 0.0;
         Node[i].outflow = Node[i].losses;
@@ -550,19 +542,19 @@ void updateNodeFlows(int i)
         k = Link[i].subIndex;
         uniformLossRate = Conduit[k].evapLossRate + Conduit[k].seepLossRate; 
         barrels = Conduit[k].barrels;
-        uniformLossRate *= barrels;                                            //(5.1.014)
+        uniformLossRate *= barrels;
     }
 
     // --- update total inflow & outflow at upstream/downstream nodes
     if ( q >= 0.0 )
     {
-        Node[n1].outflow += q + uniformLossRate;                               //(5.1.015)
-        Node[n2].inflow  += q;                                                 //(5.1.015)
+        Node[n1].outflow += q + uniformLossRate;
+        Node[n2].inflow  += q;
     }
     else
     {
-        Node[n1].inflow   -= q;                                                //(5.1.015)
-        Node[n2].outflow  -= q - uniformLossRate;                              //(5.1.015)
+        Node[n1].inflow   -= q;
+        Node[n2].outflow  -= q - uniformLossRate;
     }
 
     // --- add surf. area contributions to upstream/downstream nodes
@@ -585,9 +577,14 @@ void updateNodeFlows(int i)
 //=============================================================================
 
 int findNodeDepths(double dt)
+//
+//  Input:   dt = time step (sec)
+//  Output:  returns TRUE if depth change at all non-Outfall nodes is 
+//           within the convergence tolerance and FALSE otherwise
+//  Purpose: finds new depth at all nodes and checks if convergence achieved.
+//
 {
     int i;
-    int converged;      // convergence flag
     double yOld;        // previous node depth (ft)
 
     // --- compute outfall depths based on flow in connecting link
@@ -595,7 +592,6 @@ int findNodeDepths(double dt)
 
     // --- compute new depth for all non-outfall nodes and determine if
     //     depth change from previous iteration is below tolerance
-    converged = TRUE;
 #pragma omp parallel num_threads(NumThreads)
 {
     #pragma omp for private(yOld)
@@ -607,12 +603,18 @@ int findNodeDepths(double dt)
         Xnode[i].converged = TRUE;
         if ( fabs(yOld - Node[i].newDepth) > HeadTol )
         {
-            converged = FALSE;
             Xnode[i].converged = FALSE;
         }
     }
 }
-    return converged;
+
+   // --- return FALSE if any non-Outfall node failed to converge
+    for (i = 0; i < Nobjects[NODE]; i++)
+    {
+        if ( Node[i].type == OUTFALL ) continue;
+        if (Xnode[i].converged == FALSE) return FALSE;
+    }
+    return TRUE;
 }
 
 //=============================================================================
@@ -627,7 +629,7 @@ void setNodeDepth(int i, double dt)
 {
     int     canPond;                   // TRUE if node can pond overflows
     int     isPonded;                  // TRUE if node is currently ponded 
-    int     isSurcharged = FALSE;      // TRUE if node is surcharged           //(5.1.013)
+    int     isSurcharged = FALSE;      // TRUE if node is surcharged
     double  dQ;                        // inflow minus outflow at node (cfs)
     double  dV;                        // change in node volume (ft3)
     double  dy;                        // change in node depth (ft)
@@ -651,13 +653,13 @@ void setNodeDepth(int i, double dt)
     yLast = Node[i].newDepth;
     Node[i].overflow = 0.0;
     surfArea = Xnode[i].newSurfArea;
-    surfArea = MAX(surfArea, MinSurfArea);                                     //(5.1.013)
+    surfArea = MAX(surfArea, MinSurfArea);
 
     // --- determine average net flow volume into node over the time step
     dQ = Node[i].inflow - Node[i].outflow;
     dV = 0.5 * (Node[i].oldNetInflow + dQ) * dt;
 
-////  Following code segment added to release 5.1.013.  ////                   //(5.1.013)
+
     // --- determine if node is EXTRAN surcharged
     if (SurchargeMethod == EXTRAN)
     {
@@ -674,10 +676,9 @@ void setNodeDepth(int i, double dt)
         // --- surcharge occurs when node depth exceeds top of its highest link
         else isSurcharged = (yCrown > 0.0 && yLast > yCrown);
     }
-/////////////////////////////////////////////////////////////
 
     // --- if node not surcharged, base depth change on surface area        
-    if (!isSurcharged)                                                         //(5.1.013)
+    if (!isSurcharged)
     {
         dy = dV / surfArea;
         yNew = yOld + dy;
@@ -841,7 +842,7 @@ double getLinkStep(double tMin, int *minLink)
             // --- skip conduits with negligible flow, area or Fr
             k = Link[i].subIndex;
             q = fabs(Link[i].newFlow) / Conduit[k].barrels;
-            if ( q <= FUDGE                                                    //(5.1.013)
+            if ( q <= FUDGE 
             ||   Conduit[k].a1 <= FUDGE
             ||   Link[i].froude <= 0.01 
                ) continue;

@@ -47,13 +47,14 @@ void rkck(double x, int n, double h, void (*derivs)(double, double*, double*));
 //-----------------------------------------------------------------------------
 int odesolve_open(int n)
 {
+    int n5 = n*5;
     nmax  = 0;
     y     = (double *) calloc(n, sizeof(double));
     yscal = (double *) calloc(n, sizeof(double));
     dydx  = (double *) calloc(n, sizeof(double));
     yerr  = (double *) calloc(n, sizeof(double));
     ytemp = (double *) calloc(n, sizeof(double));
-    ak    = (double *) calloc(5*n, sizeof(double));
+    ak    = (double *) calloc(n5, sizeof(double));
     if ( !y || !yscal || !dydx || !yerr || !ytemp || !ak ) return 0;
     nmax = n;
     return 1;
@@ -195,11 +196,14 @@ void rkck(double x, int n, double h, void (*derivs)(double, double*, double*))
     double dc1=c1-2825.0/27648.0, dc3=c3-18575.0/48384.0,
            dc4=c4-13525.0/55296.0, dc6=c6-0.25;
     int i;
+    int n2 = n*2;
+    int n3 = n*3;
+    int n4 = n*4;
     double *ak2 = (ak);
     double *ak3 = ((ak)+(n));
-    double *ak4 = ((ak)+(2*n));
-    double *ak5 = ((ak)+(3*n));
-    double *ak6 = ((ak)+(4*n));
+    double *ak4 = ((ak)+(n2));
+    double *ak5 = ((ak)+(n3));
+    double *ak6 = ((ak)+(n4));
 
     for (i=0; i<n; i++)
         ytemp[i] = y[i] + b21*h*dydx[i];

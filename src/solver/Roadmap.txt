@@ -1,11 +1,11 @@
 A Roadmap to the SWMM 5 Engine Source Code
 ==========================================
 
-The SWMM 5 computational engine consists of 49 C-code files plus several
-header files. The engine can be compiled either as a Dynamic Link Library
-(DLL) under Windows or as a stand-alone console application under both
-Windows and Linux, depending on which of the #define DLL and #define CLE
-declarations at the top of swmm5.c is commented out.
+The SWMM 5 computational engine consists of 55 C-code files plus 22
+header files. The engine should be compiled into a Dynamic Link Library
+(DLL) under Windows or to a shared object library under Linux or MacOS.
+A main.c file is also provided to build an executable that uses the engine
+library to run a complete SWMM simulation from the command line.
 
 The following header files contain definitions that are used throughout the
 code and should be consulted if the meaning of a variable, a data structure,
@@ -31,8 +31,8 @@ funcs.h       contains prototypes of functions that can be called from any
 
 The following modules form the main core of the SWMM 5 engine:
 
-swmm5.c       contains functions that provide supervisory control over the
-              program.
+swmm5.c       contains a small API with functions that provide supervisory
+              control over the program.
 
 project.c     contains functions that create and destroy all project data,
               establish default values, and look up objects by ID name.
@@ -48,8 +48,7 @@ routing.c     routes runoff and external inflows through the project's
 massbal.c     performs mass balance calculations for runoff and routing.
 
 stats.c       collects summary statistics on flow rates, water depths,
-              solution iterations, and variable time steps for a
-	      simulation.
+              solution iterations, and variable time steps for a simulation.
 
 statsrpt.c    writes summary simulation results to a status report.
 
@@ -58,7 +57,7 @@ output.c      writes/reads runoff and routing results to/from a binary
 
 report.c      prepares a status report of simulation results and, for the
               command line version of SWMM 5, reports complete results for
-	      selected subcatchments, nodes, and links.
+              selected subcatchments, nodes, and links.
 
 inputrpt.c    writes a summary of a project's input data to the status report.
 
@@ -103,10 +102,13 @@ flowrout.c     implements top-level control of flow routing through a project's
 
 inflow.c       provides direct time series inflows and recurring dry weather
                inflows to the drainage system's nodes at each step of the
-	       simulation.
+               simulation.
 
 rdii.c         computes rainfall dependent infiltration/inflow at selected nodes
                of the drainage network.
+
+inlet.c        computes flow captured by street inlet drains that is diverted to
+               sewer nodes using methods from the FHWA HEC-22 manual.
 
 kinwave.c      performs kinematic wave flow routing calculations at each time
                step of the simulation.
@@ -125,7 +127,7 @@ qualrout.c     performs routing of water quality constituents through the
 
 treatmnt.c     computes pollutant removal at specific nodes of the drainage
                system where user-defined treatment functions have been
-	       assigned.
+               assigned.
 
 node.c         contains functions used to compute the properties and behavior
                of the drainage system's nodes which include junctions, flow
@@ -164,7 +166,7 @@ keywords.c     defines lists of keywords that appear as part of a SWMM 5
                input file.
 
 mathexpr.c     functions that parse and evaluate user-supplied mathematical
-               expressions for pollutant removal at treatment nodes.
+               expressions.
 
 mempool.c      functions that provide a memory pool used to store object
                ID names.
@@ -174,6 +176,8 @@ odesolve.c     implementation of a fifth-order Runge-Kutta ordinary
 
 shape.c        functions that compute the geometric cross-section properties
                of closed conduits with user-defined shapes.
+
+street.c       reads the geometric properties of a street cross section.
 
 table.c        functions used for accessing lookup tables that contain
                SWMM 5's curve data and time series data.

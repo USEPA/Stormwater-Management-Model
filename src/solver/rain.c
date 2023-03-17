@@ -2,12 +2,8 @@
 //   rain.c
 //
 //   Project: EPA SWMM5
-//   Version: 5.1
-//   Date:    03/20/14  (Build 5.1.001)
-//            08/05/15  (Build 5.1.010)
-//            08/22/16  (Build 5.1.011)
-//            05/10/18  (Build 5.1.013)
-//            03/01/20  (Build 5.1.014)
+//   Version: 5.2
+//   Date:    11/01/21  (Build 5.2.0)
 //   Author:  L. Rossman
 //
 //   Places rainfall data from external files into a SWMM rainfall
@@ -41,15 +37,14 @@
 //         Date/time for start of period (8-byte double)
 //         Rain depth (inches) (4-byte float)
 //
+//   Update History
+//   ==============
 //   Release 5.1.010:
 //   - Modified error message for records out of sequence in std. format file.
-//
 //   Release 5.1.011:
 //   - Can now read decimal rainfall values in newer NWS online format.
-//
 //   Release 5.1.013:
 //   - Variable x properly initialized with float value in readNwsOnlineValue().
-//
 //   Release 5.1.014:
 //   - Fixed indexing bug in rainFileConflict() function.
 //-----------------------------------------------------------------------------
@@ -232,6 +227,7 @@ void createRainFile(int count)
     // --- write default fill-in header records to file for each gage
     //     (will be replaced later with actual records)
     if ( count > 0 ) report_writeRainStats(-1, &RainStats);
+    strcpy(staID, " ");
     for ( i = 0;  i < count; i++ )
     {
         fwrite(staID, sizeof(char), MAXMSG+1, Frain.file);
@@ -397,7 +393,7 @@ int findGageInFile(int i, int kount)
     int   k;
     int  interval;
     int  filePos1, filePos2;
-    char  staID[MAXMSG+1];
+    char  staID[MAXMSG+1] = "";
 
     for ( k = 1; k <= kount; k++ )
     {
@@ -438,7 +434,7 @@ int findFileFormat(FILE *f, int i, int *hdrLines)
     long  sn2;
     char  recdType[4];
     char  elemType[5];
-    char  coopID[6];
+    char  coopID[6] = "";
     char  line[MAXLINE];
     int   year, month, day, hour, minute;
     int   elem;
@@ -606,7 +602,7 @@ int findNWSOnlineFormat(FILE *f, char *line)
     {
         Interval = 3600;
         TimeOffset = Interval;
-        ValueOffset = str - line;
+        ValueOffset = (int)(str - line);
         fileFormat = NWS_ONLINE_60;
     }
 
@@ -615,7 +611,7 @@ int findNWSOnlineFormat(FILE *f, char *line)
     {
         Interval = 900;
         TimeOffset = Interval;
-        ValueOffset = str - line;
+        ValueOffset = (int)(str - line);
         fileFormat = NWS_ONLINE_15;
     }
     else return UNKNOWN_FORMAT;
@@ -633,7 +629,7 @@ int findNWSOnlineFormat(FILE *f, char *line)
         if ( str == NULL ) return UNKNOWN_FORMAT;
 
         // --- use pointer arithmetic to convert pointer to character position
-        n = str - line;
+        n = (int)(str - line);
         DataOffset = n - 11;
         return fileFormat;
     }
@@ -737,7 +733,7 @@ int readNWSLine(char *line, int fileFormat, DateTime day1, DateTime day2)
     int      hour, minute;
     long     v;
     float    x;
-    int      lineLength = strlen(line)-1;
+    int      lineLength = (int)strlen(line)-1;
     int      nameLength = 0;
 
     // --- get year, month, & day from line
@@ -874,7 +870,7 @@ int readNwsOnlineValue(char* s, long* v, char* flag)
 //
 {
     int    n;
-    float  x = 99.99f;                                                         //(5.1.013)
+    float  x = 99.99f;
 
     // --- check for newer format of decimal inches
     if ( strchr(s, '.') )
@@ -1147,7 +1143,7 @@ void saveRainfall(DateTime date1, int hour, int minute, float x, char isMissing)
 //
 {
     DateTime date2;
-    double   seconds;
+    int      seconds;
 
     if ( isMissing ) RainStats.periodsMissing++;
     else             RainStats.periodsRain++;

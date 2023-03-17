@@ -2,11 +2,16 @@
 //   transect.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
+//   Version:  5.2
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Geometry processing for irregular cross-section transects.
+//
+//   Update History
+//   ==============
+//   Build 5.2.0:
+//   - Function added to create a transect for a Street cross-section.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -43,6 +48,7 @@ static double  Lfactor;                // main channel/flood plain length
 //  transect_delete      (called by deleteObjects in project.c)
 //  transect_readParams  (called by parseLine in input.c)
 //  transect_validate    (called by input_readData)
+//  transect_createStreetTransect  (called by street_readparams)
 
 //-----------------------------------------------------------------------------
 //  Local functions
@@ -51,10 +57,11 @@ static int    setParams(int transect, char* id, double x[]);
 static int    setManning(double n[]);
 static int    addStation(double x, double y);
 static double getFlow(int k, double a, double wp, int findFlow);
-static void   getGeometry(int i, int j, double y);
+static void   createTables(TTransect *transect, double ymin, double ymax);
+static void   getGeometry(TTransect *transect, int i, double y);
 static void   getSliceGeom(int k, double y, double yu, double yd, double *w,
               double *a, double *wp);
-static void   setMaxSectionFactor(int transect);
+static void   setMaxSectionFactor(TTransect *transect);
 
 //=============================================================================
 
@@ -189,8 +196,8 @@ void  transect_validate(int j)
 //  Purpose: validates transect data and creates its geometry tables.
 //
 {
-    int    i, nLast;
-    double dy, y, ymin, ymax;
+    int    i;
+    double ymin, ymax;
     double oldNchannel = Nchannel;
 
     // --- check for valid transect data
@@ -234,7 +241,6 @@ void  transect_validate(int j)
         report_writeErrorMsg(ERR_TRANSECT_NO_DEPTH, Transect[j].ID);
         return;
     }
-    Transect[j].yFull = ymax - ymin;
 
     // --- add vertical sides to transect to reach full ht. on both ends
     Station[0] = Station[1];
@@ -243,49 +249,60 @@ void  transect_validate(int j)
     Station[Nstations] = Station[Nstations-1];
     Elev[Nstations] = Elev[0];
 
-    // --- determine size & depth increment for geometry tables
+    // --- create geometry tables
     Transect[j].nTbl = N_TRANSECT_TBL;
-    dy = (ymax - ymin) / (double)(Transect[j].nTbl - 1);
-
-    // --- set 1st table entries to zero
-    Transect[j].areaTbl[0] = 0.0;
-    Transect[j].hradTbl[0] = 0.0;
-    Transect[j].widthTbl[0] = 0.0;
-
-    // --- compute geometry for each depth increment
-    y = ymin;
-    Transect[j].wMax = 0.0;
-    for (i = 1; i < Transect[j].nTbl; i++)
-    {
-        y += dy;
-        Transect[j].areaTbl[i] = 0.0;
-        Transect[j].hradTbl[i] = 0.0;
-        Transect[j].widthTbl[i] = 0.0;
-        getGeometry(i, j, y);
-    }
-
-    // --- determine max. section factor 
-    setMaxSectionFactor(j);
-
-    // --- normalize geometry table entries
-    //     (full cross-section values are last table entries)
-    nLast = Transect[j].nTbl - 1;
-    Transect[j].aFull = Transect[j].areaTbl[nLast];
-    Transect[j].rFull = Transect[j].hradTbl[nLast];
-    Transect[j].wMax = Transect[j].widthTbl[nLast];
-
-    for (i = 1; i <= nLast; i++)
-    {
-        Transect[j].areaTbl[i] /= Transect[j].aFull;
-        Transect[j].hradTbl[i] /= Transect[j].rFull;
-        Transect[j].widthTbl[i] /= Transect[j].wMax;
-    }
-
-    // --- set width at 0 height equal to width at 4% of max. height
-    Transect[j].widthTbl[0] = Transect[j].widthTbl[1];
+    createTables(&Transect[j], ymin, ymax);
 
     // --- save unadjusted main channel roughness 
     Transect[j].roughness = oldNchannel;
+}
+
+//=============================================================================
+
+void createTables(TTransect *transect, double ymin, double ymax)
+{
+    int    i, nLast;
+    double dy, y;
+
+    transect->yFull = ymax - ymin;
+    transect->wMax = 0.0;
+
+    // --- set 1st table entries to zero
+    transect->areaTbl[0] = 0.0;
+    transect->hradTbl[0] = 0.0;
+    transect->widthTbl[0] = 0.0;
+
+    // --- compute geometry for each depth increment
+    dy = (ymax - ymin) / ((double)(transect->nTbl) - 1);
+    y = ymin;
+    for (i = 1; i < transect->nTbl; i++)
+    {
+        y += dy;
+        transect->areaTbl[i] = 0.0;
+        transect->hradTbl[i] = 0.0;
+        transect->widthTbl[i] = 0.0;
+        getGeometry(transect, i, y);
+    }
+
+    // --- determine max. section factor 
+    setMaxSectionFactor(transect);
+
+    // --- normalize geometry table entries
+    //     (full cross-section values are last table entries)
+    nLast = transect->nTbl - 1;
+    transect->aFull = transect->areaTbl[nLast];
+    transect->rFull = transect->hradTbl[nLast];
+    transect->wMax = transect->widthTbl[nLast];
+
+    for (i = 1; i <= nLast; i++)
+    {
+        transect->areaTbl[i] /= transect->aFull;
+        transect->hradTbl[i] /= transect->rFull;
+        transect->widthTbl[i] /= transect->wMax;
+    }
+
+    // --- set width at 0 height equal to width at 4% of max. height
+    transect->widthTbl[0] = transect->widthTbl[1];
 }
 
 //=============================================================================
@@ -366,10 +383,10 @@ int  addStation(double y, double x)
 
 //=============================================================================
 
-void  getGeometry(int i, int j, double y)
+void  getGeometry(TTransect *transect, int i, double y)
 //
-//  Input:   i = index of current entry in geometry tables
-//           j = transect index
+//  Input:   transect = transect being analyzed
+//           i = index of current entry in geometry tables
 //           y = depth of current entry in geometry tables
 //  Output:  none
 //  Purpose: computes entries in a transect's geometry tables at a given depth. 
@@ -417,8 +434,8 @@ void  getGeometry(int i, int j, double y)
         // --- update total transect values
         wpSum += wp;
         aSum += a;
-        Transect[j].areaTbl[i] += a;
-        Transect[j].widthTbl[i] += w;
+        transect->areaTbl[i] += a;
+        transect->widthTbl[i] += w;
 
         // --- must update flow if station elevation is above water level
         if ( Elev[k] >= y ) findFlow = TRUE;
@@ -437,9 +454,11 @@ void  getGeometry(int i, int j, double y)
 
     // --- find hyd. radius table entry solving Manning eq. with
     //     total flow, total area, and main channel n
-    aSum = Transect[j].areaTbl[i];
-    if ( aSum == 0.0 ) Transect[j].hradTbl[i] = Transect[j].hradTbl[i-1];
-    else Transect[j].hradTbl[i] = pow(qSum * Nchannel / 1.49 / aSum, 1.5);
+    aSum = transect->areaTbl[i];
+    if ( aSum == 0.0 )
+        transect->hradTbl[i] = transect->hradTbl[i-1];
+    else
+        transect->hradTbl[i] = pow(qSum * Nchannel / 1.49 / aSum, 1.5);
 }
 
 //=============================================================================
@@ -538,6 +557,7 @@ double getFlow(int k, double a, double wp, int findFlow)
         if ( Station[k] > Xrightbank )  n = Nright;
 
         // --- compute flow through flow area
+        //     (PHI is the Manning Eqn. constant defined in consts.h)
         return PHI / n * a * pow(a/wp, 2./3.);
     }
     return 0.0;
@@ -545,9 +565,9 @@ double getFlow(int k, double a, double wp, int findFlow)
 
 //=============================================================================
 
-void setMaxSectionFactor(int j)
+void setMaxSectionFactor(TTransect *transect)
 //
-//  Input:   j = transect index
+//  Input:   transect = transect being analyzed
 //  Output:  none
 //  Purpose: determines the maximum section factor for a transect and the
 //           area where this maxumum occurs.
@@ -556,17 +576,103 @@ void setMaxSectionFactor(int j)
     int    i;
     double sf;
 
-    Transect[j].aMax = 0.0;
-    Transect[j].sMax = 0.0;
-    for (i=1; i<Transect[j].nTbl; i++)
+    transect->aMax = 0.0;
+    transect->sMax = 0.0;
+    for (i = 1; i < transect->nTbl; i++)
     {
-        sf = Transect[j].areaTbl[i] * pow(Transect[j].hradTbl[i], 2./3.);
-        if ( sf > Transect[j].sMax )
+        sf = transect->areaTbl[i] * pow(transect->hradTbl[i], 2. / 3.);
+        if (sf > transect->sMax)
         {
-            Transect[j].sMax = sf;
-            Transect[j].aMax = Transect[j].areaTbl[i];
+            transect->sMax = sf;
+            transect->aMax = transect->areaTbl[i];
         }
     }
 }
 
 //=============================================================================
+
+void  transect_createStreetTransect(TStreet* street)
+//
+{
+    double ymin, ymax, y1, y3, y4;
+    double w1, w2, w3, w4;
+
+    // Point 0 = top of backing
+    // Point 1 = top of curb
+    // Point 2 = bottom of curb
+    // Point 3 = bottom of depressed gutter
+    // Point 4 = top of depressed gutter
+    // Point 5 = street crown 
+
+    // --- assign height (y) and width (w) to road & gutter sections
+    ymin = 0.0;
+    w1 = street->backWidth;
+    w2 = street->gutterWidth;
+    w3 = street->width;
+    w4 = w3 - w2;
+    y3 = street->gutterDepression;
+    y1 = street->curbHeight + y3;
+    ymax = street->backSlope * street->backWidth + y1;
+    y4 = y3 + street->slope * w4;
+    ymax = MAX(ymax, y4);
+
+    // --- assign Station,Elevation points to the street's sections
+    Station[0] = 0.0;
+    Elev[0] = ymax;
+    Station[1] = w1;
+    Elev[1] = y1;
+    Station[2] = w1;
+    Elev[2] = 0.0;
+    Station[3] = w1 + w2;
+    Elev[3] = y3;
+    Station[4] = w1 + w3;
+    Elev[4] = y4;
+
+    // --- a half street ends here
+    if (street->sides == 1)
+    {
+        Station[5] = Station[4];
+        Elev[5] = ymax;
+        Nstations = 5;
+        street->transect.nTbl = N_TRANSECT_TBL;
+    }
+
+    // --- the right side of a full street mirrors the left side
+    else
+    {
+        Station[5] = Station[4] + w4;
+        Elev[5] = y3;
+        Station[6] = Station[5] + w2;
+        Elev[6] = 0.0;
+        Station[7] = Station[6];
+        Elev[7] = y1;
+        Station[8] = Station[7] + w1;
+        Elev[8] = ymax;
+        Nstations = 8;
+        street->transect.nTbl = N_TRANSECT_TBL;
+    }
+
+    // --- assign Manning's N to street
+    Nchannel = street->roughness;
+    if (street->backWidth == 0.0)
+    {
+        Nleft = Nchannel;
+        Nright = Nchannel;
+        Xleftbank = Station[0];
+        Xrightbank = Station[Nstations];
+    }
+    else
+    {
+        Nleft = street->backRoughness;
+        Nright = Nleft;
+        Xleftbank = Station[1];
+        if (street->sides == 2)
+            Xrightbank = Station[Nstations - 1];
+        else
+            Xrightbank = Station[Nstations];
+    }
+
+    // --- create the street's geometry tables
+    createTables(&(street->transect), ymin, ymax);
+    street->transect.roughness = street->roughness;
+}

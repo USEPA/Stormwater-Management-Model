@@ -2,18 +2,18 @@
 //   surfqual.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/19/15  (Build 5.1.008)
-//             03/01/20  (Build 5.1.014)
+//   Version:  5.2
+//   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Subcatchment water quality functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - Pollutant surface buildup and washoff functions were moved here from
 //     subcatch.c.
 //   - Support for separate accounting of LID drain flows included. 
-//
 //   Build 5.1.014:
 //   - Fixed bug in computing effective BMP removal by LIDs.
 //-----------------------------------------------------------------------------
@@ -73,8 +73,8 @@ void surfqual_initState(int j)
         Subcatch[j].oldQual[p] = 0.0;
         Subcatch[j].newQual[p] = 0.0;
         Subcatch[j].pondedQual[p] = 0.0;
-        Subcatch[j].concPonded[p] = 0.0;
-        Subcatch[j].surfaceBuildup[p] = 0.0;
+        Subcatch[j].concPonded[p] = 0.0;      // (OWA addition)
+        Subcatch[j].surfaceBuildup[p] = 0.0;  // (OWA addition)
     }
 
     // --- initialize pollutant buildup
@@ -284,7 +284,7 @@ void  surfqual_getWashoff(int j, double runoff, double tStep)
         if ( !hasOutflow ) cOut = 0.0;
         Subcatch[j].newQual[p] = cOut / LperFT3;
         
-        // --- update surface buildup loads (in lbs or kg)
+        // OWA Addition --- update surface buildup loads (in lbs or kg)
         Subcatch[j].surfaceBuildup[p] = subcatch_getBuildup( j, p );
     }
 
@@ -382,7 +382,7 @@ void findPondedLoads(int j, double tStep)
 
             // --- update ponded mass (using newly computed ponded depth)
             Subcatch[j].pondedQual[p] = cPonded * subcatch_getDepth(j) * nonLidArea;
-            Subcatch[j].concPonded[p] = cPonded;
+            Subcatch[j].concPonded[p] = cPonded;  // (OWA Addition)
             OutflowLoad[p] += wOutflow;
         }
     }

@@ -78,8 +78,9 @@ install(
         swmm-output-config.cmake
 )
 
-
-install(FILES ${SWMM_OUT_PUBLIC_HEADERS}
+install(
+    FILES
+        ${SWMM_OUT_PUBLIC_HEADERS}
     DESTINATION
         "${INCLUDE_DIST}"
 )

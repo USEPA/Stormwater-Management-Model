@@ -7,10 +7,6 @@
 # Author: Michael E. Tryby
 #         US EPA - ORD/CESER
 #
-# Usage:
-#  Create environment variable with the following pattern -- "BOOST_ROOT_X_XX_X"
-#  where Xs are the Boost version -- pointing to install location.
-#
 
 
 if(WIN32)

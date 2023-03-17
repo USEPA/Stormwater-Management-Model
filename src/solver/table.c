@@ -2,10 +2,8 @@
 //   table.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             09/15/14   (Build 5.1.007)
-//             03/19/15   (Build 5.1.008)
+//   Version:  5.2
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Table (curve and time series) functions.
@@ -16,12 +14,20 @@
 //   The table_getFirstEntry and table_getNextEntry functions, as well as the
 //   Time Series functions that use them, are not thread safe.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - The lookup functions used for Curve tables (table_lookup, table_lookupEx,
 //     table_intervalLookup, table_inverseLookup, table_getSlope, table_getMaxY,
 //     table_getArea, and table_getInverseArea) were made thread-safe (thanks to
 //     suggestions by CHI).
-//
+//   Build 5.2.0:
+//   - First line of Curve's input data can contain just the curve name and type.
+//   - The table_getArea function was renamed table_getStorageVolume and was
+//   - refactored.
+//   - The table_getInverseArea function was renamed table_getStorageDepth and
+//     was refactored.
+//   - Support added for relative file names.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -68,7 +74,7 @@ int table_readCurve(char* tok[], int ntoks)
     double x, y;
 
     // --- check for minimum number of tokens
-    if ( ntoks < 3 ) return error_setInpError(ERR_ITEMS, "");
+    if ( ntoks < 2 ) return error_setInpError(ERR_ITEMS, "");
 
     // --- check that curve exists in database
     j = project_findObject(CURVE, tok[0]);
@@ -83,6 +89,7 @@ int table_readCurve(char* tok[], int ntoks)
         m = findmatch(tok[1], CurveTypeWords);
         if ( m < 0 ) return error_setInpError(ERR_KEYWORD, tok[1]);
         Curve[j].curveType = m;
+        if (ntoks == 2) return 0;
         k1 = 2;
     }
 
@@ -117,6 +124,7 @@ int table_readTimeseries(char* tok[], int ntoks)
     double x, y;                       // time & value table entries
     DateTime d;                        // day portion of date/time value
     DateTime t;                        // time portion of date/time value
+    char fname[MAXFNAME + 1];
 
     // --- check for minimum number of tokens
     if ( ntoks < 3 ) return error_setInpError(ERR_ITEMS, "");
@@ -132,7 +140,8 @@ int table_readTimeseries(char* tok[], int ntoks)
     // --- check if time series data is in an external file
     if ( strcomp(tok[1], w_FILE ) )
     {
-        sstrncpy(Tseries[j].file.name, tok[2], MAXFNAME);
+        sstrncpy(fname, tok[2], MAXFNAME);
+        sstrncpy(Tseries[j].file.name, addAbsolutePath(fname), MAXFNAME);
         Tseries[j].file.mode = USE_FILE;
         return 0;
     }
@@ -573,144 +582,145 @@ double  table_getMaxY(TTable *table, double x)
 
 //=============================================================================
 
-double  table_getArea(TTable* table, double x)
+double table_getStorageVolume(TTable *table, double x)
 //
 //  Input:   table = pointer to a TTable structure
-//           x = an value
-//  Output:  returns area value
-//  Purpose: finds area under a tabulated curve from 0 to x;
-//           requires that table's x values be non-negative
-//           and non-decreasing.
-//
-//  The area within each interval i of the table is given by:
-//     Integral{ y(x)*dx } from x(i) to x
-//  where y(x) = y(i) + s*dx
-//        dx = x - x(i)
-//        s = [y(i+1) - y(i)] / [x(i+1) - x(i)]
-//  This results in the following expression for a(i):
-//     a(i) = y(i)*dx + s*dx*dx/2
+//           x = a depth value
+//  Output:  returns a storage volume 
+//  Purpose: finds volume for a given depth in a Storage Curve table.
 //
 {
-    double x1, x2;
-    double y1, y2;
-    double dx = 0.0, dy = 0.0;
-    double a, s = 0.0;
+    double a, a1, x1, v, dx = 0.0, dy = 0.0, s;
     TTableEntry* entry;
 
-    // --- get area up to first table entry
-    //     and see if x-value lies in this interval
+    // --- get first entry in table
+    v = 0.0;
     entry = table->firstEntry;
-    if (entry == NULL ) return 0.0;
+    if (entry == NULL) return 0.0;
     x1 = entry->x;
-    y1 = entry->y;
-    if ( x1 > 0.0 ) s = y1/x1;
-    if ( x <= x1 ) return s*x*x/2.0;
-    a = y1*x1/2.0;
-    
-    // --- add next table entry to area until target x-value is bracketed
-    while ( entry->next )
+    a1 = entry->y;
+
+    // --- target depth is below first tabulated depth
+    if (x <= x1)
+    {
+        if (x1 < 1.e-6) return 0.0;
+        return (a1/x1) * x * x / 2.0;
+    }
+
+    // --- otherwise traverse table entries until target depth is bracketed
+    while (entry->next)
     {
         entry = entry->next;
-        x2 = entry->x;
-        y2 = entry->y;
-        dx = x2 - x1;
-        dy = y2 - y1;
-        if ( x <= x2 )
+        // --- target is bracketed - apply end area method to interpolated area
+        if (entry->x >= x)
         {
-            if ( dx <= 0.0 ) return a;
-            y2 = table_interpolate(x, x1, y1, x2, y2);
-            return a + (x - x1) * (y1 + y2) / 2.0;
+            a = table_interpolate(x, x1, a1, entry->x, entry->y);
+            return v + (a1 + a) / 2.0 * (x - x1);
         }
-        a += (y1 + y2) * dx / 2.0;
-        x1 = x2;
-        y1 = y2;
+        // --- target not yet bracketed so update volume using end area method
+        else
+        {
+            dx = entry->x - x1;
+            dy = entry->y - a1;
+            v = v + (a1 + entry->y) / 2.0 * dx;
+            x1 = entry->x;
+            a1 = entry->y;
+        }
     }
 
     // --- extrapolate area if table limit exceeded
-    if ( dx > 0.0 ) s = dy/dx;
-    else s = 0.0;
-    dx = x - x1;
-    return a + y1*dx + s*dx*dx/2.0;
+    if (dx > 1.0e-6)
+    {
+        s = dy / dx;
+        a = a1 + s * (x - x1);
+        // --- don't extrapolate below 0 in case s is negative
+        if (a < 0.0)
+        {
+            v = v - a1 * a1 / s / 2.0;
+        }
+        // --- apply end area method to extrapolated area
+        else v = v + (a1 + a) / 2.0 * (x - x1);
+    }
+    return v;
 }
 
 //=============================================================================
 
-double  table_getInverseArea(TTable* table, double a)
+double table_getStorageDepth(TTable *table, double v)
 //
 //  Input:   table = pointer to a TTable structure
-//           a = an area value
-//  Output:  returns an x value
-//  Purpose: finds x value for given area under a curve.
-//
-//  Refer to table_getArea function to see how area is computed.
+//           v = a storage volume
+//  Output:  returns a storage depth 
+//  Purpose: finds depth for a given volume in a Storage Curve table.
 //
 {
-    double x1, x2;
-    double y1, y2;
-    double dx = 0.0, dy = 0.0;
-    double a1, a2, s;
+    double a1, a2, d1, d2, dd = 0.0, da = 0.0, v1, v2, s;
     TTableEntry* entry;
 
-    // --- see if target area is below that of 1st table entry
+    // --- see if target volume is below that of 1st table entry
+    if (v == 0.0) return 0.0;
     entry = table->firstEntry;
-    if (entry == NULL ) return 0.0;
-    x1 = entry->x;
-    y1 = entry->y;
-    a1 = y1*x1/2.0;
-    if ( a <= a1 )
+    if (entry == NULL) return 0.0;
+    d1 = entry->x;
+    a1 = entry->y;
+    v1 = a1 * d1 / 2.0;
+    if (v <= v1)
     {
-        if ( y1 > 0.0 ) return sqrt(2.0*a*x1/y1);
+        if (a1 > 0.0) return sqrt(2.0 * v * d1 / a1);
         else return 0.0;
     }
 
-    // --- add next table entry to area until target area is bracketed
-    while ( entry->next )
+    // --- add next table entry to volume until target volume is bracketed
+    while (entry->next)
     {
         entry = entry->next;
-        x2 = entry->x;
-        y2 = entry->y;
-        dx = x2 - x1;
-        dy = y2 - y1;
-        a2 = a1 + y1*dx + dy*dx/2.0;
-        if ( a <= a2 )
+        d2 = entry->x;
+        a2 = entry->y;
+        dd = d2 - d1;
+        da = a2 - a1;
+        v2 = v1 + (a1 + a2) / 2.0 * dd;
+
+        // target volume is bracketed
+        if (v <= v2)
         {
-            if ( dx <= 0.0 ) return x1;
-            if ( dy == 0.0 )
+            // --- target coincides with point on curve
+            if (dd <= 0.0) return d1;
+            if (da == 0.0)
             {
-                if ( a2 == a1 ) return x1;
-                else return x1 + dx * (a - a1) / (a2 - a1);
+                if (fabs(v2 - v1) < 1.e-6) return d1;
+                else return d1 + dd * (v - v1) / (v2 - v1);
             }
-
-            // --- if y decreases with x then replace point 1 with point 2
-            if ( dy < 0.0 )
+            // --- if area decreases with depth then replace point 1 with point 2
+            if (da < 0.0)
             {
-                x1 = x2;
-                y1 = y2;
+                d1 = d2;
                 a1 = a2;
+                v1 = v2;
             }
-
-            s = dy/dx;
-            dx = (sqrt(y1*y1 + 2.0*s*(a-a1)) - y1) / s;
-            return x1 + dx;
+            // --- interpolate between volumes derived from curve
+            s = da / dd;
+            return d1 + (sqrt(a1*a1 + 2.0*s*(v-v1)) - a1) / s;
         }
-        x1 = x2;
-        y1 = y2;
+
+        // --- replace point 1 with point 2
+        d1 = d2;
         a1 = a2;
+        v1 = v2;
     }
 
-    // --- extrapolate area if table limit exceeded
-    if ( dx == 0.0 || dy == 0.0 )
+    // --- extrapolate volume if table limit exceeded
+    if (dd == 0.0 || da == 0.0)
     {
-        if ( y1 > 0.0 ) dx = (a - a1) / y1;
-        else dx = 0.0;
+        if (a1 > 0.0) dd = (v - v1) / a1;
+        else dd = 0.0;
     }
     else
     {
-        s = dy/dx;
-        dx = (sqrt(y1*y1 + 2.0*s*(a-a1)) - y1) / s;
-        if (dx < 0.0) dx = 0.0;
+        s = da / dd;
+        dd = (sqrt(a1*a1 + 2.0*s*(v - v1)) - a1) / s;
+        if (dd < 0.0) dd = 0.0;
     }
-    return x1 + dx;
+    return d1 + dd;
 }
 
 //=============================================================================

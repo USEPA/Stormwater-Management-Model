@@ -2,12 +2,16 @@
 //   inputrpt.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14 (Build 5.1.001)
+//   Version:  5.2
+//   Date:     11/01/21 (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Report writing functions for input data summary.
 //
+//   Update History
+//   ==============
+//   Build 5.2.0:
+//   - Support added for reporting Street geometry tables.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -237,6 +241,9 @@ void inputrpt_writeInput()
                 else if ( Link[i].xsect.type == IRREGULAR )
                     fprintf(Frpt.file, "%-16s ",
                     Transect[Link[i].xsect.transect].ID);
+                else if ( Link[i].xsect.type == STREET_XSECT )
+                    fprintf(Frpt.file, "%-16s ",
+                    Street[Link[i].xsect.transect].ID);
                 else fprintf(Frpt.file, "%-16s ",
                     XsectTypeWords[Link[i].xsect.type]);
                 fprintf(Frpt.file, "%8.2f %8.2f %8.2f %8.2f      %3d %8.2f",
@@ -281,7 +288,6 @@ void inputrpt_writeInput()
             }
         }
     }
-    WRITE("");
 
     if (Nobjects[TRANSECT] > 0)
     {
@@ -310,6 +316,37 @@ void inputrpt_writeInput()
             {
                  if ( m % 5 == 1 ) fprintf(Frpt.file,"\n          ");
                  fprintf(Frpt.file, "%10.4f ", Transect[i].widthTbl[m]);
+            }
+        }
+    }
+
+    if (Nobjects[STREET] > 0)
+    {
+        WRITE("");
+        WRITE("");
+        WRITE("**************");
+        WRITE("Street Summary");
+        WRITE("**************");
+        for (i = 0; i < Nobjects[STREET]; i++)
+        {
+            fprintf(Frpt.file, "\n\n  Street %s", Street[i].ID);
+            fprintf(Frpt.file, "\n  Area:  ");
+            for (m = 1; m < Street[i].transect.nTbl; m++)
+            {
+                if (m % 5 == 1) fprintf(Frpt.file, "\n          ");
+                fprintf(Frpt.file, "%10.4f ", Street[i].transect.areaTbl[m]);
+            }
+            fprintf(Frpt.file, "\n  Hrad:  ");
+            for (m = 1; m < Street[i].transect.nTbl; m++)
+            {
+                if (m % 5 == 1) fprintf(Frpt.file, "\n          ");
+                fprintf(Frpt.file, "%10.4f ", Street[i].transect.hradTbl[m]);
+            }
+            fprintf(Frpt.file, "\n  Width: ");
+            for (m = 1; m < Street[i].transect.nTbl; m++)
+            {
+                if (m % 5 == 1) fprintf(Frpt.file, "\n          ");
+                fprintf(Frpt.file, "%10.4f ", Street[i].transect.widthTbl[m]);
             }
         }
     }

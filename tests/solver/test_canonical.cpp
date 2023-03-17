@@ -150,8 +150,8 @@ BOOST_FIXTURE_TEST_CASE(TStoRpt, FixtureBeforeStart) {
 BOOST_FIXTURE_TEST_CASE(FailStart403, FixtureBeforeStart) {
     double elapsedTime = 0.0;
     int error = swmm_step(&elapsedTime);
-    BOOST_CHECK_EQUAL(403, error);
-    BOOST_REQUIRE(error == 403);
+    BOOST_CHECK_EQUAL(502, error);
+    BOOST_REQUIRE(error == 502);
 }
 
 

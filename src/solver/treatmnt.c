@@ -2,16 +2,18 @@
 //   treatmnt.c
 //
 //   Project:  EPA SWMM5
-//   Version:  5.1
-//   Date:     03/20/14   (Build 5.1.001)
-//             03/19/15   (Build 5.1.008)
+//   Version:  5.2
+//   Date:     11/01/21   (Build 5.2.0)
 //   Author:   L. Rossman
 //
 //   Pollutant treatment functions.
 //
+//   Update History
+//   ==============
 //   Build 5.1.008:
 //   - A bug in evaluating recursive calls to treatment functions was fixed. 
-//
+//   Build 5.2.0:
+//   - Changed enumerated constant used to indicate a math expression error.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -119,11 +121,11 @@ int  treatmnt_readExpression(char* tok[], int ntoks)
     if ( p < 0 ) return error_setInpError(ERR_NAME, tok[1]);
 
     // --- concatenate remaining tokens into a single string
-    strcpy(s, tok[2]);
+    sstrncpy(s, tok[2], MAXLINE);
     for ( i=3; i<ntoks; i++)
     {
-        strcat(s, " ");
-        strcat(s, tok[i]);
+        sstrcat(s, " ", MAXLINE);
+        sstrcat(s, tok[i], MAXLINE);
     }
 
     // --- check treatment type
@@ -147,11 +149,14 @@ int  treatmnt_readExpression(char* tok[], int ntoks)
     //      variable's name into an index number) 
     equation = mathexpr_create(expr, getVariableIndex);
     if ( equation == NULL )
-        return error_setInpError(ERR_TREATMENT_EXPR, "");
+        return error_setInpError(ERR_MATH_EXPR, "");
 
     // --- save the treatment parameters in the node's treatment object
-    Node[j].treatment[p].treatType = k;
-    Node[j].treatment[p].equation = equation;
+    if (Node[j].treatment != NULL)
+    {
+        Node[j].treatment[p].treatType = k;
+        Node[j].treatment[p].equation = equation;
+    }
     return 0;
 }
 
@@ -208,7 +213,7 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
     double cOut;                       // concentration after treatment
     double massLost;                   // mass lost by treatment per time step
     TTreatment* treatment;             // pointer to treatment object
- 
+
     // --- set locally shared variables for node j
     if ( Node[j].treatment == NULL ) return;
     ErrCode = 0;
@@ -216,6 +221,7 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
     Dt = tStep;                        // current time step
     Q  = q;                            // current inflow rate
     V  = v;                            // current node volume
+
     // --- initialze each removal to indicate no value 
     for ( p = 0; p < Nobjects[POLLUT]; p++) R[p] = -1.0;
 
@@ -227,9 +233,9 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
         if ( treatment->equation == NULL ) R[p] = 0.0;
 
         // --- no removal for removal-type expression when there is no inflow 
-	else if ( treatment->treatType == REMOVAL && q <= ZERO ) R[p] = 0.0;
+	    else if ( treatment->treatType == REMOVAL && q <= ZERO ) R[p] = 0.0;
 
-	// --- check for external treatment
+	// OWA EDIT --- check for external treatment, if so internal pollutant removal is set to zero
 	else if ( Node[j].extPollutFlag[p] == 1) R[p] = 0.0;
 
         // --- otherwise evaluate the treatment expression to find R[p]
@@ -241,15 +247,16 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
     {
          report_writeErrorMsg(ERR_CYCLIC_TREATMENT, Node[J].ID);
     }
-   
+
     // --- update nodal concentrations and mass balances
     else for ( p = 0; p < Nobjects[POLLUT]; p++ )
     {
+        // OWA EDIT - output conc. can still change if using external treatment
         if ( R[p] == 0.0 && Node[j].extPollutFlag[p] != 1) continue;
         treatment = &Node[j].treatment[p];
 
         // --- removal-type treatment equations get applied to inflow stream
-
+        // OWA EDIT - ignore internal treatment calcs if using extenal treatment
         if ( treatment->treatType == REMOVAL && Node[j].extPollutFlag[p] != 1)
         {
             // --- if no pollutant in inflow then cOut is current nodal concen.
@@ -263,11 +270,11 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
             cOut = MIN(cOut, Node[j].newQual[p]);
         }
 
-	// --- water quality set externally 
-	else if( Node[j].extPollutFlag[p] == 1)
-	{
-	    cOut = Node[j].extQual[p];
-	}
+        // OWA EDIT --- water quality set externally 
+        else if( Node[j].extPollutFlag[p] == 1)
+        {
+            cOut = Node[j].extQual[p];
+        }
 
         // --- concentration-type equations get applied to nodal concentration
         else
@@ -275,18 +282,18 @@ void  treatmnt_treat(int j, double q, double v, double tStep)
             cOut = (1.0 - R[p]) * Node[j].newQual[p];
         }
 	
-       	// --- store inflow concentration for the timestep 	
-	Node[j].inQual[p] = Cin[p];
+       	// OWA EDIT --- store inflow concentration for the timestep 	
+        Node[j].inQual[p] = Cin[p];
 
- 	// --- mass lost must account for any initial mass in storage 
+        // --- mass lost must account for any initial mass in storage 
         massLost = (Cin[p]*q*tStep + Node[j].oldQual[p]*Node[j].oldVolume - 
-                   cOut*(q*tStep + Node[j].oldVolume)) / tStep;
+                    cOut*(q*tStep + Node[j].oldVolume)) / tStep;
 
-	// --- mass can be gained in external treatment
-	if (Node[j].extPollutFlag[p] != 1) massLost = MAX(0.0, massLost);
+        // OWA EDIT --- mass can be gained in external treatment
+        if (Node[j].extPollutFlag[p] != 1) massLost = MAX(0.0, massLost);
 
-	// --- reset the flag to default to swmm treatment
-	if (Node[j].extPollutFlag[p] == 1) Node[j].extPollutFlag[p] = 0;
+        // OWA EDIT --- reset the flag to default to swmm treatment
+        if (Node[j].extPollutFlag[p] == 1) Node[j].extPollutFlag[p] = 0;
 
         // --- add mass loss to mass balance totals and revise nodal concentration
         massbal_addReactedMass(p, massLost);
@@ -465,5 +472,3 @@ double  getRemoval(int p)
     }
     return R[p];
 }
-
-//=============================================================================

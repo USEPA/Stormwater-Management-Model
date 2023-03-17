@@ -130,7 +130,7 @@ EXPORT_TOOLKIT int swmm_run_cb(const char* f1, const char* f2, const char* f3,
     swmm_close();
 
 
-    return error_getCode(ErrorCode);
+    return ErrorCode;
 }
 
 
@@ -140,26 +140,28 @@ EXPORT_TOOLKIT int swmm_getAPIError(int errorCode, char **errorMsg)
 /// Output:  errmessage String
 /// Return:  API Error
 /// Purpose: Get an error message
-{
-    int errorIndex = error_getErrorIndex(errorCode);
-    cstr_duplicate(errorMsg, error_getMsg(errorIndex));
+{   
+    char msg[MAXMSG+1];
+    error_getMsg(errorCode,msg);
+    cstr_duplicate(errorMsg, msg);
+    
     return 0;
 }
 
 
 EXPORT_TOOLKIT int swmm_project_findObject(SM_ObjectType type, char *id, int *index)
 {
-    int error_code_index = 0;
+    int error_code = 0;
 
     int idx = project_findObject(type, id);
 
     if (idx == -1) {
         index = NULL;
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     } else
         *index = idx;
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getSimulationDateTime(SM_TimePropety type, int *year, int *month, int *day,
@@ -170,7 +172,7 @@ EXPORT_TOOLKIT int swmm_getSimulationDateTime(SM_TimePropety type, int *year, in
 /// Return:  API Error
 /// Purpose: Get the simulation start, end and report date times
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *year = 1900;
     *month = 1;
     *day = 1;
@@ -181,7 +183,7 @@ EXPORT_TOOLKIT int swmm_getSimulationDateTime(SM_TimePropety type, int *year, in
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     else
     {
@@ -194,13 +196,13 @@ EXPORT_TOOLKIT int swmm_getSimulationDateTime(SM_TimePropety type, int *year, in
         case SM_ENDDATE: _dtime = EndDateTime;  break;
         //ReportStart (globals.h)
         case SM_REPORTDATE: _dtime = ReportStart;  break;
-        default: return error_getCode(ERR_API_OUTBOUNDS);
+        default: return ERR_TKAPI_OUTBOUNDS;
         }
         datetime_decodeDate(_dtime, year, month, day);
         datetime_decodeTime(_dtime, hour, minute, second);
     }
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_setSimulationDateTime(SM_TimePropety type, int year, int month,
@@ -212,7 +214,7 @@ EXPORT_TOOLKIT int swmm_setSimulationDateTime(SM_TimePropety type, int year, int
 /// Return:  API Error
 /// Purpose: Get the simulation start, end and report date times
 {
-    int error_code_index = 0;
+    int error_code = 0;
 
     DateTime theDate;
     DateTime theTime;
@@ -220,12 +222,12 @@ EXPORT_TOOLKIT int swmm_setSimulationDateTime(SM_TimePropety type, int year, int
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if Simulation is Running
     else if(swmm_IsStartedFlag() == TRUE)
     {
-        error_code_index = ERR_API_SIM_NRUNNING;
+        error_code = ERR_TKAPI_SIM_NRUNNING;
     }
     else
     {
@@ -258,11 +260,11 @@ EXPORT_TOOLKIT int swmm_setSimulationDateTime(SM_TimePropety type, int year, int
                 ReportStartTime = theTime;
                 ReportStart = ReportStartDate + ReportStartTime;
                 break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int  swmm_getSimulationUnit(SM_Units type, int *value)
@@ -272,12 +274,12 @@ EXPORT_TOOLKIT int  swmm_getSimulationUnit(SM_Units type, int *value)
 /// Returns: API Error
 /// Purpose: get simulation unit types
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     else
     {
@@ -290,11 +292,11 @@ EXPORT_TOOLKIT int  swmm_getSimulationUnit(SM_Units type, int *value)
             // Concentration Unit
             //case 2:  *value = UnitSystem; break;
             // Type not available
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int  swmm_getSimulationAnalysisSetting(SM_SimOption type, int *value)
@@ -304,12 +306,12 @@ EXPORT_TOOLKIT int  swmm_getSimulationAnalysisSetting(SM_SimOption type, int *va
 /// Returns: API Error
 /// Purpose: get simulation analysis setting
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     else
     {
@@ -332,10 +334,10 @@ EXPORT_TOOLKIT int  swmm_getSimulationAnalysisSetting(SM_SimOption type, int *va
             // Analyze water quality (True or False)
             case SM_IGNORERQUAL:  *value = IgnoreQuality; break;
             // Type not available
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int  swmm_getSimulationParam(SM_SimSetting type, double *value)
@@ -345,12 +347,12 @@ EXPORT_TOOLKIT int  swmm_getSimulationParam(SM_SimSetting type, double *value)
 /// Returns: error code
 /// Purpose: Get simulation analysis parameter
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Output  setting
     else
@@ -404,10 +406,10 @@ EXPORT_TOOLKIT int  swmm_getSimulationParam(SM_SimSetting type, double *value)
             // Tolerance for steady nodal inflow
             case SM_LATFLOWTOL: *value = LatFlowTol; break;
             // Type not available
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int  swmm_countObjects(SM_ObjectType type, int *count)
@@ -417,17 +419,17 @@ EXPORT_TOOLKIT int  swmm_countObjects(SM_ObjectType type, int *count)
 /// Returns: API Error
 /// Purpose: uses Object Count table to find number of elements of an object
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *count = 0;
     if(type >= MAX_OBJ_TYPES)
     {
-        error_code_index = ERR_API_OUTBOUNDS;
+        error_code = ERR_TKAPI_OUTBOUNDS;
     }
     else
     {
         *count = Nobjects[type];
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getObjectIndex(SM_ObjectType type, char *id, int *index)
@@ -438,15 +440,15 @@ EXPORT_TOOLKIT int swmm_getObjectIndex(SM_ObjectType type, char *id, int *index)
 /// Return:  error
 /// Purpose: Gets object id index
 {
-    int error_code_index = 0;
+    int error_code = 0;
 
     // Check if Open
     if(swmm_IsOpenFlag() == TRUE)
         *index = project_findObject(type, id);
     else
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getObjectId(SM_ObjectType type, int index, char **id)
@@ -457,18 +459,18 @@ EXPORT_TOOLKIT int swmm_getObjectId(SM_ObjectType type, int index, char **id)
 /// Return:  API Error
 /// Purpose: Gets ID for any object
 {
-    int error_code_index = 0;
+    int error_code = 0;
     TLidProc*  lidProc;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[type])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -507,12 +509,12 @@ EXPORT_TOOLKIT int swmm_getObjectId(SM_ObjectType type, int index, char **id)
             case SM_LID:
                 lidProc = lid_getLidProc(index);
                 if (lidProc != NULL) cstr_duplicate(id, lidProc->ID);
-                else error_code_index = ERR_API_OUTBOUNDS;
+                else error_code = ERR_TKAPI_OUTBOUNDS;
                 break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
    }
-   return error_getCode(error_code_index);
+   return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getNodeType(int index, SM_NodeType *Ntype)
@@ -522,21 +524,21 @@ EXPORT_TOOLKIT int swmm_getNodeType(int index, SM_NodeType *Ntype)
 /// Return:  API Error
 /// Purpose: Gets Node Type
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *Ntype = -1;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[NODE])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else *Ntype = Node[index].type;
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getLinkType(int index, SM_LinkType *Ltype)
@@ -546,21 +548,21 @@ EXPORT_TOOLKIT int swmm_getLinkType(int index, SM_LinkType *Ltype)
 /// Return:  API Error
 /// Purpose: Gets Link Type
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *Ltype = -1;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[LINK])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else *Ltype = Link[index].type;
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getLinkConnections(int index, int *Node1, int *Node2)
@@ -570,25 +572,25 @@ EXPORT_TOOLKIT int swmm_getLinkConnections(int index, int *Node1, int *Node2)
 /// Return:  API Error
 /// Purpose: Gets link Connection ID Indeces
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *Node1 = -1;
     *Node2 = -1;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[LINK])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
         *Node1 = Link[index].node1;
         *Node2 = Link[index].node2;
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getLinkDirection(int index, signed char *value)
@@ -598,23 +600,23 @@ EXPORT_TOOLKIT int swmm_getLinkDirection(int index, signed char *value)
 /// Return:  API Error
 /// Purpose: Gets Link Direction
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[LINK])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
         *value = Link[index].direction;
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getNodeParam(int index, SM_NodeProperty param, double *value)
@@ -625,17 +627,17 @@ EXPORT_TOOLKIT int swmm_getNodeParam(int index, SM_NodeProperty param, double *v
 /// Return:  API Error
 /// Purpose: Gets Node Parameter
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[NODE])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -651,10 +653,10 @@ EXPORT_TOOLKIT int swmm_getNodeParam(int index, SM_NodeProperty param, double *v
                 *value = Node[index].pondedArea * UCF(LENGTH) * UCF(LENGTH); break;
             case SM_INITDEPTH:
                 *value = Node[index].initDepth * UCF(LENGTH); break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_setNodeParam(int index, SM_NodeProperty param, double value)
@@ -665,21 +667,21 @@ EXPORT_TOOLKIT int swmm_setNodeParam(int index, SM_NodeProperty param, double va
 /// Return:  API Error
 /// Purpose: Sets Node Parameter
 {
-    int error_code_index = 0;
+    int error_code = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
      // Check if Simulation is Running
     else if(swmm_IsStartedFlag() == TRUE)
     {
-        error_code_index = ERR_API_SIM_NRUNNING;
+        error_code = ERR_TKAPI_SIM_NRUNNING;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[NODE])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -695,12 +697,12 @@ EXPORT_TOOLKIT int swmm_setNodeParam(int index, SM_NodeProperty param, double va
                 Node[index].pondedArea = value / ( UCF(LENGTH) * UCF(LENGTH) ); break;
             case SM_INITDEPTH:
                 Node[index].initDepth = value / UCF(LENGTH); break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
     // Re-validated a node BEM 1/20/2017 Probably need to re-validate connecting links
     //node_validate(index)
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getLinkParam(int index, SM_LinkProperty param, double *value)
@@ -711,17 +713,17 @@ EXPORT_TOOLKIT int swmm_getLinkParam(int index, SM_LinkProperty param, double *v
 /// Return:  API Error
 /// Purpose: Gets Link Parameter
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[LINK])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -741,10 +743,10 @@ EXPORT_TOOLKIT int swmm_getLinkParam(int index, SM_LinkProperty param, double *v
                 *value = Link[index].cLossOutlet; break;
             case SM_AVELOSS:
                 *value = Link[index].cLossAvg; break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_setLinkParam(int index, SM_LinkProperty param, double value)
@@ -755,16 +757,16 @@ EXPORT_TOOLKIT int swmm_setLinkParam(int index, SM_LinkProperty param, double va
 /// Return:  API Error
 /// Purpose: Sets Link Parameter
 {
-    int error_code_index = 0;
+    int error_code = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[LINK])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -775,14 +777,14 @@ EXPORT_TOOLKIT int swmm_setLinkParam(int index, SM_LinkProperty param, double va
                 // Check if Simulation is Running
                 if(swmm_IsStartedFlag() == TRUE)
                 {
-                    error_code_index = ERR_API_SIM_NRUNNING; break;
+                    error_code = ERR_TKAPI_SIM_NRUNNING; break;
                 }
                 Link[index].offset1 = value / UCF(LENGTH); break;
             case SM_OFFSET2:
                 // Check if Simulation is Running
                 if(swmm_IsStartedFlag() == TRUE)
                 {
-                    error_code_index = ERR_API_SIM_NRUNNING; break;
+                    error_code = ERR_TKAPI_SIM_NRUNNING; break;
                 }
                 Link[index].offset2 = value / UCF(LENGTH); break;
             case SM_INITFLOW:
@@ -795,13 +797,13 @@ EXPORT_TOOLKIT int swmm_setLinkParam(int index, SM_LinkProperty param, double va
                 Link[index].cLossOutlet = value; break;
             case SM_AVELOSS:
                 Link[index].cLossAvg = value; break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
         // re-validated link
         //link_validate(index);
     }
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 
@@ -813,17 +815,17 @@ EXPORT_TOOLKIT int swmm_getSubcatchParam(int index, SM_SubcProperty param, doubl
 /// Return:  API Error
 /// Purpose: Gets Subcatchment Parameter
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *value = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[SUBCATCH])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -839,10 +841,10 @@ EXPORT_TOOLKIT int swmm_getSubcatchParam(int index, SM_SubcProperty param, doubl
                 *value = Subcatch[index].slope; break;
             case SM_CURBLEN:
                 *value = Subcatch[index].curbLength * UCF(LENGTH); break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_setSubcatchParam(int index, SM_SubcProperty param, double value)
@@ -853,21 +855,21 @@ EXPORT_TOOLKIT int swmm_setSubcatchParam(int index, SM_SubcProperty param, doubl
 /// Return:  API Error
 /// Purpose: Sets Subcatchment Parameter
 {
-    int error_code_index = 0;
+    int error_code = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
      // Check if Simulation is Running
     else if(swmm_IsStartedFlag() == TRUE)
     {
-        error_code_index = ERR_API_SIM_NRUNNING;
+        error_code = ERR_TKAPI_SIM_NRUNNING;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[SUBCATCH])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -887,13 +889,13 @@ EXPORT_TOOLKIT int swmm_setSubcatchParam(int index, SM_SubcProperty param, doubl
                 Subcatch[index].slope = value; break;
             case SM_CURBLEN:
                 Subcatch[index].curbLength = value / UCF(LENGTH); break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
         //re-validate subcatchment
         subcatch_validate(index); // incorprate callback here
     }
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getSubcatchOutConnection(int index, SM_ObjectType *type, int *out_index)
@@ -905,18 +907,18 @@ EXPORT_TOOLKIT int swmm_getSubcatchOutConnection(int index, SM_ObjectType *type,
 /// Return:  API Error
 /// Purpose: Gets Subcatchment Connection ID Indeces for either Node or Subcatchment
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *type = -1;
     *out_index = -1;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[SUBCATCH])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -936,7 +938,7 @@ EXPORT_TOOLKIT int swmm_getSubcatchOutConnection(int index, SM_ObjectType *type,
             *type = (SM_ObjectType)SUBCATCH;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 
@@ -946,24 +948,24 @@ EXPORT_TOOLKIT int swmm_getLidUCount(int index, int *value)
 // Return:  number of lid units for subcatchment
 // Purpose: count number of lid units for subcatchment
 {
-    int error_code_index = 0;
+    int error_code = 0;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if subcatchment index is within bounds
     else if(index < 0 || index >= Nobjects[SUBCATCH])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
         *value = lid_getLidUnitCount(index);
     }
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 
@@ -976,22 +978,22 @@ EXPORT_TOOLKIT int swmm_getLidUParam(int index, int lidIndex, SM_LidUProperty pa
 // Return:  API Error
 // Purpose: Gets Lid Unit Parameter
 {
-    int error_code_index = 0;
+    int error_code = 0;
     TLidUnit* lidUnit;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if subcatchment index is within bounds
     else if(index < 0 || index >= Nobjects[SUBCATCH])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
-        lidUnit = lid_getLidUnit(index, lidIndex, &error_code_index);
+        lidUnit = lid_getLidUnit(index, lidIndex, &error_code);
 
         // There are no Lid Units defined for the subcatchments
         if(lidUnit)
@@ -1012,12 +1014,12 @@ EXPORT_TOOLKIT int swmm_getLidUParam(int index, int lidIndex, SM_LidUProperty pa
                 case SM_FROMPERV:
                     *value = lidUnit->fromPerv * 100; break;
                 default:
-                    error_code_index = ERR_API_OUTBOUNDS; break;
+                    error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
         }
     }
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 
@@ -1030,27 +1032,27 @@ EXPORT_TOOLKIT int swmm_setLidUParam(int index, int lidIndex, SM_LidUProperty pa
 // Return:  API Error
 // Purpose: Gets Lid Unit Parameter
 {
-    int error_code_index = 0;
+    int error_code = 0;
     TLidUnit* lidUnit;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if subcatchment index is within bounds
     else if(index < 0 || index >= Nobjects[SUBCATCH])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     // Check if model is running
     else if(swmm_IsStartedFlag() == TRUE)
     {
-        error_code_index = ERR_API_SIM_NRUNNING;
+        error_code = ERR_TKAPI_SIM_NRUNNING;
     }
     else
     {
-        lidUnit = lid_getLidUnit(index, lidIndex, &error_code_index);
+        lidUnit = lid_getLidUnit(index, lidIndex, &error_code);
 
         // There are no Lid Units defined for the subcatchments
         if(lidUnit)
@@ -1071,18 +1073,18 @@ EXPORT_TOOLKIT int swmm_setLidUParam(int index, int lidIndex, SM_LidUProperty pa
                 case SM_FROMPERV:
                     lidUnit->fromPerv = value / 100; break;
                 default:
-                    error_code_index = ERR_API_OUTBOUNDS; break;
+                    error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
         }
     }
 
-    if(error_code_index == ERR_NONE)
+    if(error_code == ERR_NONE)
     {
         lid_validateLidGroup(index);
         lid_updateLidGroup(index);
     }
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 
@@ -1095,22 +1097,22 @@ EXPORT_TOOLKIT int swmm_getLidUOption(int index, int lidIndex, SM_LidUOptions pa
 // Return:  API Error
 // Purpose: Gets Lid Unit Option Parameter
 {
-    int error_code_index = 0;
+    int error_code = 0;
     TLidUnit* lidUnit;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if subcatchment index is within bounds
     else if(index < 0 || index >= Nobjects[SUBCATCH])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
-        lidUnit = lid_getLidUnit(index, lidIndex, &error_code_index);
+        lidUnit = lid_getLidUnit(index, lidIndex, &error_code);
 
         // There are no Lid Units defined for the subcatchments
         if(lidUnit)
@@ -1129,12 +1131,12 @@ EXPORT_TOOLKIT int swmm_getLidUOption(int index, int lidIndex, SM_LidUOptions pa
                 case SM_DRAINNODE:
                     *value = lidUnit->drainNode; break;
                 default:
-                    error_code_index = ERR_API_OUTBOUNDS; break;
+                    error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
         }
     }
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 
@@ -1147,23 +1149,23 @@ EXPORT_TOOLKIT int swmm_setLidUOption(int index, int lidIndex, SM_LidUOptions pa
 // Return:  API Error
 // Purpose: Sets Lid Unit Option
 {
-    int error_code_index = 0;
+    int error_code = 0;
     TLidUnit* lidUnit;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if subcatchment index is within bounds
     else if(index < 0 || index >= Nobjects[SUBCATCH])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     // Check if model is running
     else if(swmm_IsStartedFlag() == TRUE)
     {
-        lidUnit = lid_getLidUnit(index, lidIndex, &error_code_index);
+        lidUnit = lid_getLidUnit(index, lidIndex, &error_code);
 
         // There are no Lid Units defined for the subcatchments
         if (lidUnit)
@@ -1171,11 +1173,11 @@ EXPORT_TOOLKIT int swmm_setLidUOption(int index, int lidIndex, SM_LidUOptions pa
             switch (param)
             {
             case SM_INDEX:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_NUMBER:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_TOPERV:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_DRAINSUB:
                 lidUnit->drainSubcatch = value;
                 lidUnit->drainNode = -1;
@@ -1185,13 +1187,13 @@ EXPORT_TOOLKIT int swmm_setLidUOption(int index, int lidIndex, SM_LidUOptions pa
                 lidUnit->drainSubcatch = -1;
                 break;
             default:
-                error_code_index = ERR_API_OUTBOUNDS; break;
+                error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
         }
     }
     else if(swmm_IsStartedFlag() == FALSE)
     {
-        lidUnit = lid_getLidUnit(index, lidIndex, &error_code_index);
+        lidUnit = lid_getLidUnit(index, lidIndex, &error_code);
 
         // There are no Lid Units defined for the subcatchments
         if(lidUnit)
@@ -1214,16 +1216,16 @@ EXPORT_TOOLKIT int swmm_setLidUOption(int index, int lidIndex, SM_LidUOptions pa
                     lidUnit->drainSubcatch = -1;
                     break;
                 default:
-                    error_code_index = ERR_API_OUTBOUNDS; break;
+                    error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
         }
     }
     else
     {
-        error_code_index = ERR_API_OUTBOUNDS;
+        error_code = ERR_TKAPI_OUTBOUNDS;
     }
 
-    if(error_code_index == ERR_NONE)
+    if(error_code == ERR_NONE)
     {
         lid_validateLidGroup(index);
         if (swmm_IsStartedFlag() == FALSE)
@@ -1232,7 +1234,7 @@ EXPORT_TOOLKIT int swmm_setLidUOption(int index, int lidIndex, SM_LidUOptions pa
         }
     }
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 
@@ -1243,18 +1245,18 @@ EXPORT_TOOLKIT int swmm_getLidCOverflow(int lidControlIndex, int *condition)
 // Return:  API Error
 // Purpose: Get Lid Control Surface Immediate Overflow Condition
 {
-    int error_code_index = 0;
+    int error_code = 0;
     TLidProc*  lidProc;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if subcatchment index is within bounds
     else if(lidControlIndex < 0 || lidControlIndex >= Nobjects[LID])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -1265,7 +1267,7 @@ EXPORT_TOOLKIT int swmm_getLidCOverflow(int lidControlIndex, int *condition)
 
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex, SM_LidLayerProperty param, double *value)
@@ -1277,18 +1279,18 @@ EXPORT_TOOLKIT int swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex
 // Return:  API Error
 // Purpose: Gets Lid Control Layer Parameter
 {
-    int error_code_index = 0;
+    int error_code = 0;
     TLidProc*  lidProc;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if subcatchment index is within bounds
     else if(lidControlIndex < 0 || lidControlIndex >= Nobjects[LID])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -1312,7 +1314,7 @@ EXPORT_TOOLKIT int swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex
                 case SM_ALPHA:
                     *value = lidProc->surface.alpha; break;
                 default:
-                    error_code_index = ERR_API_OUTBOUNDS; break;
+                    error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
             break;
         case SM_SOIL:
@@ -1333,7 +1335,7 @@ EXPORT_TOOLKIT int swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex
                 case SM_SUCTION:
                     *value = lidProc->soil.suction * UCF(RAINDEPTH); break;
                 default:
-                    error_code_index = ERR_API_OUTBOUNDS; break;
+                    error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
             break;
         case SM_STOR:
@@ -1366,7 +1368,7 @@ EXPORT_TOOLKIT int swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex
                     }
                     break;
                 default:
-                    error_code_index = ERR_API_OUTBOUNDS; break;
+                    error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
             break;
         case SM_PAVE:
@@ -1406,7 +1408,7 @@ EXPORT_TOOLKIT int swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex
             case SM_REGENDEGREE:
                 *value = lidProc->pavement.regenDegree; break;
             default:
-                error_code_index = ERR_API_OUTBOUNDS; break;
+                error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
             break;
         case SM_DRAIN:
@@ -1425,7 +1427,7 @@ EXPORT_TOOLKIT int swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex
             case SM_HCLOSE:
                 *value = lidProc->drain.hClose * UCF(RAINDEPTH); break;
             default:
-                error_code_index = ERR_API_OUTBOUNDS; break;
+                error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
             break;
         case SM_DRAINMAT:
@@ -1440,14 +1442,14 @@ EXPORT_TOOLKIT int swmm_getLidCParam(int lidControlIndex, SM_LidLayer layerIndex
             case SM_ALPHA:
                 *value = lidProc->drainMat.alpha; break;
             default:
-                error_code_index = ERR_API_OUTBOUNDS; break;
+                error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
             break;
         default:
-            error_code_index = ERR_API_OUTBOUNDS; break;
+            error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 
@@ -1460,18 +1462,18 @@ EXPORT_TOOLKIT int swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex
 // Return:  API Error
 // Purpose: Sets Lid Control Layer Parameter
 {
-    int error_code_index = 0;
+    int error_code = 0;
     TLidProc*  lidProc;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if subcatchment index is within bounds
     else if(lidControlIndex < 0 || lidControlIndex >= Nobjects[LID])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else if (swmm_IsStartedFlag() == TRUE)
     {
@@ -1483,69 +1485,69 @@ EXPORT_TOOLKIT int swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex
             switch (param)
             {
             case SM_THICKNESS:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_VOIDFRAC:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_ROUGHNESS:
                 lidProc->surface.roughness = value; break;
             case SM_SURFSLOPE:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_SIDESLOPE:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             default:
-                error_code_index = ERR_API_OUTBOUNDS; break;
+                error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
             break;
         case SM_SOIL:
             switch (param)
             {
             case SM_THICKNESS:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_POROSITY:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_FIELDCAP:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_WILTPOINT:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_KSAT:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_KSLOPE:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_SUCTION:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             default:
-                error_code_index = ERR_API_OUTBOUNDS; break;
+                error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
             break;
         case SM_STOR:
             switch (param)
             {
             case SM_THICKNESS:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_VOIDFRAC:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_KSAT:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_CLOGFACTOR:
                 lidProc->storage.clogFactor = value *
                     lidProc->storage.thickness *
                     lidProc->storage.voidFrac;
                 break;
             default:
-                error_code_index = ERR_API_OUTBOUNDS; break;
+                error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
             break;
         case SM_PAVE:
             switch (param)
             {
             case SM_THICKNESS:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_VOIDFRAC:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_IMPERVFRAC:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_KSAT:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_CLOGFACTOR:
                 lidProc->pavement.clogFactor = value *
                     lidProc->pavement.thickness *
@@ -1553,11 +1555,11 @@ EXPORT_TOOLKIT int swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex
                     (1.0 - lidProc->pavement.impervFrac);
                 break;
             case SM_REGENDAYS:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_REGENDEGREE:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             default:
-                error_code_index = ERR_API_OUTBOUNDS; break;
+                error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
             break;
         case SM_DRAIN:
@@ -1576,26 +1578,26 @@ EXPORT_TOOLKIT int swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex
             case SM_HCLOSE:
                 lidProc->drain.hClose = value / UCF(RAINDEPTH); break;
             default:
-                error_code_index = ERR_API_OUTBOUNDS; break;
+                error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
             break;
         case SM_DRAINMAT:
             switch (param)
             {
             case SM_THICKNESS:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_VOIDFRAC:
-                error_code_index = ERR_API_SIM_NRUNNING; break;
+                error_code = ERR_TKAPI_SIM_NRUNNING; break;
             case SM_ROUGHNESS:
                 lidProc->drainMat.roughness = value; break;
            //case SM_ALPHA:
            //    lidProc->drainMat.alpha = value; break;
             default:
-                error_code_index = ERR_API_OUTBOUNDS; break;
+                error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
             break;
         default:
-            error_code_index = ERR_API_OUTBOUNDS; break;
+            error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
     else if(swmm_IsStartedFlag() == FALSE)
@@ -1620,7 +1622,7 @@ EXPORT_TOOLKIT int swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex
                     //case SM_ALPHA:
                     //    lidProc->surface.alpha = value; break;
                     default:
-                        error_code_index = ERR_API_OUTBOUNDS; break;
+                        error_code = ERR_TKAPI_OUTBOUNDS; break;
                 }
                 break;
             case SM_SOIL:
@@ -1641,7 +1643,7 @@ EXPORT_TOOLKIT int swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex
                     case SM_SUCTION:
                         lidProc->soil.suction = value / UCF(RAINDEPTH); break;
                     default:
-                        error_code_index = ERR_API_OUTBOUNDS; break;
+                        error_code = ERR_TKAPI_OUTBOUNDS; break;
                 }
                 break;
             case SM_STOR:
@@ -1680,7 +1682,7 @@ EXPORT_TOOLKIT int swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex
                         lidProc->storage.voidFrac;
                         break;
                     default:
-                        error_code_index = ERR_API_OUTBOUNDS; break;
+                        error_code = ERR_TKAPI_OUTBOUNDS; break;
                 }
                 break;
             case SM_PAVE:
@@ -1735,7 +1737,7 @@ EXPORT_TOOLKIT int swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex
                     case SM_REGENDEGREE:
                         lidProc->pavement.regenDegree = value; break;
                     default:
-                        error_code_index = ERR_API_OUTBOUNDS; break;
+                        error_code = ERR_TKAPI_OUTBOUNDS; break;
                 }
                 break;
             case SM_DRAIN:
@@ -1754,7 +1756,7 @@ EXPORT_TOOLKIT int swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex
                     case SM_HCLOSE:
                         lidProc->drain.hClose = value / UCF(RAINDEPTH); break;
                     default:
-                        error_code_index = ERR_API_OUTBOUNDS; break;
+                        error_code = ERR_TKAPI_OUTBOUNDS; break;
                 }
                 break;
             case SM_DRAINMAT:
@@ -1769,19 +1771,19 @@ EXPORT_TOOLKIT int swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex
                     //case SM_ALPHA:
                     //    lidProc->drainMat.alpha = value; break;
                     default:
-                        error_code_index = ERR_API_OUTBOUNDS; break;
+                        error_code = ERR_TKAPI_OUTBOUNDS; break;
                 }
                 break;
             default:
-                error_code_index = ERR_API_OUTBOUNDS; break;
+                error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
     else
     {
-        error_code_index = ERR_API_OUTBOUNDS;
+        error_code = ERR_TKAPI_OUTBOUNDS;
     }
 
-    if(error_code_index == ERR_NONE)
+    if(error_code == ERR_NONE)
     {
         lid_validateLidProc(lidControlIndex);
         if (swmm_IsStartedFlag() == FALSE)
@@ -1789,7 +1791,7 @@ EXPORT_TOOLKIT int swmm_setLidCParam(int lidControlIndex, SM_LidLayer layerIndex
             lid_updateAllLidUnit(lidControlIndex);
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 //-------------------------------
@@ -1805,7 +1807,7 @@ EXPORT_TOOLKIT int swmm_getCurrentDateTime(int *year, int *month, int *day,
 /// Purpose: Get the simulation start, end and report date times
 {
     DateTime currentTime;
-    int error_code_index = 0;
+    int error_code = 0;
     *year = 1900;
     *month = 1;
     *day = 1;
@@ -1816,7 +1818,7 @@ EXPORT_TOOLKIT int swmm_getCurrentDateTime(int *year, int *month, int *day,
     // Check if Simulation is Running
     if(swmm_IsStartedFlag() == FALSE)
     {
-        error_code_index = ERR_API_SIM_NRUNNING;
+        error_code = ERR_TKAPI_SIM_NRUNNING;
     }
     else
     {
@@ -1827,7 +1829,7 @@ EXPORT_TOOLKIT int swmm_getCurrentDateTime(int *year, int *month, int *day,
         datetime_decodeTime(currentTime, hour, minute, second);
     }
 
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 
@@ -1839,18 +1841,18 @@ EXPORT_TOOLKIT int swmm_getNodeResult(int index, SM_NodeResult type, double *res
 /// Return:  API Error
 /// Purpose: Gets Node Simulated Value at Current Time
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *result = 0;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[NODE])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -1875,10 +1877,10 @@ EXPORT_TOOLKIT int swmm_getNodeResult(int index, SM_NodeResult type, double *res
                 *result = Node[index].newLatFlow * UCF(FLOW); break;
 	        case SM_HRT:
 		        *result = Storage[Node[index].subIndex].hrt; break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **pollutArray, int *length)
@@ -1890,22 +1892,22 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
 /// Purpose: Gets Node Simulated Water Quality Value at Current Time
 {
     int p;
-    int error_code_index = 0;
+    int error_code = 0;
     double* result;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[NODE])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else if (MEMCHECK(result = newDoubleArray(Nobjects[POLLUT])))
     {
-        error_code_index = ERR_MEMORY;
+        error_code = ERR_MEMORY;
     }
 
     else
@@ -1938,10 +1940,10 @@ EXPORT_TOOLKIT int swmm_getNodePollut(int index, SM_NodePollut type, double **po
                 }
                 *pollutArray = result;
             } break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_setNodePollut(int index, SM_NodePollut type, int pollutant_index, double pollutant_value)
@@ -1953,17 +1955,17 @@ EXPORT_TOOLKIT int swmm_setNodePollut(int index, SM_NodePollut type, int polluta
 /// Return:  API Error
 /// Purpose: Set pollutant concentration in nodes at the current time step
 {
-	int error_code_index = 0;
+	int error_code = 0;
 
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE)
 	{
-	    error_code_index = ERR_API_INPUTNOTOPEN;
+	    error_code = ERR_TKAPI_INPUTNOTOPEN;
 	}
 	// Check if object index is within bounds
 	else if (index < 0 || index >= Nobjects[NODE])
 	{
-	    error_code_index = ERR_API_OBJECT_INDEX;
+	    error_code = ERR_TKAPI_OBJECT_INDEX;
 	}
 	else
 	{
@@ -1980,12 +1982,12 @@ EXPORT_TOOLKIT int swmm_setNodePollut(int index, SM_NodePollut type, int polluta
                     Node[index].extQual[pollutant_index] = pollutant_value;
 	    		    Node[index].extPollutFlag[pollutant_index] = 1;
                 } break;
-                default: error_code_index = ERR_API_OUTBOUNDS; break;
+                default: error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
 			
 		}
 	}
-	return error_getCode(error_code_index);
+	return error_code;
 }
 
 
@@ -1997,18 +1999,18 @@ EXPORT_TOOLKIT int swmm_getLinkResult(int index, SM_LinkResult type, double *res
 /// Return:  API Error
 /// Purpose: Gets Link Simulated Value at Current Time
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *result = 0;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[LINK])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -2030,10 +2032,10 @@ EXPORT_TOOLKIT int swmm_getLinkResult(int index, SM_LinkResult type, double *res
                 *result = Link[index].targetSetting; break;
             case SM_FROUDE:
                 *result = Link[index].froude; break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **pollutArray, int *length)
@@ -2045,22 +2047,22 @@ EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **po
 /// Purpose: Gets Link Simulated Water Quality Value at Current Time
 {
     int p;
-    int error_code_index = 0;
+    int error_code = 0;
     double* result;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[LINK])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else if (MEMCHECK(result = newDoubleArray(Nobjects[POLLUT])))
     {
-        error_code_index = ERR_MEMORY;
+        error_code = ERR_MEMORY;
     }
 
     else
@@ -2097,10 +2099,10 @@ EXPORT_TOOLKIT int swmm_getLinkPollut(int index, SM_LinkPollut type, double **po
                 }
                 *pollutArray = result;
             } break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         } 
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 
@@ -2113,17 +2115,17 @@ EXPORT_TOOLKIT int swmm_setLinkPollut(int index, SM_LinkPollut type, int polluta
 ///  Return: API error
 ///  Purponse: Set pollutant concentration in links 
 {
-	int error_code_index = 0;
+	int error_code = 0;
     
 	// Check if Open
 	if(swmm_IsOpenFlag() == FALSE)
 	{
-	    error_code_index = ERR_API_INPUTNOTOPEN;
+	    error_code = ERR_TKAPI_INPUTNOTOPEN;
 	}
 	// Check if object index is within bounds
 	else if (index < 0 || index >= Nobjects[LINK])
 	{
-	    error_code_index = ERR_API_OBJECT_INDEX;
+	    error_code = ERR_TKAPI_OBJECT_INDEX;
 	}
 	else
 	{
@@ -2140,11 +2142,11 @@ EXPORT_TOOLKIT int swmm_setLinkPollut(int index, SM_LinkPollut type, int polluta
 						Link[index].extQual[pollutant_index] = pollutant_value;
 						Link[index].extPollutFlag[pollutant_index] = 1;
 					} break;
-				default: error_code_index = ERR_API_OUTBOUNDS; break;
+				default: error_code = ERR_TKAPI_OUTBOUNDS; break;
 			}
 		}
 	}
-	return error_getCode(error_code_index);
+	return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getSubcatchResult(int index, SM_SubcResult type, double* result)
@@ -2155,18 +2157,18 @@ EXPORT_TOOLKIT int swmm_getSubcatchResult(int index, SM_SubcResult type, double*
 /// Return:  API Error
 /// Purpose: Gets Subcatchment Simulated Value at Current Time
 {
-    int error_code_index = 0;
+    int error_code = 0;
     *result = 0;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[SUBCATCH])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -2184,10 +2186,10 @@ EXPORT_TOOLKIT int swmm_getSubcatchResult(int index, SM_SubcResult type, double*
                 *result = Subcatch[index].newRunoff * UCF(FLOW); break;
             case SM_SUBCSNOW:
                 *result = Subcatch[index].newSnowDepth * UCF(RAINDEPTH); break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getSubcatchPollut(int index, SM_SubcPollut type, double **pollutArray, int *length)
@@ -2199,23 +2201,23 @@ EXPORT_TOOLKIT int swmm_getSubcatchPollut(int index, SM_SubcPollut type, double 
 /// Purpose: Gets Subcatchment Simulated Pollutant Value at Current Time
 {
     int p;
-    int error_code_index = 0;
+    int error_code = 0;
     double a;
     double* result;
 
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[SUBCATCH])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else if (MEMCHECK(result = newDoubleArray(Nobjects[POLLUT])))
     {
-        error_code_index = ERR_MEMORY;
+        error_code = ERR_MEMORY;
     }
 
     else
@@ -2265,10 +2267,10 @@ EXPORT_TOOLKIT int swmm_getSubcatchPollut(int index, SM_SubcPollut type, double 
                 *length = Nobjects[POLLUT];
             } break;
 
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getGagePrecip(int index, SM_GagePrecip type, double* result)
@@ -2279,7 +2281,7 @@ EXPORT_TOOLKIT int swmm_getGagePrecip(int index, SM_GagePrecip type, double* res
 /// Return:  API Error
 /// Purpose: Gets the precipitation value in the gage.
 {
-    int error_code_index = 0;
+    int error_code = 0;
     double rainfall = 0;
     double snowfall = 0;
     double total = 0;
@@ -2287,12 +2289,12 @@ EXPORT_TOOLKIT int swmm_getGagePrecip(int index, SM_GagePrecip type, double* res
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[GAGE])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     // Read the rainfall value
     else
@@ -2306,10 +2308,10 @@ EXPORT_TOOLKIT int swmm_getGagePrecip(int index, SM_GagePrecip type, double* res
                 *result = rainfall * UCF(RAINFALL); break;
             case SM_SNOWFALL:
                 *result = snowfall * UCF(RAINFALL); break;
-            default: error_code_index = ERR_API_OUTBOUNDS; break;
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 
@@ -2319,27 +2321,27 @@ EXPORT_TOOLKIT int swmm_getNodeStats(int index, SM_NodeStats *nodeStats)
 /// Return:  API Error
 /// Purpose: Gets Node Stats and Converts Units
 {
-    int error_index = 0;
+    int error_code = 0;
     
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
-        error_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     
     // Check if Simulation is Running
     else if (swmm_IsStartedFlag() == FALSE)
-        error_index = ERR_API_SIM_NRUNNING;
+        error_code = ERR_TKAPI_SIM_NRUNNING;
     
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[NODE])
-        error_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
 
     else if (nodeStats == NULL)
-        error_index = ERR_API_MEMORY;
+        error_code = ERR_TKAPI_MEMORY;
 
     else
         stats_getNodeStat(index, (TNodeStats **)&nodeStats);
 
-    return error_getCode(error_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getNodeTotalInflow(int index, double* value)
@@ -2349,20 +2351,20 @@ EXPORT_TOOLKIT int swmm_getNodeTotalInflow(int index, double* value)
 /// Return:  API Error
 /// Purpose: Get Node Total Inflow Volume.
 {
-    int error_index = 0;
+    int error_code = 0;
 
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
-        error_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
 
 	// Check if Simulation is Running
     else if (swmm_IsStartedFlag() == FALSE)
-        error_index = ERR_API_SIM_NRUNNING;
+        error_code = ERR_TKAPI_SIM_NRUNNING;
 
     else
         massbal_getNodeTotalInflow(index, value);
 
-    return error_getCode(error_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getStorageStats(int index, SM_StorageStats *storageStats)
@@ -2371,60 +2373,60 @@ EXPORT_TOOLKIT int swmm_getStorageStats(int index, SM_StorageStats *storageStats
 /// Return:  API Error
 /// Purpose: Gets Storage Node Stats and Converts Units
 {
-    int error_index = 0;
+    int error_code = 0;
     
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
-        error_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     
     // Check if Simulation is Running
     else if (swmm_IsStartedFlag() == FALSE)
-        error_index = ERR_API_SIM_NRUNNING;
+        error_code = ERR_TKAPI_SIM_NRUNNING;
     
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[NODE])
-        error_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     
     // Check Node Type is storage
     else if (Node[index].type != STORAGE)
-        error_index = ERR_API_WRONG_TYPE;
+        error_code = ERR_TKAPI_WRONG_TYPE;
     
     else if (storageStats == NULL)
-        error_index = ERR_API_MEMORY;
+        error_code = ERR_TKAPI_MEMORY;
 
     else
         stats_getStorageStat(index, (TStorageStats **)&storageStats);
 
-    return error_getCode(error_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getOutfallStats(int index, SM_OutfallStats *outfallStats)
 {
-    int error_index = 0;
+    int error_code = 0;
     
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
-        error_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     
     // Check if Simulation is Running
     else if (swmm_IsStartedFlag() == FALSE)
-        error_index = ERR_API_SIM_NRUNNING;
+        error_code = ERR_TKAPI_SIM_NRUNNING;
     
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[NODE])
-        error_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     
     // Check Node Type is outfall
     else if (Node[index].type != OUTFALL)
-        error_index = ERR_API_WRONG_TYPE;
+        error_code = ERR_TKAPI_WRONG_TYPE;
     
     else if (outfallStats == NULL)
-        error_index = ERR_API_MEMORY;
+        error_code = ERR_TKAPI_MEMORY;
 
     else
         stats_getOutfallStat(index, (TOutfallStats **)&outfallStats);
 
-    return error_getCode(error_index);
+    return error_code;
 }
 
 
@@ -2434,27 +2436,27 @@ EXPORT_TOOLKIT int swmm_getLinkStats(int index, SM_LinkStats *linkStats)
 /// Return:  API Error
 /// Purpose: Gets Link Stats and Converts Units
 {
-    int error_index = 0;
+    int error_code = 0;
 
 	// Check if Open
 	if (swmm_IsOpenFlag() == FALSE)
-		error_index = ERR_API_INPUTNOTOPEN;
+		error_code = ERR_TKAPI_INPUTNOTOPEN;
 
 	// Check if Simulation is Running
 	else if (swmm_IsStartedFlag() == FALSE)
-		error_index = ERR_API_SIM_NRUNNING;
+		error_code = ERR_TKAPI_SIM_NRUNNING;
 
 	// Check if object index is within bounds
 	else if (index < 0 || index >= Nobjects[LINK])
-		error_index = ERR_API_OBJECT_INDEX;
+		error_code = ERR_TKAPI_OBJECT_INDEX;
 
     else if (linkStats == NULL)
-        error_index = ERR_API_MEMORY;
+        error_code = ERR_TKAPI_MEMORY;
 
     else
         stats_getLinkStat(index, (TLinkStats **)&linkStats);
 
-    return error_getCode(error_index);
+    return error_code;
 }
 
 
@@ -2464,31 +2466,31 @@ EXPORT_TOOLKIT int swmm_getPumpStats(int index, SM_PumpStats *pumpStats)
 /// Return:  API Error
 /// Purpose: Gets Pump Link Stats and Converts Units
 {
-    int error_index = 0;
+    int error_code = 0;
 
 	// Check if Open
 	if (swmm_IsOpenFlag() == FALSE)
-		error_index = ERR_API_INPUTNOTOPEN;
+		error_code = ERR_TKAPI_INPUTNOTOPEN;
 
 	// Check if Simulation is Running
 	else if (swmm_IsStartedFlag() == FALSE)
-		error_index = ERR_API_SIM_NRUNNING;
+		error_code = ERR_TKAPI_SIM_NRUNNING;
 
 	// Check if object index is within bounds
 	else if (index < 0 || index >= Nobjects[LINK])
-		error_index = ERR_API_OBJECT_INDEX;
+		error_code = ERR_TKAPI_OBJECT_INDEX;
 
 	// Check if pump
 	else if (Link[index].type != PUMP)
-		error_index = ERR_API_WRONG_TYPE;
+		error_code = ERR_TKAPI_WRONG_TYPE;
 
 	else if (pumpStats == NULL)
-        error_index = ERR_API_MEMORY;
+        error_code = ERR_TKAPI_MEMORY;
 
     else
         stats_getPumpStat(index, (TPumpStats **)&pumpStats);
 
-    return error_getCode(error_index);
+    return error_code;
 }
 
 
@@ -2498,27 +2500,27 @@ EXPORT_TOOLKIT int swmm_getSubcatchStats(int index, SM_SubcatchStats *subcatchSt
 /// Return:  API Error
 /// Purpose: Gets Subcatchment Stats and Converts Units
 {
-    int error_index = 0;
+    int error_code = 0;
 
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
-        error_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
 
     // Check if Simulation is Running
     else if (swmm_IsStartedFlag() == FALSE)
-        error_index = ERR_API_SIM_NRUNNING;
+        error_code = ERR_TKAPI_SIM_NRUNNING;
 
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[SUBCATCH])
-        error_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
 
     else if (subcatchStats == NULL)
-        error_index = ERR_API_MEMORY;
+        error_code = ERR_TKAPI_MEMORY;
 
     else
         stats_getSubcatchStat(index, (TSubcatchStats **)&subcatchStats);
 
-    return error_getCode(error_index);
+    return error_code;
 }
 
 
@@ -2528,23 +2530,23 @@ EXPORT_TOOLKIT int swmm_getSystemRoutingTotals(SM_RoutingTotals *routingTotals)
 /// Return:  API Error
 /// Purpose: Gets System Flow Routing Totals and Converts Units
 {
-    int error_index = 0;
+    int error_code = 0;
 
 	// Check if Open
 	if (swmm_IsOpenFlag() == FALSE)
-		error_index = ERR_API_INPUTNOTOPEN;
+		error_code = ERR_TKAPI_INPUTNOTOPEN;
 
 	// Check if Simulation is Running
 	else if (swmm_IsStartedFlag() == FALSE)
-		error_index = ERR_API_SIM_NRUNNING;
+		error_code = ERR_TKAPI_SIM_NRUNNING;
 
     else if (routingTotals == NULL)
-        error_index = ERR_API_MEMORY;
+        error_code = ERR_TKAPI_MEMORY;
     
     else
         massbal_getRoutingTotal((TRoutingTotals **)&routingTotals);
 
-    return error_getCode(error_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getSystemRunoffTotals(SM_RunoffTotals *runoffTotals)
@@ -2553,23 +2555,23 @@ EXPORT_TOOLKIT int swmm_getSystemRunoffTotals(SM_RunoffTotals *runoffTotals)
 /// Return:  API Error
 /// Purpose: Gets System Runoff Totals and Converts Units
 {
-    int error_index = 0;
+    int error_code = 0;
 
 	// Check if Open
 	if (swmm_IsOpenFlag() == FALSE)
-		error_index = ERR_API_INPUTNOTOPEN;
+		error_code = ERR_TKAPI_INPUTNOTOPEN;
 
 	// Check if Simulation is Running
 	else if (swmm_IsStartedFlag() == FALSE)
-		error_index = ERR_API_SIM_NRUNNING;
+		error_code = ERR_TKAPI_SIM_NRUNNING;
 
 	else if (runoffTotals == NULL)
-        error_index = ERR_API_MEMORY;
+        error_code = ERR_TKAPI_MEMORY;
     
     else
         massbal_getRunoffTotal((TRunoffTotals **)&runoffTotals);
 
-    return error_getCode(error_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getLidUFluxRates(int index, int lidIndex, SM_LidLayer layerIndex, double* result)
@@ -2581,22 +2583,22 @@ EXPORT_TOOLKIT int swmm_getLidUFluxRates(int index, int lidIndex, SM_LidLayer la
 // Return:  API Error
 // Purpose: Gets Lid Unit Water Balance Simulated Value at Current Time
 {
-    int error_code_index = 0;
+    int error_code = 0;
     TLidUnit* lidUnit;
 
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[SUBCATCH])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
-        lidUnit = lid_getLidUnit(index, lidIndex, &error_code_index);
+        lidUnit = lid_getLidUnit(index, lidIndex, &error_code);
 
         // There are no Lid Units defined for the subcatchments
         if (lidUnit)
@@ -2612,15 +2614,15 @@ EXPORT_TOOLKIT int swmm_getLidUFluxRates(int index, int lidIndex, SM_LidLayer la
                 case SM_PAVE:
                     *result = lidUnit->oldFluxRates[SM_PAVE] * UCF(LENGTH); break;
                 default:
-                    error_code_index = ERR_API_OUTBOUNDS; break;
+                    error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
         }
         else
         {
-            error_code_index = ERR_API_UNDEFINED_LID;
+            error_code = ERR_TKAPI_UNDEFINED_LID;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getLidGResult(int index, SM_LidResult type, double* result)
@@ -2631,18 +2633,18 @@ EXPORT_TOOLKIT int swmm_getLidGResult(int index, SM_LidResult type, double* resu
 // Return:  API Error
 // Purpose: Gets Lid Group Data at Current Time
 {
-    int error_code_index = 0;
+    int error_code = 0;
     TLidGroup lidGroup;
 
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[SUBCATCH])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -2661,15 +2663,15 @@ EXPORT_TOOLKIT int swmm_getLidGResult(int index, SM_LidResult type, double* resu
                 case SM_NEWDRAINFLOW:
                     *result = lidGroup->newDrainFlow * UCF(FLOW); break;
                 default:
-                    error_code_index = ERR_API_OUTBOUNDS; break;
+                    error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
         }
         else
         {
-            error_code_index = ERR_API_UNDEFINED_LID;
+            error_code = ERR_TKAPI_UNDEFINED_LID;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_getLidUResult(int index, int lidIndex, SM_LidResult type, double* result)
@@ -2680,23 +2682,23 @@ EXPORT_TOOLKIT int swmm_getLidUResult(int index, int lidIndex, SM_LidResult type
 // Return:  API Error
 // Purpose: Gets Lid Unit Water Balance Simulated Value at Current Time
 {
-    int error_code_index = 0;
+    int error_code = 0;
     TLidUnit* lidUnit;
     double    Tstep = 0;
 
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[SUBCATCH])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
-        lidUnit = lid_getLidUnit(index, lidIndex, &error_code_index);
+        lidUnit = lid_getLidUnit(index, lidIndex, &error_code);
 
         // There are no Lid Units defined for the subcatchments
         if (lidUnit)
@@ -2760,15 +2762,15 @@ EXPORT_TOOLKIT int swmm_getLidUResult(int index, int lidIndex, SM_LidResult type
                 case SM_STORAGEDRAIN:
                     *result = lidUnit->waterRate.storageDrain * UCF(RAINFALL); break;
                 default:
-                    error_code_index = ERR_API_OUTBOUNDS; break;
+                    error_code = ERR_TKAPI_OUTBOUNDS; break;
             }
         }
         else
         {
-            error_code_index = ERR_API_UNDEFINED_LID;
+            error_code = ERR_TKAPI_UNDEFINED_LID;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 //-------------------------------
@@ -2783,18 +2785,18 @@ EXPORT_TOOLKIT int swmm_setLinkSetting(int index, double setting)
 /// Purpose: Sets Link open fraction (Weir, Orifice, Pump, and Outlet)
 {
     DateTime currentTime;
-    int error_code_index = 0;
+    int error_code = 0;
     char _rule_[11] = "ToolkitAPI";
 
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[LINK])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -2814,7 +2816,7 @@ EXPORT_TOOLKIT int swmm_setLinkSetting(int index, double setting)
             report_writeControlAction(currentTime, Link[index].ID, setting, _rule_);
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 
@@ -2825,17 +2827,17 @@ EXPORT_TOOLKIT int swmm_setNodeInflow(int index, double flowrate)
 /// Output:  returns API Error
 /// Purpose: Sets new node inflow rate and holds until set again
 {
-    int error_code_index = 0;
+    int error_code = 0;
 
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[NODE])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else
     {
@@ -2861,22 +2863,22 @@ EXPORT_TOOLKIT int swmm_setNodeInflow(int index, double flowrate)
             double baseline = 0.0; // Baseline Inflow Rate
 
             // Initializes Inflow Object
-            error_code_index = inflow_setExtInflow(index, param, type, tSeries,
+            error_code = inflow_setExtInflow(index, param, type, tSeries,
                 basePat, cf, baseline, sf);
 
             // Get The Inflow Object
-            if ( error_code_index == 0 )
+            if ( error_code == 0 )
             {
                 inflow = Node[index].extInflow;
             }
         }
         // Assign new flow rate
-        if ( error_code_index == 0 )
+        if ( error_code == 0 )
         {
             inflow -> extIfaceInflow = flowrate;
         }
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_setOutfallStage(int index, double stage)
@@ -2886,32 +2888,32 @@ EXPORT_TOOLKIT int swmm_setOutfallStage(int index, double stage)
 /// Output:  returns API Error
 /// Purpose: Sets new outfall stage and holds until set again.
 {
-    int error_code_index = 0;
+    int error_code = 0;
     // Check if Open
     if (swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if ( index < 0 || index >= Nobjects[NODE] )
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     else if ( Node[index].type != OUTFALL )
     {
-        error_code_index = ERR_API_WRONG_TYPE;
+        error_code = ERR_TKAPI_WRONG_TYPE;
     }
     else
     {
         int k = Node[index].subIndex;
-        if ( Outfall[k].type != STAGED_OUTFALL )
+        if ( Outfall[k].type != FIXED_OUTFALL )
         {
             // Change Boundary Conditions Setting Type
-            Outfall[k].type = STAGED_OUTFALL;
+            Outfall[k].type = FIXED_OUTFALL;
         }
-        Outfall[k].outfallStage = stage / UCF(LENGTH);
+        Outfall[k].fixedStage = stage / UCF(LENGTH);
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT int swmm_setGagePrecip(int index, double total_precip)
@@ -2921,16 +2923,16 @@ EXPORT_TOOLKIT int swmm_setGagePrecip(int index, double total_precip)
 /// Return:  API Error
 /// Purpose: Sets the precipitation in from the external database
 {
-    int error_code_index = 0;
+    int error_code = 0;
     // Check if Open
     if(swmm_IsOpenFlag() == FALSE)
     {
-        error_code_index = ERR_API_INPUTNOTOPEN;
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
     }
     // Check if object index is within bounds
     else if (index < 0 || index >= Nobjects[GAGE])
     {
-        error_code_index = ERR_API_OBJECT_INDEX;
+        error_code = ERR_TKAPI_OBJECT_INDEX;
     }
     // Set the Rainfall rate
     else
@@ -2949,7 +2951,7 @@ EXPORT_TOOLKIT int swmm_setGagePrecip(int index, double total_precip)
         }
      Gage[index].externalRain = total_precip;
     }
-    return error_getCode(error_code_index);
+    return error_code;
 }
 
 EXPORT_TOOLKIT void swmm_freeMemory(void *memory)

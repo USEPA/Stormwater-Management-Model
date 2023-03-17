@@ -2,7 +2,7 @@
 # CMakeLists.txt - CMake configuration file for swmm-solver/library
 #
 # Created: Jul 11, 2019
-# Updated: May  19, 2021
+# Updated: Dec  1, 2021
 #
 # Author: Michael E. Tryby
 #         US EPA ORD/CESER
@@ -31,7 +31,6 @@ file(GLOB
         RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.c *.h
 )
 
-
 if(BUILD_DEF)
     # Builds library with def file interface for backward compatibility
     set_source_files_properties(${PROJECT_SOURCE_DIR}/bindings/swmm5.def
@@ -40,7 +39,7 @@ if(BUILD_DEF)
 
     add_library(swmm5
             ${SWMM_SOURCES}
-            ${PROJECT_SOURCE_DIR/bindings/swmm5.def}
+            ${PROJECT_SOURCE_DIR}/bindings/swmm5.def
             $<TARGET_OBJECTS:shared_objs>
     )
 
@@ -126,9 +125,14 @@ install(
         "${CONFIG_DIST}"
     FILE
         swmm5-config.cmake
-    )
+)
 
-install(FILES ${SWMM_PUBLIC_HEADERS} DESTINATION "${INCLUDE_DIST}")
+install(
+    FILES 
+        ${SWMM_PUBLIC_HEADERS} 
+    DESTINATION 
+        "${INCLUDE_DIST}"
+)
 
 
 # copy swmm5 to build tree for testing
