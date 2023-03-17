@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21 (Build 5.2.0)
+//   Date:     06/01/22 (Build 5.2.1)
 //   Author:   L. Rossman
 //
 //   Street/Channel Inlet Functions
@@ -14,6 +14,8 @@
 //   Administration Hydraulic Engineering Circular No. 22, 3rd Edition,
 //   FHWA-NHI-10-009, August 2013).
 //
+//   Build 5.2.1:
+//   - Substitutes the constant BIG for HUGE.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -1567,7 +1569,7 @@ double getOnSagCapturedFlow(TInlet* inlet, double q, double d)
 //
 {
     int    linkIndex, designIndex, totalInlets;
-    double qCaptured = 0.0, qMax = HUGE;
+    double qCaptured = 0.0, qMax = BIG;
 
     if (inlet->numInlets == 0) return 0.0;
     totalInlets = Nsides * inlet->numInlets;
@@ -1680,7 +1682,7 @@ void findOnSagGrateFlows(int i, double d, double *Qw, double *Qo)
     // --- orifice flow applies
     else
     {
-        *Qo = 0.67 * Ao * sqrt(2.0 * GRAVITY * di);        //HEC-22 Eq(4-27)
+        *Qo = 0.67 * Ao * sqrt(2.0 * 32.16 * di);          //HEC-22 Eq(4-27)
     }
 }
 
@@ -1763,7 +1765,7 @@ double getCurbOrificeFlow(double di, double h, double L, int throatAngle)
         d = di - h / 2.0;
     else if (throatAngle == INCLINED_THROAT)
         d = di + (h / 2.0) * 0.7071;
-    return 0.67 * h * L * sqrt(2.0 * GRAVITY * d);         //HEC-22 Eq(4-31a)
+    return 0.67 * h * L * sqrt(2.0 * 32.16 * d);           //HEC-22 Eq(4-31a)
 }
 
 //=============================================================================
@@ -1895,7 +1897,7 @@ double getCustomCapturedFlow(TInlet* inlet, double q, double d)
             qBypassed,                 // inlet's bypassed flow (cfs)
             qCaptured,                 // inlet's captured flow (cfs)
             qIncrement,                // increment to captured flow (cfs)
-            qMax = HUGE;               // user-supplied flow capture limit (cfs)
+            qMax = BIG;                // user-supplied flow capture limit (cfs)
 
     if (inlet->numInlets == 0) return 0.0;
 

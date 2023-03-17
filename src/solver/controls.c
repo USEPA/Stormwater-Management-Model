@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21  (Build 5.2.0)
+//   Date:     06/01/22  (Build 5.2.1)
 //   Author:   L. Rossman
 //
 //   Rule-based controls functions.
@@ -48,6 +48,9 @@
 //  - Additional attributes added to condition clauses.
 //  - Support added for named variables in condition clauses.
 //  - Support added for math expressions in condition clauses.
+//  Build 5.2.1:
+//  - A refactoring bug from 5.2.0 causing duplicate actions to be added
+//    to the list of control actions to take was fixed.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -1188,15 +1191,15 @@ void updateActionList(struct TAction* a)
         listItem = listItem->next;
     }
 
-    // --- action not listed so add it to ActionList
-    listItem = (struct TActionList *) malloc(sizeof(struct TActionList));
-    if (listItem)
+    // --- action not listed so add it to ActionList                           //5.2.1
+    if ( !listItem )
     {
+        listItem = (struct TActionList *) malloc(sizeof(struct TActionList));
         listItem->next = ActionList;
         ActionList = listItem;
+    }
         listItem->action = a;
     }
-}
 
 //=============================================================================
 

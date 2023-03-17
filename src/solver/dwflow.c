@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21  (Build 5.2.0)
+//   Date:     08/01/22  (Build 5.2.1)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -24,6 +24,8 @@
 //   - Conduit evap. and seepage loss initialized to 0 in dwflow_findConduitFlow.
 //   - Most current flow (qLast) used instead of previous time period flow
 //     (qOld) in call to link_getLossRate. 
+//   Build 5.2.1:
+//   - Implements the new option to skip checking for normal flow limitations.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -248,11 +250,10 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
             q = culvert_getInflow(j, q, h1);
 
         // --- check for normal flow limitation based on surface slope & Fr
-        else
-        if ( y1 < Link[j].xsect.yFull &&
-               ( Link[j].flowClass == SUBCRITICAL ||
-                 Link[j].flowClass == SUPCRITICAL )
-           ) q = checkNormalFlow(j, q, y1, y2, a1, r1);
+        else if (NormalFlowLtd != NEITHER && y1 < Link[j].xsect.yFull &&
+                ( Link[j].flowClass == SUBCRITICAL || 
+                  Link[j].flowClass == SUPCRITICAL ))
+            q = checkNormalFlow(j, q, y1, y2, a1, r1);
     }
 
     // --- apply under-relaxation weighting between new & old flows;
@@ -436,8 +437,8 @@ void findSurfArea(int j, double q, double length, double* h1, double* h2,
     double  surfArea2 = 0.0;           // surface area st downstrm node (ft2)
     double  criticalDepth;             // critical flow depth (ft)
     double  normalDepth;               // normal flow depth (ft)
-    double  fullDepth;                 // full depth (ft)                      //(5.1.013)
-    double  fasnh = 1.0;               // fraction between norm. & crit. depth //(5.1.013)
+    double  fullDepth;                 // full depth (ft)
+    double  fasnh = 1.0;               // fraction between norm. & crit. depth
     TXsect* xsect = &Link[j].xsect;    // pointer to cross-section data
 
     // --- get node indexes & current flow depths
@@ -655,7 +656,7 @@ double checkNormalFlow(int j, double q, double y1, double y2, double a1,
     // --- check if water surface slope < conduit slope
     if ( NormalFlowLtd == SLOPE || NormalFlowLtd == BOTH || hasOutfall )
     {
-        if ( y1 < y2 ) check = TRUE;
+        if ( y1 < y2) check = TRUE;
     }
 
     // --- check if Fr >= 1.0 at upstream end of conduit

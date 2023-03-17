@@ -3,7 +3,7 @@
 //
 //   Project: EPA SWMM5
 //   Version: 5.2
-//   Date:    11/01/21  (Build 5.2.0)
+//   Date:    06/01/22  (Build 5.2.1)
 //   Author:  L. Rossman
 //
 //   Exportable keyword dictionary
@@ -34,6 +34,8 @@
 //   - Support added for variable speed pumps.
 //   - Support added for analytical storage shapes.
 //   - Support added for RptFlags.disabled option.
+//   Build 5.2.1:
+//   - Adds NONE to the list of NormalFlowWords.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -65,7 +67,7 @@ char* LoadUnitsWords[]     = { w_LBS, w_KG, w_LOGN };
 char* NodeTypeWords[]      = { w_JUNCTION, w_OUTFALL,
                                w_STORAGE, w_DIVIDER };
 char* NoneAllWords[]       = { w_NONE, w_ALL, NULL};
-char* NormalFlowWords[]    = { w_SLOPE, w_FROUDE, w_BOTH, NULL};
+char* NormalFlowWords[]    = { w_SLOPE, w_FROUDE, w_BOTH, w_NONE, NULL};
 char* NormalizerWords[]    = { w_PER_AREA, w_PER_CURB, NULL};
 char* NoYesWords[]         = { w_NO, w_YES, NULL};
 char* OffOnWords[]         = { w_OFF, w_ON, NULL};
