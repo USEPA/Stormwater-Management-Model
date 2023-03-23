@@ -3,7 +3,7 @@
 //
 //   Project: EPA SWMM5
 //   Version: 5.2
-//   Date:    10/18/22  (Build 5.2.2)
+//   Date:    02/12/23  (Build 5.2.3)
 //   Author:  L. Rossman
 //
 //   Various Constants
@@ -17,7 +17,7 @@
 //------------------
 
 // OWA Version string stored in version.h
-// #define   VERSION            52002
+// #define   VERSION            52003
 #define   MAGICNUMBER        516114522
 #define   EOFMARK            0x1A           // Use 0x04 for UNIX systems
 #define   MAXTITLE           3              // Max. # title lines
