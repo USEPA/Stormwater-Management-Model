@@ -107,7 +107,7 @@ void qualrout_execute(double tStep)
 {
     int    i, j;
     double qIn, vAvg;
- 
+
     // --- find mass flow each link contributes to its downstream node
     for ( i = 0; i < Nobjects[LINK]; i++ ) findLinkMassFlow(i, tStep);
 
@@ -125,7 +125,7 @@ void qualrout_execute(double tStep)
             if ( qIn < ZERO ) qIn = 0.0;
             treatmnt_setInflow(qIn, Node[j].newQual);
         }
-
+       
         // --- find new quality at the node 
         if ( Node[j].type == STORAGE || Node[j].oldVolume > ZeroVolume )
         {
@@ -330,7 +330,7 @@ void findLinkQual(int i, double tStep)
         // --- start with concen. at start of time step
         c1 = Link[i].oldQual[p];
 
-	// --- update mass balance accounting for seepage loss
+        // --- update mass balance accounting for seepage loss
         massbal_addSeepageLoss(p, qSeep*c1);
 
         // --- increase concen. by evaporation factor

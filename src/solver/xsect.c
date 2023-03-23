@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21   (Build 5.2.0)
+//   Date:     10/17/22   (Build 5.2.2)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
@@ -32,6 +32,8 @@
 //   - Width at full height set to 0 for closed rectangular shape.
 //   Build 5.2.0:
 //   - Support added for Street cross sections.
+//   Build 5.2.2:
+//   - Feasibility check added to Mod. Baskethandle & Rect.-Round shapes.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -430,6 +432,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
 
         // --- depth of circular bottom
         xsect->yBot  = xsect->rBot * (1.0 - cos(theta/2.0));
+        if (xsect->yBot > xsect->yFull) return FALSE;
         xsect->ywMax = xsect->yFull;
 
         xsect->aFull = xsect->wMax * (xsect->yFull - xsect->yBot) + xsect->aBot;
@@ -455,6 +458,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
 
         // --- height of circular arc
         xsect->yBot = xsect->rBot * (1.0 - cos(theta/2.0));
+        if (xsect->yBot > xsect->yFull) return FALSE;
         xsect->ywMax = xsect->yFull - xsect->yBot;
 
         // --- area of circular arc

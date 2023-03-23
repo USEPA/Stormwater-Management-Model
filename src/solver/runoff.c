@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21   (Build 5.2.0)
+//   Date:     10/17/22   (Build 5.2.2)
 //   Author:   L. Rossman
 //             M. Tryby
 //
@@ -27,7 +27,9 @@
 //   Build 5.1.014:
 //   - Fixed street sweeping bug.
 //   Build 5.2.0:
-//   - Support added for saving rainfall amounts in previous 48 hours. 
+//   - Support added for saving rainfall amounts in previous 48 hours.
+//   Build 5.2.2:
+//   - Fixed possible use of canSweep in runoff_execute() with no assigned value. 
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -204,12 +206,12 @@ void runoff_execute()
 
     // --- see if street sweeping can occur on current date
     day = datetime_dayOfYear(currentDate);
+    canSweep = FALSE;
     if ( SweepStart <= SweepEnd )
     {
         if ( day >= SweepStart && day <= SweepEnd ) canSweep = TRUE;
     }
     else if ( day <= SweepEnd || day >= SweepStart ) canSweep = TRUE;
-    else canSweep = FALSE;
 
     // --- get runoff time step (in seconds)
     runoffStep = runoff_getTimeStep(currentDate);

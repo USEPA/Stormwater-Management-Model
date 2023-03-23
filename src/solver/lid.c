@@ -356,7 +356,7 @@ int lid_readProcParams(char* toks[], int ntoks)
 //    LID_ID  STORAGE   <parameters>
 //    LID_ID  DRAIN     <parameters>
 //    LID_ID  DRAINMAT  <parameters>
-//    LID_ID  REMOVALS  <parameters> 
+//    LID_ID  REMOVALS  <parameters>
 //
 {
     int j, m;
@@ -712,7 +712,7 @@ int readStorageData(int j, char* toks[], int ntoks)
 //  Output:  returns error code
 //
 //  Format of data is:
-//    LID_ID STORAGE  Thickness  VoidRatio  Ksat  ClogFactor  (YES/NO) 
+//    LID_ID STORAGE  Thickness  VoidRatio  Ksat  ClogFactor  (YES/NO)
 //
 {
     int    i;
@@ -1638,7 +1638,7 @@ void lid_getRunoff(int j, double tStep)
     double lidArea;               // area of an LID unit
     double qImperv = 0.0;         // runoff from impervious areas (cfs)
     double qPerv = 0.0;           // runoff from pervious areas (cfs)
-    double lidInflow = 0.0;       // inflow to an LID unit (ft/s) 
+    double lidInflow = 0.0;       // inflow to an LID unit (ft/s)
     double qRunoff = 0.0;         // surface runoff from all LID units (cfs)
     double qDrain = 0.0;          // drain flow from all LID units (cfs)
     double qReturn = 0.0;         // LID outflow returned to pervious area (cfs)

@@ -15,7 +15,7 @@
 //   - Support added for separate routing of LID drain flows.
 //   - Detailed LID reporting modified.
 //   Build 5.1.011:
-//   - Water depth replaces moisture content for LID's pavement layer.
+//   - Water depth replaces moisture content for LID's pavement layer. 
 //   - Arguments for lidproc_saveResults() modified.
 //   Build 5.1.012:
 //   - Redefined meaning of wasDry in TLidRptFile structure.
@@ -47,8 +47,8 @@
 //-----------------------------------------------------------------------------
 enum LidTypes {
     BIO_CELL,                // bio-retention cell
-    RAIN_GARDEN,             // rain garden
-    GREEN_ROOF,              // green roof
+    RAIN_GARDEN,             // rain garden 
+    GREEN_ROOF,              // green roof 
     INFIL_TRENCH,            // infiltration trench
     POROUS_PAVEMENT,         // porous pavement
     RAIN_BARREL,             // rain barrel
@@ -69,7 +69,7 @@ typedef struct
 {
     double    thickness;          // depression storage or berm ht. (ft)
     double    voidFrac;           // available fraction of storage volume
-    double    roughness;          // surface Mannings n
+    double    roughness;          // surface Mannings n 
     double    surfSlope;          // land surface slope (fraction)
     double    sideSlope;          // swale side slope (run/rise)
     double    alpha;              // slope/roughness term in Manning eqn.
@@ -204,7 +204,7 @@ typedef struct
     int      drainNode;      // node receiving drain flow
     TLidRptFile* rptFile;    // pointer to detailed report file
 
-    TGrnAmpt soilInfil;      // infil. object for biocell soil layer
+    TGrnAmpt soilInfil;      // infil. object for biocell soil layer 
     double   surfaceDepth;   // depth of ponded water on surface layer (ft)
     double   paveDepth;      // depth of water in porous pavement layer
     double   soilMoisture;   // moisture content of biocell soil layer
@@ -212,7 +212,7 @@ typedef struct
 
     // net inflow - outflow from previous time step for each LID layer (ft/s)
     double   oldFluxRates[MAX_LAYERS];
-
+                                     
     double   dryTime;        // time since last rainfall (sec)
     double   oldDrainFlow;   // previous drain flow (cfs)
     double   newDrainFlow;   // current drain flow (cfs)
