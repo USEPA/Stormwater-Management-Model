@@ -17,7 +17,7 @@
 //   ==============
 //   Build 5.1.008:
 //   - Support added for the MinGW compiler.
-//   - Reporting of project options moved to swmm_start.
+//   - Reporting of project options moved to swmm_start. 
 //   - Hot start file now read before routing system opened.
 //   - Final routing step adjusted so that total duration not exceeded.
 //   Build 5.1.011:
@@ -126,7 +126,7 @@
 //-----------------------------------------------------------------------------
 //  Unit conversion factors
 //-----------------------------------------------------------------------------
-const double Ucf[10][2] =
+const double Ucf[10][2] = 
       {//  US      SI
       {43200.0,   1097280.0 },         // RAINFALL (in/hr, mm/hr --> ft/sec)
       {12.0,      304.8     },         // RAINDEPTH (in, mm --> ft)
@@ -350,7 +350,7 @@ int DLLEXPORT swmm_open(const char *f1, const char *f2, const char *f3)
 
 int DLLEXPORT swmm_start(int saveResults)
 //
-//  Input:   saveResults = TRUE if simulation results saved to binary file
+//  Input:   saveResults = TRUE if simulation results saved to binary file 
 //  Output:  returns an error code
 //  Purpose: starts a SWMM simulation.
 //
@@ -431,9 +431,9 @@ int DLLEXPORT swmm_start(int saveResults)
         massbal_open();
         stats_open();
 
-        // --- write heading for control actions listing
-        if (!RptFlags.disabled && RptFlags.controls)
-            report_writeControlActionsHeading();
+        // --- write heading for control actions listing 
+	    if (!RptFlags.disabled && RptFlags.controls)
+                report_writeControlActionsHeading();
     }
 
 #ifdef EXH
@@ -457,7 +457,7 @@ int DLLEXPORT swmm_step(double *elapsedTime)
 {
     // --- check that simulation can proceed
     *elapsedTime = 0.0;
-    if ( ErrorCode )
+    if ( ErrorCode ) 
         return ErrorCode;
     if ( !IsOpenFlag )
         return (ErrorCode = ERR_API_NOT_OPEN);
@@ -594,7 +594,7 @@ void execRouting()
 
         // --- if no runoff analysis, update climate state (for evaporation)
         else climate_setState(getDateTime(NewRoutingTime));
-
+  
         // --- route flows & pollutants through drainage system
         //     (while updating NewRoutingTime)
         if ( DoRouting )
@@ -883,7 +883,7 @@ double  DLLEXPORT swmm_getValue(int property, int index)
 //
 //  Input:   property = an object's property code
 //           index = the object's index in the array of like objects
-//
+//           
 //  Output:  returns the property's current value
 //  Purpose: retrieves the value of an object's property.
 {
@@ -925,7 +925,7 @@ void  DLLEXPORT swmm_setValue(int property, int index, double value)
     case swmm_SUBCATCH_RPTFLAG:
         if (!IsStartedFlag && index >= 0 && index < Nobjects[SUBCATCH])
             Subcatch[index].rptFlag = (value > 0.0);
-        return;
+        return;            
     case swmm_NODE_LATFLOW:
         setNodeLatFlow(index, value);
         return;
@@ -935,20 +935,20 @@ void  DLLEXPORT swmm_setValue(int property, int index, double value)
     case swmm_NODE_RPTFLAG:
         if (!IsStartedFlag && index >= 0 && index < Nobjects[NODE])
             Node[index].rptFlag = (value > 0.0);
-        return;
+        return;            
     case swmm_LINK_SETTING:
         setLinkSetting(index, value);
         return;
     case swmm_LINK_RPTFLAG:
         if (!IsStartedFlag && index >= 0 && index < Nobjects[LINK])
             Link[index].rptFlag = (value > 0.0);
-        return;
+        return;            
     case swmm_ROUTESTEP:
         setRoutingStep(value);
         return;
     case swmm_REPORTSTEP:
         if (!IsStartedFlag && value > 0)
-            ReportStep = (int)value;
+            ReportStep = (int)value;                
         return;
     case swmm_NOREPORT:
         if (!IsStartedFlag)
@@ -963,8 +963,8 @@ double  DLLEXPORT swmm_getSavedValue(int property, int index, int period)
 //
 //  Input:   property = an object's property code
 //           index = the object's index in the array of like objects
-//           period = a reporting time period (starting from 1)
-//  Output:  returns the property's saved value
+//           period = a reporting time period (starting from 1) 
+//  Output:  returns the property's saved value 
 //  Purpose: retrieves an object's computed value at a specific reporting time period.
 {
     if (!IsOpenFlag)
@@ -1078,7 +1078,7 @@ double getNodeValue(int property, int index)
         case swmm_NODE_DEPTH:
           return node->newDepth * UCF(LENGTH);
         case swmm_NODE_HEAD:
-          return (node->newDepth + node->invertElev) * UCF(LENGTH);
+          return (node->newDepth + node->invertElev) * UCF(LENGTH); 
         case swmm_NODE_VOLUME:
           return node->newVolume * UCF(VOLUME);
         case swmm_NODE_LATFLOW:
@@ -1258,7 +1258,7 @@ double getSavedDate(int period)
 //
 //  Input:   period = a reporting period (starting at 1)
 //  Output:  returns the date/time of the reporting period in decimal days
-//  Purpose: retrieves the date/time of a reporting period.
+//  Purpose: retrieves the date/time of a reporting period. 
 {
     double days;
     output_readDateTime(period, &days);
