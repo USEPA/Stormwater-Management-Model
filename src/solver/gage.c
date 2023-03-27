@@ -406,7 +406,7 @@ void gage_setState(int j, DateTime t)
         // --- otherwise update next rainfall interval date
         Gage[j].startDate = Gage[j].nextDate;
         Gage[j].endDate = datetime_addSeconds(Gage[j].startDate,
-                  Gage[j].rainInterval);
+                          Gage[j].rainInterval);
         Gage[j].rainfall = Gage[j].nextRainfall;
         if ( !getNextRainfall(j) ) Gage[j].nextDate = NO_DATE;
     }
@@ -670,11 +670,11 @@ int getNextRainfall(int j)
         {
             if ( Frain.file && Gage[j].currentFilePos < Gage[j].endFilePos )
             {
-            fseek(Frain.file, Gage[j].currentFilePos, SEEK_SET);
-            fread(&Gage[j].nextDate, sizeof(DateTime), 1, Frain.file);
-            fread(&vNext, sizeof(float), 1, Frain.file);
-            Gage[j].currentFilePos = ftell(Frain.file);
-            rNext = convertRainfall(j, (double)vNext);
+                fseek(Frain.file, Gage[j].currentFilePos, SEEK_SET);
+                fread(&Gage[j].nextDate, sizeof(DateTime), 1, Frain.file);
+                fread(&vNext, sizeof(float), 1, Frain.file);
+                Gage[j].currentFilePos = ftell(Frain.file);
+                rNext = convertRainfall(j, (double)vNext);
             }
             else return 0;
         }
@@ -684,9 +684,9 @@ int getNextRainfall(int j)
             k = Gage[j].tSeries;
             if ( k >= 0 )
             {
-            if ( !table_getNextEntry(&Tseries[k],
-                &Gage[j].nextDate, &rNext) ) return 0;
-            rNext = convertRainfall(j, rNext);
+                if ( !table_getNextEntry(&Tseries[k],
+                        &Gage[j].nextDate, &rNext) ) return 0;
+                rNext = convertRainfall(j, rNext);
             }
             else return 0;
         }

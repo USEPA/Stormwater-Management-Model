@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21   (Build 5.2.0)
+//   Date:     10/17/22   (Build 5.2.2)
 //   Author:   L. Rossman
 //
 //   Table (curve and time series) functions.
@@ -28,6 +28,8 @@
 //   - The table_getInverseArea function was renamed table_getStorageDepth and
 //     was refactored.
 //   - Support added for relative file names.
+//   Build 5.2.2:
+//   - Prevent re-reading a time series file from start once end is reached.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -759,6 +761,13 @@ double table_tseriesLookup(TTable *table, double x, char extend)
     &&   table->x2 >= x
     &&   table->x1 != table->x2 )
     return table_interpolate(x, table->x1, table->y1, table->x2, table->y2);
+    
+    // --- end of external time series file has been reached
+    if ( table->file.mode == USE_FILE && feof(table->file.file) )
+    {
+        if (extend == TRUE) return table->y1;
+        else return 0;
+    }
 
     // --- x lies before current time bracket:
     //     move to start of time series

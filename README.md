@@ -1,6 +1,6 @@
 # Stormwater-Management-Model
 
-ORD Stormwater Management Model (aka "SWMM")
+Stormwater Management Model (aka "SWMM") solver only
 
 ## Introduction
 This is the open source SWMM source code repository maintained by the Open

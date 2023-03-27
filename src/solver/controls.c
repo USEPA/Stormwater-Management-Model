@@ -1198,8 +1198,8 @@ void updateActionList(struct TAction* a)
         listItem->next = ActionList;
         ActionList = listItem;
     }
-        listItem->action = a;
-    }
+    listItem->action = a;
+}
 
 //=============================================================================
 
