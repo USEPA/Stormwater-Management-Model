@@ -25,6 +25,7 @@
 #include "../enums.h"
 #include "../datetime.h"
 #include "../lid.h"
+#include "../inlet.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -313,6 +314,24 @@ EXPORT_TOOLKIT int swmm_getLinkParam(int index, SM_LinkProperty param, double *v
 EXPORT_TOOLKIT int swmm_setLinkParam(int index, SM_LinkProperty param, double value);
 
 /**
+ @brief Get a property value for the inlets of a specified link.
+ @param index The index of a link
+ @param Param The property type code (See @ref SM_InletProperty)
+ @param[out] value The value of the inlet's property
+ @return Error code
+*/
+EXPORT_TOOLKIT int swmm_getInletParam(int index, SM_InletProperty param, double *value);
+
+/**
+ @brief Set a property value for the inlets of a specified link.
+ @param index The index of a link
+ @param Param The property type code (See @ref SM_InletProperty)
+ @param value The new value of the inlet's property
+ @return Error code
+*/
+EXPORT_TOOLKIT int swmm_setInletParam(int index, SM_InletProperty param, double value);
+
+/**
  @brief Get a property value for specified subcatchment.
  @param index The index of a subcatchment
  @param Param The property type code (See @ref SM_SubcProperty)
@@ -420,6 +439,17 @@ EXPORT_TOOLKIT int swmm_setLinkPollut(int index, SM_LinkPollut type, int polluta
  @return Error code
 */
 EXPORT_TOOLKIT int swmm_getLinkResult(int index, SM_LinkResult type, double *result);
+
+/**
+ @brief Gets results for the inlets of a specified link.
+ @param index The index of a link with inlets
+ @param type The result type code (See @ref SM_InletResult)
+ @param result Pollutant index to set
+ @param[out] result The result of the inlet's property
+ @return Error code
+*/
+EXPORT_TOOLKIT int swmm_getInletResult(int index, SM_InletResult type, double *result);
+
 
 /**
  @brief Gets pollutant values for a specified link.
