@@ -806,6 +806,148 @@ EXPORT_TOOLKIT int swmm_setLinkParam(int index, SM_LinkProperty param, double va
     return error_code;
 }
 
+EXPORT_TOOLKIT int swmm_getInletParam(int index, SM_InletProperty param, double *value)
+///
+/// Input:   index = Index of the link with desired inlet
+///          param = Parameter desired (Based on enum SM_InletProperty)
+/// Output:  value = value to be output
+/// Return:  API Error
+/// Purpose: Gets Link Parameter
+{
+    int error_code = 0;
+    *value = 0;
+    TInlet* inlet;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[LINK])
+    {
+        error_code = ERR_TKAPI_OBJECT_INDEX;
+    }
+    else
+    {
+        inlet = Link[index].inlet;
+        if (inlet)
+        {
+            switch(param)
+            {
+                case SM_INLETNUMINLETS:
+                    *value = (double)inlet->numInlets; break;
+                case SM_INLETCLOGFACTOR:
+                    *value = (1 - inlet->clogFactor) * 100; break;
+                case SM_INLETFLOWLIMIT:
+                    *value = inlet->flowLimit * UCF(FLOW); break;
+                case SM_INLETLOCALDEPRESS:
+                    *value = inlet->localDepress * UCF(LENGTH); break;
+                case SM_INLETLOCALWIDTH:
+                    *value = inlet->localWidth * UCF(LENGTH); break;
+                default: error_code = ERR_TKAPI_OUTBOUNDS; break;
+            }
+        }
+
+        else
+        {
+            error_code = ERR_TKAPI_NO_INLET;
+        }
+    }
+    return error_code;
+};
+
+EXPORT_TOOLKIT int swmm_setInletParam(int index, SM_InletProperty param, double value)
+///
+/// Input:   index = Index of link with desired inlets
+///          param = Parameter desired (Based on enum SM_InletProperty)
+///          value = value to be assigned
+/// Return:  API Error
+/// Purpose: Sets Inlet Parameter
+{
+    int error_code = 0;
+    TInlet* inlet;
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[LINK])
+    {
+        error_code = ERR_TKAPI_OBJECT_INDEX;
+    }
+    else
+    {
+        inlet = Link[index].inlet;
+        if (inlet)
+        {
+            switch(param)
+            {
+                case SM_INLETCLOGFACTOR:
+                    inlet->clogFactor = 1.0 - (value / 100.); break;
+                case SM_INLETFLOWLIMIT:
+                    inlet->flowLimit = value / UCF(FLOW); break;
+                default: error_code = ERR_TKAPI_OUTBOUNDS; break;
+            }
+        }
+
+        else
+        {
+            error_code = ERR_TKAPI_NO_INLET;
+        }
+    }
+    return error_code;
+}
+
+EXPORT_TOOLKIT int swmm_getInletResult(int index, SM_InletResult type, double *result)
+///
+/// Input:   index = Index of the link with desired inlet
+///          param = Parameter desired (Based on enum SM_InletProperty)
+/// Output:  value = value to be output
+/// Return:  API Error
+/// Purpose: Gets Link Parameter
+{
+    int error_code = 0;
+    *result = 0;
+    TInlet* inlet;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
+    }
+    // Check if object index is within bounds
+    else if (index < 0 || index >= Nobjects[LINK])
+    {
+        error_code = ERR_TKAPI_OBJECT_INDEX;
+    }
+    else
+    {
+        inlet = Link[index].inlet;
+        if (inlet)
+        {
+            switch(type)
+            {
+                case SM_INLETFLOWFACTOR:
+                    *result = inlet->flowFactor; break;
+                case SM_INLETFLOWCAPTURE:
+                    *result = inlet->flowCapture * UCF(FLOW); break;
+                case SM_INLETBACKFLOW:
+                    *result = inlet->backflow * UCF(FLOW); break;
+                case SM_INLETBACKFLOWRATIO:
+                    *result = inlet->backflowRatio; break;
+                default: error_code = ERR_TKAPI_OUTBOUNDS; break;
+            }
+        }
+
+        else
+        {
+            error_code = ERR_TKAPI_NO_INLET;
+        }
+    }
+    return error_code;
+};
 
 EXPORT_TOOLKIT int swmm_getSubcatchParam(int index, SM_SubcProperty param, double *value)
 ///

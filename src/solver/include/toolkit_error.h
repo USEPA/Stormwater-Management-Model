@@ -13,6 +13,7 @@ enum  ToolkitErrorType {
     ERR_TKAPI_LIDUNIT_INDEX      = 2009,
     ERR_TKAPI_UNDEFINED_LID      = 2010,
     ERR_TKAPI_MEMORY             = 2011,
+    ERR_TKAPI_NO_INLET           = 2012,
 
     TKMAXERRMSG                  = 3000
 };
