@@ -147,7 +147,7 @@ typedef struct
    int           pastInterval;    // seconds since pastRain last updated
    int           coGage;          // index of gage with same rain timeseries
    int           isUsed;          // TRUE if gage used by any subcatchment
-   int           isCurrent;       // TRUE if gage's rainfall is current
+   int           isCurrent;       // TRUE if gage's rainfall is current 
 }  TGage;
 
 //-------------------
@@ -203,11 +203,11 @@ typedef struct
     int          tSeries;         // time series index
     double       monthlyEvap[12]; // monthly evaporation values
     double       panCoeff[12];    // monthly pan coeff. values
-    int          recoveryPattern; // soil recovery factor pattern
+    int          recoveryPattern; // soil recovery factor pattern 
     int          dryOnly;         // true if evaporation only in dry periods
     //----------------------------
     double       rate;            // current evaporation rate (ft/sec)
-    double       recoveryFactor;  // current soil recovery factor
+    double       recoveryFactor;  // current soil recovery factor 
 }   TEvap;
 
 //-------------------
@@ -404,7 +404,7 @@ typedef struct
    double        lidArea;         // area devoted to LIDs (ft2)
    double        rainfall;        // current rainfall (ft/sec)
    double        evapLoss;        // current evap losses (ft/sec)
-   double        infilLoss;       // current infil losses (ft/sec)
+   double        infilLoss;       // current infil losses (ft/sec) 
    double        runon;           // runon from other subcatchments (cfs)
    double        oldRunoff;       // previous runoff (cfs)
    double        newRunoff;       // current runoff (cfs)
@@ -568,7 +568,7 @@ typedef struct
    TExfil*     exfil;             // ptr. to exfiltration object
    //-----------------------------
    double      hrt;               // hydraulic residence time (sec)
-   double      evapLoss;          // evaporation loss (ft3)
+   double      evapLoss;          // evaporation loss (ft3) 
    double      exfilLoss;         // exfiltration loss (ft3)
 }  TStorage;
 
@@ -620,10 +620,10 @@ typedef struct
     double       aFull;                     // area when full (ft2)
     double       rFull;                     // hyd. radius when full (ft)
     double       wMax;                      // width at widest point (ft)
-    double       ywMax;                     // depth at max width (ft)
+    double       ywMax;                     // depth at max width (ft) 
     double       sMax;                      // section factor at max. flow (ft^4/3)
     double       aMax;                      // area at max. flow (ft2)
-    double       lengthFactor;              // floodplain / channel length
+    double       lengthFactor;              // floodplain / channel length 
     //--------------------------------------
     double       roughness;                 // Manning's n
     double       areaTbl[N_TRANSECT_TBL];   // table of area v. depth
@@ -751,10 +751,10 @@ typedef struct
 {
    int           type;            // pump type
    int           pumpCurve;       // pump curve table index
-   double        initSetting;     // initial speed setting
+   double        initSetting;     // initial speed setting 
    double        yOn;             // startup depth (ft)
    double        yOff;            // shutoff depth (ft)
-   double        xMin;            // minimum pt. on pump curve
+   double        xMin;            // minimum pt. on pump curve 
    double        xMax;            // maximum pt. on pump curve
 }  TPump;
 
@@ -1115,14 +1115,14 @@ typedef struct
    int           objType;         // either NODE or LINK
    int           index;           // node or link index
    double        value;           // value of node or link statistic
-}  TMaxStats;
+}  TMaxStats; 
 
 //------------------
 // REPORT FIELD INFO
 //------------------
-typedef struct
+typedef struct 
 {
-   char          Name[80];        // name of reported variable
+   char          Name[80];        // name of reported variable 
    char          Units[80];       // units of reported variable
    char          Enabled;         // TRUE if appears in report table
    int           Precision;       // number of decimal places when reported

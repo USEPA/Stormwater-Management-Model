@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     06/01/22   (Build 5.2.1)
+//   Date:     10/29/22   (Build 5.2.2)
 //   Author:   L. Rossman
 //
 //   Conveyance system node functions.
@@ -34,6 +34,9 @@
 //   - Warning no longer issued when node full depth is increased to match
 //     crown of highest connecting link.
 //   - a2 term for paraboloid shaped storage units was corrected
+//   Build 5.2.2:
+//   - Warning restored for node full depth being increased to crown of highest
+//     connecting link.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -204,12 +207,11 @@ void  node_validate(int j)
     TDwfInflow* inflow;
 
     // --- see if full depth was increased to accommodate conduit crown
-/*  Deprecated as of v.5.2.1
     if ( Node[j].fullDepth > Node[j].oldDepth && Node[j].oldDepth > 0.0 )
     {
         report_writeWarningMsg(WARN02, Node[j].ID);
     }
-*/
+
     // --- check that initial depth does not exceed max. depth
     if ( Node[j].initDepth > Node[j].fullDepth + Node[j].surDepth )
         report_writeErrorMsg(ERR_NODE_DEPTH, Node[j].ID);
@@ -1096,7 +1098,7 @@ double storage_getLosses(int j, double tStep)
                 exfilRate *= lossRatio; 
             }
         }
-
+ 
     // --- save evap & infil losses at the node
     Storage[Node[j].subIndex].evapLoss = evapRate * tStep;
     Storage[Node[j].subIndex].exfilLoss = exfilRate * tStep;

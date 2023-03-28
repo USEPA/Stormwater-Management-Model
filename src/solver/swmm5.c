@@ -350,7 +350,7 @@ int DLLEXPORT swmm_open(const char *f1, const char *f2, const char *f3)
 
 int DLLEXPORT swmm_start(int saveResults)
 //
-//  Input:   saveResults = TRUE if simulation results saved to binary file
+//  Input:   saveResults = TRUE if simulation results saved to binary file 
 //  Output:  returns an error code
 //  Purpose: starts a SWMM simulation.
 //

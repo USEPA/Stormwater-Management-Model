@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21  (Build 5.2.0)
+//   Date:     11/21/22  (Build 5.2.2)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -49,6 +49,9 @@
 //   - Support added for Streets and Inlets.
 //   - Support added for RptFlags.disabled option.
 //   - Object's rptFlag changed to record its index in output file.
+//   Build 5.2.2:
+//   - Default number of threads changed from OMP max. number to 1
+//     to be consistent with User Manual.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -64,7 +67,7 @@
 #endif
 
 #include "headers.h"
-#include "lid.h"
+#include "lid.h" 
 #include "hash.h"
 #include "mempool.h"
 
@@ -72,7 +75,7 @@
 //  Shared variables
 //-----------------------------------------------------------------------------
 static HTtable* Htable[MAX_OBJ_TYPES]; // Hash tables for object ID names
-static char     MemPoolAllocated;      // TRUE if memory pool allocated
+static char     MemPoolAllocated;      // TRUE if memory pool allocated 
 
 //-----------------------------------------------------------------------------
 //  External Functions (declared in funcs.h)
@@ -290,7 +293,7 @@ int  project_init(void)
 //  Input:   none
 //  Output:  returns an error code
 //  Purpose: initializes the internal state of all objects.
-//
+// 
 {
     int j, k;
     climate_initState();
@@ -508,7 +511,7 @@ int project_readOption(char* s1, char* s2)
 
       // --- simulation ending date
       case END_DATE:
-        if ( !datetime_strToDate(s2, &EndDate) )
+        if ( !datetime_strToDate(s2, &EndDate) ) 
         {
             return error_setInpError(ERR_DATETIME, s2);
         }
@@ -626,8 +629,8 @@ int project_readOption(char* s1, char* s2)
         }
         break;
 
-      case NORMAL_FLOW_LTD:
-        m = findmatch(s2, NormalFlowWords);
+      case NORMAL_FLOW_LTD: 
+        m = findmatch(s2, NormalFlowWords); 
         if ( m < 0 ) return error_setInpError(ERR_KEYWORD, s2);
         NormalFlowLtd = m;
         break;
@@ -704,7 +707,7 @@ int project_readOption(char* s1, char* s2)
         break;
 
       // --- minimum surface area (ft2 or sq. meters) associated with nodes
-      //     under dynamic wave flow routing
+      //     under dynamic wave flow routing 
       case MIN_SURFAREA:
         if (!getDouble(s2, &MinSurfArea))
             return error_setInpError(ERR_NUMBER, s2);
@@ -821,7 +824,7 @@ void setDefaults()
 
    // Interface files
    Frain.mode      = SCRATCH_FILE;     // Use scratch rainfall file
-   Fclimate.mode   = NO_FILE;
+   Fclimate.mode   = NO_FILE; 
    Frunoff.mode    = NO_FILE;
    Frdii.mode      = NO_FILE;
    Fhotstart1.mode = NO_FILE;
@@ -852,14 +855,14 @@ void setDefaults()
    ForceMainEqn    = H_W;              // Hazen-Williams eqn. for force mains
    LinkOffsets     = DEPTH_OFFSET;     // Use depth for link offsets
    LengtheningStep = 0;                // No lengthening of conduits
-   CourantFactor   = 0.0;              // No variable time step
+   CourantFactor   = 0.0;              // No variable time step 
    MinSurfArea     = 0.0;              // Force use of default min. surface area
    MinSlope        = 0.0;              // No user supplied minimum conduit slope
-   SkipSteadyState = FALSE;            // Do flow routing in steady state periods
+   SkipSteadyState = FALSE;            // Do flow routing in steady state periods 
    IgnoreRainfall  = FALSE;            // Analyze rainfall/runoff
    IgnoreRDII      = FALSE;            // Analyze RDII
-   IgnoreSnowmelt  = FALSE;            // Analyze snowmelt
-   IgnoreGwater    = FALSE;            // Analyze groundwater
+   IgnoreSnowmelt  = FALSE;            // Analyze snowmelt 
+   IgnoreGwater    = FALSE;            // Analyze groundwater 
    IgnoreRouting   = FALSE;            // Analyze flow routing
    IgnoreQuality   = FALSE;            // Analyze water quality
    WetStep         = 300;              // Runoff wet time step (secs)
@@ -869,15 +872,15 @@ void setDefaults()
    MinRouteStep    = 0.5;              // Minimum variable time step (sec)
    ReportStep      = 900;              // Reporting time step (secs)
    StartDryDays    = 0.0;              // Antecedent dry days
-   MaxTrials       = 0;                // Force use of default max. trials
+   MaxTrials       = 0;                // Force use of default max. trials 
    HeadTol         = 0.0;              // Force use of default head tolerance
    SysFlowTol      = 0.05;             // System flow tolerance for steady state
    LatFlowTol      = 0.05;             // Lateral flow tolerance for steady state
-   NumThreads      = 0;                // Number of parallel threads to use
+   NumThreads      = 1;                // Number of parallel threads to use
    NumEvents       = 0;                // Number of detailed routing events
 
    // Deprecated options
-   SlopeWeighting  = TRUE;             // Use slope weighting
+   SlopeWeighting  = TRUE;             // Use slope weighting 
    Compatibility   = SWMM4;            // Use SWMM 4 up/dn weighting method
 
    // Starting & ending date/time
@@ -934,7 +937,7 @@ void setDefaults()
        Evap.panCoeff[i]    = 1.0;
    }
    Evap.recoveryPattern = -1;
-   Evap.recoveryFactor  = 1.0;
+   Evap.recoveryFactor  = 1.0; 
    Evap.tSeries = -1;
    Evap.dryOnly = FALSE;
 

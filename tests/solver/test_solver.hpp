@@ -24,6 +24,7 @@ extern "C" {
 #define DATA_PATH_INP_POLLUT_NODE "node_constantinflow_constanteffluent.inp"
 #define DATA_PATH_INP_POLLUT_LINK "link_constantinflow.inp"
 #define DATA_PATH_INP_LINK_DIR "link_flow_dir.inp"
+#define DATA_PATH_INP_INLETS_AND_DRAINS "test_inlet_drains.inp"
 #define DATA_PATH_RPT "tmp.rpt"
 #define DATA_PATH_OUT "tmp.out"
 
@@ -101,6 +102,18 @@ struct FixtureBeforeStep_Flow_Dir{
         swmm_close();
     }
 };
+
+
+struct FixtureBeforeStep_Inlets{
+    FixtureBeforeStep_Inlets() {
+        swmm_open(DATA_PATH_INP_INLETS_AND_DRAINS, DATA_PATH_RPT, DATA_PATH_OUT);
+        swmm_start(0);
+    }
+    ~FixtureBeforeStep_Inlets() {
+        swmm_close();
+    }
+};
+
 
 
 // Declare shared test predicates here

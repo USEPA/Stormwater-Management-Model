@@ -93,7 +93,7 @@ void    report_writeTimeStepStats(TTimeStepStats* timeStepStats);
 void    report_writeErrorMsg(int code, char* msg);
 void    report_writeErrorCode(void);
 void    report_writeInputErrorMsg(int k, int sect, char* line, long lineCount);
-void    report_writeWarningMsg(char* msg, char* id);
+void    report_writeWarningMsg(char* msg, char* id); 
 void    report_writeTseriesErrorMsg(int code, TTable *tseries);
 
 void    inputrpt_writeInput(void);
@@ -270,7 +270,7 @@ void    massbal_addSeepageLoss(int pollut, double seepLoss);
 void    massbal_addToFinalStorage(int pollut, double mass);
 double  massbal_getStepFlowError(void);
 double  massbal_getRunoffError(void);
-double  massbal_getFlowError(void);
+double  massbal_getFlowError(char isFinalStorage); // OWA EDIT - added isFinalStorage param to allow running flow error calcs
 
 //-----------------------------------------------------------------------------
 //   Simulation Statistics Methods
@@ -496,7 +496,7 @@ void    controls_addToCount(char* s);
 int     controls_addVariable(char* tok[], int ntoks);
 int     controls_addExpression(char* tok[], int ntoks);
 int     controls_addRuleClause(int rule, int keyword, char* Tok[], int nTokens);
-int     controls_evaluate(DateTime currentTime, DateTime elapsedTime,
+int     controls_evaluate(DateTime currentTime, DateTime elapsedTime, 
         double tStep);
 
 //-----------------------------------------------------------------------------

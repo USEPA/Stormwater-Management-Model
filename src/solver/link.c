@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     06/01/22   (Build 5.2.1)
+//   Date:     10/29/22   (Build 5.2.2)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
@@ -44,6 +44,8 @@
 //   - Support added for variable speed pumps.
 //   Build 5.2.1
 //   - Warning no longer issued when conduit elevation drop < MIN_DELTA_Z.
+//   Build 5.2.2:
+//   - Warning for conduit elevation drop < MIN_DELTA_Z restored.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -1264,9 +1266,7 @@ double conduit_getSlope(int j)
     delta = fabs(elev1 - elev2);
     if ( delta < MIN_DELTA_Z )
     {
-        /*  Deprecated as of v.5.2.1
         report_writeWarningMsg(WARN04, Link[j].ID);
-        */
         delta = MIN_DELTA_Z;
     }
 

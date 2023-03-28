@@ -19,7 +19,7 @@
 //   - Minimum dynamic wave routing variable time step added.
 //   Build 5.1.011:
 //   - Changed WarningCode to Warnings (# warnings issued)
-//   - Added error message text as a variable.
+//   - Added error message text as a variable. 
 //   - Added elapsed simulation time (in decimal days) variable.
 //   - Added variables associated with detailed routing events.
 //   Build 5.1.012:
