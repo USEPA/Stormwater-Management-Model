@@ -298,7 +298,7 @@ void massbal_report()
 
     if ( Nobjects[NODE] > 0 && !IgnoreRouting )
     {
-        if ( massbal_getFlowError() > MAX_FLOW_BALANCE_ERR ||
+        if ( massbal_getFlowError(TRUE) > MAX_FLOW_BALANCE_ERR ||       // OWA EDIT - added isFinalStorage param to massbal_getFlowError
              RptFlags.continuity == TRUE
            ) report_writeFlowError(&FlowTotals);
     
@@ -855,9 +855,9 @@ double massbal_getGwaterError()
 
 //=============================================================================
 
-double massbal_getFlowError()
+double massbal_getFlowError(char isFinalStorage)   // OWA EDIT - added isFinalStorage param to allow running flow error calcs
 //
-//  Input:   none
+//  Input:   isFinalStorage = TRUE if at final time period
 //  Output:  none
 //  Purpose: computes flow routing mass balance error.
 //
@@ -866,7 +866,7 @@ double massbal_getFlowError()
     double totalOutflow;
 
     // --- get final volume of nodes and links
-    FlowTotals.finalStorage = massbal_getStorage(TRUE);
+    FlowTotals.finalStorage = massbal_getStorage(isFinalStorage);   // OWA EDIT - added isFinalStorage param to allow running flow error calcs
 
     // --- add contributions to total inflow and outflow that are always positive
     totalInflow = FlowTotals.initStorage + FlowTotals.wwInflow  + FlowTotals.iiInflow;
@@ -1052,10 +1052,11 @@ int massbal_getRoutingTotal(TRoutingTotals **routingTotal)
 //
 // Input:    element = element to return
 // Return:   value
-// Purpose:  Gets the routing total for toolkitAPI
+// Purpose:  Gets the routing total for toolkitAPI in volume units (ft^3 or m^3)
 //
-{
-	memcpy(*routingTotal, &FlowTotals, sizeof(TRoutingTotals));
+{   
+    double error = massbal_getFlowError(FALSE);
+    memcpy(*routingTotal, &FlowTotals, sizeof(TRoutingTotals));
 
     // Cumulative Dry Weather Inflow Volume
     (*routingTotal)->dwInflow *= UCF(VOLUME);
@@ -1076,33 +1077,33 @@ int massbal_getRoutingTotal(TRoutingTotals **routingTotal)
     // Cumulative Seepage Loss
     (*routingTotal)->seepLoss *= UCF(VOLUME);
     // Continuity Error
-    (*routingTotal)->pctError *= 100;
+    (*routingTotal)->pctError;
 
-	return 0;
+    return 0;
 }
 
 int massbal_getRunoffTotal(TRunoffTotals **runoffTotal)
 //
 // Input:    element = element to return
 // Return:   value
-// Purpose:  Gets the runoff total for toolkitAPI
+// Purpose:  Gets the runoff total for toolkitAPI in depth units (in or mm)
 //
 {
-	
-	memcpy(*runoffTotal, &RunoffTotals, sizeof(TRunoffTotals));
-	
+    double error = massbal_getRunoffError();
+    memcpy(*runoffTotal, &RunoffTotals, sizeof(TRunoffTotals));
+
     // Cumulative Rainfall Depth
     (*runoffTotal)->rainfall *= (UCF(RAINDEPTH) / TotalArea);
     // Cumulative Evaporation Volume
-    (*runoffTotal)->evap *= UCF(VOLUME);
+    (*runoffTotal)->evap *= (UCF(RAINDEPTH) / TotalArea);
     // Cumulative Infiltration Volume
-    (*runoffTotal)->infil *= UCF(VOLUME);
+    (*runoffTotal)->infil *= (UCF(RAINDEPTH) / TotalArea);
     // Cumulative Runoff Volume
-    (*runoffTotal)->runoff *= UCF(VOLUME);
+    (*runoffTotal)->runoff *= (UCF(RAINDEPTH) / TotalArea);
     // Cumulative Runon Volume
-    (*runoffTotal)->runon *= UCF(VOLUME);
+    (*runoffTotal)->runon *= (UCF(RAINDEPTH) / TotalArea);
     // Cumulative Drain Volume
-    (*runoffTotal)->drains *= UCF(VOLUME);
+    (*runoffTotal)->drains *= (UCF(RAINDEPTH) / TotalArea);
     // Cumulative Snow Removed Volume
     (*runoffTotal)->snowRemoved *= (UCF(RAINDEPTH) / TotalArea);
     // Initial Storage Volume
@@ -1114,9 +1115,9 @@ int massbal_getRunoffTotal(TRunoffTotals **runoffTotal)
     // Final Snow Cover Volume
     (*runoffTotal)->finalSnowCover *= (UCF(RAINDEPTH) / TotalArea);
     // Continuity Error
-    (*runoffTotal)->pctError *= 100;
+    (*runoffTotal)->pctError;
 
-	return 0;
+    return 0;
 }
 
 

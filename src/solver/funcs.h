@@ -270,7 +270,7 @@ void    massbal_addSeepageLoss(int pollut, double seepLoss);
 void    massbal_addToFinalStorage(int pollut, double mass);
 double  massbal_getStepFlowError(void);
 double  massbal_getRunoffError(void);
-double  massbal_getFlowError(void);
+double  massbal_getFlowError(char isFinalStorage); // OWA EDIT - added isFinalStorage param to allow running flow error calcs
 
 //-----------------------------------------------------------------------------
 //   Simulation Statistics Methods
