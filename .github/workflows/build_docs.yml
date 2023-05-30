@@ -1,0 +1,22 @@
+name: Build Doxygen Documentation
+
+on:
+  push:
+    branches: [ master, develop, release, lew-develop, cb_develop ]
+  pull_request:
+    branches: [ master, develop, release, lew-develop, cb_develop ]
+
+env:
+  OMP_NUM_THREADS: 1
+    
+jobs:
+  unit_test:
+    name: Build Doxygen Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: mattnotmitt/doxygen-action@v1.9.5
+        with:
+          additional-packages: graphviz
+          working-directory: ./docs
+          doxyfile-path: ./Doxyfile
