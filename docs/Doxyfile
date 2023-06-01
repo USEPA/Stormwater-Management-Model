@@ -948,7 +948,7 @@ WARN_LOGFILE           =
 
 INPUT                  = ../src \
                          ./SWMM_5.2.0.md \
-                         ./Latest.md \
+                         ./Mainpage.md \
                          ./Images/*.png
 
 # This tag can be used to specify the character encoding of the source files
@@ -1157,7 +1157,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE = ./Latest.md
+USE_MDFILE_AS_MAINPAGE = ./Mainpage.md
 
 # The Fortran standard specifies that for fixed formatted Fortran code all
 # characters from position 72 are to be considered as comment. A common
