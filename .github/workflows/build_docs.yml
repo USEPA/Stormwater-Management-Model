@@ -1,4 +1,4 @@
-name: Build Doxygen Documentation
+name: Build Doxygen Docs
 
 on:
   push:
@@ -10,13 +10,25 @@ env:
   OMP_NUM_THREADS: 1
     
 jobs:
-  unit_test:
-    name: Build Doxygen Documentation
+  build_docs:
+    name: Build Docs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: mattnotmitt/doxygen-action@v1.9.5
+        uses: actions/checkout@v3
+
+      - name: Install Doxygen and Graphviz
+        run:
+          sudo apt-get install doxygen graphviz -y
+
+      - name: Build Docs
+        run: |
+          cd docs
+          doxygen Doxyfile
+
+      - name: Upload Docs
+        uses: actions/upload-artifact@v2
         with:
-          additional-packages: graphviz
-          working-directory: ./docs
-          doxyfile-path: ./Doxyfile
+          name: docs
+          path: docs/html
+
