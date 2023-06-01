@@ -8,7 +8,7 @@ SWMM 5 now has the capability to compute the amount of surface runoff flow captu
 
 Figure 1. Conceptual diagram of a dual drainage system with street inlets
 
-Figure 2 shows the most common types of storm drain inlets used to collect street runoff. While SWMM has some capability to model the capture efficiency of these inlets using its regulator links (orifices, weirs, and outlets), their use for this purpose is not straightforward. Many drainage engineers (and some regulatory agencies) would prefer to use the standard methodology described in the [U.S. Federal Highway Administration’s Urban Drainage Design Manual (HEC-22)](https://www.fhwa.dot.gov/engineering/hydraulics/pubs/10009/10009.pdf).
+Figure 2 shows the most common types of storm drain inlets used to collect street runoff. While SWMM has some capability to model the capture efficiency of these inlets using its regulator links (orifices, weirs, and outlets), their use for this purpose is not straightforward. Many drainage engineers (and some regulatory agencies) would prefer to use the standard methodology described in the [U.S. Federal Highway Administrationï¿½s Urban Drainage Design Manual (HEC-22)](https://www.fhwa.dot.gov/engineering/hydraulics/pubs/10009/10009.pdf).
 
 ![ ](./Images/Fig2a.png)
 Figure 2a. Types of Curb & Gutter street inlets
@@ -68,7 +68,6 @@ where
 
 ![Figure 3. Definition of street section parameters.](./Images/Fig3.png)
 
-\
 **Remarks:**
 
  1. Use one line for each unique street cross section.
@@ -166,7 +165,7 @@ where
  6. There is no requirement that the rim elevation of the receptor sewer node equal the invert elevation of the street node.
 
 ## 2.  New Storage Unit Shapes
-\
+
 Two new functional types of surface area v. depth curves have been added to represent the following shaped storage units:
  - **Conical** (truncated elliptical cone): ![ ](./Images/Fig4.png) with surface area equation:
 ```
@@ -198,7 +197,7 @@ where
 |`infil` |optional set of infiltration parameters
 
 ## 3.  Variable Speed Pumps
-\
+
 A new **Type5** pump curve has been introduced to represent a variable speed pump. The curve itself specifies how the pump head decreases with increasing flow (same as a Type3 pump) at some nominal speed which represents a setting of 1.0. At any other speed setting `S` (as adjusted by control rules) a point with head `H` and flow `Q` on the curve becomes `H*S^2` and `Q*S`, respectively on a speed-adjusted curve.
 \
 ![ ](./Images/Fig6.png)

@@ -1,6 +1,6 @@
 ﻿
 
-# USEPA Stormwater Management Model
+# Stormwater Management Model
 
 SWMM is a dynamic hydrology-hydraulic water quality simulation model. 
 It is used for single event or long-term (continuous) simulation of 
@@ -13,7 +13,7 @@ The United States Environmental Protection Agency (EPA) GitHub project code is p
 
 ## Major Release Updates 
 
-* [SWMM 5.2.0 Major Updates](SWMM_5.2.0.md)
+* [SWMM 5.2.0 Major Updates](./SWMM_5.2.0.md)
 
 
 # Find Out More
