@@ -100,6 +100,12 @@ void    inputrpt_writeInput(void);
 void    statsrpt_writeReport(void);
 
 //-----------------------------------------------------------------------------
+//   Alternative faster Methods
+//-----------------------------------------------------------------------------
+double  faster_pow_1_33333(double val);
+double  faster_pow_0_66666(double val);
+
+//-----------------------------------------------------------------------------
 //   Temperature/Evaporation Methods
 //-----------------------------------------------------------------------------
 int      climate_readParams(char* tok[], int ntoks);

@@ -168,5 +168,9 @@ EXTERN TStreet*   Street;                   // Array of defined Street cross-sec
 EXTERN TShape*    Shape;                    // Array of custom conduit shapes
 EXTERN TEvent*    Event;                    // Array of routing events
 
+// --- Speed improvements
+EXTERN int        N_altfuncs;               // Count of values in function table for speeding up calculations
+EXTERN double*    pow_1_33333;              // Function table for speeding up calculations
+EXTERN double*    pow_0_66666;              // Function table for speeding up calculations
 
 #endif //GLOBALS_H

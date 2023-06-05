@@ -289,6 +289,9 @@ int DLLEXPORT swmm_open(const char *f1, const char *f2, const char *f3)
         if ( ErrorCode ) return ErrorCode;
         IsOpenFlag = TRUE;
         report_writeLogo();
+        
+        // --- open altfuncs initializers
+        altfuncs_open();
 
         // --- retrieve project data from input file
         project_readInput();
@@ -686,6 +689,9 @@ int DLLEXPORT swmm_close()
 //  Purpose: closes a SWMM project.
 //
 {
+    // --- Close altfuncs tables.
+    altfuncs_close();
+
     if ( Fout.file ) output_close();
     if ( IsOpenFlag ) project_close();
     report_writeSysTime();
