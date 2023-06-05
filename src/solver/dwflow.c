@@ -209,7 +209,13 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     // --- 1. friction slope term
     if ( xsect->type == FORCE_MAIN && isFull )
          dq1 = dt * forcemain_getFricSlope(j, fabs(v), rMid);
-    else dq1 = dt * Conduit[k].roughFactor / pow(rWtd, 1.33333) * fabs(v);
+    else {
+        if(rWtd >= 4 ){
+            dq1 = dt * Conduit[k].roughFactor / pow(rWtd, 1.33333) * fabs(v);
+        } else {
+            dq1 = dt * Conduit[k].roughFactor / faster_pow_1_33333(rWtd) * fabs(v);
+        }
+    }
 
     // --- 2. energy slope term
     dq2 = dt * GRAVITY * aWtd * (h2 - h1) / length;
@@ -673,7 +679,12 @@ double checkNormalFlow(int j, double q, double y1, double y2, double a1,
     // --- check if normal flow < dynamic flow
     if ( check )
     {
-        qNorm = Conduit[k].beta * a1 * pow(r1, 2./3.);
+        if(r1 >= 4 ){
+            qNorm = Conduit[k].beta * a1 * pow(r1, 2./3.);
+        } else {
+            qNorm = Conduit[k].beta * a1 * faster_pow_0_66666(r1);
+        }
+
         if ( qNorm < q )
         {
             Link[j].normalFlow = TRUE;
