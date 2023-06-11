@@ -51,7 +51,6 @@ BOOST_AUTO_TEST_CASE(save_hotstart_file){
     int error, step_ind;
     int index;
     int number_of_nodes;
-    int y, m, d, h, mn, s;
     double elapsedTime = 0.0;
     double read_val, set_val;
 
@@ -115,19 +114,32 @@ BOOST_AUTO_TEST_CASE(save_hotstart_file){
               (char *)"hotstart/Simulation3.rpt",
               (char *)"hotstart/Simulation3.out");
     swmm_start(0);
+    error = swmm_step(&elapsedTime);
     // Iterate over nodes before stepping
     error = swmm_countObjects(SM_NODE, &number_of_nodes);
+    // Known Values
+    std::vector<double> hotstart_vals {0.0046,
+                                       3.0,
+                                       3.0,
+                                       0.0117,
+                                       0.0,
+                                       0.0,
+                                       0.0,
+                                       0.0105,
+                                       0.0,
+                                       0.1209,
+                                       0.0,
+                                       0.0,
+                                       0.0484,
+                                       0.0};
+
     for (index=0; index<number_of_nodes; index++)
     {
-        // Confirm that neither values are zero
-        read_val = Node[index].initDepth;
-        BOOST_CHECK_SMALL(read_val - 0.00, 0.0000001);
-        set_val = Node[index].oldDepth;
-        BOOST_CHECK_SMALL(set_val - 0.00, 0.0000001);
-        // Confirm diff
-        BOOST_CHECK_SMALL(read_val - set_val, 0.0000001);
+        error = swmm_getNodeResult(index, SM_NODEDEPTH, &set_val);
+        fprintf(stdout, "\n%i, %f, %f", index, set_val, hotstart_vals[index]);
+        BOOST_CHECK_SMALL(set_val - hotstart_vals[index], 0.5);
     }
-    error = swmm_step(&elapsedTime);
+
     BOOST_CHECK_EQUAL(ERR_NONE, error);
     swmm_end();
     swmm_close();

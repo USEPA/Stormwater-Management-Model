@@ -17,7 +17,6 @@
 extern "C" {
 #include "swmm5.h"
 #include "toolkit.h"
-#include "../headers.h" // Allows checking values directly in SWMM's data model.
 }
 
 // Add shared data paths here
