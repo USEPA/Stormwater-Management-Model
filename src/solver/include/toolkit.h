@@ -613,6 +613,12 @@ EXPORT_TOOLKIT int swmm_setOutfallStage(int index, double stage);
 EXPORT_TOOLKIT int swmm_setGagePrecip(int index, double total_precip);
 
 /**
+ @brief Save hotstart file during simulation
+ @param hsfile The file name of the hotstart file that user would like to save
+*/
+EXPORT_TOOLKIT int swmm_saveHotstart(char *hsfile);
+
+/**
  @brief Helper function to free memory array allocated in SWMM.
  @param array The pointer to the array
  @return Void.

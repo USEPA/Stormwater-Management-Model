@@ -3096,6 +3096,46 @@ EXPORT_TOOLKIT int swmm_setGagePrecip(int index, double total_precip)
     return error_code;
 }
 
+EXPORT_TOOLKIT int DLLEXPORT swmm_saveHotstart(char *hsfile)
+///
+/// Input:   hotstart file ID name (able to overwrite)
+/// Return   API Error
+/// Purpose: Allows hot start files to be created during a simulation
+///          at any time.
+{
+    int error_code = 0;
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
+    }
+    // Check if Simulation is Running
+    else if (swmm_IsStartedFlag() == FALSE)
+    {
+        error_code = ERR_TKAPI_SIM_NRUNNING;
+    }
+    else
+    {
+        // Storing Existing INP set HSFs
+        TFile tmpHotstart1 = Fhotstart1;
+        TFile tmpHotstart2 = Fhotstart2;
+        int _fl1_info = Fhotstart1.mode;
+        int _fl2_info = Fhotstart2.mode;
+        // Create info for New HSF
+        Fhotstart1.mode = NO_FILE;
+        Fhotstart2.mode = SAVE_FILE;
+        sstrncpy(Fhotstart2.name, hsfile, MAXFNAME);
+        // Saving Data
+        if (hotstart_open()) hotstart_close();
+        // Replacing INP set HSFs
+        Fhotstart2 = tmpHotstart2;
+        Fhotstart1 = tmpHotstart1;
+        Fhotstart1.mode = _fl1_info;
+        Fhotstart2.mode = _fl2_info;
+    }
+    return error_code;
+}
+
 EXPORT_TOOLKIT void swmm_freeMemory(void *memory)
 //
 //  Purpose: Frees memory allocated by API calls
