@@ -13,10 +13,10 @@
 #include <fstream>
 #include <iterator>
 
-#define HOTSTART_SWMM_SAVE_NORMAL "./hotstart/INFILE_Simulation1.hsf"
-#define HOTSTART_API_SAVE_DURING_SIM1 "./hotstart/swmm_api_test_during_Simulation1.hsf"
-#define HOTSTART_API_SAVE_AFTER_SIM1 "./hotstart/swmm_api_test_after_Simulation1.hsf"
-#define HOTSTART_SWMM_SAVE_SIM2 "./hotstart/INFILE_Simulation2.hsf"
+#define HOTSTART_SWMM_SAVE_NORMAL "hotstart/INFILE_Simulation1.hsf"
+#define HOTSTART_API_SAVE_DURING_SIM1 "hotstart/swmm_api_test_during_Simulation1.hsf"
+#define HOTSTART_API_SAVE_AFTER_SIM1 "hotstart/swmm_api_test_after_Simulation1.hsf"
+#define HOTSTART_SWMM_SAVE_SIM2 "hotstart/INFILE_Simulation2.hsf"
 
 #define ERR_NONE 0
 
