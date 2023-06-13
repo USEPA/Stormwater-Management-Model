@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     05/02/22  (Build 5.2.1)
+//   Date:     06/12/23  (Build 5.2.4)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
@@ -27,6 +27,8 @@
 //   Build 5.2.1:
 //   - For storage routing, after convergence the reported depth is now
 //     based on the last volume found rather than the next trial depth. 
+//   Build 5.2.4:
+//   - Arguments to link_getLossRate changed.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -767,7 +769,7 @@ int steadyflow_execute(int j, double* qin, double* qout, double tStep)
         else 
         {
             // --- adjust flow for evap and infil losses
-            q -= link_getLossRate(j, q);
+            q -= link_getLossRate(j, SF, q, tStep);
          
             // --- flow can't exceed full flow 
             if ( q > Link[j].qFull )
