@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(save_hotstart_file){
     int index;
     int number_of_nodes;
     double elapsedTime = 0.0;
-    double read_val, set_val;
+    double set_val;
 
     // Start Simulation 1
     swmm_open((char *)"hotstart/Simulation1.inp",
@@ -148,11 +148,8 @@ BOOST_AUTO_TEST_CASE(save_hotstart_file){
 
 BOOST_AUTO_TEST_CASE(use_hotstart_bad_file){
     // Testing USE a bad hotstart file
-    int error, step_ind;
-    int index;
-    int number_of_nodes;
+    int error;
     double elapsedTime = 0.0;
-    double read_val, set_val;
     char fkid[] = "bad_hsf.hsf";
 
     swmm_open((char *)"hotstart/Simulation1_use_hot_start.inp",
@@ -168,10 +165,7 @@ BOOST_AUTO_TEST_CASE(use_hotstart_bad_file){
 
 BOOST_AUTO_TEST_CASE(save_hotstart_file_fail){
     int error, step_ind;
-    int index;
-    int number_of_nodes;
     double elapsedTime = 0.0;
-    double read_val, set_val;
 
     // Start Simulation 1
     swmm_open((char *)"hotstart/Simulation1_use_hot_start.inp",
@@ -197,11 +191,11 @@ BOOST_AUTO_TEST_CASE(save_hotstart_file_fail){
 
 BOOST_AUTO_TEST_CASE(use_hotstart_file){
     // Testing USE the new generated hotstart file
-    int error, step_ind;
+    int error;
     int index;
     int number_of_nodes;
     double elapsedTime = 0.0;
-    double read_val, set_val;
+    double set_val;
     char fkid[] = "use_hot_start_test.hsf";
 
     swmm_open((char *)"hotstart/Simulation1_use_hot_start.inp",
