@@ -19,8 +19,9 @@
 #define HOTSTART_SWMM_SAVE_SIM2 "hotstart/INFILE_Simulation2.hsf"
 
 #define ERR_NONE 0
+#define ERR_HOTSTART_FILE_OPEN 331
 
-BOOST_AUTO_TEST_SUITE(test_save_hotstart)
+BOOST_AUTO_TEST_SUITE(test_hotstart)
 
 // Testing Run Simulation and Generate Hot Start File using Model (as normal)
 // and save a hot start file using the API swmm_saveHotstart()
@@ -66,7 +67,8 @@ BOOST_AUTO_TEST_CASE(save_hotstart_file){
         step_ind += 1;
         if (step_ind == 1056)
         {
-          swmm_saveHotstart((char *) HOTSTART_API_SAVE_DURING_SIM1);
+          error = swmm_saveHotstart((char *) HOTSTART_API_SAVE_DURING_SIM1);
+          BOOST_CHECK_EQUAL(ERR_NONE, error);
         }
     }while (elapsedTime != 0 && !error);
     BOOST_CHECK_EQUAL(ERR_NONE, error);
@@ -136,10 +138,103 @@ BOOST_AUTO_TEST_CASE(save_hotstart_file){
     for (index=0; index<number_of_nodes; index++)
     {
         error = swmm_getNodeResult(index, SM_NODEDEPTH, &set_val);
-        fprintf(stdout, "\n%i, %f, %f", index, set_val, hotstart_vals[index]);
         BOOST_CHECK_SMALL(set_val - hotstart_vals[index], 0.5);
     }
 
+    BOOST_CHECK_EQUAL(ERR_NONE, error);
+    swmm_end();
+    swmm_close();
+}
+
+BOOST_AUTO_TEST_CASE(use_hotstart_bad_file){
+    // Testing USE a bad hotstart file
+    int error, step_ind;
+    int index;
+    int number_of_nodes;
+    double elapsedTime = 0.0;
+    double read_val, set_val;
+    char fkid[] = "bad_hsf.hsf";
+
+    swmm_open((char *)"hotstart/Simulation1_use_hot_start.inp",
+              (char *)"hotstart/Simulation1_use_hot_start_fail.rpt",
+              (char *)"hotstart/Simulation1_use_hot_start_fail.out");
+    error = swmm_useHotstart(fkid);
+    BOOST_CHECK_EQUAL(ERR_NONE, error);
+    error = swmm_start(0);
+    BOOST_CHECK_EQUAL(ERR_HOTSTART_FILE_OPEN, error);
+    swmm_end();
+    swmm_close();
+}
+
+BOOST_AUTO_TEST_CASE(save_hotstart_file_fail){
+    int error, step_ind;
+    int index;
+    int number_of_nodes;
+    double elapsedTime = 0.0;
+    double read_val, set_val;
+
+    // Start Simulation 1
+    swmm_open((char *)"hotstart/Simulation1_use_hot_start.inp",
+              (char *)"hotstart/Simulation1_use_hot_start_fail1.rpt",
+              (char *)"hotstart/Simulation1_use_hot_start_fail1.out");
+    swmm_start(0);
+    step_ind = 0;
+    do
+    {
+        error = swmm_step(&elapsedTime);
+        step_ind += 1;
+        if (step_ind == 2)
+        {
+          error = swmm_saveHotstart((char *) "");
+          BOOST_CHECK_EQUAL(ERR_HOTSTART_FILE_OPEN, error);
+        }
+    }while (elapsedTime != 0 && !error);
+    BOOST_CHECK_EQUAL(ERR_HOTSTART_FILE_OPEN, error);
+    swmm_end();
+    swmm_close();
+    //   ERROR 331: cannot open hot start interface file .
+}
+
+BOOST_AUTO_TEST_CASE(use_hotstart_file){
+    // Testing USE the new generated hotstart file
+    int error, step_ind;
+    int index;
+    int number_of_nodes;
+    double elapsedTime = 0.0;
+    double read_val, set_val;
+    char fkid[] = "use_hot_start_test.hsf";
+
+    swmm_open((char *)"hotstart/Simulation1_use_hot_start.inp",
+              (char *)"hotstart/Simulation1_use_hot_start.rpt",
+              (char *)"hotstart/Simulation1_use_hot_start.out");
+    error = swmm_useHotstart(fkid);
+    BOOST_CHECK_EQUAL(ERR_NONE, error);
+    error = swmm_start(0);
+    BOOST_CHECK_EQUAL(ERR_NONE, error);
+    error = swmm_step(&elapsedTime);
+    // Iterate over nodes before stepping
+    error = swmm_countObjects(SM_NODE, &number_of_nodes);
+    // Known Values
+    std::vector<double> hotstart_vals {0.0046,
+                                       3.0,
+                                       3.0,
+                                       0.0117,
+                                       0.0,
+                                       0.0,
+                                       0.0,
+                                       0.0105,
+                                       0.0,
+                                       0.1209,
+                                       0.0,
+                                       0.0,
+                                       0.0484,
+                                       0.0};
+
+    for (index=0; index<number_of_nodes; index++)
+    {
+        error = swmm_getNodeResult(index, SM_NODEDEPTH, &set_val);
+        BOOST_CHECK_SMALL(set_val - hotstart_vals[index], 0.5);
+    }
     BOOST_CHECK_EQUAL(ERR_NONE, error);
     swmm_end();
     swmm_close();

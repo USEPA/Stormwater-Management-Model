@@ -22,6 +22,7 @@
 #define ERR_TKAPI_SIM_NRUNNING 2002
 #define ERR_TKAPI_WRONG_TYPE 2003
 #define ERR_TKAPI_OBJECT_INDEX 2004
+#define ERR_TKAPI_SIM_RUNNING 2013
 
 using namespace std;
 
@@ -40,6 +41,10 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
 
     //Project
     error = swmm_getObjectIndex(SM_NODE, id, &index);
+    BOOST_CHECK_EQUAL(error, ERR_TKAPI_INPUTNOTOPEN);
+    error = swmm_useHotstart(id);
+    BOOST_CHECK_EQUAL(error, ERR_TKAPI_INPUTNOTOPEN);
+    error = swmm_saveHotstart(id);
     BOOST_CHECK_EQUAL(error, ERR_TKAPI_INPUTNOTOPEN);
 
     //Gage
@@ -108,10 +113,23 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(test_toolkitapi_fixture)
 
+// Testing for Before Simulation Start Error
+BOOST_FIXTURE_TEST_CASE(sim_before_start, FixtureBeforeStart_TKAPI) {
+    int error;
+    char fakehsf[] = "FakeHSF.hsf";
+
+    error = swmm_saveHotstart(fakehsf);
+    BOOST_CHECK_EQUAL(error, ERR_TKAPI_SIM_NRUNNING);
+}
+
 // Testing for Simulation Started Error
 BOOST_FIXTURE_TEST_CASE(sim_started_check, FixtureBeforeStep) {
     int error;
+    char fakehsf[] = "FakeHSF.hsf";
 
+    //Project
+    error = swmm_useHotstart(fakehsf);
+    BOOST_CHECK_EQUAL(error, ERR_TKAPI_SIM_RUNNING);
     //Subcatchment
     error = swmm_setSubcatchParam(0, SM_WIDTH, 1);
     BOOST_CHECK_EQUAL(error, ERR_TKAPI_SIM_NRUNNING);
