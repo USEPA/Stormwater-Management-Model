@@ -426,7 +426,7 @@ BOOST_FIXTURE_TEST_CASE(project_info_metric, FixtureMetric) {
 
     #if defined(_OPENMP)
       error = swmm_setSimulationParam(SM_THREADS, 2);
-      error = swmm_setSimulationParam(SM_THREADS, &value);
+      error = swmm_getSimulationParam(SM_THREADS, &value);
       BOOST_REQUIRE(error == ERR_NONE);
       BOOST_CHECK_EQUAL(value, 2);
     #endif
