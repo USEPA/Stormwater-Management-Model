@@ -79,8 +79,6 @@ typedef enum
 {
     /*! \brief Report step size (seconds)*/
     SMO_reportStep,
-    /*! \brief Report step size (seconds)*/
-    SMO_reportStep,
     /*! \brief Number of reporting periods*/
     SMO_numPeriods
 } SMO_time;
