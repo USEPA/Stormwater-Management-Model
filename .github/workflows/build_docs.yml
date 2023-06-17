@@ -2,9 +2,9 @@ name: Build Docs
 
 on:
   push:
-    branches: [ master, develop, release, lew-develop, cb_develop ]
+    branches: [ master, develop, release, docs ]
   pull_request:
-    branches: [ master, develop, release, lew-develop, cb_develop ]
+    branches: [ master, develop, release, docs ]
 
 env:
   OMP_NUM_THREADS: 1
