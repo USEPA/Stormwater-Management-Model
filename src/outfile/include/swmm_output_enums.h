@@ -5,12 +5,6 @@
  *  \date Created On: 10/18/2019
  *  \date Last Edited: 05/31/2023
  *  \brief Header file for SWMM output enumeration types
- *  \remarks
- *  \see
- *  \bug
- *  \warning
- *  \todo
- *  \note
  */
 
 #ifndef SWMM_OUTPUT_ENUMS_H_

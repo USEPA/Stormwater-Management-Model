@@ -5,12 +5,6 @@
  * \author Caleb A. Buahin (US EPA - ORD/NRMRL) (Last Editor)
  * \date Created on: Oct 20, 2017
  * \date Last Edited: May 28, 2023
- * \remarks
- * \see
- * \bug
- * \warning
- * \todo
- * \note
  */
 
 #ifndef SRC_MESSAGES_H_

@@ -1,14 +1,13 @@
-/*
- * swmm_output.c - SWMM Output API
- *
- *      Author: Colleen Barr
- *           US EPA - ORD/NHEERL
- *
- *      Modified by: Michael E. Tryby,
- *                   Bryant McDonnell
- *
- */
-
+/*!
+* \file swmm_output.c
+* \brief SWMM Output API
+* \author Colleen Barr (US EPA - ORD/NHEERL)
+* \author Michael Tryby (US EPA - ORD/NRMRL) (Editor)
+* \author Bryant McDonnell (Editor)
+* \author Caleb A. Buahin (US EPA - ORD/CESER)
+* \date Created On: 10/18/2019
+* \date Last Updated: 06/02/2023
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,27 +19,86 @@
 #include "swmm_output.h"
 
 
-// NOTE: These depend on machine data model and may change when porting
-// F_OFF Must be a 8 byte / 64 bit integer for large file support
+
 #ifdef _WIN32    // Windows (32-bit and 64-bit)
+/*!
+* \def F_OFF
+* \brief Must be a 8 byte / 64 bit integer for large file support
+* \note These depend on machine data model and may change when porting.
+* \note Windows uses __int64 for large file support
+*/
 #define F_OFF __int64
 #else    // Other platforms
+/*!
+* \def F_OFF
+* \brief Must be a 8 byte / 64 bit integer for large file support
+* \note These depend on machine data model and may change when porting
+* \note Linux uses off_t for large file support
+*/
 #define F_OFF off_t
 #endif
-#define INT4 int      // Must be a 4 byte / 32 bit integer type
-#define REAL4 float   // Must be a 4 byte / 32 bit real type
 
-#define RECORDSIZE 4  // Memory alignment 4 byte word size for both int and real
-#define DATESIZE 8    // Dates are stored as 8 byte word size
+/*!
+* \def INT4
+* \brief Must be a 4 byte / 32 bit integer type
+*/
+#define INT4 int
 
+/*!
+* \def REAL4
+* \brief Must be a 4 byte / 32 bit real type
+*/
+#define REAL4 float
+
+/*!
+* \def RECORDSIZE
+* \brief Memory alignment 4 byte word size for both int and real
+*/
+#define RECORDSIZE 4
+
+/*!
+* \def DATESIZE
+* \brief Dates are stored as 8 byte word size
+*/
+#define DATESIZE 8
+
+/*!
+* \def NELEMENTTYPES
+* \brief Number of element types
+*/
 #define NELEMENTTYPES 5    // Number of element types
 
+
+/*!
+* \def MEMCHECK
+* \brief Check if memory allocation was successful
+* \param x Pointer to memory allocation
+* \return 414 if memory allocation failed, 0 otherwise
+*/
 #define MEMCHECK(x) (((x) == NULL) ? 414 : 0)
 
+/*!
+* \struct IDentry
+* \brief Structure for element ID names
+*/
 struct IDentry {
+    /*!
+    * \var IDname
+    * \brief Pointer to element ID name
+	*/
     char* IDname;
+    /*!
+    * \var length
+    * \brief Length of element ID name
+    */
     int   length;
 };
+
+/*!
+* \typedef idEntry
+* \brief Typedef for IDentry structure
+* \sa IDentry
+*/
 typedef struct IDentry idEntry;
 
 //-----------------------------------------------------------------------------

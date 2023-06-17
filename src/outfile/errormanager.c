@@ -5,12 +5,6 @@
 * \author Caleb Buahin (US EPA - ORD/CESER)(Last Editor)
 * \date Created on: Aug 25, 2017
 * \date Last edited: May 26, 2023
-* \remarks
-* \see
-* \bug
-* \warning
-* \todo
-* \note
 */
 #include <stdlib.h>
 #include <string.h>
@@ -33,7 +27,7 @@ error_handle_t* new_errormanager(p_msg_lookup message_lookup)
 
 /*!
 * \brief Destroys an error manager handle.
-* \param error_handle Pointer to error manager.
+* \param error_handle pointer to error manager.
 */
 void dst_errormanager(error_handle_t* error_handle)
 {
@@ -42,6 +36,11 @@ void dst_errormanager(error_handle_t* error_handle)
 
 /*!
 * \brief Sets an error code in the handle.
+* \param error_handle pointer to error manager.
+* \param errorcode error code to set.
+* \return error code.
+* \note If errorcode is 0 no action is taken and 0 is returned.
+* This is a feature not a bug.
 */
 int set_error(error_handle_t* error_handle, int errorcode)
 {
@@ -55,6 +54,8 @@ int set_error(error_handle_t* error_handle, int errorcode)
 
 /*!
 * \brief Gets the error code from the handle.
+* \param error_handle pointer to error manager.
+* \return error code message as string
 */
 char* check_error(error_handle_t* error_handle)
 {

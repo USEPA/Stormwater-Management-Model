@@ -13,12 +13,13 @@
 #define CONSTS_H
 
 /*! 
-* \addtogroup General Constants
+* \defgroup general_constants General Constants
 * \brief General constants used in the SWMM model
 * @{
 */
+
 /*!
-* \def VERSION model version number
+* \def VERSION 
 * \brief model version number
 */
 #define   VERSION            52003 
@@ -136,18 +137,20 @@
 * \brief accel. of gravity in SI units
 */
 #define   SI_GRAVITY         9.81
+
 /*!
 * \def MAXFILESIZE
 * \brief largest file size in bytes
 * \deprecated This constant is no longer used in the SWMM source code.
 */
 #define   MAXFILESIZE        2147483647L    // largest file size in bytes
+
 /*!
 * @}
 */
 
 /*!
-* \addtogroup Mannings Units Conversion Factor
+* \defgroup manning_factors Mannings Units Conversion Factor
 * \brief Conversion factor used in the Manning Equation
 * @{
 */
@@ -161,7 +164,7 @@
 */
 
 /*!
-* \addtogroup Measurable Runoff Flow & Depth
+* \defgroup measurable_runoff_depth Measurable Runoff Flow & Depth
 * \brief Minimum measurable runoff flow & depth
 * @{
 */
@@ -188,13 +191,12 @@
 * \brief Minimum measurable runoff depth. ft, = 0.001 inches
 */
 #define   MIN_RUNOFF         2.31481e-8
-
 /*!
 * @}
 */
 
 /*!
-* \addtogroup Minimum Flow, Depth & Volume
+* \defgroup min_flow_depth_volume Minimum Flow, Depth & Volume
 * \brief Minimum flow, depth & volume used to evaluate steady state conditions
 * @{
 */
@@ -215,6 +217,9 @@
 * \brief Minimum volume used to evaluate steady state conditions. ft3 <NOT USED>
 */
 #define   VOLUME_TOL    0.01
+/*!
+* @}
+*/
 
 //---------------------------------------------------
 // Minimum depth for reporting non-zero water quality
@@ -224,7 +229,7 @@
 
 
 /*!
-* \addtogroup Minimum Flow Depth & Area for Dynamic Wave Routing
+* \defgroup min_flow_area_dynwave Minimum Flow Depth & Area for Dynamic Wave Routing
 * \brief Minimum flow depth & area for dynamic wave routing
 * @{
 */
@@ -239,7 +244,7 @@
 */
 
 /*!
-* \addtogroup Conversion Factors
+* \defgroup conversion_factors Conversion Factors
 * \brief Various conversion factors
 * @{
 */
@@ -357,7 +362,7 @@
 */
 
 /*!
-* \addtogroup Token Separators
+* \defgroup token_seperators Token Separators
 * \brief Token separator characters
 * @{
 */

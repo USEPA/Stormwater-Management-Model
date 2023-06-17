@@ -5,12 +5,6 @@
  * \date Last Edited: May 26, 2023
  * \author Michael E. Tryby (US EPA - ORD/NRMRL)
  * \author Caleb Buahin (US EPA - ORD/CESER) (Last Editor)
- * \remarks
- * \see
- * \bug
- * \warning
- * \todo
- * \note
  */
  #ifndef ERRORMANAGER_H_
 #define ERRORMANAGER_H_
@@ -28,12 +22,20 @@
 typedef void (*p_msg_lookup)(int, char*, int);
 
 /*!
-* \brief Struct for new error manager used for conveying error codes
+* \struct error_s
+* \brief Error manager structure
 */
-typedef struct error_s {
+struct error_s {
+	/*! \brief error status code*/
 	int error_status;
+	/*! \brief error message */
 	p_msg_lookup message_lookup;
-} error_handle_t;
+};
+
+/*! 
+* \typedef error_handle_t as error_s
+*/
+typedef struct error_s error_handle_t;
 
 /*!
 * \brief Creates a new error manager

@@ -1,11 +1,13 @@
 //-----------------------------------------------------------------------------
 //   swmm5.c
-//
 //   Project:  EPA SWMM5
 //   Version:  5.2
 //   Date:     11/01/21  (Build 5.2.0)
 //   Author:   L. Rossman
 //
+//   Contains a small API with functions that provide supervisory
+//   control over the program.
+// 
 //   This is the main module of the computational engine for Version 5 of
 //   the U.S. Environmental Protection Agency's Storm Water Management Model
 //   (SWMM). It contains functions that control the flow of computations.
