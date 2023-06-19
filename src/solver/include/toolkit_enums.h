@@ -89,7 +89,8 @@ typedef enum {
     SM_QUALERROR     = 10, /**< Quality routing error */
     SM_HEADTOL       = 11, /**< DW routing head tolerance (ft) */
     SM_SYSFLOWTOL    = 12, /**< Tolerance for steady system flow */
-    SM_LATFLOWTOL    = 13  /**< Tolerance for steady nodal inflow */
+    SM_LATFLOWTOL    = 13, /**< Tolerance for steady nodal inflow */
+    SM_THREADS       = 14  /**< Number of Threads for this process */
 } SM_SimSetting;
 
 /// Node property codes

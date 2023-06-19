@@ -100,6 +100,13 @@ EXPORT_TOOLKIT int swmm_getSimulationAnalysisSetting(SM_SimOption type, int *val
 EXPORT_TOOLKIT int swmm_getSimulationParam(SM_SimSetting type, double *value);
 
 /**
+ @brief Set Simulation Analysis Setting
+ @param type Option code (see @ref SM_SimSetting)
+ @param value Option value
+ @return Error code
+ */
+EXPORT_TOOLKIT int  swmm_setSimulationParam(SM_SimSetting type, double value);
+/**
  @brief Gets Object Count
  @param type Option code (see @ref SM_ObjectType)
  @param[out] count Option value
