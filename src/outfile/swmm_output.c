@@ -670,7 +670,7 @@ int EXPORT_OUT_API SMO_getSystemSeries(SMO_Handle p_handle, SMO_systemAttribute 
     errorcode = 411;
     else {
         // loop over and build time series
-        for (k = 0; k < length; k++)
+        for (k = 0; k < len; k++)
             temp[k] = getSystemValue(p_data, startPeriod + k, attr);
 
         *outValueArray = temp;
