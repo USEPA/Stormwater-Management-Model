@@ -67,13 +67,13 @@ BOOST_AUTO_TEST_CASE(save_hotstart_file){
         step_ind += 1;
         if (step_ind == 1056)
         {
-          error = swmm_saveHotstart((char *) HOTSTART_API_SAVE_DURING_SIM1);
+          error = swmm_hotstart(SM_HOTSTART_SAVE, (char *) HOTSTART_API_SAVE_DURING_SIM1);
           BOOST_CHECK_EQUAL(ERR_NONE, error);
         }
     }while (elapsedTime != 0 && !error);
     BOOST_CHECK_EQUAL(ERR_NONE, error);
     // Save New Hotstart File at the End of the Simulation
-    error = swmm_saveHotstart((char *) HOTSTART_API_SAVE_AFTER_SIM1);
+    error = swmm_hotstart(SM_HOTSTART_SAVE, (char *) HOTSTART_API_SAVE_AFTER_SIM1);
     BOOST_CHECK_EQUAL(ERR_NONE, error);
     swmm_end();
     swmm_report();
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(use_hotstart_bad_file){
     swmm_open((char *)"hotstart/Simulation1_use_hot_start.inp",
               (char *)"hotstart/Simulation1_use_hot_start_fail.rpt",
               (char *)"hotstart/Simulation1_use_hot_start_fail.out");
-    error = swmm_useHotstart(fkid);
+    error = swmm_hotstart(SM_HOTSTART_USE, fkid);
     BOOST_CHECK_EQUAL(ERR_NONE, error);
     error = swmm_start(0);
     BOOST_CHECK_EQUAL(ERR_HOTSTART_FILE_OPEN, error);
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(save_hotstart_file_fail){
         step_ind += 1;
         if (step_ind == 2)
         {
-          error = swmm_saveHotstart((char *) "");
+          error = swmm_hotstart(SM_HOTSTART_SAVE, (char *) "");
           BOOST_CHECK_EQUAL(ERR_HOTSTART_FILE_OPEN, error);
         }
     }while (elapsedTime != 0 && !error);
@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE(use_hotstart_file){
     swmm_open((char *)"hotstart/Simulation1_use_hot_start.inp",
               (char *)"hotstart/Simulation1_use_hot_start.rpt",
               (char *)"hotstart/Simulation1_use_hot_start.out");
-    error = swmm_useHotstart(fkid);
+    error = swmm_hotstart(SM_HOTSTART_USE, fkid);
     BOOST_CHECK_EQUAL(ERR_NONE, error);
     error = swmm_start(0);
     BOOST_CHECK_EQUAL(ERR_NONE, error);

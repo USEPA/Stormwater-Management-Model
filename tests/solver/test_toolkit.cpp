@@ -42,9 +42,9 @@ BOOST_AUTO_TEST_CASE(model_not_open) {
     //Project
     error = swmm_getObjectIndex(SM_NODE, id, &index);
     BOOST_CHECK_EQUAL(error, ERR_TKAPI_INPUTNOTOPEN);
-    error = swmm_useHotstart(id);
+    error = swmm_hotstart(SM_HOTSTART_USE, id);
     BOOST_CHECK_EQUAL(error, ERR_TKAPI_INPUTNOTOPEN);
-    error = swmm_saveHotstart(id);
+    error = swmm_hotstart(SM_HOTSTART_SAVE, id);
     BOOST_CHECK_EQUAL(error, ERR_TKAPI_INPUTNOTOPEN);
 
     //Gage
@@ -118,7 +118,7 @@ BOOST_FIXTURE_TEST_CASE(sim_before_start, FixtureBeforeStart_TKAPI) {
     int error;
     char fakehsf[] = "FakeHSF.hsf";
 
-    error = swmm_saveHotstart(fakehsf);
+    error = swmm_hotstart(SM_HOTSTART_SAVE, fakehsf);
     BOOST_CHECK_EQUAL(error, ERR_TKAPI_SIM_NRUNNING);
 }
 
@@ -128,7 +128,7 @@ BOOST_FIXTURE_TEST_CASE(sim_started_check, FixtureBeforeStep) {
     char fakehsf[] = "FakeHSF.hsf";
 
     //Project
-    error = swmm_useHotstart(fakehsf);
+    error = swmm_hotstart(SM_HOTSTART_USE, fakehsf);
     BOOST_CHECK_EQUAL(error, ERR_TKAPI_SIM_RUNNING);
     //Subcatchment
     error = swmm_setSubcatchParam(0, SM_WIDTH, 1);

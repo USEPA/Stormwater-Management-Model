@@ -92,6 +92,12 @@ typedef enum {
     SM_LATFLOWTOL    = 13  /**< Tolerance for steady nodal inflow */
 } SM_SimSetting;
 
+/// Hot Start File Manager
+typedef enum {
+    SM_HOTSTART_USE  = 0,  /**< Use Hotstart File */
+    SM_HOTSTART_SAVE = 1   /**< Save Hotstart File */
+} SM_HotStart;
+
 /// Node property codes
 typedef enum {
     SM_INVERTEL     = 0,  /**< Invert Elevation */

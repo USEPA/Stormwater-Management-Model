@@ -100,6 +100,14 @@ EXPORT_TOOLKIT int swmm_getSimulationAnalysisSetting(SM_SimOption type, int *val
 EXPORT_TOOLKIT int swmm_getSimulationParam(SM_SimSetting type, double *value);
 
 /**
+ @brief Use/override a hotstart file before the simulation starts.
+ @param type The property type code (see @ref SM_HotStart)
+ @param hsfile The file name of the hot start file that the user would like to use.
+ @return Error code
+*/
+EXPORT_TOOLKIT int swmm_hotstart(SM_HotStart type, const char *hsfile);
+
+/**
  @brief Gets Object Count
  @param type Option code (see @ref SM_ObjectType)
  @param[out] count Option value
@@ -611,20 +619,6 @@ EXPORT_TOOLKIT int swmm_setOutfallStage(int index, double stage);
 @return Error code
 */
 EXPORT_TOOLKIT int swmm_setGagePrecip(int index, double total_precip);
-
-/**
- @brief Use/override a hotstart file before the simulation starts.
- @param hsfile The file name of the hot start file that the user would like to use.
- @return Error code
-*/
-EXPORT_TOOLKIT int swmm_useHotstart(const char *hsfile);
-
-/**
- @brief Save hotstart file during simulation
- @param hsfile The file name of the hotstart file that the user would like to save.
- @return Error code
-*/
-EXPORT_TOOLKIT int swmm_saveHotstart(const char *hsfile);
 
 /**
  @brief Helper function to free memory array allocated in SWMM.
