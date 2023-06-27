@@ -440,7 +440,7 @@ EXPORT_TOOLKIT int DLLEXPORT swmm_hotstart(SM_HotStart type, const char *hsfile)
         switch(type)
         {
             case SM_HOTSTART_USE:
-            {   
+            {
                 // Fhotstart1 is the file to to be read
                 char fl_name[MAXFNAME];
                 sstrncpy(fl_name, hsfile, MAXFNAME);
@@ -460,7 +460,7 @@ EXPORT_TOOLKIT int DLLEXPORT swmm_hotstart(SM_HotStart type, const char *hsfile)
                 Fhotstart2.mode = SAVE_FILE;
                 sstrncpy(Fhotstart2.name, hsfile, MAXFNAME);
                 // Saving Data
-                if (hotstart_open()) 
+                if (hotstart_open())
                 {
                     hotstart_close();
                     // Replacing INP set HSFs
