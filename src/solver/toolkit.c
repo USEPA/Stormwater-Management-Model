@@ -412,7 +412,7 @@ EXPORT_TOOLKIT int  swmm_getSimulationParam(SM_SimSetting type, double *value)
     return error_code;
 }
 
-EXPORT_TOOLKIT int DLLEXPORT swmm_hotstart(SM_HotStart type, const char *hsfile)
+EXPORT_TOOLKIT int swmm_hotstart(SM_HotStart type, const char *hsfile)
 ///
 /// Input:   type = Hotstart option USE/SAVE (SM_HotStart)
 ///          hotstart = file ID name (able to overwrite)
@@ -445,7 +445,7 @@ EXPORT_TOOLKIT int DLLEXPORT swmm_hotstart(SM_HotStart type, const char *hsfile)
                 char fl_name[MAXFNAME];
                 sstrncpy(fl_name, hsfile, MAXFNAME);
                 Fhotstart1.mode = USE_FILE;
-                sstrncpy(Fhotstart1.name, addAbsolutePath(fl_name), MAXFNAME);
+                sstrncpy(Fhotstart1.name, fl_name, MAXFNAME);
                 break;
             }
             case SM_HOTSTART_SAVE:

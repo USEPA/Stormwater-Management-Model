@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(use_hotstart_file){
     int number_of_nodes;
     double elapsedTime = 0.0;
     double set_val;
-    char fkid[] = "use_hot_start_test.hsf";
+    char fkid[] = "hotstart/use_hot_start_test.hsf";
 
     swmm_open((char *)"hotstart/Simulation1_use_hot_start.inp",
               (char *)"hotstart/Simulation1_use_hot_start.rpt",
