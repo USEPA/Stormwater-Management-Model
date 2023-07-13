@@ -106,6 +106,15 @@ EXPORT_TOOLKIT int swmm_getSimulationParam(SM_SimSetting type, double *value);
  @return Error code
  */
 EXPORT_TOOLKIT int  swmm_setSimulationParam(SM_SimSetting type, double value);
+
+/**
+ @brief Use/override a hotstart file before the simulation starts.
+ @param type The property type code (see @ref SM_HotStart)
+ @param hsfile The file name of the hot start file that the user would like to use.
+ @return Error code
+*/
+EXPORT_TOOLKIT int swmm_hotstart(SM_HotStart type, const char *hsfile);
+
 /**
  @brief Gets Object Count
  @param type Option code (see @ref SM_ObjectType)

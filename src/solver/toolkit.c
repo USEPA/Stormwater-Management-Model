@@ -461,6 +461,75 @@ EXPORT_TOOLKIT int  swmm_setSimulationParam(SM_SimSetting type, double value)
     return error_code;
 }
 
+EXPORT_TOOLKIT int swmm_hotstart(SM_HotStart type, const char *hsfile)
+///
+/// Input:   type = Hotstart option USE/SAVE (SM_HotStart)
+///          hotstart = file ID name (able to overwrite)
+/// Return   API Error
+/// Purpose: Allows selecting a HSF to use or save
+{
+    int error_code = 0;
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
+    }
+    // Check if Simulation is Started
+    else if (swmm_IsStartedFlag() == TRUE && type == SM_HOTSTART_USE)
+    {
+        error_code = ERR_TKAPI_SIM_RUNNING;
+    }
+    // Check if Simulation is NOT started
+    else if (swmm_IsStartedFlag() == FALSE && type == SM_HOTSTART_SAVE)
+    {
+        error_code = ERR_TKAPI_SIM_NRUNNING;
+    }
+    else
+    {
+        switch(type)
+        {
+            case SM_HOTSTART_USE:
+            {
+                // Fhotstart1 is the file to to be read
+                char fl_name[MAXFNAME];
+                sstrncpy(fl_name, hsfile, MAXFNAME);
+                Fhotstart1.mode = USE_FILE;
+                sstrncpy(Fhotstart1.name, fl_name, MAXFNAME);
+                break;
+            }
+            case SM_HOTSTART_SAVE:
+            {
+                // Storing Existing INP set HSFs
+                TFile tmpHotstart1 = Fhotstart1;
+                TFile tmpHotstart2 = Fhotstart2;
+                int _fl1_info = Fhotstart1.mode;
+                int _fl2_info = Fhotstart2.mode;
+                // Create info for New HSF
+                Fhotstart1.mode = NO_FILE;
+                Fhotstart2.mode = SAVE_FILE;
+                sstrncpy(Fhotstart2.name, hsfile, MAXFNAME);
+                // Saving Data
+                if (hotstart_open())
+                {
+                    hotstart_close();
+                    // Replacing INP set HSFs
+                    Fhotstart2 = tmpHotstart2;
+                    Fhotstart1 = tmpHotstart1;
+                    Fhotstart1.mode = _fl1_info;
+                    Fhotstart2.mode = _fl2_info;
+                }
+                else
+                {
+                    error_code = ERR_HOTSTART_FILE_OPEN;
+                }
+                break;
+            }
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
+        }
+    }
+    return error_code;
+}
+
 EXPORT_TOOLKIT int  swmm_countObjects(SM_ObjectType type, int *count)
 ///
 /// Input:   type = object type (Based on SM_ObjectType enum)
