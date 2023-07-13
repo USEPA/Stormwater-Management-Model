@@ -100,6 +100,14 @@ EXPORT_TOOLKIT int swmm_getSimulationAnalysisSetting(SM_SimOption type, int *val
 EXPORT_TOOLKIT int swmm_getSimulationParam(SM_SimSetting type, double *value);
 
 /**
+ @brief Set Simulation Analysis Setting
+ @param type Option code (see @ref SM_SimSetting)
+ @param value Option value
+ @return Error code
+ */
+EXPORT_TOOLKIT int  swmm_setSimulationParam(SM_SimSetting type, double value);
+
+/**
  @brief Use/override a hotstart file before the simulation starts.
  @param type The property type code (see @ref SM_HotStart)
  @param hsfile The file name of the hot start file that the user would like to use.

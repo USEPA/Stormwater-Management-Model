@@ -24,6 +24,16 @@
 #include "swmm5.h"
 #include "toolkit.h"
 
+// Protect against lack of compiler support for OpenMP
+#if defined(_OPENMP)
+#include <omp.h>
+int alt_omp_get_max_threads(void)
+{
+    return omp_get_max_threads();
+}
+#else
+  int alt_omp_get_max_threads(void) { return 1;}
+#endif
 
 // Function Declarations for API
 int  massbal_getRoutingTotal(SM_RoutingTotals **routingTot);
@@ -405,7 +415,46 @@ EXPORT_TOOLKIT int  swmm_getSimulationParam(SM_SimSetting type, double *value)
             case SM_SYSFLOWTOL: *value = SysFlowTol; break;
             // Tolerance for steady nodal inflow
             case SM_LATFLOWTOL: *value = LatFlowTol; break;
+            // Number of Threads (if OpenMP enabled)
+            case SM_THREADS: *value = NumThreads; break;
             // Type not available
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
+        }
+    }
+    return error_code;
+}
+
+EXPORT_TOOLKIT int  swmm_setSimulationParam(SM_SimSetting type, double value)
+///
+/// Input:   type = SM_SimSetting
+///          Simulation Parameter
+/// Returns: error code
+/// Purpose: Set simulation analysis parameter (limited support)
+{
+    int error_code = 0;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
+    }
+    // Check if Simulation is Running
+    else if(swmm_IsStartedFlag() == TRUE)
+    {
+        error_code = ERR_TKAPI_SIM_NRUNNING;
+    }
+    else
+    {
+        switch(type)
+        {
+            case SM_THREADS:
+            {
+                // --- adjust number of parallel threads to be used
+                if ( (int)value <= 0 ) NumThreads = 1;
+                else NumThreads = MIN((int)value, alt_omp_get_max_threads());
+                if ( Nobjects[LINK] < 4 * NumThreads ) NumThreads = 1;
+                break;
+            }
             default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }
