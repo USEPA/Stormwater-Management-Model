@@ -1479,7 +1479,7 @@ double getCurbInletCapture(double Q, double L)
 //  Input:   Q = flow rate seen by inlet (cfs)
 //           L = length of inlet opening (ft)
 //  Output:  returns captured flow rate (cfs)
-//  Purpose: finds the flow captured by an on-sag inlet.
+//  Purpose: finds the flow captured by an on-grade curb opening inlet.
 //
 {
     double Se = Sx,     // equivalent gutter slope
