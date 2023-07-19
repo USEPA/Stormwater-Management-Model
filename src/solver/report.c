@@ -227,9 +227,10 @@ void report_writeLogo()
 //
 // OWA manages model version differently from EPA SWMM. 
 {
+    fprintf(Frpt.file, FMT08);
 	sprintf(Msg, \
-		"\n  OWA STORM WATER MANAGEMENT MODEL - VERSION v%s (OWA %.10s)", 
-        VERSION, BUILD_ID);
+		"\n  PYSWMM TOOLKIT API - VERSION v%s (%.10s)", 
+        TOOLKIT_VERSION, BUILD_ID);
 
     fprintf(Frpt.file, "%s", Msg);
     fprintf(Frpt.file, FMT09);
