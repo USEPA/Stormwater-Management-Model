@@ -84,7 +84,9 @@ jobs:
       BUILD_HOME: build
       TEST_HOME: nrtests
       OMP_NUM_THREADS: 1
-
+      PACKAGE_NAME:  vcpkg-export-20220826-200052.1.0.0
+      PKG_NAME: vcpkg-export-20220826-200052
+      
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
