@@ -7,12 +7,16 @@
 #         US EPA ORD/CESER
 #
 
-add_executable(test_output
+add_executable(
+    test_output
     test_output.cpp
-    )
-target_include_directories(test_output
-    PUBLIC ../../outfile/include
-    )
+)
+
+target_include_directories(
+    test_output
+    PUBLIC ./../../src/outfile/include
+)
+
 target_link_libraries(test_output
     ${Boost_LIBRARIES}
     swmm-output
