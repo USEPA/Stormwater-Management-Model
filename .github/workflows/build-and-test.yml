@@ -86,7 +86,7 @@ jobs:
       OMP_NUM_THREADS: 1
       PACKAGE_NAME:  vcpkg-export-20220826-200052.1.0.0
       PKG_NAME: vcpkg-export-20220826-200052
-      
+
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
@@ -117,11 +117,15 @@ jobs:
       run: |
         brew reinstall --build-from-source --formula ../../openmp/darwin/libomp.rb
 
-    - name: Build and Unit Test
+    - name: Build and Unit Test (Windows)
+      if: ${{runner.os == 'Windows'}} 
       env:
-        TOOL_CHAIN_PATH: \scripts\buildsystems\vcpkg.cmake
-        CMAKE_PREFIX_PATH: ${{ steps.install-boost.outputs.boost_root }}
-        CMAKE_TOOLCHAIN_FILE: .\${{env.PACKAGE_NAME}}${{env.TOOL_CHAIN_PATH}} 
+        CMAKE_TOOLCHAIN_FILE: .\${{env.PACKAGE_NAME}}\scripts\buildsystems\vcpkg.cmake
+      run: |
+        ./${{ matrix.build_unit_test }} 
+      
+    - name: Build and Unit Test
+      if: ${{ matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-latest' }}
       run: |
         ./${{ matrix.build_unit_test }} 
 
@@ -135,13 +139,18 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r requirements-swmm.txt
 
-    - name: Build for Regression Testing
+    - name: Build for Regression Testing (Windows)
+      if: ${{runner.os == 'Windows'}} 
       env:
-        TOOL_CHAIN_PATH: \scripts\buildsystems\vcpkg.cmake
-        CMAKE_PREFIX_PATH: ${{ steps.install-boost.outputs.boost_root }}
-        CMAKE_TOOLCHAIN_FILE: .\${{env.PACKAGE_NAME}}${{env.TOOL_CHAIN_PATH}} 
+          CMAKE_TOOLCHAIN_FILE: .\${{env.PACKAGE_NAME}}\scripts\buildsystems\vcpkg.cmake
       run: |
         ./${{ matrix.build_for_reg_test }}
+    
+    - name: Build for Regression Testing
+      if: ${{ matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-latest' }}
+      run: |
+        ./${{ matrix.build_for_reg_test }}
+  
 
     - name: Before Regression Testing
       env:
