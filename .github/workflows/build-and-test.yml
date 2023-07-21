@@ -8,7 +8,7 @@ name: Build and Test
 
 on:
   push:
-    branches: [ master, develop, release, perftesting ]
+    branches: [ master, develop, release, triplet_build ]
   pull_request:
     branches: [ master, develop, release ]
 
