@@ -1,10 +1,16 @@
+# 
+# This is a GitHub Actions workflow file for building and testing SWMM.
+#
+# 
+
+
 name: Build and Test
 
 on:
   push:
-    branches: [ master, develop, release, lew-develop ]
+    branches: [ master, develop, release, perftesting ]
   pull_request:
-    branches: [ master, develop, release, lew-develop ]
+    branches: [ master, develop, release ]
 
 env:
   OMP_NUM_THREADS: 1
@@ -14,79 +20,135 @@ env:
   PKG_NAME: vcpkg-export-20220826-200052
 
 jobs:
-  unit_test:
-    name: Build and unit test
-    runs-on: windows-2019
+  build:
+    name: Build, Unit Testing, and Regression Testing
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2019, ubuntu-20.04, macos-latest]
+        include:
+          - os: windows-2019
+            boost_platform_version: 2019
+            boost_toolset: msvc
+            run_reg_test: run-nrtests.cmd
+            run_before_reg_test: before-nrtest.cmd
+            build_unit_test: make.cmd /g "Visual Studio 16 2019" /A "x64" /t
+            build_for_reg_test: make.cmd /g "Visual Studio 16 2019" /A "x64"
+            install_req_pkgs: 
+            build_identifier: "%GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%"
+            continue-on-error: false
+            defaults:
+              run:
+                shell: cmd
+                working-directory: ./ci-tools/windows
+          - os: ubuntu-20.04
+            boost_platform_version: 20.04
+            boost_toolset: gcc
+            run_reg_test: run-nrtests.sh
+            run_before_reg_test: before-nrtest.sh
+            build_unit_test: make.sh -s -t -g "Unix Makefiles"
+            build_for_reg_test: make.sh -s -g "Unix Makefiles"
+            build_identifier: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
+            install_req_pkgs: sudo apt install libboost-dev libboost-all-dev
+            continue-on-error: true
+            defaults:
+              run:
+                shell: bash
+                working-directory: ./ci-tools/linux
+          - os: macos-latest
+            link: shared
+            boost_platform_version: 10.15
+            boost_toolset: clang
+            run_reg_test: run-nrtests.zsh
+            run_before_reg_test: before-nrtest.zsh
+            build_unit_test: make.zsh -t -g "Xcode"
+            build_for_reg_test: make.zsh -g "Xcode"
+            install_req_pkgs: brew install boost
+            build_identifier: ${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER}
+            continue-on-error: true
+            defaults:
+              run:
+                shell: zsh {0}
+                working-directory: ./ci-tools/darwin
+
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.continue-on-error }}
     environment: testing
     defaults:
       run:
-        shell: cmd
+        shell: ${{ matrix.defaults.run.shell }}
+        working-directory: ${{ matrix.defaults.run.working-directory }}
+
+    env:
+      PROJECT: swmm
+      BUILD_HOME: build
+      TEST_HOME: nrtests
+      OMP_NUM_THREADS: 1
 
     steps:
-    - name: Checkout repo
+    - name: Checkout Repo
       uses: actions/checkout@v3
 
-    - name: Install boost-test
-      env:
-        REMOTE_STORE: "https://nuget.pkg.github.com/michaeltryby/index.json"
-        USERNAME: michaeltryby
-      run: |
-        nuget sources add -Name github -Source ${{ env.REMOTE_STORE }} -Username ${{ env.USERNAME }} -Password ${{ secrets.ACCESS_TOKEN }}
-        nuget install ${{env.PKG_NAME}} -Source github
-
-    - name: Build
-      env:
-        TOOL_CHAIN_PATH: \scripts\buildsystems\vcpkg.cmake
-      run: |
-        cmake -B.\build -DBUILD_TESTS=ON -DCMAKE_TOOLCHAIN_FILE=.\${{env.PACKAGE_NAME}}${{env.TOOL_CHAIN_PATH}} .
-        cmake --build .\build --config DEBUG
-
-    - name: Unit Test
-      run: ctest --test-dir .\build -C Debug --output-on-failure
-
-
-  reg_test:
-    name: Build and reg test
-    runs-on: windows-2019
-    defaults:
-      run:
-        shell: cmd
-        working-directory: ci-tools/windows
-
-    steps:
-    - name: Checkout swmm repo
-      uses: actions/checkout@v3
-
-    - name: Checkout ci-tools repo
+    - name: Checkout ci-tools Repo
       uses: actions/checkout@v3
       with:
         repository: michaeltryby/ci-tools
         ref: master
-        path: ci-tools
+        path: ci-tools 
+    
+    - name: Install Boost for Windows
+      env:
+        REMOTE_STORE: "https://nuget.pkg.github.com/michaeltryby/index.json"
+        USERNAME: michaeltryby
+      if: ${{runner.os == 'Windows'}} 
+      run: |
+        nuget sources add -Name github -Source ${{ env.REMOTE_STORE }} -Username ${{ env.USERNAME }} -Password ${{ secrets.ACCESS_TOKEN }}
+        nuget install ${{env.PKG_NAME}} -Source github
+
+    - name: Install Boost for Linux or MacOS
+      if: ${{ matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-latest' }}
+      run: |
+        ${{ matrix.install_req_pkgs }}
+  
+    - name: Install OpenMP Binaries for MacOS
+      if: ${{ matrix.os == 'macos-latest' }}
+      run: |
+        brew reinstall --build-from-source --formula ../../openmp/darwin/libomp.rb
+
+    - name: Build and Unit Test
+      env:
+        CMAKE_PREFIX_PATH: ${{ steps.install-boost.outputs.boost_root }}
+      run: |
+        ./${{ matrix.build_unit_test }} 
 
     - name: Setup python
       uses: actions/setup-python@v4
       with:
         python-version: '3.7'
 
-    - name: Install requirements
+    - name: Install Python Requirements for Regression Testing
       run: |
         python -m pip install --upgrade pip
         python -m pip install -r requirements-swmm.txt
 
-    - name: Build
-      run: make.cmd /g "Visual Studio 16 2019"
+    - name: Build for Regression Testing
+      env:
+        CMAKE_PREFIX_PATH: ${{ steps.install-boost.outputs.boost_root }}
+      run: |
+        ./${{ matrix.build_for_reg_test }}
 
-    - name: Before reg test
+    - name: Before Regression Testing
       env:
         NRTESTS_URL: https://github.com/USEPA/swmm-nrtestsuite
         BENCHMARK_TAG: v2.4.0-dev
-      run: before-nrtest.cmd ${{ env.BENCHMARK_TAG }}
+      run: |
+        ./${{ matrix.run_before_reg_test }} ${{ env.BENCHMARK_TAG }}
 
-    - name: Run reg test
-      run: run-nrtests.cmd %GITHUB_RUN_ID%_%GITHUB_RUN_NUMBER%
+    - name: Run Regression Testing
+      run:  |
+        ./${{ matrix.run_reg_test }} ${{ matrix.build_identifier }}
 
-    - name: Upload artifacts
+    - name: Upload Artifacts
       if: ${{ always() }}
       uses: actions/upload-artifact@v3
       with:
