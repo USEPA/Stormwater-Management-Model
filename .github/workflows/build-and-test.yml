@@ -117,7 +117,9 @@ jobs:
 
     - name: Build and Unit Test
       env:
+        TOOL_CHAIN_PATH: \scripts\buildsystems\vcpkg.cmake
         CMAKE_PREFIX_PATH: ${{ steps.install-boost.outputs.boost_root }}
+        CMAKE_TOOLCHAIN_FILE: .\${{env.PACKAGE_NAME}}${{env.TOOL_CHAIN_PATH}} 
       run: |
         ./${{ matrix.build_unit_test }} 
 
@@ -133,7 +135,9 @@ jobs:
 
     - name: Build for Regression Testing
       env:
+        TOOL_CHAIN_PATH: \scripts\buildsystems\vcpkg.cmake
         CMAKE_PREFIX_PATH: ${{ steps.install-boost.outputs.boost_root }}
+        CMAKE_TOOLCHAIN_FILE: .\${{env.PACKAGE_NAME}}${{env.TOOL_CHAIN_PATH}} 
       run: |
         ./${{ matrix.build_for_reg_test }}
 
