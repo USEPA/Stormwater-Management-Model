@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     06/12/23  (Build 5.2.4)
+//   Date:     07/13/23  (Build 5.2.4)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -599,7 +599,7 @@ int findNodeDepths(double dt)
 //
 {
     int i;
-    double yOld;        // previous node depth (ft)
+    double yOld = 0.0;       // previous node depth (ft)
 
     // --- compute outfall depths based on flow in connecting link
     for ( i = 0; i < Nobjects[LINK]; i++ ) link_setOutfallDepth(i);

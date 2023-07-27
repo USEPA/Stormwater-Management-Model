@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21   (Build 5.2.0)
+//   Date:     07/13/23   (Build 5.2.4)
 //   Author:   L. Rossman
 //
 //   This module computes the hydrologic performance of an LID (Low Impact
@@ -53,6 +53,11 @@
 //   - Fixed failure to account for effect of Impervious Surface Fraction on
 //     pavement permeability for Permeable Pavement LID
 //   - Fixed units conversion for pavement depth in detailed report file.
+//   Build 5.2.4:
+//   - Modified flux limits in biocellFluxRates, pavementFluxRates and
+//     trenchFluxRates.
+//   - Corrected head calculation in getStorageDrainRate when unit has both
+//     a soil and pavement layer.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -654,61 +659,64 @@ void biocellFluxRates(double x[], double f[])
         SurfaceInfil = MIN(SurfaceInfil, maxRate);
     }
 
-    //... storage & soil layers are full
-    else if ( soilTheta >= soilPorosity && storageDepth >= storageThickness )
+    else
     {
-        //... limiting rate is smaller of soil perc and storage outflow
-        maxRate = StorageExfil + StorageDrain;
-        if ( SoilPerc < maxRate )
+        //... storage & soil layers are full
+        if ( soilTheta >= soilPorosity && storageDepth >= storageThickness )
         {
-            maxRate = SoilPerc;
-            if ( maxRate > StorageExfil ) StorageDrain = maxRate - StorageExfil;
-            else
+            //... limiting rate is smaller of soil perc and storage outflow
+            maxRate = StorageExfil + StorageDrain;
+            if ( SoilPerc < maxRate )
             {
-                StorageExfil = maxRate;
-                StorageDrain = 0.0;
+                maxRate = SoilPerc;
+                if ( maxRate > StorageExfil ) StorageDrain = maxRate - StorageExfil;
+                else
+                {
+                    StorageExfil = maxRate;
+                    StorageDrain = 0.0;
+                }
             }
-        }
-        else SoilPerc = maxRate;
+            else SoilPerc = maxRate;
 
-        //... apply limiting rate to surface infil.
-        SurfaceInfil = MIN(SurfaceInfil, maxRate);
-    }
-
-    //... either layer not full
-    else if ( storageThickness > 0.0 )
-    {
-        //... limit storage exfiltration by available storage volume
-        maxRate = SoilPerc - StorageEvap + storageDepth*storageVoidFrac/Tstep;
-        StorageExfil = MIN(StorageExfil, maxRate);
-        StorageExfil = MAX(StorageExfil, 0.0);
-
-        //... limit underdrain flow by volume above drain offset
-        if ( StorageDrain > 0.0 )
-        {
-            maxRate = -StorageExfil - StorageEvap;
-            if ( storageDepth >= storageThickness) maxRate += SoilPerc;
-            if ( theLidProc->drain.offset <= storageDepth )
-            {
-                maxRate += (storageDepth - theLidProc->drain.offset) *
-                           storageVoidFrac/Tstep;
-            }
-            maxRate = MAX(maxRate, 0.0);
-            StorageDrain = MIN(StorageDrain, maxRate);
+            //... apply limiting rate to surface infil.
+            SurfaceInfil = MIN(SurfaceInfil, maxRate);
         }
 
-        //... limit soil perc by unused storage volume
-        maxRate = StorageExfil + StorageDrain + StorageEvap +
-                  (storageThickness - storageDepth) *
-                  storageVoidFrac/Tstep;
-        SoilPerc = MIN(SoilPerc, maxRate);
+        //... either layer not full
+        else
+        {
+            //... limit storage exfiltration by available storage volume
+            maxRate = SoilPerc - StorageEvap + storageDepth*storageVoidFrac/Tstep;
+            StorageExfil = MIN(StorageExfil, maxRate);
+            StorageExfil = MAX(StorageExfil, 0.0);
 
-        //... limit surface infil. by unused soil volume
-        maxRate = (soilPorosity - soilTheta) * soilThickness / Tstep +
-                  SoilPerc + SoilEvap;
-        SurfaceInfil = MIN(SurfaceInfil, maxRate);
+            //... limit underdrain flow by volume above drain offset
+            if ( StorageDrain > 0.0 )
+            {
+                maxRate = -StorageExfil - StorageEvap;
+                if ( storageDepth >= storageThickness) maxRate += SoilPerc;
+                if ( theLidProc->drain.offset <= storageDepth )
+                {
+                    maxRate += (storageDepth - theLidProc->drain.offset) *
+                               storageVoidFrac/Tstep;
+                }
+                maxRate = MAX(maxRate, 0.0);
+                StorageDrain = MIN(StorageDrain, maxRate);
+            }
+        
+            //... limit soil perc by unused storage volume
+            maxRate = StorageExfil + StorageDrain + StorageEvap +
+                      (storageThickness - storageDepth) *
+                      storageVoidFrac/Tstep;
+            SoilPerc = MIN(SoilPerc, maxRate);
+
+            //... limit surface infil. by unused soil volume
+            maxRate = (soilPorosity - soilTheta) * soilThickness / Tstep +
+                      SoilPerc + SoilEvap;
+            SurfaceInfil = MIN(SurfaceInfil, maxRate);
+        }
     }
-
+    
     //... find surface layer outflow rate
     SurfaceOutflow = getSurfaceOutflowRate(surfaceDepth);
 
@@ -803,7 +811,7 @@ void trenchFluxRates(double x[], double f[])
     SurfaceOutflow = getSurfaceOutflowRate(surfaceDepth);
 
     // ... find net fluxes for each layer
-    f[SURF] = SurfaceInflow - SurfaceEvap - StorageInflow - SurfaceOutflow /
+    f[SURF] = (SurfaceInflow - SurfaceEvap - StorageInflow - SurfaceOutflow) /
               theLidProc->surface.voidFrac;;
     f[STOR] = (StorageInflow - StorageEvap - StorageExfil - StorageDrain) /
               theLidProc->storage.voidFrac;
@@ -966,6 +974,7 @@ void pavementFluxRates(double x[], double f[])
             StorageExfil = MIN(StorageExfil, SoilPerc);
             StorageDrain = SoilPerc - StorageExfil;
         }
+        PavePerc = MIN(PavePerc, SoilPerc);        
 
         //... limit surface infil. by available pavement volume
         availVolume = (paveThickness - paveDepth) * paveVoidFrac;
@@ -981,6 +990,8 @@ void pavementFluxRates(double x[], double f[])
         PavePerc = MIN(PavePerc, SoilPerc);
         SoilPerc = PavePerc;
         SurfaceInfil = MIN(SurfaceInfil,PavePerc); 
+        maxRate = MAX(StorageVolume / Tstep + SoilPerc - StorageEvap, 0.0);
+	    StorageExfil = MIN(StorageExfil, maxRate); 
     }
 
     //... no adjoining layers are full
@@ -1370,7 +1381,11 @@ double  getStorageDrainRate(double storageDepth, double soilTheta,
                 //     depth in layer above it
                 if ( soilTheta >= soilPorosity )
                 {
-                    if ( paveThickness > 0.0 ) head += paveDepth;
+                    if ( paveThickness > 0.0 )
+                    {
+                        head += paveDepth;
+                        if ( paveDepth >= paveThickness ) head += surfaceDepth;
+                    }    
                     else head += surfaceDepth;
                 }
             }
@@ -1378,7 +1393,7 @@ double  getStorageDrainRate(double storageDepth, double soilTheta,
 
         // --- no soil layer so increase head by water level in pavement
         //     layer and possibly surface layer
-        if ( paveThickness > 0.0 )
+        else if ( paveThickness > 0.0 )
         {
             head += paveDepth;
             if ( paveDepth >= paveThickness ) head += surfaceDepth;

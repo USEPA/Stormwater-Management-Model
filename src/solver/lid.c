@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     02/10/23   (Build 5.2.3)
+//   Date:     07/13/23   (Build 5.2.4)
 //   Author:   L. Rossman
 //
 //   This module handles all data processing involving LID (Low Impact
@@ -70,6 +70,8 @@
 //   - Covered property added to RAIN_BARREL parameters
 //   Build 5.2.3
 //   - Fixed double counting of initial water volume in green roof drain mat.
+//   Build 5.2.4
+//   - Fixed test for invalid data in readDrainData function.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -765,7 +767,7 @@ int readDrainData(int j, char* toks[], int ntoks)
     for (i = 0; i < 6; i++) x[i] = 0.0;
     for (i = 2; i < 8; i++)
     {
-        if ( (ntoks > i) && (! getDouble(toks[i], &x[i-2]) || x[i-2]) < 0.0 )
+        if ( (ntoks > i) && (! getDouble(toks[i], &x[i-2]) || x[i-2] < 0.0) )
             return error_setInpError(ERR_NUMBER, toks[i]);
     }
 
