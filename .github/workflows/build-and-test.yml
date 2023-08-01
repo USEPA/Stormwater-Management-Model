@@ -91,14 +91,7 @@ jobs:
     - name: Checkout Repo
       uses: actions/checkout@v3
 
-    - name: Checkout ci-tools Repo
-      uses: actions/checkout@v3
-      with:
-        repository: michaeltryby/ci-tools
-        ref: master
-        path: ci-tools 
-    
-    - name: Install Boost for Windows
+    - name: Install Boost (Windows)
       env:
         REMOTE_STORE: "https://nuget.pkg.github.com/michaeltryby/index.json"
         USERNAME: michaeltryby
@@ -107,16 +100,23 @@ jobs:
         nuget sources add -Name github -Source ${{ env.REMOTE_STORE }} -Username ${{ env.USERNAME }} -Password ${{ secrets.ACCESS_TOKEN }}
         nuget install ${{env.PKG_NAME}} -Source github
 
-    - name: Install Boost for Linux or MacOS
-      if: ${{ matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-latest' }}
+    - name: Install Boost (Linux or MacOS)
+      if: ${{runner.os != 'Windows'}} 
       run: |
         ${{ matrix.install_req_pkgs }}
   
-    - name: Install OpenMP Binaries for MacOS
+    - name: Install OpenMP for MacOS
       if: ${{ matrix.os == 'macos-latest' }}
       run: |
         brew reinstall --build-from-source --formula ../../openmp/darwin/libomp.rb
 
+    - name: Checkout ci-tools Repo
+      uses: actions/checkout@v3
+      with:
+        repository: michaeltryby/ci-tools
+        ref: master
+        path: ci-tools 
+    
     - name: Build and Unit Test (Windows)
       if: ${{runner.os == 'Windows'}} 
       env:
@@ -124,8 +124,8 @@ jobs:
       run: |
         ./${{ matrix.build_unit_test }} 
       
-    - name: Build and Unit Test
-      if: ${{ matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-latest' }}
+    - name: Build and Unit Test (Linux or MacOS)
+      if: ${{ matrix.os != 'Windows' }}
       run: |
         ./${{ matrix.build_unit_test }} 
 
@@ -146,8 +146,8 @@ jobs:
       run: |
         ./${{ matrix.build_for_reg_test }}
     
-    - name: Build for Regression Testing
-      if: ${{ matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-latest' }}
+    - name: Build for Regression Testing (Linux or MacOS)
+      if: ${{ matrix.os != 'Windows' }}
       run: |
         ./${{ matrix.build_for_reg_test }}
   
