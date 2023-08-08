@@ -80,7 +80,7 @@ jobs:
     - name: Before reg test
       env:
         NRTESTS_URL: https://github.com/USEPA/swmm-nrtestsuite
-        BENCHMARK_TAG: v2.2.0
+        BENCHMARK_TAG: v2.4.0-dev
       run: before-nrtest.cmd ${{ env.BENCHMARK_TAG }}
 
     - name: Run reg test

@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/21/22  (Build 5.2.2)
+//   Date:     07/17/23  (Build 5.2.4)
 //   Author:   L. Rossman
 //
 //   Project management functions.
@@ -52,6 +52,10 @@
 //   Build 5.2.2:
 //   - Default number of threads changed from OMP max. number to 1
 //     to be consistent with User Manual.
+//   Build 5.2.4:
+//   - Default Inertial Damping changed from SOME to PARTIAL_DAMPING.
+//   - Default CourantFactor changed from 0 (fixed routing time step)
+//   - to 0.75 (variable time step)
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -842,12 +846,12 @@ void setDefaults()
    SurchargeMethod = EXTRAN;           // Use EXTRAN method for surcharging
    CrownCutoff     = 0.96;             // Fractional pipe crown cutoff 
    AllowPonding    = FALSE;            // No ponding at nodes
-   InertDamping    = SOME;             // Partial inertial damping
+   InertDamping    = PARTIAL_DAMPING;  // Partial inertial damping
    NormalFlowLtd   = BOTH;             // Default normal flow limitation
    ForceMainEqn    = H_W;              // Hazen-Williams eqn. for force mains
    LinkOffsets     = DEPTH_OFFSET;     // Use depth for link offsets
    LengtheningStep = 0;                // No lengthening of conduits
-   CourantFactor   = 0.0;              // No variable time step 
+   CourantFactor   = 0.75;             // Variable time step reduced to 75%
    MinSurfArea     = 0.0;              // Force use of default min. surface area
    MinSlope        = 0.0;              // No user supplied minimum conduit slope
    SkipSteadyState = FALSE;            // Do flow routing in steady state periods 

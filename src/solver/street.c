@@ -3,11 +3,14 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21  (Build 5.2.0)
+//   Date:     07/13/23  (Build 5.2.4)
 //   Author:   L. Rossman
 //
 //   Street Cross-Section Functions
 //
+//   Build 5.2.4:
+//   - Fixed incorrect index used to retrieve street backing parameters
+//     in street_readParams.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -106,8 +109,8 @@ int street_readParams(char* tok[], int ntoks)
     // --- read street backing parameters
     if (ntoks > 8)
     {
-        if (!getDouble(tok[8], &x[8]) || x[k] < 0.0)
-            return error_setInpError(ERR_NUMBER, tok[k]);
+        if (!getDouble(tok[8], &x[8]) || x[8] < 0.0)
+            return error_setInpError(ERR_NUMBER, tok[8]);
         if (x[8] > 0.0)
         {
             if (ntoks < 11) return error_setInpError(ERR_ITEMS, "");

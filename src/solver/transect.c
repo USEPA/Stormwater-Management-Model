@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21   (Build 5.2.0)
+//   Date:     07/13/23   (Build 5.2.4)
 //   Author:   L. Rossman
 //
 //   Geometry processing for irregular cross-section transects.
@@ -12,6 +12,8 @@
 //   ==============
 //   Build 5.2.0:
 //   - Function added to create a transect for a Street cross-section.
+//   Build 5.2.4:
+//   - Corrected street transect points in transect_createStreetTransect.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -610,8 +612,8 @@ void  transect_createStreetTransect(TStreet* street)
     w2 = street->gutterWidth;
     w3 = street->width;
     w4 = w3 - w2;
-    y3 = street->gutterDepression;
-    y1 = street->curbHeight + y3;
+    y3 = street->gutterDepression + street->slope * w2;
+    y1 = street->curbHeight + street->gutterDepression;
     ymax = street->backSlope * street->backWidth + y1;
     y4 = y3 + street->slope * w4;
     ymax = MAX(ymax, y4);
