@@ -36,7 +36,8 @@
 //   Build 5.1.015:
 //   - Support added for multiple infiltration methods within a project.
 //   Build 5.2.5:
-//   - Fixed bug in fwrite count argument when writing of pollutant build-up.
+//   - Fixed bug in fwrite count argument when writing catchment landuse pollutant
+//     build-up.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
