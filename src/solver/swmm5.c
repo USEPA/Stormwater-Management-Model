@@ -42,9 +42,6 @@
 //   - Prevented possible infinite loop if swmm_step() called when ErrorCode > 0.
 //   - Prevented early exit from swmm_end() when ErrorCode > 0.
 //   - Support added for relative file names.
-//   Build 5.2.5
-//   - Changed flow format to scientic to prevent the merging of extremely 
-//     large flows that make it difficult to interpret results.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
