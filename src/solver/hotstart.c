@@ -416,7 +416,7 @@ void  saveRunoff(void)
                 for (j=0; j<Nobjects[POLLUT]; j++)
                 {
                     x[0] = Subcatch[i].landFactor[k].buildup[j];
-                    fwrite(x, sizeof(double), Nobjects[POLLUT], f);
+                    fwrite(x, sizeof(double), 1, f);
                 }
                 x[0] = Subcatch[i].landFactor[k].lastSwept;
                 fwrite(x, sizeof(double), 1, f);
