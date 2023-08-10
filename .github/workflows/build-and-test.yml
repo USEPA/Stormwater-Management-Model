@@ -88,8 +88,15 @@ jobs:
       PKG_NAME: vcpkg-export-20220826-200052
 
     steps:
-    - name: Checkout Repo
+    - name: Checkout SWMM Repo
       uses: actions/checkout@v3
+
+    - name: Checkout ci-tools Repo
+      uses: actions/checkout@v3
+      with:
+        repository: michaeltryby/ci-tools
+        ref: master
+        path: ci-tools 
 
     - name: Install Boost (Windows)
       env:
@@ -110,13 +117,6 @@ jobs:
       run: |
         brew reinstall --build-from-source --formula ../../openmp/darwin/libomp.rb
 
-    - name: Checkout ci-tools Repo
-      uses: actions/checkout@v3
-      with:
-        repository: michaeltryby/ci-tools
-        ref: master
-        path: ci-tools 
-    
     - name: Build and Unit Test (Windows)
       if: ${{runner.os == 'Windows'}} 
       env:
