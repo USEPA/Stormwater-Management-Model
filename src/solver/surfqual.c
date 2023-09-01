@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21  (Build 5.2.0)
+//   Date:     07/14/23  (Build 5.2.4)
 //   Author:   L. Rossman
 //
 //   Subcatchment water quality functions.
@@ -16,6 +16,10 @@
 //   - Support for separate accounting of LID drain flows included. 
 //   Build 5.1.014:
 //   - Fixed bug in computing effective BMP removal by LIDs.
+//   Build 5.2.4:
+//   - Set low runoff flow concentrations to zero before computing runoff
+//     mass loads rather than after so that they match wet weather mass
+//     inflows reported for conveyance system nodes. 
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -255,7 +259,7 @@ void  surfqual_getWashoff(int j, double runoff, double tStep)
     {
         // --- convert washoff load to a concentration
         cOut = 0.0;
-        if ( vOut1 > 0.0 ) cOut = OutflowLoad[p] / vOut1;
+        if ( vOut1 > 0.0 && hasOutflow ) cOut = OutflowLoad[p] / vOut1;
 
         // --- assign any difference between pre- and post-LID
         //     subcatchment outflow loads to BMP removal
@@ -281,7 +285,6 @@ void  surfqual_getWashoff(int j, double runoff, double tStep)
         }
         
         // --- save new washoff concentration
-        if ( !hasOutflow ) cOut = 0.0;
         Subcatch[j].newQual[p] = cOut / LperFT3;
         
         // OWA Addition --- update surface buildup loads (in lbs or kg)

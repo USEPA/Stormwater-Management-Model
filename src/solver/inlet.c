@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     10/08/22 (Build 5.2.2)
+//   Date:     07/13/23 (Build 5.2.4)
 //   Author:   L. Rossman
 //
 //   Street/Channel Inlet Functions
@@ -18,6 +18,10 @@
 //   - Substitutes the constant BIG for HUGE.
 //   Build 5.2.2:
 //   - Additional statistics added to Street Flow Summary table.
+//   Build 5.2.4:
+//   - Fixed expression for equivalent gutter slope in getCurbInletCapture.
+//   - Corrected sign in equation for effective head in a curb inlet
+//     with an inclined throat opening in getCurbOrificeFlow.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -1444,7 +1448,7 @@ double getCurbInletCapture(double Q, double L)
 //  Input:   Q = flow rate seen by inlet (cfs)
 //           L = length of inlet opening (ft)
 //  Output:  returns captured flow rate (cfs)
-//  Purpose: finds the flow captured by an on-sag inlet.
+//  Purpose: finds the flow captured by an on-grade curb opening inlet.
 //
 {
     double Se = Sx,     // equivalent gutter slope
@@ -1460,7 +1464,7 @@ double getCurbInletCapture(double Q, double L)
     {
         Sr = Sw / Sx;
         Eo = getEo(Sr, T-W, W);
-        Se = Sx + Sw * Eo;                                 //HEC-22 Eq(4-24)
+        Se = Sx + (a/W) * Eo;                              //HEC-22 Eq(4-24)
     }
 
     // --- opening length for full capture
@@ -1741,7 +1745,7 @@ double getCurbOrificeFlow(double di, double h, double L, int throatAngle)
     if (throatAngle == HORIZONTAL_THROAT)
         d = di - h / 2.0;
     else if (throatAngle == INCLINED_THROAT)
-        d = di + (h / 2.0) * 0.7071;
+        d = di - (h / 2.0) * 0.7071;
     return 0.67 * h * L * sqrt(2.0 * 32.16 * d);           //HEC-22 Eq(4-31a)
 }
 

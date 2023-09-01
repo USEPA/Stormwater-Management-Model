@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     08/01/22  (Build 5.2.1)
+//   Date:     06/12/23  (Build 5.2.4)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -26,6 +26,8 @@
 //     (qOld) in call to link_getLossRate. 
 //   Build 5.2.1:
 //   - Implements the new option to skip checking for normal flow limitations.
+//   Build 5.2.4:
+//   - Arguments to function link_getLossRate changed.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -231,7 +233,7 @@ void  dwflow_findConduitFlow(int j, int steps, double omega, double dt)
     }
 
     // --- 6. term for evap and seepage losses per unit length
-    dq6 = link_getLossRate(j, qLast) * 2.5 * dt * v / link_getLength(j);
+    dq6 = link_getLossRate(j, DW, qLast, dt) * 2.5 * dt * v / link_getLength(j);
 
     // --- combine terms to find new conduit flow
     denom = 1.0 + dq1 + dq5;
