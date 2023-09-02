@@ -268,6 +268,26 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
     BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
 }
 
+BOOST_FIXTURE_TEST_CASE(test_getSystemSeries, Fixture) {
+    error = SMO_getSystemSeries(p_handle, SMO_runoff_flow, 0, 10, &array,
+                                  &array_dim);
+    BOOST_REQUIRE(error == 0);
+
+    const int ref_dim            = 10;
+    float     ref_array[ref_dim] = {
+        0.0f, 6.216825f, 13.030855f, 24.252975f, 14.172027f, 4.1949716f,
+		0.322329f, 0.056010f, 0.024938f, 0.012474f};
+
+    std::vector<float> ref_vec;
+    ref_vec.assign(ref_array, ref_array + 10);
+
+    std::vector<float> test_vec;
+    test_vec.assign(array, array + array_dim);
+
+    BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
+}
+
+
 BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
     error = SMO_getSubcatchResult(p_handle, 1, 1, &array, &array_dim);
     BOOST_REQUIRE(error == 0);

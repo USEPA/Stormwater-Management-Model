@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, ubuntu-20.04, macos-13.4]
+        os: [windows-2022, ubuntu-20.04, macos-12]
         requirements: [requirements-swmm.txt]
         include:
           - os: windows-2022
@@ -58,9 +58,9 @@ jobs:
                 shell: bash
                 working-directory: ./ci-tools/linux
 
-          - os: macos-13.4
+          - os: macos-12
             sys_pkgs: brew install libomp #boost
-            boost_platform_version: 13.4
+            boost_platform_version: 12
             boost_toolsit: clang
             build_unit_test: make.zsh -t -g "Xcode"
             build_reg_test: make.zsh -g "Xcode"
@@ -94,7 +94,7 @@ jobs:
       - name: Clone ci-tools repo
         uses: actions/checkout@v3
         with:
-          repository: OpenWaterAnalytics/ci-tools
+          repository: pyswmm/ci-tools
           ref: master
           path: ci-tools
 
@@ -143,8 +143,8 @@ jobs:
 
       - name: Before reg test
         env:
-          NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
-          BENCHMARK_TAG: v3.0.2
+          NRTESTS_URL: https://github.com/pyswmm/swmm-nrtestsuite
+          BENCHMARK_TAG: v3.1.0
         run: ./${{ matrix.before_reg_test }} ${{ env.BENCHMARK_TAG }}
 
       - name: Run reg test
