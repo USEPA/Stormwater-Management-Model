@@ -94,7 +94,7 @@ jobs:
       - name: Clone ci-tools repo
         uses: actions/checkout@v3
         with:
-          repository: OpenWaterAnalytics/ci-tools
+          repository: pyswmm/ci-tools
           ref: master
           path: ci-tools
 
@@ -143,8 +143,8 @@ jobs:
 
       - name: Before reg test
         env:
-          NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
-          BENCHMARK_TAG: v3.0.2
+          NRTESTS_URL: https://github.com/pyswmm/swmm-nrtestsuite
+          BENCHMARK_TAG: v3.1.0
         run: ./${{ matrix.before_reg_test }} ${{ env.BENCHMARK_TAG }}
 
       - name: Run reg test
