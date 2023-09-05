@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21  (Build 5.2.0)
+//   Date:     06/12/23  (Build 5.2.4)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
@@ -15,6 +15,8 @@
 //   - Conduit inflow passed to function that computes conduit losses.
 //   Build 5.1.014:
 //   - Arguments to function link_getLossRate changed.
+//   Build 5.2.4:
+//   - Arguments to function link_getLossRate changed again.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -100,7 +102,7 @@ int kinwave_execute(int j, double* qinflow, double* qoutflow, double tStep)
     qin = (*qinflow) / Conduit[k].barrels / Qfull;
 
     // --- compute evaporation and infiltration loss rate
-    q3 = link_getLossRate(j, qin*Qfull) / Qfull;
+    q3 = link_getLossRate(j, KW, qin*Qfull, tStep) / Qfull;
 
     // --- normalize previous areas
     a1 = Conduit[k].a1 / Afull;

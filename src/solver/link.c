@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     10/29/22   (Build 5.2.2)
+//   Date:     06/12/23   (Build 5.2.4)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
@@ -46,6 +46,8 @@
 //   - Warning no longer issued when conduit elevation drop < MIN_DELTA_Z.
 //   Build 5.2.2:
 //   - Warning for conduit elevation drop < MIN_DELTA_Z restored.
+//   Build 5.2.4:
+//   - Conduit evap+seepage loss under DW routing limited by conduit volume.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -99,7 +101,8 @@ static double conduit_getLength(int j);
 static double conduit_getLengthFactor(int j, int k, double roughness);
 static double conduit_getSlope(int j);
 static double conduit_getInflow(int j);
-static double conduit_getLossRate(int j, double q);
+static double conduit_getLossRate(int j, int routeModel, double q,
+              double tstep);
 
 static int    pump_readParams(int j, int k, char* tok[], int ntoks);
 static void   pump_validate(int j, int k);
@@ -887,9 +890,10 @@ double link_getPower(int j)
 
 //=============================================================================
 
-double link_getLossRate(int j, double q)
+double link_getLossRate(int j, int routeModel, double q, double tstep)
 //
 //  Input:   j = link index
+//           routeModel = flow routing model type
 //           q = flow rate (ft3/sec)
 //           tstep = time step (sec)
 //  Output:  returns uniform loss rate in link (ft3/sec)
@@ -897,7 +901,8 @@ double link_getLossRate(int j, double q)
 //           evaporation and seepage.
 //
 {
-    if ( Link[j].type == CONDUIT ) return conduit_getLossRate(j, q);
+    if ( Link[j].type == CONDUIT )
+        return conduit_getLossRate(j, routeModel, q, tstep);
     else return 0.0;
 }
 
@@ -1326,10 +1331,12 @@ double conduit_getInflow(int j)
 
 //=============================================================================
 
-double conduit_getLossRate(int j, double q)
+double conduit_getLossRate(int j, int routeModel, double q, double tstep)
 //
 //  Input:   j = link index
+//           routeModel = type of flow routing model
 //           q = current link flow rate (cfs)
+//           tstep = current routing time step (sec)
 //  Output:  returns rate of evaporation & seepage losses (ft3/sec)
 //  Purpose: computes volumetric rate of water evaporation & seepage
 //           from a conduit (per barrel).
@@ -1338,7 +1345,7 @@ double conduit_getLossRate(int j, double q)
     TXsect *xsect;
     double depth = 0.5 * (Link[j].oldDepth + Link[j].newDepth);
     double length;
-    double topWidth;
+    double width, topWidth;
     double evapLossRate = 0.0,
            seepLossRate = 0.0,
            totalLossRate = 0.0;
@@ -1359,19 +1366,25 @@ double conduit_getLossRate(int j, double q)
         if ( Link[j].seepRate > 0.0 )
         {
             // limit depth to depth at max width
-            if ( depth >= xsect->ywMax ) depth = xsect->ywMax;
+            if (xsect->type == RECT_CLOSED) width = xsect->wMax;
+            else
+            {
+                if ( depth >= xsect->ywMax ) depth = xsect->ywMax;
+                width = xsect_getWofY(xsect, depth);
+            }
 			
             // compute seepage loss rate across length of conduit
-            seepLossRate = Link[j].seepRate * xsect_getWofY(xsect, depth) *
-                           length;
+            seepLossRate = Link[j].seepRate * width * length;
             seepLossRate *= Adjust.hydconFactor;
         }
 
         // --- compute total loss rate
         totalLossRate = evapLossRate + seepLossRate;
 
-        // --- total loss rate cannot exceed flow rate
-        q = ABS(q);
+        // --- limit total loss rate to current volume for DW routing
+        //     or current link flow rate otherwise
+        if (routeModel == DW) q = Link[j].newVolume / tstep;
+        else q = ABS(q);        
         if (totalLossRate > q)
         {
             evapLossRate = evapLossRate * q / totalLossRate;

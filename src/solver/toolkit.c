@@ -24,6 +24,16 @@
 #include "swmm5.h"
 #include "toolkit.h"
 
+// Protect against lack of compiler support for OpenMP
+#if defined(_OPENMP)
+#include <omp.h>
+int alt_omp_get_max_threads(void)
+{
+    return omp_get_max_threads();
+}
+#else
+  int alt_omp_get_max_threads(void) { return 1;}
+#endif
 
 // Function Declarations for API
 int  massbal_getRoutingTotal(SM_RoutingTotals **routingTot);
@@ -405,7 +415,115 @@ EXPORT_TOOLKIT int  swmm_getSimulationParam(SM_SimSetting type, double *value)
             case SM_SYSFLOWTOL: *value = SysFlowTol; break;
             // Tolerance for steady nodal inflow
             case SM_LATFLOWTOL: *value = LatFlowTol; break;
+            // Number of Threads (if OpenMP enabled)
+            case SM_THREADS: *value = NumThreads; break;
             // Type not available
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
+        }
+    }
+    return error_code;
+}
+
+EXPORT_TOOLKIT int  swmm_setSimulationParam(SM_SimSetting type, double value)
+///
+/// Input:   type = SM_SimSetting
+///          Simulation Parameter
+/// Returns: error code
+/// Purpose: Set simulation analysis parameter (limited support)
+{
+    int error_code = 0;
+
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
+    }
+    // Check if Simulation is Running
+    else if(swmm_IsStartedFlag() == TRUE)
+    {
+        error_code = ERR_TKAPI_SIM_NRUNNING;
+    }
+    else
+    {
+        switch(type)
+        {
+            case SM_THREADS:
+            {
+                // --- adjust number of parallel threads to be used
+                if ( (int)value <= 0 ) NumThreads = 1;
+                else NumThreads = MIN((int)value, alt_omp_get_max_threads());
+                if ( Nobjects[LINK] < 4 * NumThreads ) NumThreads = 1;
+                break;
+            }
+            default: error_code = ERR_TKAPI_OUTBOUNDS; break;
+        }
+    }
+    return error_code;
+}
+
+EXPORT_TOOLKIT int swmm_hotstart(SM_HotStart type, const char *hsfile)
+///
+/// Input:   type = Hotstart option USE/SAVE (SM_HotStart)
+///          hotstart = file ID name (able to overwrite)
+/// Return   API Error
+/// Purpose: Allows selecting a HSF to use or save
+{
+    int error_code = 0;
+    // Check if Open
+    if(swmm_IsOpenFlag() == FALSE)
+    {
+        error_code = ERR_TKAPI_INPUTNOTOPEN;
+    }
+    // Check if Simulation is Started
+    else if (swmm_IsStartedFlag() == TRUE && type == SM_HOTSTART_USE)
+    {
+        error_code = ERR_TKAPI_SIM_RUNNING;
+    }
+    // Check if Simulation is NOT started
+    else if (swmm_IsStartedFlag() == FALSE && type == SM_HOTSTART_SAVE)
+    {
+        error_code = ERR_TKAPI_SIM_NRUNNING;
+    }
+    else
+    {
+        switch(type)
+        {
+            case SM_HOTSTART_USE:
+            {
+                // Fhotstart1 is the file to to be read
+                char fl_name[MAXFNAME];
+                sstrncpy(fl_name, hsfile, MAXFNAME);
+                Fhotstart1.mode = USE_FILE;
+                sstrncpy(Fhotstart1.name, fl_name, MAXFNAME);
+                break;
+            }
+            case SM_HOTSTART_SAVE:
+            {
+                // Storing Existing INP set HSFs
+                TFile tmpHotstart1 = Fhotstart1;
+                TFile tmpHotstart2 = Fhotstart2;
+                int _fl1_info = Fhotstart1.mode;
+                int _fl2_info = Fhotstart2.mode;
+                // Create info for New HSF
+                Fhotstart1.mode = NO_FILE;
+                Fhotstart2.mode = SAVE_FILE;
+                sstrncpy(Fhotstart2.name, hsfile, MAXFNAME);
+                // Saving Data
+                if (hotstart_open())
+                {
+                    hotstart_close();
+                    // Replacing INP set HSFs
+                    Fhotstart2 = tmpHotstart2;
+                    Fhotstart1 = tmpHotstart1;
+                    Fhotstart1.mode = _fl1_info;
+                    Fhotstart2.mode = _fl2_info;
+                }
+                else
+                {
+                    error_code = ERR_HOTSTART_FILE_OPEN;
+                }
+                break;
+            }
             default: error_code = ERR_TKAPI_OUTBOUNDS; break;
         }
     }

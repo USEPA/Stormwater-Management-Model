@@ -44,6 +44,15 @@ struct FixtureOpenClose{
     }
 };
 
+struct FixtureBeforeStart_TKAPI{
+    FixtureBeforeStart_TKAPI() {
+        swmm_open(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);
+    }
+    ~FixtureBeforeStart_TKAPI() {
+        swmm_close();
+    }
+};
+
 struct FixtureBeforeStep{
     FixtureBeforeStep() {
         swmm_open(DATA_PATH_INP, DATA_PATH_RPT, DATA_PATH_OUT);

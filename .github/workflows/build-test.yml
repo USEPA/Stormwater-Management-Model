@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, ubuntu-20.04, macos-10.15]
+        os: [windows-2022, ubuntu-20.04, macos-12]
         requirements: [requirements-swmm.txt]
         include:
           - os: windows-2022
@@ -58,9 +58,9 @@ jobs:
                 shell: bash
                 working-directory: ./ci-tools/linux
 
-          - os: macos-10.15
+          - os: macos-12
             sys_pkgs: brew install libomp #boost
-            boost_platform_version: 10.15
+            boost_platform_version: 12
             boost_toolsit: clang
             build_unit_test: make.zsh -t -g "Xcode"
             build_reg_test: make.zsh -g "Xcode"
@@ -94,7 +94,7 @@ jobs:
       - name: Clone ci-tools repo
         uses: actions/checkout@v3
         with:
-          repository: OpenWaterAnalytics/ci-tools
+          repository: pyswmm/ci-tools
           ref: master
           path: ci-tools
 
@@ -111,11 +111,11 @@ jobs:
       # install boost on mac and linux
       - name: Install required system packages on mac and linux
         run: ${{ matrix.sys_pkgs }}
-        if: ${{ runner.os == 'macOS' }} 
+        if: ${{ runner.os == 'macOS' }}
 
       # boost takes a while to install on windows, so try to cache
       - name: Install boost
-        # if: ${{runner.os == 'Windows'}} 
+        # if: ${{runner.os == 'Windows'}}
         uses: MarkusJx/install-boost@v2.4.4
         id: install-boost
         with:
@@ -123,7 +123,7 @@ jobs:
             # A list of supported versions can be found here:
             # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
             boost_version: 1.81.0
-            link: shared 
+            link: shared
             # OPTIONAL: Specify a custon install location
             # boost_install_dir: C:\some_directory
             # OPTIONAL: Specify a platform version
@@ -143,8 +143,8 @@ jobs:
 
       - name: Before reg test
         env:
-          NRTESTS_URL: https://github.com/OpenWaterAnalytics/swmm-nrtestsuite
-          BENCHMARK_TAG: v3.0.1
+          NRTESTS_URL: https://github.com/pyswmm/swmm-nrtestsuite
+          BENCHMARK_TAG: v3.1.0
         run: ./${{ matrix.before_reg_test }} ${{ env.BENCHMARK_TAG }}
 
       - name: Run reg test

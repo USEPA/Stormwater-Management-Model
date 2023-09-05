@@ -38,6 +38,7 @@ set(solver_test_srcs
     test_solver.cpp
     test_stats.cpp
     test_inlets_and_drains.cpp
+    test_toolkit_hotstart.cpp
     # ADD NEW TEST SUITES TO EXISTING TOOLKIT TEST MODULE
 )
 

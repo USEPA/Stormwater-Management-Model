@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21 (Build 5.2.0)
+//   Date:     06/12/23 (Build 5.2.4)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //
@@ -29,6 +29,8 @@
 //   - Support added for named variables & math expressions in control rules.
 //   - Support added for tracking a gage's prior n-hour rainfall total.
 //   - Refactored external inflow code.
+//   Build 5.2.4:
+//   - Additional arguments added to function link_getLossRate.
 //-----------------------------------------------------------------------------
 
 #ifndef FUNCS_H
@@ -425,7 +427,7 @@ double  link_getYnorm(int link, double q);
 double  link_getVelocity(int link, double q, double y);
 double  link_getFroude(int link, double v, double y);
 double  link_getPower(int link);
-double  link_getLossRate(int link, double q);
+double  link_getLossRate(int link, int routeModel, double q, double tstep);
 char    link_getFullState(double a1, double a2, double aFull);
 
 void    link_getResults(int link, double wt, float x[]);

@@ -1,0 +1,217 @@
+[TITLE]
+;;Project Title/Notes
+Example 1
+
+[OPTIONS]
+;;Option             Value
+FLOW_UNITS           CFS
+INFILTRATION         HORTON
+FLOW_ROUTING         DYNWAVE
+LINK_OFFSETS         DEPTH
+MIN_SLOPE            0
+ALLOW_PONDING        NO
+SKIP_STEADY_STATE    NO
+
+START_DATE           01/01/1998
+START_TIME           00:00:00
+REPORT_START_DATE    01/01/1998
+REPORT_START_TIME    00:00:00
+END_DATE             01/02/1998
+END_TIME             12:00:00
+SWEEP_START          1/1
+SWEEP_END            12/31
+DRY_DAYS             5
+REPORT_STEP          01:00:00
+WET_STEP             00:15:00
+DRY_STEP             01:00:00
+ROUTING_STEP         0:01:00
+
+INERTIAL_DAMPING     PARTIAL
+NORMAL_FLOW_LIMITED  BOTH
+FORCE_MAIN_EQUATION  H-W
+VARIABLE_STEP        0.75
+LENGTHENING_STEP     0
+MIN_SURFAREA         0
+MAX_TRIALS           0
+HEAD_TOLERANCE       0
+SYS_FLOW_TOL         5
+LAT_FLOW_TOL         5
+;MINIMUM_STEP        0.5
+THREADS              1
+
+[FILES]
+SAVE HOTSTART INFILE_Simulation1.hsf
+
+[EVAPORATION]
+;;Data Source    Parameters
+;;-------------- ----------------
+CONSTANT         0.0
+DRY_ONLY         NO
+
+[RAINGAGES]
+;;Name           Format    Interval SCF      Source
+;;-------------- --------- ------ ------ ----------
+RG1              INTENSITY 1:00     1.0      TIMESERIES TS1
+
+[SUBCATCHMENTS]
+;;Name           Rain Gage        Outlet           Area     %Imperv  Width    %Slope   CurbLen  SnowPack
+;;-------------- ---------------- ---------------- -------- -------- -------- -------- -------- ----------------
+1                RG1              9                10       50       500      0.01     0
+2                RG1              10               10       50       500      0.01     0
+3                RG1              13               5        50       500      0.01     0
+4                RG1              22               5        50       500      0.01     0
+5                RG1              15               15       50       500      0.01     0
+6                RG1              23               12       10       500      0.01     0
+7                RG1              19               4        10       500      0.01     0
+8                RG1              18               10       10       500      0.01     0
+
+[SUBAREAS]
+;;Subcatchment   N-Imperv   N-Perv     S-Imperv   S-Perv     PctZero    RouteTo    PctRouted
+;;-------------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
+1                0.001      0.10       0.05       0.05       25         OUTLET
+2                0.001      0.10       0.05       0.05       25         OUTLET
+3                0.001      0.10       0.05       0.05       25         OUTLET
+4                0.001      0.10       0.05       0.05       25         OUTLET
+5                0.001      0.10       0.05       0.05       25         OUTLET
+6                0.001      0.10       0.05       0.05       25         OUTLET
+7                0.001      0.10       0.05       0.05       25         OUTLET
+8                0.001      0.10       0.05       0.05       25         OUTLET
+
+[INFILTRATION]
+;;Subcatchment   MaxRate    MinRate    Decay      DryTime    MaxInfil
+;;-------------- ---------- ---------- ---------- ---------- ----------
+1                0.35       0.25       4.14       0.50       0
+2                0.7        0.3        4.14       0.50       0
+3                0.7        0.3        4.14       0.50       0
+4                0.7        0.3        4.14       0.50       0
+5                0.7        0.3        4.14       0.50       0
+6                0.7        0.3        4.14       0.50       0
+7                0.7        0.3        4.14       0.50       0
+8                0.7        0.3        4.14       0.50       0
+
+[JUNCTIONS]
+;;Name           Elevation  MaxDepth   InitDepth  SurDepth   Aponded
+;;-------------- ---------- ---------- ---------- ---------- ----------
+9                1000       3          0          0          0
+10               995        3          0          0          0
+13               995        3          0          0          0
+14               990        3          0          0          0
+15               987        3          0          0          0
+16               985        3          0          0          0
+17               980        3          0          0          0
+19               1010       3          0          0          0
+20               1005       3          0          0          0
+21               990        3          0          0          0
+22               987        3          0          0          0
+23               990        3          0          0          0
+24               984        3          0          0          0
+
+[OUTFALLS]
+;;Name           Elevation  Type       Stage Data       Gated    Route To
+;;-------------- ---------- ---------- ---------------- -------- ----------------
+18               975        FREE                        NO
+
+[CONDUITS]
+;;Name           From Node        To Node          Length     Roughness  InOffset   OutOffset  InitFlow   MaxFlow
+;;-------------- ---------------- ---------------- ---------- ---------- ---------- ---------- ---------- ----------
+1                9                10               400        0.01       0          0          0          0
+4                19               20               200        0.01       0          0          0          0
+5                20               21               200        0.01       0          0          0          0
+6                10               21               400        0.01       0          1          0          0
+7                21               22               300        0.01       1          1          0          0
+8                22               16               300        0.01       0          0          0          0
+10               17               18               400        0.01       0          0          0          0
+11               13               14               400        0.01       0          0          0          0
+12               14               15               400        0.01       0          0          0          0
+13               15               16               400        0.01       0          0          0          0
+14               23               24               400        0.01       0          0          0          0
+15               16               24               100        0.01       0          0          0          0
+16               24               17               400        0.01       0          0          0          0
+
+[XSECTIONS]
+;;Link           Shape        Geom1            Geom2      Geom3      Geom4      Barrels    Culvert
+;;-------------- ------------ ---------------- ---------- ---------- ---------- ---------- ----------
+1                CIRCULAR     1.5              0          0          0          1
+4                CIRCULAR     1                0          0          0          1
+5                CIRCULAR     1                0          0          0          1
+6                CIRCULAR     1                0          0          0          1
+7                CIRCULAR     2                0          0          0          1
+8                CIRCULAR     2                0          0          0          1
+10               CIRCULAR     2                0          0          0          1
+11               CIRCULAR     1.5              0          0          0          1
+12               CIRCULAR     1.5              0          0          0          1
+13               CIRCULAR     1.5              0          0          0          1
+14               CIRCULAR     1                0          0          0          1
+15               CIRCULAR     2                0          0          0          1
+16               CIRCULAR     2                0          0          0          1
+
+[POLLUTANTS]
+;;Name           Units  Crain      Cgw        Crdii      Kdecay     SnowOnly   Co-Pollutant     Co-Frac    Cdwf       Cinit
+;;-------------- ------ ---------- ---------- ---------- ---------- ---------- ---------------- ---------- ---------- ----------
+TSS              MG/L   0.0        0.0        0          0.0        NO         *                0.0        0          0
+Lead             UG/L   0.0        0.0        0          0.0        NO         TSS              0.2        0          0
+
+[LANDUSES]
+;;               Sweeping   Fraction   Last
+;;Name           Interval   Available  Swept
+;;-------------- ---------- ---------- ----------
+Residential
+Undeveloped
+
+[COVERAGES]
+;;Subcatchment   Land Use         Percent
+;;-------------- ---------------- ----------
+1                Residential      100.00
+2                Residential      50.00
+2                Undeveloped      50.00
+3                Residential      100.00
+4                Residential      50.00
+4                Undeveloped      50.00
+5                Residential      100.00
+6                Undeveloped      100.00
+7                Undeveloped      100.00
+8                Undeveloped      100.00
+
+[LOADINGS]
+;;Subcatchment   Pollutant        Buildup
+;;-------------- ---------------- ----------
+
+[BUILDUP]
+;;Land Use       Pollutant        Function   Coeff1     Coeff2     Coeff3     Per Unit
+;;-------------- ---------------- ---------- ---------- ---------- ---------- ----------
+Residential      TSS              SAT        50         0          2          AREA
+Residential      Lead             NONE       0          0          0          AREA
+Undeveloped      TSS              SAT        100        0          3          AREA
+Undeveloped      Lead             NONE       0          0          0          AREA
+
+[WASHOFF]
+;;Land Use       Pollutant        Function   Coeff1     Coeff2     SweepRmvl  BmpRmvl
+;;-------------- ---------------- ---------- ---------- ---------- ---------- ----------
+Residential      TSS              EXP        0.1        1          0          0
+Residential      Lead             EMC        0          0          0          0
+Undeveloped      TSS              EXP        0.1        0.7        0          0
+Undeveloped      Lead             EMC        0          0          0          0
+
+[TIMESERIES]
+;;Name           Date       Time       Value
+;;-------------- ---------- ---------- ----------
+;RAINFALL
+TS1                         0:00       0.0
+TS1                         1:00       0.25
+TS1                         2:00       0.5
+TS1                         3:00       0.8
+TS1                         4:00       0.4
+TS1                         5:00       0.1
+TS1                         6:00       0.0
+TS1                         27:00      0.0
+TS1                         28:00      0.4
+TS1                         29:00      0.2
+TS1                         30:00      0.0
+
+[REPORT]
+;;Reporting Options
+INPUT      NO
+CONTROLS   NO
+SUBCATCHMENTS ALL
+NODES ALL
+LINKS ALL
