@@ -99,13 +99,18 @@ file(COPY ${CMAKE_CURRENT_BINARY_DIR}/toolkit_export.h
     DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+if(APPLE)
+    set(LIB_ROOT "@loader_path")
+else()
+    set(LIB_ROOT "$ORIGIN")
+endif()
 
 set_target_properties(swmm5
     PROPERTIES
         MACOSX_RPATH TRUE
         SKIP_BUILD_RPATH FALSE
         BUILD_WITH_INSTALL_RPATH FALSE
-        INSTALL_RPATH "${PACKAGE_RPATH}"
+        INSTALL_RPATH "${LIB_ROOT};${PACKAGE_RPATH};"
         INSTALL_RPATH_USE_LINK_PATH TRUE
 )
 

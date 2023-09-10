@@ -1,0 +1,44 @@
+name: Build and Test ARM64
+
+on: workflow_dispatch
+
+jobs:
+  cross-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Clone ci-tools repo
+        uses: actions/checkout@v3
+        with:
+          repository: pyswmm/ci-tools
+          ref: master
+          path: ci-tools
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: all
+      
+      - name: start docker
+        run: docker run -id --name cross --volume="./:/swmm" --cpuset-cpus="0" karosc/build_swmm_arm64v8:latest
+
+      - name: Build and unit test
+        run: docker exec cross /bin/bash -c "cd /swmm && ./ci-tools/linux/make.sh -t -g 'Unix Makefiles'"
+
+      - name: Build for reg test
+        run: >
+          chmod +x ./.github/docker_tools/run_reg_test.sh &&
+          docker exec cross /bin/bash -c "/swmm/.github/docker_tools/run_reg_test.sh"
+
+      - name: Upload artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-test-artifacts
+          path: upload/*.*
