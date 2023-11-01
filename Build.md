@@ -25,8 +25,10 @@ Before the project can be built the required dependencies must be installed.
 
 ### Build
 
-SWMM can be built with one simple command.
+SWMM can be built using cmake with the following commands.
+
 ```
-\> cd swmm
-\swmm>tools\make.cmd
+cmake -B .\build .
+cmake --build .\build --config RELEASE
+
 ```

@@ -47,6 +47,8 @@
 //   Build 5.2.4:
 //   - Conduit evap+seepage outflow split evenly between outflow from
 //     conduit's upstream and non-outfall downstream nodes.
+//   Build 5.2.5:
+//   - Enable drainage in isolated storage with surcharge enabled.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -708,6 +710,14 @@ void setNodeDepth(int i, double dt)
         // --- don't allow a ponded node to drop much below full depth
         if ( isPonded && yNew < Node[i].fullDepth )
             yNew = Node[i].fullDepth - FUDGE;
+    }
+
+    // --- set to not surcharged if node has no flow change with respect
+    //     to head. An example is a storage node with exfiltration without
+    //     connecting links
+    else if (isSurcharged && Xnode[i].sumdqdh == 0.0)
+    {
+        isSurcharged = FALSE;
     }
 
     // --- if node surcharged, base depth change on dqdh

@@ -38,7 +38,7 @@ jobs:
       env:
         TOOL_CHAIN_PATH: \scripts\buildsystems\vcpkg.cmake
       run: |
-        cmake -B.\build -DBUILD_TESTS=ON -DCMAKE_TOOLCHAIN_FILE=.\${{env.PACKAGE_NAME}}${{env.TOOL_CHAIN_PATH}} .
+        cmake -B .\build -DBUILD_TESTS=ON -DCMAKE_TOOLCHAIN_FILE=.\${{env.PACKAGE_NAME}}${{env.TOOL_CHAIN_PATH}} .
         cmake --build .\build --config DEBUG
 
     - name: Unit Test
