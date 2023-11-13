@@ -162,7 +162,9 @@ void project_readInput()
     else
     {
         // --- compute total duration of simulation in seconds
-        TotalDuration = floor((EndDateTime - StartDateTime) * SECperDAY);
+        double durationDate = EndDate - StartDate;
+        double durationTime = EndTime - StartTime;
+        TotalDuration = floor(durationDate * SECperDAY + durationTime * SECperDAY);
 
         // --- reporting step must be <= total duration
         if ( (double)ReportStep > TotalDuration )
