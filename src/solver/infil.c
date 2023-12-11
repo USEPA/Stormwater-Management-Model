@@ -32,6 +32,8 @@
 //   - Additional validity check for G-A initial deficit added.
 //   - New error message 235 added for invalid infiltration parameters.
 //   - Conversion of runon to ponded depth fixed for Curve Number infiltration.
+//   Build 5.2.5:
+//   - Bug fix for Modified Horton max. infiltration.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -540,9 +542,17 @@ double modHorton_getInfil(THorton *infil, double tstep, double irate,
         // --- actual infiltration
         f = MIN(fa, fp);
 
+        // --- limit cumulative infiltration to Fmax
+        if (infil->Fmax > 0.0)
+        {
+            if (infil->Fe + f * tstep > infil->Fmax)
+                f = (infil->Fmax - infil->Fe) / tstep;
+            f = MAX(f, 0.0);
+        }
+
         // --- new cumulative infiltration minus seepage
         infil->Fe += MAX((f - fmin), 0.0) * tstep;
-        if ( infil->Fmax > 0.0 ) infil->Fe = MAX(infil->Fe, infil->Fmax);
+      
     }
 
     // --- reduce cumulative infiltration for dry condition
