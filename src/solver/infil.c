@@ -365,6 +365,8 @@ void horton_initState(THorton *infil)
 {
     infil->tp = 0.0;
     infil->Fe = 0.0;
+    infil->Fmh = 0.0;
+
 }
 
 //=============================================================================
@@ -545,9 +547,10 @@ double modHorton_getInfil(THorton *infil, double tstep, double irate,
         // --- limit cumulative infiltration to Fmax
         if (infil->Fmax > 0.0)
         {
-            if (infil->Fe + f * tstep > infil->Fmax)
-                f = (infil->Fmax - infil->Fe) / tstep;
+            if (infil->Fmh + f * tstep > infil->Fmax)
+                f = (infil->Fmax - infil->Fmh) / tstep;
             f = MAX(f, 0.0);
+            infil->Fmh += f * tstep;
         }
 
         // --- new cumulative infiltration minus seepage
@@ -558,8 +561,11 @@ double modHorton_getInfil(THorton *infil, double tstep, double irate,
     // --- reduce cumulative infiltration for dry condition
     else if (kr > 0.0)
     {
-        infil->Fe *= exp(-kr * tstep);
+        df = exp(-kr * tstep);
+        infil->Fe *= df;
         infil->Fe = MAX(infil->Fe, 0.0);
+        infil->Fmh *= df;
+        infil->Fmh = MAX(infil->Fmh, 0.0);
     }
     return f;
 }

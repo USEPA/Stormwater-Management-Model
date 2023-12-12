@@ -713,7 +713,7 @@ double subcatch_getRunoff(int j, double tStep)
     // --- update groundwater levels & flows if applicable
     if ( !IgnoreGwater && Subcatch[j].groundwater )
     {
-        gwater_getGroundwater(j, Vpevap, Vinfil+VlidInfil, tStep);
+        gwater_getGroundwater(j, Vpevap,  Vinfil+VlidInfil, tStep);
     }
 
     // --- save subcatchment's total loss rates (ft/s)
