@@ -608,9 +608,9 @@ int findNodeDepths(double dt)
 
     // --- compute new depth for all non-outfall nodes and determine if
     //     depth change from previous iteration is below tolerance
-#pragma omp parallel num_threads(NumThreads)
+// #pragma omp parallel num_threads(NumThreads)
 {
-    #pragma omp for private(yOld)
+   // #pragma omp for private(yOld)
     for ( i = 0; i < Nobjects[NODE]; i++ )
     {
         if ( Node[i].type == OUTFALL ) continue;
@@ -663,7 +663,7 @@ void setNodeDepth(int i, double dt)
     canPond = (AllowPonding && Node[i].pondedArea > 0.0);
     isPonded = (canPond && Node[i].newDepth > Node[i].fullDepth);
 
-    // --- initialize values
+    // --- initialize value    
     yCrown = Node[i].crownElev - Node[i].invertElev;
     yOld = Node[i].oldDepth;
     yLast = Node[i].newDepth;
@@ -692,8 +692,11 @@ void setNodeDepth(int i, double dt)
         else isSurcharged = (yCrown > 0.0 && yLast > yCrown);
     }
 
-    // --- if node not surcharged, base depth change on surface area        
-    if (!isSurcharged)
+    // --- if node not surcharged, base depth change on surface area  
+    // or storage node is surcharged but there is not a flow change with response to head
+    // An example is a storage node that has external inflows and outflows
+    // but not connecting links.    
+    if (!isSurcharged || (Node[i].type == STORAGE && Xnode[i].sumdqdh <= 0.0))
     {
         dy = dV / surfArea;
         yNew = yOld + dy;
@@ -711,15 +714,6 @@ void setNodeDepth(int i, double dt)
         if ( isPonded && yNew < Node[i].fullDepth )
             yNew = Node[i].fullDepth - FUDGE;
     }
-
-    // --- set to not surcharged if node has no flow change with respect
-    //     to head. An example is a storage node with exfiltration without
-    //     connecting links
-    else if (isSurcharged && Xnode[i].sumdqdh == 0.0)
-    {
-        isSurcharged = FALSE;
-    }
-
     // --- if node surcharged, base depth change on dqdh
     //     NOTE: depth change is w.r.t depth from previous
     //     iteration; also, do not apply under-relaxation.
