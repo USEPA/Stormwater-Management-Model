@@ -697,7 +697,7 @@ void setNodeDepth(int i, double dt)
     // or storage node is surcharged but there is not a flow change with response to head
     // An example is a storage node that has external inflows and outflows
     // but not connecting links.    
-    if (!isSurcharged || (Node[i].type == STORAGE && Xnode[i].sumdqdh <= 0.0))
+    if (!isSurcharged || (Node[i].type == STORAGE && Xnode[i].sumdqdh == 0.0))
     {
         dy = dV / surfArea;
         yNew = yOld + dy;
