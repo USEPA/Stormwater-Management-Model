@@ -608,9 +608,10 @@ int findNodeDepths(double dt)
 
     // --- compute new depth for all non-outfall nodes and determine if
     //     depth change from previous iteration is below tolerance
-// #pragma omp parallel num_threads(NumThreads)
+    // 
+#pragma omp parallel num_threads(NumThreads)
 {
-   // #pragma omp for private(yOld)
+   #pragma omp for private(yOld)
     for ( i = 0; i < Nobjects[NODE]; i++ )
     {
         if ( Node[i].type == OUTFALL ) continue;
