@@ -571,7 +571,8 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
             xsect->yFull = p[0]/ucf;
 
             // --- length of major axis
-            xsect->wMax = xsect->yFull * 1.56;
+            if ( p[1] < 0.0 ) return FALSE;
+            xsect->wMax = p[1]/ucf;
             xsect->aFull = 0.8117 * xsect->yFull * xsect->wMax;
             xsect->rFull = 0.2448 * sqrt(xsect->yFull * xsect->wMax);
         }
@@ -599,7 +600,7 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
 
             // --- length of minor axis
             xsect->yFull = p[0]/ucf;
-            xsect->wMax = xsect->yFull / 1.56;
+            xsect->wMax = p[1]/ucf;
             xsect->aFull = 0.8117 * xsect->yFull * xsect->wMax;
             xsect->rFull = 0.2448 * sqrt(xsect->yFull * xsect->wMax);
         }
