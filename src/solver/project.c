@@ -56,6 +56,8 @@
 //   - Default Inertial Damping changed from SOME to PARTIAL_DAMPING.
 //   - Default CourantFactor changed from 0 (fixed routing time step)
 //   - to 0.75 (variable time step)
+//   Build 5.3.0:
+//   - Fixed potential precision loss when calculating TotalDuration.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -162,7 +164,7 @@ void project_readInput()
     else
     {
         // --- compute total duration of simulation in seconds
-        TotalDuration = floor((EndDateTime - StartDateTime) * SECperDAY);
+        TotalDuration = floor((EndDate - StartDate) * SECperDAY + (EndTime - StartTime) * SECperDAY);
 
         // --- reporting step must be <= total duration
         if ( (double)ReportStep > TotalDuration )
