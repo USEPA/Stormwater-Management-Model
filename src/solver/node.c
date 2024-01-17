@@ -37,6 +37,9 @@
 //   Build 5.2.2:
 //   - Warning restored for node full depth being increased to crown of highest
 //     connecting link.
+//   Build 5.3.0
+//   - Fixed bug for non-zero link offset for outfalls that results in zero depth
+//     at outfall when FREE_OUTFALL or NORMAL_OUTFALL is selected.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -552,8 +555,7 @@ void   node_setOutletDepth(int j, double yNorm, double yCrit, double z)
 
       // --- for all other nodes, use min. of critical & normal depths
       default:
-        if ( z > 0.0 ) Node[j].newDepth = 0.0;
-        else Node[j].newDepth = MIN(yNorm, yCrit);
+        Node[j].newDepth = z + MIN(yNorm, yCrit);
     }
 }
 
@@ -1430,13 +1432,11 @@ void outfall_setOutletDepth(int j, double yNorm, double yCrit, double z)
     switch ( Outfall[i].type )
     {
       case FREE_OUTFALL:
-        if ( z > 0.0 ) Node[j].newDepth = 0.0;
-        else Node[j].newDepth = MIN(yNorm, yCrit);
+        Node[j].newDepth = z + MIN(yNorm, yCrit);
         return;
 
       case NORMAL_OUTFALL:
-        if ( z > 0.0 ) Node[j].newDepth = 0.0;
-        else Node[j].newDepth = yNorm;
+        Node[j].newDepth = z + yNorm;
         return;
 
       case FIXED_OUTFALL:

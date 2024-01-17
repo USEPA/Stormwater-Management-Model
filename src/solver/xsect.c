@@ -34,7 +34,7 @@
 //   - Support added for Street cross sections.
 //   Build 5.2.2:
 //   - Feasibility check added to Mod. Baskethandle & Rect.-Round shapes.
-//   Build 5.2.5:
+//   Build 5.3.0:
 //   - Addressing inconsistent results for custom sized elliptical pipes.
 //     Stems from inccorect equations for pipe full area and hydraulic radius
 //     for elliptical pipes from SWMM 4.4.
