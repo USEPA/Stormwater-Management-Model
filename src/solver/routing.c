@@ -37,7 +37,7 @@
 //   Build 5.2.0:
 //   - Support added for street flow capture and sewer backflow thru inlets.
 //   - Shell sort replaces insertion sort for sorting Event array.
-//   Build 5.2.5:
+//   Build 5.3.0:
 //   - Route flows when there is at least one node/link to ensure nodal seepage
 //     is applied even with node only models.
 //-----------------------------------------------------------------------------

@@ -47,7 +47,7 @@
 //   Build 5.2.4:
 //   - Conduit evap+seepage outflow split evenly between outflow from
 //     conduit's upstream and non-outfall downstream nodes.
-//   Build 5.2.5:
+//   Build 5.3.0:
 //   - Enable drainage in isolated storage with surcharge enabled.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE

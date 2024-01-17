@@ -32,7 +32,7 @@
 //   - Additional validity check for G-A initial deficit added.
 //   - New error message 235 added for invalid infiltration parameters.
 //   - Conversion of runon to ponded depth fixed for Curve Number infiltration.
-//   Build 5.2.5:
+//   Build 5.3.0:
 //   - Bug fix for Modified Horton max. infiltration.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
