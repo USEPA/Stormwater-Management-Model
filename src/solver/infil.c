@@ -33,7 +33,8 @@
 //   - New error message 235 added for invalid infiltration parameters.
 //   - Conversion of runon to ponded depth fixed for Curve Number infiltration.
 //   Build 5.3.0:
-//   - Bug fix for Modified Horton max. infiltration.
+//   - Bug fix for Modified Horton max. infiltration.Cummulative infiltration
+//     limited to max limit in line with page 103 of the hydrology reference.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -549,13 +550,17 @@ double modHorton_getInfil(THorton *infil, double tstep, double irate,
         {
             if (infil->Fmh + f * tstep > infil->Fmax)
                 f = (infil->Fmax - infil->Fmh) / tstep;
+
             f = MAX(f, 0.0);
+            
             infil->Fmh += f * tstep;
         }
 
         // --- new cumulative infiltration minus seepage
         infil->Fe += MAX((f - fmin), 0.0) * tstep;
-      
+
+        if (infil->Fmax > 0.0)
+            infil->Fe = MIN(infil->Fe, infil->Fmax);
     }
 
     // --- reduce cumulative infiltration for dry condition
