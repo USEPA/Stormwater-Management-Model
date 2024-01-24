@@ -99,10 +99,10 @@
 // File usage types
 //-------------------------------------
  enum FileUsageType {
-      NO_FILE,                         // no file usage
-      SCRATCH_FILE,                    // use temporary scratch file
-      USE_FILE,                        // use previously saved file
-      SAVE_FILE};                      // save file currently in use
+     NO_FILE,                         // no file usage
+     SCRATCH_FILE,                    // use temporary scratch file
+     USE_FILE,                        // use previously saved file
+     SAVE_FILE};                      // save file currently in use
 
 //-------------------------------------
 // Rain gage data types

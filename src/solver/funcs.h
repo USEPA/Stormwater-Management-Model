@@ -31,6 +31,8 @@
 //   - Refactored external inflow code.
 //   Build 5.2.4:
 //   - Additional arguments added to function link_getLossRate.
+//   Build 5.3.0:
+//   - Modified code to allow saving multiple hotstart files at different times.
 //-----------------------------------------------------------------------------
 
 #ifndef FUNCS_H
@@ -398,6 +400,7 @@ void    iface_saveOutletResults(DateTime reportDate, FILE* file);
 //   Hot Start File Methods
 //-----------------------------------------------------------------------------
 int     hotstart_open(void);
+void    hotstart_save(void);
 void    hotstart_close(void);
 
 //-----------------------------------------------------------------------------

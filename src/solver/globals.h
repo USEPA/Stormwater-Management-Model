@@ -30,6 +30,9 @@
 //   - Fixes bug in summary statistics when Report Start date > Start Date.
 //   Build 5.2.0:
 //   - Support for relative file names added.
+//   - Support for writing multiple output hotstart files for given times
+//   Build 5.3.0:
+//   - Implemented option to save multiple hotstart files at different times
 //-----------------------------------------------------------------------------
 
 #ifndef GLOBALS_H
@@ -44,8 +47,8 @@ EXTERN TFile
                   Frain,                    // Rainfall file
                   Frunoff,                  // Runoff file
                   Frdii,                    // RDII inflow file
-                  Fhotstart1,               // Hot start input file
-                  Fhotstart2,               // Hot start output file
+                  FhotstartInput,           // Hot start input file
+                  *FhotstartOutputs,        // Hot start output files
                   Finflows,                 // Inflows routing file
                   Foutflows;                // Outflows routing file
 

@@ -122,7 +122,7 @@ int routing_open()
 
     // --- initialize flow and quality routing systems
     flowrout_init(RouteModel);
-    if ( Fhotstart1.mode == NO_FILE ) qualrout_init();
+    if ( FhotstartInput.mode == NO_FILE ) qualrout_init();
 
     // --- initialize routing events
     if ( NumEvents > 0 ) sortEvents();

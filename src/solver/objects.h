@@ -56,6 +56,8 @@
 //  - Support added for tracking a gage's prior n-hour rainfall total.
 //  - Removed extIfaceInflow member from ExtInflow struct.
 //  - Refactored TRptFlags struct.
+//  Build 5.3.0:
+//  - Modified TFile to support specification of time for saving hotstart files.
 //-----------------------------------------------------------------------------
 
 #ifndef OBJECTS_H
@@ -79,6 +81,7 @@ typedef struct
    char          mode;                 // NO_FILE, SCRATCH, USE, or SAVE
    char          state;                // current state (OPENED, CLOSED)
    FILE*         file;                 // FILE structure pointer
+   double 	     saveDateTime;         // Simulation time at which to save file. Used for hotstart files.
 }  TFile;
 
 //-----------------------------------------

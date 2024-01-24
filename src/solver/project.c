@@ -58,6 +58,7 @@
 //   - to 0.75 (variable time step)
 //   Build 5.3.0:
 //   - Fixed potential precision loss when calculating TotalDuration.
+//   - Memory allocation and reading options for saving multiple hotstart files
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -286,7 +287,7 @@ void project_close()
 
 //=============================================================================
 
-int  project_init(void)
+int project_init(void)
 //
 //  Input:   none
 //  Output:  returns an error code
@@ -333,7 +334,7 @@ int  project_init(void)
 
 //=============================================================================
 
-int   project_addObject(int type, char *id, int n)
+int project_addObject(int type, char *id, int n)
 //
 //  Input:   type = object type
 //           id   = object ID string
@@ -376,7 +377,7 @@ int project_findObject(int type, const char *id)
 
 //=============================================================================
 
-char  *project_findID(int type, char *id)
+char *project_findID(int type, char *id)
 //
 //  Input:   type = object type
 //           id   = ID name being sought
@@ -803,6 +804,8 @@ void initPointers()
     Snowmelt = NULL;
     Event    = NULL;
     MemPoolAllocated = FALSE;
+    FhotstartOutputs = (TFile*)calloc(MAXHOTSTARTFILES, sizeof(TFile)); //allow users to save up to 10 hotstart files
+
 }
 
 //=============================================================================
@@ -825,20 +828,27 @@ void setDefaults()
    Fclimate.mode   = NO_FILE; 
    Frunoff.mode    = NO_FILE;
    Frdii.mode      = NO_FILE;
-   Fhotstart1.mode = NO_FILE;
-   Fhotstart2.mode = NO_FILE;
+   FhotstartInput.mode = NO_FILE;
    Finflows.mode   = NO_FILE;
    Foutflows.mode  = NO_FILE;
    Frain.file      = NULL;
    Fclimate.file   = NULL;
    Frunoff.file    = NULL;
    Frdii.file      = NULL;
-   Fhotstart1.file = NULL;
-   Fhotstart2.file = NULL;
+   FhotstartInput.file = NULL;
    Finflows.file   = NULL;
    Foutflows.file  = NULL;
    Fout.file       = NULL;
    Fout.mode       = NO_FILE;
+
+   
+   for (i = 0; i < MAXHOTSTARTFILES; i++)
+   {
+       FhotstartOutputs[i].file = NULL;
+       FhotstartOutputs[i].mode = NO_FILE;
+       FhotstartOutputs[i].saveDateTime = 0;
+   }
+
 
    // Analysis options
    UnitSystem      = US;               // US unit system
@@ -1033,6 +1043,7 @@ void createObjects()
     UnitHyd  = (TUnitHyd *)  calloc(Nobjects[UNITHYD],  sizeof(TUnitHyd));
     Snowmelt = (TSnowmelt *) calloc(Nobjects[SNOWMELT], sizeof(TSnowmelt));
     Shape    = (TShape *)    calloc(Nobjects[SHAPE],    sizeof(TShape));
+  
 
     // --- create array of detailed routing event periods
     Event = (TEvent *) calloc((size_t)NumEvents+1, sizeof(TEvent));
@@ -1299,6 +1310,7 @@ void deleteObjects()
     FREE(Snowmelt);
     FREE(Shape);
     FREE(Event);
+    FREE(FhotstartOutputs);
 }
 
 //=============================================================================

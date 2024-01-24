@@ -42,6 +42,8 @@
 //   - Prevented possible infinite loop if swmm_step() called when ErrorCode > 0.
 //   - Prevented early exit from swmm_end() when ErrorCode > 0.
 //   - Support added for relative file names.
+//   Build 5.3.0:
+//   - Added support for saving hot start files at specific times.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -441,6 +443,9 @@ int DLLEXPORT swmm_step(double *elapsedTime)
         // --- if saving results to the binary file
         if ( SaveResultsFlag )
             saveResults();
+
+        // --- save hostart files if applicable
+        hotstart_save();
 
         // --- update elapsed time (days)
         if ( NewRoutingTime < RoutingDuration )
