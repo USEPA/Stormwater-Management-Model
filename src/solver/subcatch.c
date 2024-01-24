@@ -37,6 +37,8 @@
 //   Build 5.1.015: 
 //   - Support added for multiple infiltration methods within a project.
 //   - Only pervious area depression storage receives monthly adjustment.
+//   Build 5.3.0:
+//   - Modified to use global constants defined in consts.h.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -49,7 +51,6 @@
 //-----------------------------------------------------------------------------
 // Constants 
 //-----------------------------------------------------------------------------
-const double MCOEFF    = 1.49;              // constant in Manning Eq.
 const double MEXP      = 1.6666667;         // exponent in Manning Eq.
 const double ODETOL    = 0.0001;            // acceptable error for ODE solver
 
@@ -403,7 +404,7 @@ void  subcatch_validate(int j)
 
         if ( area > 0.0 && Subcatch[j].subArea[i].N > 0.0 )
         {
-            Subcatch[j].subArea[i].alpha = MCOEFF * Subcatch[j].width / area *
+            Subcatch[j].subArea[i].alpha = PHI * Subcatch[j].width / area *
                 sqrt(Subcatch[j].slope) / Subcatch[j].subArea[i].N;
         }
     }

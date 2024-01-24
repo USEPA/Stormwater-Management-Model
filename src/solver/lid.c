@@ -68,10 +68,12 @@
 //   - Support added for mutiple infiltration methods within a project.
 //   Build 5.2.0:
 //   - Covered property added to RAIN_BARREL parameters
-//   Build 5.2.3
+//   Build 5.2.3:
 //   - Fixed double counting of initial water volume in green roof drain mat.
-//   Build 5.2.4
+//   Build 5.2.4:
 //   - Fixed test for invalid data in readDrainData function.
+//   Build 5.3.0:
+//   - Modified to use global constants defined in consts.h.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -1041,14 +1043,14 @@ void validateLidProc(int j)
             report_writeErrorMsg(ERR_LID_PARAMS, Msg);
         }
         else LidProcs[j].surface.alpha = 
-            1.49 * sqrt(LidProcs[j].surface.surfSlope) /
+            PHI * sqrt(LidProcs[j].surface.surfSlope) /
                 LidProcs[j].surface.roughness;
     }
     else
     {
         //... compute surface overland flow coeff.
         if ( LidProcs[j].surface.roughness > 0.0 )
-            LidProcs[j].surface.alpha = 1.49 / LidProcs[j].surface.roughness *
+            LidProcs[j].surface.alpha = PHI / LidProcs[j].surface.roughness *
                                         sqrt(LidProcs[j].surface.surfSlope);
         else LidProcs[j].surface.alpha = 0.0;
     }
@@ -1056,7 +1058,7 @@ void validateLidProc(int j)
     //... compute drainage mat layer's flow coeff.
     if ( LidProcs[j].drainMat.roughness > 0.0 )
     {
-        LidProcs[j].drainMat.alpha = 1.49 / LidProcs[j].drainMat.roughness *
+        LidProcs[j].drainMat.alpha = PHI / LidProcs[j].drainMat.roughness *
                                     sqrt(LidProcs[j].surface.surfSlope);
     }
     else LidProcs[j].drainMat.alpha = 0.0;

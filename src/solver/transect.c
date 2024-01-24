@@ -14,6 +14,8 @@
 //   - Function added to create a transect for a Street cross-section.
 //   Build 5.2.4:
 //   - Corrected street transect points in transect_createStreetTransect.
+//   Build 5.3.0:
+//   - Modified to use global constants defined in consts.h.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -460,7 +462,7 @@ void  getGeometry(TTransect *transect, int i, double y)
     if ( aSum == 0.0 )
         transect->hradTbl[i] = transect->hradTbl[i-1];
     else
-        transect->hradTbl[i] = pow(qSum * Nchannel / 1.49 / aSum, 1.5);
+        transect->hradTbl[i] = pow(qSum * Nchannel / PHI / aSum, 1.5);
 }
 
 //=============================================================================
