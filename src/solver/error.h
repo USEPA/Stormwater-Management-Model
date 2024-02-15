@@ -7,13 +7,18 @@
 //   Author:  L. Rossman
 //
 //   Error codes
-//
+//    
+//   Update History:
+//   ==============
+//   Build 5.3.0:
+//   - Moved API error codes to swmm.h so that they can be accessed for 
+//     interpretation
 //-----------------------------------------------------------------------------
 
 #ifndef ERROR_H
 #define ERROR_H
 
-enum  ErrorType {
+enum ErrorType {
 
 // ... Runtime Errors
       ERR_NONE                 = 0,
@@ -161,19 +166,8 @@ enum  ErrorType {
 // ... Runtime Errors
       ERR_SYSTEM               = 500,
 
-// ... API Errors
-      ERR_API_NOT_OPEN         = 501,
-      ERR_API_NOT_STARTED      = 502,
-      ERR_API_NOT_ENDED        = 503,
-      ERR_API_OBJECT_TYPE      = 504,
-	  ERR_API_OBJECT_INDEX     = 505,
-      ERR_API_OBJECT_NAME      = 506,
-	  ERR_API_PROPERTY_TYPE    = 507,
-      ERR_API_PROPERTY_VALUE   = 508,
-      ERR_API_TIME_PERIOD      = 509,
-
 // ... Additional Errors
-      MAXERRMSG = 1000
+      MAXERRMSG = 1000,
 };
       
 char* error_getMsg(int i, char* msg);

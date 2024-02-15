@@ -12,6 +12,7 @@
 //#define BOOST_TEST_DYN_LINK
 
 #define BOOST_TEST_MODULE "output"
+#define BOOST_TEST_DYN_LINK
 #include <boost/test/included/unit_test.hpp>
 
 #include <math.h>
@@ -287,7 +288,6 @@ BOOST_FIXTURE_TEST_CASE(test_getSystemSeries, Fixture) {
 
     BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
 }
-
 
 BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
     error = SMO_getSubcatchResult(p_handle, 1, 1, &array, &array_dim);

@@ -23,9 +23,10 @@
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <string.h>
+#include "consts.h"
 #include "error.h"
 
-char  ErrString[256];
+char ErrString[MAX_ERR_MSG_LENGTH];
 
 char* error_getMsg(int errCode, char* msg)
 {

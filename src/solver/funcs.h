@@ -38,6 +38,8 @@
 #ifndef FUNCS_H
 #define FUNCS_H
 
+
+
 //-----------------------------------------------------------------------------
 //   Project Methods
 //-----------------------------------------------------------------------------
@@ -165,8 +167,8 @@ void    output_saveResults(double reportTime);
 void    output_updateAvgResults(void);
 void    output_readDateTime(long period, DateTime *aDate);
 void    output_readSubcatchResults(long period, int index);
-void    output_readNodeResults(int long, int index);
-void    output_readLinkResults(int long, int index);
+void    output_readNodeResults(long period, int index);
+void    output_readLinkResults(long period, int index);
 
 //-----------------------------------------------------------------------------
 //   Groundwater Methods
@@ -401,6 +403,7 @@ void    iface_saveOutletResults(DateTime reportDate, FILE* file);
 //-----------------------------------------------------------------------------
 int     hotstart_open(void);
 void    hotstart_save(void);
+int     hotstart_save_to_file(const char* hotstartFile);
 void    hotstart_close(void);
 
 //-----------------------------------------------------------------------------

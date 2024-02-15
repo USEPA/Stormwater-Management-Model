@@ -175,7 +175,7 @@ int EXPORT_OUT_API SMO_open(SMO_Handle p_handle, const char *path)
     if (p_data == NULL)
         return -1;
     else {
-        strncpy(p_data->name, path, MAXFILENAME);
+        strncpy_s(p_data->name, path, MAXFILENAME);
 
         // Attempt to open binary output file for reading only
         if ((_fopen(&(p_data->file), path, "rb")) != 0)
@@ -526,7 +526,7 @@ int EXPORT_OUT_API SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
             *length = p_data->elementNames[idx].length;
             *name   = newCharArray(*length + 1);
             // Writes IDname and an additional null character to name
-            strncpy(*name, p_data->elementNames[idx].IDname,
+            strncpy_s(*name, p_data->elementNames[idx].IDname,
                     (*length + 1) * sizeof(char));
         }
     }
@@ -1036,7 +1036,7 @@ void errorLookup(int errcode, char *dest_msg, int dest_len)
             msg = ERR440;
     }
 
-    strncpy(dest_msg, msg, MAXMSG);
+    strncpy_s(dest_msg, msg, MAXMSG);
 }
 
 // Local functions:

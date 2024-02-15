@@ -51,7 +51,7 @@ add_subdirectory(src/solver)
 add_subdirectory(src/run)
 
 if(BUILD_TESTS)
-    enable_testing()
+    enable_testing() 
     add_subdirectory(tests)
 endif()
 
