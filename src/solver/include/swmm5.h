@@ -173,7 +173,6 @@ typedef enum {
     ERR_API_PROPERTY_VALUE = -999908,
     ERR_API_TIME_PERIOD = -999909,
     ERR_API_HOTSTART_FILE_OPEN = -999910,
-    ERR_API_NO_DATA = -999999
 } swmm_API_Errors;
 
 
@@ -191,7 +190,7 @@ int    DLLEXPORT swmm_close(void);
 int    DLLEXPORT swmm_getMassBalErr(float *runoffErr, float *flowErr, float *qualErr);
 int    DLLEXPORT swmm_getVersion(void);
 int    DLLEXPORT swmm_getError(char *errMsg, int msgLen);
-int    DLLEXPORT swmm_getErrorFromCode(int error_code, char *outErrMsg[256]);
+int    DLLEXPORT swmm_getErrorFromCode(int error_code, char **outErrMsg);
 int    DLLEXPORT swmm_getWarnings(void);
 
 int    DLLEXPORT swmm_getCount(int objType);

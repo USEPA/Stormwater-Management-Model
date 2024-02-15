@@ -307,7 +307,7 @@ int initializeSaveHotstartFile(TFile *hotstartFile)
 
 //=============================================================================
 
-void  saveRouting(TFile *hotstartFile)
+void saveRouting(TFile *hotstartFile)
 //
 //  Input:   hotStartFile = hotstart file to use
 //  Output:  none

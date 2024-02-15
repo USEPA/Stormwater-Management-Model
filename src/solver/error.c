@@ -26,7 +26,7 @@
 #include "consts.h"
 #include "error.h"
 
-char ErrString[MAX_ERR_MSG_LENGTH];
+char ErrString[MAXMSG];
 
 char* error_getMsg(int errCode, char* msg)
 {

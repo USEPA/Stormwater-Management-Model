@@ -839,12 +839,30 @@ int DLLEXPORT swmm_getError(char *errMsg, int msgLen)
     // --- copy text of last error message into errMsg
     if (ErrorCode > 0 && strlen(ErrorMsg) == 0)
         error_getMsg(ErrorCode, ErrorMsg);
+
     sstrncpy(errMsg, ErrorMsg, msgLen);
 
     // --- remove leading line feed from errMsg
     if ( msgLen > 0 && errMsg[0] == '\n' ) errMsg[0] = ' ';
     return ErrorCode;
 }
+
+//=============================================================================
+
+int DLLEXPORT swmm_getErrorFromCode(int error_code, char **outErrMsg)
+//
+//  Input:   error_code = error code number
+//  Output:  outErrMsg = error message text
+//  Purpose: retrieves the text of the error message that corresponds to the
+//           error code number.
+{
+    char err_msg[MAXMSG];
+	error_getMsg(error_code, err_msg);
+    sstrncpy(*outErrMsg, err_msg, MAXMSG);
+
+	return 0;
+}
+
 
 //=============================================================================
 
