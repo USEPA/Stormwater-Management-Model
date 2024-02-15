@@ -177,7 +177,7 @@ int EXPORT_OUT_API SMO_open(SMO_Handle p_handle, const char *path)
     else {
 
 #ifdef _MSC_VER
-        strncpy_s(p_data->name, path, MAXFILENAME);
+        strncpy_s(p_data->name, MAXFILENAME, path, MAXFILENAME);
 #else
         strncpy(p_data->name, path, MAXFILENAME);
 #endif
@@ -532,8 +532,12 @@ int EXPORT_OUT_API SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
             *name   = newCharArray(*length + 1);
             // Writes IDname and an additional null character to name
 
+
 #ifdef _MSC_VER
-            strncpy_s(*name, p_data->elementNames[idx].IDname,
+            strncpy_s(
+                *name, 
+                (*length + 1) * sizeof(char),
+                p_data->elementNames[idx].IDname,
                 (*length + 1) * sizeof(char));
 #else
             strncpy(*name, p_data->elementNames[idx].IDname,

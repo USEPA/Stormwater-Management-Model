@@ -948,7 +948,8 @@ double DLLEXPORT swmm_getValue(int property, int index)
         return getNodeValue(property, index);
     if (property < 500)
         return getLinkValue(property, index);
-    return ERR_API_NO_DATA;
+
+    return ERR_API_PROPERTY_TYPE;
 }
 
 //=============================================================================
