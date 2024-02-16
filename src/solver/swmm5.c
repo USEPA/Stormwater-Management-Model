@@ -553,7 +553,6 @@ int DLLEXPORT swmm_useHotStart(const char* hotStartFile)
     FhotstartInput.mode = USE_FILE;
     sstrncpy(FhotstartInput.name, addAbsolutePath(fname), MAXFNAME);
 
-
     return error_code;
 }
 
@@ -573,7 +572,6 @@ int DLLEXPORT swmm_saveHotStart(const char* hotStartFile)
         return (ErrorCode = ERR_API_NOT_OPEN);
     else if (!IsStartedFlag)
         return (ErrorCode = ERR_API_NOT_STARTED);
-
 
    error_code = hotstart_save_to_file(hotStartFile);
 
@@ -863,42 +861,42 @@ int DLLEXPORT swmm_getErrorFromCode(int error_code, char **outErrMsg)
 	return 0;
 }
 
-
 //=============================================================================
 
 int DLLEXPORT swmm_getCount(int objType)
 //
 //  Input:   objType = a type of SWMM object
-//  Output:  returns the number of objects;
+//  Output:  returns the number of objects or error code;
 //  Purpose: retrieves the number of objects of a specific type.
 {
     if (!IsOpenFlag)
-        return 0;
+        return ERR_API_NOT_OPEN;
     if (objType < swmm_GAGE || objType > swmm_LINK)
-        return 0;
+        return ERR_API_OBJECT_TYPE;
     return Nobjects[objType];
 }
 
 //=============================================================================
 
-void DLLEXPORT swmm_getName(int objType, int index, char *name, int size)
+int DLLEXPORT swmm_getName(int objType, int index, char *name, int size)
 //
 //  Input:   objType = a type of SWMM object
 //           index = the object's index in the array of objects
 //           name = a character array
 //           size = size of the name array
-//  Output:  name = the object's ID name;
+//  Output:  name = the object's ID name; 
+//           error code
 //  Purpose: retrieves the ID name of an object.
 {
     char *idName = NULL;
 
     name[0] = '\0';
     if (!IsOpenFlag)
-        return;
+        return ERR_API_NOT_OPEN;
     if (objType < swmm_GAGE || objType > swmm_LINK)
-        return;
+        return ERR_API_OBJECT_TYPE;
     if (index < 0 || index >= Nobjects[objType])
-        return;
+        return ERR_API_OBJECT_INDEX;
     switch (objType)
     {
         case GAGE:     idName = Gage[index].ID;     break;
@@ -908,6 +906,8 @@ void DLLEXPORT swmm_getName(int objType, int index, char *name, int size)
     }
     if (idName)
         sstrncpy(name, idName, size);
+
+    return 0;
 }
 
 //=============================================================================
@@ -916,13 +916,13 @@ int DLLEXPORT swmm_getIndex(int objType, const char *name)
 //
 //  Input:   objType = a type of SWMM object
 //           name = the object's ID name
-//  Output:  returns the object's position in the array of like objects;
+//  Output:  returns the object's position in the array of like objects or error code;
 //  Purpose: retrieves the index of a named object.
 {
     if (!IsOpenFlag)
-        return -1;
+        return ERR_API_NOT_OPEN;
     if (objType < swmm_GAGE || objType > swmm_LINK)
-        return -1;
+        return ERR_API_OBJECT_TYPE;
     return project_findObject(objType, name);
 }
 
@@ -1273,6 +1273,10 @@ double getSystemValue(int property)
         return SkipSteadyState;
     case swmm_IGNORERAINFALL:
 		return IgnoreRainfall;
+    case swmm_RULESTEP:
+		return RuleStep;
+    case swmm_SWEEPSTART:
+        return SweepStart;
 	default:
 		return ERR_API_PROPERTY_TYPE;
 	}
@@ -1519,7 +1523,7 @@ int setSystemValue(int property, double value)
 //
 //  Input:   property = a system property code
 //           value = the property's new value
-//  Output:  none
+//  Output:  returns an error code
 //  Purpose: sets the value of a system property.
 {
     int y, m, d, h, min, s;

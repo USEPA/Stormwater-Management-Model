@@ -194,7 +194,7 @@ int    DLLEXPORT swmm_getErrorFromCode(int error_code, char **outErrMsg);
 int    DLLEXPORT swmm_getWarnings(void);
 
 int    DLLEXPORT swmm_getCount(int objType);
-void   DLLEXPORT swmm_getName(int objType, int index, char *name, int size);
+int    DLLEXPORT swmm_getName(int objType, int index, char *name, int size);
 int    DLLEXPORT swmm_getIndex(int objType, const char *name);
 double DLLEXPORT swmm_getValue(int property, int index);
 int    DLLEXPORT swmm_setValue(int property, int index,  double value);

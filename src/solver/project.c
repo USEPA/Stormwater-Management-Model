@@ -390,7 +390,7 @@ char *project_findID(int type, char *id)
 
 //=============================================================================
 
-double ** project_createMatrix(int nrows, int ncols)
+double **project_createMatrix(int nrows, int ncols)
 //
 //  Input:   nrows = number of rows (0-based)
 //           ncols = number of columns (0-based)
