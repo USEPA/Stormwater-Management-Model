@@ -33,5 +33,5 @@ install(TARGETS runswmm
 add_custom_command(TARGET runswmm POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
         $<TARGET_FILE:runswmm>
-        ${CMAKE_BINARY_DIR}/bin/$<CONFIGURATION>/$<TARGET_FILE_NAME:runswmm>
+        ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/$<TARGET_FILE_NAME:runswmm>
 )

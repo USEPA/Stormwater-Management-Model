@@ -68,24 +68,25 @@ static int  initializeSaveHotstartFile(TFile *hotstartFile);
 static void readRunoff(void);
 static void saveRunoff(TFile *hotstartFile);
 static void readRouting(void);
-static void saveRouting(TFile* hotstartFile);
-static int  readFloat(float *x, FILE* f);
-static int  readDouble(double* x, FILE* f);
+static void saveRouting(TFile *hotstartFile);
+static int  readFloat(float *x, FILE *f);
+static int  readDouble(double *x, FILE *f);
 
 //=============================================================================
 
 int hotstart_open()
 {
     int i;
+    int errorCode = 0;
 
     // --- open hot start files
     if ( !initializeFromHotstartFile() ) return FALSE;       //input hot start file
 
     for (i = 0; i < MAXHOTSTARTFILES; i++)
     {
-        if (initializeSaveHotstartFile(&FhotstartOutputs[i]))
+        if ((errorCode = initializeSaveHotstartFile(&FhotstartOutputs[i])))
         {
-            report_writeErrorMsg(ERR_HOTSTART_FILE_OPEN, FhotstartOutputs[i].name);
+            report_writeErrorMsg(errorCode, FhotstartOutputs[i].name);
             return FALSE;      
         }
     }
@@ -119,7 +120,7 @@ void hotstart_save()
 
 //=============================================================================
 
-int hotstart_save_to_file(const char* hotstartFile)
+int hotstart_save_to_file(const char *hotstartFile)
 //
 //  Input:   hotStartFile = filepath to hotstart file to use
 //  Output:  returns error code
@@ -154,6 +155,49 @@ int hotstart_save_to_file(const char* hotstartFile)
 
 //=============================================================================
 
+int hotstart_is_valid(const char *hotstartFile, int *inputFileVersion)
+//
+//  Input:   hotStartFile     = filepath to hotstart file to check
+//  Output:  inputFileVersion = version of hotstart file
+//           returns error code
+{
+	char  fStamp[]     = "SWMM5-HOTSTART";
+	char  fileStamp[]  = "SWMM5-HOTSTART";
+	char  fStampx[]    = "SWMM5-HOTSTARTx";
+	char  fileStamp2[] = "SWMM5-HOTSTART2";
+	char  fileStamp3[] = "SWMM5-HOTSTART3";
+	char  fileStamp4[] = "SWMM5-HOTSTART4";
+	FILE* f;
+
+	// --- try to open the file
+	if ( (f = fopen(hotstartFile, "r+b")) == NULL)
+	{
+		return ERR_HOTSTART_FILE_OPEN;
+	}
+
+	// --- check that file contains proper header records
+	fread(fStampx, sizeof(char), strlen(fileStamp2), f);
+	if      ( strcmp(fStampx, fileStamp4) == 0 ) *inputFileVersion = 4;
+	else if ( strcmp(fStampx, fileStamp3) == 0 ) *inputFileVersion = 3;
+	else if ( strcmp(fStampx, fileStamp2) == 0 ) *inputFileVersion = 2;
+	else
+	{
+		rewind(f);
+		fread(fStamp, sizeof(char), strlen(fileStamp), f);
+		if ( strcmp(fStamp, fileStamp) != 0 )
+		{
+			fclose(f);
+			return ERR_HOTSTART_FILE_FORMAT;
+		}
+		*inputFileVersion = 1;
+	}
+    
+    fclose(f);
+    return 0;
+}
+
+//=============================================================================
+
 void hotstart_close()
 //
 //  Input:   none
@@ -179,7 +223,7 @@ void hotstart_close()
 int initializeFromHotstartFile()
 //
 //  Input:   none
-//  Output:  none
+//  Output:  True for successful initialization of hotstart file or False otherwise
 //  Purpose: initializes model state a previously saved routing hotstart file.
 //
 {
@@ -189,38 +233,40 @@ int initializeFromHotstartFile()
     int   nPollut;
     int   nLandUses;
     int   flowUnits;
-    char  fStamp[]     = "SWMM5-HOTSTART";
-    char  fileStamp[]  = "SWMM5-HOTSTART";
-    char  fStampx[]    = "SWMM5-HOTSTARTx";
-    char  fileStamp2[] = "SWMM5-HOTSTART2";
-    char  fileStamp3[] = "SWMM5-HOTSTART3";
-    char  fileStamp4[] = "SWMM5-HOTSTART4";
+    int   errorCode;
 
     // --- try to open the file
     if ( FhotstartInput.mode != USE_FILE ) return TRUE;
-    if ( (FhotstartInput.file = fopen(FhotstartInput.name, "r+b")) == NULL)
-    {
-        report_writeErrorMsg(
-            ERR_HOTSTART_FILE_OPEN, 
-            FhotstartInput.name);
+    errorCode = hotstart_is_valid(FhotstartInput.name, &fileVersion);
+  
+    if (errorCode)
+    {   
+        if (errorCode == ERR_HOTSTART_FILE_OPEN)
+		{
+			report_writeErrorMsg(
+				ERR_HOTSTART_FILE_OPEN, 
+				FhotstartInput.name);
+		}
+		else
+		{
+			report_writeErrorMsg(errorCode, "");
+		}
         return FALSE;
     }
 
-    // --- check that file contains proper header records
-    fread(fStampx, sizeof(char), strlen(fileStamp2), FhotstartInput.file);
-    if      ( strcmp(fStampx, fileStamp4) == 0 ) fileVersion = 4;
-    else if ( strcmp(fStampx, fileStamp3) == 0 ) fileVersion = 3;
-    else if ( strcmp(fStampx, fileStamp2) == 0 ) fileVersion = 2;
+    FhotstartInput.file = fopen(FhotstartInput.name, "r+b");
+    // --- read header records from the file
+    if (fileVersion > 1)
+    {
+        char fStampx[] = "SWMM5-HOTSTARTx";
+        char fileStamp2[] = "SWMM5-HOTSTART2";
+        fread(fStampx, sizeof(char), strlen(fileStamp2), FhotstartInput.file);
+    }
     else
     {
-        rewind(FhotstartInput.file);
-        fread(fStamp, sizeof(char), strlen(fileStamp), FhotstartInput.file);
-        if ( strcmp(fStamp, fileStamp) != 0 )
-        {
-            report_writeErrorMsg(ERR_HOTSTART_FILE_FORMAT, "");
-            return FALSE;
-        }
-        fileVersion = 1;
+        char  fStamp[] = "SWMM5-HOTSTART";
+		char  fileStamp[] = "SWMM5-HOTSTART";
+		fread(fStamp, sizeof(char), strlen(fileStamp), FhotstartInput.file);
     }
 
     nSubcatch = -1;
@@ -281,7 +327,9 @@ int initializeSaveHotstartFile(TFile *hotstartFile)
     char  fileStamp[] = "SWMM5-HOTSTART4";
 
     // --- try to open file
-    if (hotstartFile->mode != SAVE_FILE ) return TRUE;
+    if (hotstartFile->mode != SAVE_FILE ) 
+        return 0;
+
     if ( (hotstartFile->file = fopen(hotstartFile->name, "w+b")) == NULL)
     {
         error_code = ERR_HOTSTART_FILE_OPEN;

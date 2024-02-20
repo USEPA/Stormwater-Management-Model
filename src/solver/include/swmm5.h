@@ -173,11 +173,12 @@ typedef enum {
     ERR_API_PROPERTY_VALUE = -999908,
     ERR_API_TIME_PERIOD = -999909,
     ERR_API_HOTSTART_FILE_OPEN = -999910,
+    ERR_API_HOTSTART_FILE_FORMAT= -999911,
 } swmm_API_Errors;
 
 
-int    DLLEXPORT swmm_run(const char *f1, const char *f2, const char *f3);
-int    DLLEXPORT swmm_open(const char *f1, const char *f2, const char *f3);
+int    DLLEXPORT swmm_run(const char *inpuFile, const char *reportFile, const char *outputFile);
+int    DLLEXPORT swmm_open(const char *inputFile, const char *reportFile, const char *outputFile);
 int    DLLEXPORT swmm_start(int saveFlag);
 int    DLLEXPORT swmm_step(double *elapsedTime);
 int    DLLEXPORT swmm_stride(int strideStep, double *elapsedTime);

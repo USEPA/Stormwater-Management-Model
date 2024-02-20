@@ -404,6 +404,7 @@ void    iface_saveOutletResults(DateTime reportDate, FILE* file);
 int     hotstart_open(void);
 void    hotstart_save(void);
 int     hotstart_save_to_file(const char* hotstartFile);
+int     hotstart_is_valid(const char* hotstartFile, int *inputFileVersion);
 void    hotstart_close(void);
 
 //-----------------------------------------------------------------------------

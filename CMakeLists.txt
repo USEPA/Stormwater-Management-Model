@@ -12,7 +12,7 @@
 cmake_minimum_required (VERSION 3.13)
 
 if("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
-    message(FATAL_ERROR "In-source builds are disabled.")
+    message(FATAL_ERROR "In-source builds are disabled.") 
 endif()
 
 
@@ -34,7 +34,7 @@ endif()
 
 
 # Define install locations (will be prepended by install prefix)
-set(TOOL_DIST "bin")
+set(TOOL_DIST "bin") 
 set(INCLUDE_DIST "include")
 set(LIBRARY_DIST "lib")
 set(CONFIG_DIST  "cmake")

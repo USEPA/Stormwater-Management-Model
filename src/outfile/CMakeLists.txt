@@ -77,6 +77,6 @@ if(BUILD_TESTS)
     add_custom_command(TARGET swmm-output POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
             $<TARGET_FILE:swmm-output>
-            ${CMAKE_BINARY_DIR}/bin/$<CONFIGURATION>/$<TARGET_FILE_NAME:swmm-output>
+            ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/$<TARGET_FILE_NAME:swmm-output>
         )
 endif()

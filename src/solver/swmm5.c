@@ -188,11 +188,11 @@ static int  xfilter(int xc, char* module, double elapsedTime, long step);
 
 //=============================================================================
 
-int DLLEXPORT swmm_run(const char *f1, const char *f2, const char *f3)
+int DLLEXPORT swmm_run(const char* inpuFile, const char* reportFile, const char* outputFile)
 //
-//  Input:   f1 = name of input file
-//           f2 = name of report file
-//           f3 = name of binary output file
+//  Input:   inputFile = name of input file
+//           reportFile = name of report file
+//           outputFile = name of binary output file
 //  Output:  returns error code
 //  Purpose: runs a SWMM simulation.
 //
@@ -209,7 +209,7 @@ int DLLEXPORT swmm_run(const char *f1, const char *f2, const char *f3)
     // --- open the files & read input data
     ErrorCode = 0;
     writecon("\n o  Retrieving project data");
-    swmm_open(f1, f2, f3);
+    swmm_open(inpuFile, reportFile, outputFile);
 
     // --- run the simulation if input data OK
     if ( !ErrorCode )
@@ -258,11 +258,11 @@ int DLLEXPORT swmm_run(const char *f1, const char *f2, const char *f3)
 
 //=============================================================================
 
-int DLLEXPORT swmm_open(const char *f1, const char *f2, const char *f3)
+int DLLEXPORT swmm_open(const char* inpuFile, const char* reportFile, const char* outputFile)
 //
-//  Input:   f1 = name of input file
-//           f2 = name of report file
-//           f3 = name of binary output file
+//  Input:   inputFile  = name of input file
+//           reportFile = name of report file
+//           outputFile = name of binary output file
 //  Output:  returns error code
 //  Purpose: opens a SWMM project.
 //
@@ -289,8 +289,8 @@ int DLLEXPORT swmm_open(const char *f1, const char *f2, const char *f3)
 
         // --- open a SWMM project
         strcpy(InpDir, "");
-        project_open(f1, f2, f3);
-        getAbsolutePath(f1, InpDir, sizeof(InpDir));
+        project_open(inpuFile, reportFile, outputFile);
+        getAbsolutePath(inpuFile, InpDir, sizeof(InpDir));
         if ( ErrorCode ) return ErrorCode;
         IsOpenFlag = TRUE;
         report_writeLogo();
@@ -527,8 +527,8 @@ int DLLEXPORT swmm_useHotStart(const char* hotStartFile)
 //  Purpose: Sets the hotstart file to use for simulation. Errors does not terminate simulation unless
 //  there is a prior terminating error.
 {
-    int error_code = 0;
-    FILE *f;
+    int errorCode = 0;
+    int fileVersion = 0;
     char  fname[MAXFNAME + 1];
 
     if (ErrorCode)
@@ -540,20 +540,19 @@ int DLLEXPORT swmm_useHotStart(const char* hotStartFile)
 
     sstrncpy(fname, hotStartFile, MAXFNAME);
 
-    // Try to open the hotstart file first to see if it exists
-    if ((f = fopen(addAbsolutePath(fname), "r")) == NULL)
+    // Try to open the hotstart file first to see if it is valid
+    errorCode = hotstart_is_valid(addAbsolutePath(fname), &fileVersion);
+    if (errorCode)
 	{
-		return (error_code = ERR_API_HOTSTART_FILE_OPEN);
+		return errorCode;
 	}
     else
     {
-		fclose(f);
-	}
+        FhotstartInput.mode = USE_FILE;
+        sstrncpy(FhotstartInput.name, addAbsolutePath(fname), MAXFNAME);
+    }
 
-    FhotstartInput.mode = USE_FILE;
-    sstrncpy(FhotstartInput.name, addAbsolutePath(fname), MAXFNAME);
-
-    return error_code;
+    return errorCode;
 }
 
 //=============================================================================
@@ -564,7 +563,7 @@ int DLLEXPORT swmm_saveHotStart(const char* hotStartFile)
 //  Output:  returns error code
 //  Purpose: Saves hotstart file at the current simulation time
 {
-    int error_code = 0;
+    int errorCode = 0;
 
     if (ErrorCode)
         return ErrorCode;
@@ -573,9 +572,9 @@ int DLLEXPORT swmm_saveHotStart(const char* hotStartFile)
     else if (!IsStartedFlag)
         return (ErrorCode = ERR_API_NOT_STARTED);
 
-   error_code = hotstart_save_to_file(hotStartFile);
+   errorCode = hotstart_save_to_file(hotStartFile);
 
-   return error_code;
+   return errorCode;
    
 }
 
@@ -847,15 +846,15 @@ int DLLEXPORT swmm_getError(char *errMsg, int msgLen)
 
 //=============================================================================
 
-int DLLEXPORT swmm_getErrorFromCode(int error_code, char **outErrMsg)
+int DLLEXPORT swmm_getErrorFromCode(int errorCode, char **outErrMsg)
 //
-//  Input:   error_code = error code number
+//  Input:   errorCode = error code number
 //  Output:  outErrMsg = error message text
 //  Purpose: retrieves the text of the error message that corresponds to the
 //           error code number.
 {
     char err_msg[MAXMSG];
-	error_getMsg(error_code, err_msg);
+	error_getMsg(errorCode, err_msg);
     sstrncpy(*outErrMsg, err_msg, MAXMSG);
 
 	return 0;
