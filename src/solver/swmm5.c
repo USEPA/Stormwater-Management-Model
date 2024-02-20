@@ -188,7 +188,7 @@ static int  xfilter(int xc, char* module, double elapsedTime, long step);
 
 //=============================================================================
 
-int DLLEXPORT swmm_run(const char* inpuFile, const char* reportFile, const char* outputFile)
+int DLLEXPORT swmm_run(const char* inputFile, const char* reportFile, const char* outputFile)
 //
 //  Input:   inputFile = name of input file
 //           reportFile = name of report file
@@ -209,7 +209,7 @@ int DLLEXPORT swmm_run(const char* inpuFile, const char* reportFile, const char*
     // --- open the files & read input data
     ErrorCode = 0;
     writecon("\n o  Retrieving project data");
-    swmm_open(inpuFile, reportFile, outputFile);
+    swmm_open(inputFile, reportFile, outputFile);
 
     // --- run the simulation if input data OK
     if ( !ErrorCode )
@@ -258,7 +258,7 @@ int DLLEXPORT swmm_run(const char* inpuFile, const char* reportFile, const char*
 
 //=============================================================================
 
-int DLLEXPORT swmm_open(const char* inpuFile, const char* reportFile, const char* outputFile)
+int DLLEXPORT swmm_open(const char* inputFile, const char* reportFile, const char* outputFile)
 //
 //  Input:   inputFile  = name of input file
 //           reportFile = name of report file
@@ -289,8 +289,8 @@ int DLLEXPORT swmm_open(const char* inpuFile, const char* reportFile, const char
 
         // --- open a SWMM project
         strcpy(InpDir, "");
-        project_open(inpuFile, reportFile, outputFile);
-        getAbsolutePath(inpuFile, InpDir, sizeof(InpDir));
+        project_open(inputFile, reportFile, outputFile);
+        getAbsolutePath(inputFile, InpDir, sizeof(InpDir));
         if ( ErrorCode ) return ErrorCode;
         IsOpenFlag = TRUE;
         report_writeLogo();
