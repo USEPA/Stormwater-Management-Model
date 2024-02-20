@@ -177,7 +177,7 @@ typedef enum {
 } swmm_API_Errors;
 
 
-int    DLLEXPORT swmm_run(const char *inpuFile, const char *reportFile, const char *outputFile);
+int    DLLEXPORT swmm_run(const char *inputFile, const char *reportFile, const char *outputFile);
 int    DLLEXPORT swmm_open(const char *inputFile, const char *reportFile, const char *outputFile);
 int    DLLEXPORT swmm_start(int saveFlag);
 int    DLLEXPORT swmm_step(double *elapsedTime);
