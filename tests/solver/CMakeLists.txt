@@ -16,7 +16,7 @@ add_executable(
 target_include_directories(
     test_solver_api
     PUBLIC 
-        ../helper.h 
+        ../
         ../../solver/include
         ../../outfile/include
     )
@@ -67,6 +67,7 @@ add_executable(
 target_include_directories(
     test_solver_hotstart
     PUBLIC 
+        ../
         ../../solver/include
         ../../outfile/include
     )

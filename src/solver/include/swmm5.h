@@ -191,7 +191,7 @@ int    DLLEXPORT swmm_close(void);
 int    DLLEXPORT swmm_getMassBalErr(float *runoffErr, float *flowErr, float *qualErr);
 int    DLLEXPORT swmm_getVersion(void);
 int    DLLEXPORT swmm_getError(char *errMsg, int msgLen);
-int    DLLEXPORT swmm_getErrorFromCode(int error_code, char **outErrMsg);
+int    DLLEXPORT swmm_getErrorFromCode(int error_code, char *outErrMsg[1024]);
 int    DLLEXPORT swmm_getWarnings(void);
 
 int    DLLEXPORT swmm_getCount(int objType);

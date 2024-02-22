@@ -1055,7 +1055,7 @@ void errorLookup(int errcode, char *dest_msg, int dest_len)
 #ifdef _MSC_VER
     strncpy_s(dest_msg, MAXMSG, msg, MAXMSG);
 #else
-    strncpy(est_msg, msg, MAXMSG);
+    strncpy(dest_msg, msg, MAXMSG);
 #endif
 
 }

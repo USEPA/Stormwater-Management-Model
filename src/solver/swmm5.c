@@ -846,7 +846,7 @@ int DLLEXPORT swmm_getError(char *errMsg, int msgLen)
 
 //=============================================================================
 
-int DLLEXPORT swmm_getErrorFromCode(int errorCode, char **outErrMsg)
+int DLLEXPORT swmm_getErrorFromCode(int errorCode, char *outErrMsg[1024])
 //
 //  Input:   errorCode = error code number
 //  Output:  outErrMsg = error message text
