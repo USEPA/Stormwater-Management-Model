@@ -13,6 +13,7 @@
 #include <fstream>
 
 #include "swmm5.h"
+#include "swmm_output_enums.h"
 #include "swmm_output.h"
 #include "helper.h"
 
@@ -85,37 +86,37 @@ BOOST_AUTO_TEST_CASE(
 	std::string filepath = std::string(ORIGINAL_INPUT_FILE);
     std::string extension = ".inp";
 
-    size_t start_pos = filepath.find(extension);
-    std::string report_filepath = std::string(filepath).replace(start_pos, extension.length(), ".rpt");
-	std::string output_filepath = std::string(filepath).replace(start_pos, extension.length(), ".out");
+    size_t startPos = filepath.find(extension);
+    std::string reportFilepath = std::string(filepath).replace(startPos, extension.length(), ".rpt");
+	std::string outputFilepath = std::string(filepath).replace(startPos, extension.length(), ".out");
 
-	error = swmm_run(filepath.c_str(), report_filepath.c_str(), output_filepath.c_str());
+	error = swmm_run(filepath.c_str(), reportFilepath.c_str(), outputFilepath.c_str());
 	BOOST_REQUIRE(error == 0);
 
 	// Check to make sure output exists
-	std::ifstream output_file(output_filepath);
+	std::ifstream output_file(outputFilepath);
 	BOOST_REQUIRE(output_file.good());
 
 	filepath = std::string(SAVE_HOTSTART_INPUT_FILE);
-	start_pos = filepath.find(extension);
-	report_filepath = std::string(filepath).replace(start_pos, filepath.length(), ".rpt");
-	output_filepath = std::string(filepath).replace(start_pos, extension.length(), ".out");
-	error = swmm_run(SAVE_HOTSTART_INPUT_FILE, report_filepath.c_str(), output_filepath.c_str());
+	startPos = filepath.find(extension);
+	reportFilepath = std::string(filepath).replace(startPos, filepath.length(), ".rpt");
+	outputFilepath = std::string(filepath).replace(startPos, extension.length(), ".out");
+	error = swmm_run(SAVE_HOTSTART_INPUT_FILE, reportFilepath.c_str(), outputFilepath.c_str());
 	BOOST_REQUIRE(error == 0);
 
 	// Check to make sure hostart file exists
-	std::ifstream hotstart_save_output_file(output_filepath);
-	BOOST_REQUIRE(hotstart_save_output_file.good());
+	std::ifstream hotstartSaveOutputFile(outputFilepath);
+	BOOST_REQUIRE(hotstartSaveOutputFile.good());
 
 	// Check to make sure hotstart file exists
-	std::ifstream hotstart_file_v1(std::string(HOTSTART_FILE_V1));
-	BOOST_REQUIRE(hotstart_file_v1.good());
+	std::ifstream hotstartFileV1(std::string(HOTSTART_FILE_V1));
+	BOOST_REQUIRE(hotstartFileV1.good());
 
-	std::ifstream hotstart_file_v2(std::string(HOTSTART_FILE_V2));
-	BOOST_REQUIRE(hotstart_file_v2.good());
+	std::ifstream hotstartFileV2(std::string(HOTSTART_FILE_V2));
+	BOOST_REQUIRE(hotstartFileV1.good());
 
-	std::ifstream hotstart_file_end(std::string(HOTSTART_FILE_END));
-	BOOST_REQUIRE(hotstart_file_end.good());
+	std::ifstream hotstartFileEnd(std::string(HOTSTART_FILE_END));
+	BOOST_REQUIRE(hotstartFileEnd.good());
 }
 
 /*!
@@ -130,19 +131,28 @@ BOOST_AUTO_TEST_CASE(
 	*boost::unit_test::label("Test using first saved hotstart")
 ) {
 	int error = 0;
-	std::string original_filepath = std::string(ORIGINAL_INPUT_FILE);
+	std::string originalFilepath = std::string(ORIGINAL_INPUT_FILE);
 	std::string filepath = std::string(RUN_HOTSTART_INPUT_FILE_v1);
 	std::string extension = ".inp";
 
-	size_t start_pos = filepath.find(extension);
-	std::string report_filepath = std::string(filepath).replace(start_pos, extension.length(), ".rpt");
-	std::string output_filepath = std::string(filepath).replace(start_pos, extension.length(), ".out");
-	error = swmm_run(filepath.c_str(), report_filepath.c_str(), output_filepath.c_str());
+	size_t startPos = filepath.find(extension);
+	std::string reportFilepath = std::string(filepath).replace(startPos, extension.length(), ".rpt");
+	std::string outputFilepath = std::string(filepath).replace(startPos, extension.length(), ".out");
+	error = swmm_run(filepath.c_str(), reportFilepath.c_str(), outputFilepath.c_str());
 	BOOST_REQUIRE(error == 0);
 	
-	std::string original_output_filepath = std::string(original_filepath).replace(start_pos, extension.length(), ".out");
+	std::string originalOutputFilepath = std::string(originalFilepath).replace(startPos, extension.length(), ".out");
 	
-	SWMMOutputFile output_file(original_output_filepath);
+	SWMMOutputFile output_file(originalOutputFilepath);
+
+	int *origElementCount;
+	int origLength;
+	error = SMO_getProjectSize(output_file.m_handle, &origElementCount, &origLength);
+	BOOST_REQUIRE(error == 0);
+
+	int num_periods;
+	double startDate;
+	error = SMO_getTimes(output_file.m_handle, SMO_time::SMO_numPeriods, &num_periods);
 
 	SWMMOutputFile hotstart_output_file(output_filepath);
 
