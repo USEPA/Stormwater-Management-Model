@@ -74,6 +74,7 @@
 //   - Fixed test for invalid data in readDrainData function.
 //   Build 5.3.0:
 //   - Modified to use global constants defined in consts.h.
+//   - Updated to route runoff from closed rain barrel to pervious area.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -1620,6 +1621,7 @@ void lid_getRunoff(int j, double tStep)
     TLidGroup  theLidGroup;       // group of LIDs placed in the subcatchment
     TLidList*  lidList;           // list of LID units in the group
     TLidUnit*  lidUnit;           // a member of the list of LID units
+    TSubcatch* subcatch;          // subcatchment being analyzed
     double lidArea;               // area of an LID unit
     double qImperv = 0.0;         // runoff from impervious areas (cfs)
     double qPerv = 0.0;           // runoff from pervious areas (cfs)
@@ -1634,16 +1636,19 @@ void lid_getRunoff(int j, double tStep)
     lidList = theLidGroup->lidList;
     if ( !lidList ) return;
 
+    // ... get subcatchment being analyzed
+    subcatch = &Subcatch[j];
+
     //... determine if evaporation can occur
     EvapRate = Evap.rate;
-    if ( Evap.dryOnly && Subcatch[j].rainfall > 0.0 ) EvapRate = 0.0;
+    if ( Evap.dryOnly && subcatch->rainfall > 0.0 ) EvapRate = 0.0;
 
     //... find subcatchment's infiltration rate into native soil
     findNativeInfil(j, tStep);
 
     //... get impervious and pervious area runoff from non-LID
     //    portion of subcatchment (cfs)
-    if ( Subcatch[j].area > Subcatch[j].lidArea )
+    if (subcatch->area > subcatch->lidArea )
     {    
         qImperv = getImpervAreaRunoff(j);
         qPerv = getPervAreaRunoff(j);
@@ -1666,13 +1671,23 @@ void lid_getRunoff(int j, double tStep)
             //... update total runoff volume treated
             VlidIn += lidInflow * lidArea * tStep;
 
-            //... add rainfall onto LID inflow (ft/s)
-            lidInflow = lidInflow + getRainInflow(j, lidUnit);
+            TLidProc* lidProc = &LidProcs[lidUnit->lidIndex];
+            if (lidProc->lidType == RAIN_BARREL &&
+                lidProc->storage.covered == TRUE)
+            {
+                // Add runoff from closed rain barrel to return (cfs)
+                qReturn += subcatch->rainfall * subcatch->lidArea;
+			}
+            else
+            {
+                //... add rainfall onto LID inflow (ft/s)
+                lidInflow = lidInflow + subcatch->rainfall;
+            }
 
             // ... add upstream runon only if LID occupies full subcatchment
-            if ( Subcatch[j].area == Subcatch[j].lidArea )
+            if (subcatch->area >= subcatch->lidArea)
             {
-                lidInflow += Subcatch[j].runon;
+                lidInflow += subcatch->runon;
             }
 
             //... evaluate the LID unit's performance, updating the LID group's
@@ -1774,7 +1789,7 @@ double getImpervAreaRunoff(int j)
     {
         q *= Subcatch[j].subArea[IMPERV0].fOutlet;
     }
-    nonLidArea = Subcatch[j].area - Subcatch[j].lidArea;
+    nonLidArea = max(0.0, Subcatch[j].area - Subcatch[j].lidArea);
     return q * nonLidArea;
 }
 
@@ -1800,7 +1815,7 @@ double getPervAreaRunoff(int j)
     {
         q *= Subcatch[j].subArea[PERV].fOutlet;
     }
-    nonLidArea = Subcatch[j].area - Subcatch[j].lidArea;
+    nonLidArea = max(0.0, Subcatch[j].area - Subcatch[j].lidArea);
     return q * nonLidArea;
 }
 

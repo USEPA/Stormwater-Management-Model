@@ -670,12 +670,12 @@ double subcatch_getRunoff(int j, double tStep)
     // --- find volume of inflow to non-LID portion of subcatchment as existing
     //     ponded water + any runon volume from upstream areas;
     //     rainfall and snowmelt will be added as each sub-area is analyzed
-    nonLidArea = Subcatch[j].area - Subcatch[j].lidArea;
+    nonLidArea = max(0.0, Subcatch[j].area - Subcatch[j].lidArea);
     vRunon = Subcatch[j].runon * tStep * nonLidArea;
     Vinflow = vRunon + subcatch_getDepth(j) * nonLidArea;
 
     // --- find LID runon only if LID occupies full subcatchment
-    if ( nonLidArea == 0.0 )
+    if ( nonLidArea <= 0.0 )
         vRunon = Subcatch[j].runon * tStep * Subcatch[j].area;
 
     // --- get net precip. (rainfall + snowfall + snowmelt) on the 3 types
@@ -691,17 +691,20 @@ double subcatch_getRunoff(int j, double tStep)
 
     // --- examine each type of sub-area (impervious w/o depression storage,
     //     impervious w/ depression storage, and pervious)
-    if ( nonLidArea > 0.0 ) for (i = IMPERV0; i <= PERV; i++)
+    if (nonLidArea > 0.0)
     {
-        // --- get runoff from sub-area updating Vevap, Vpevap,
-        //     Vinfil & Voutflow)
-        area = nonLidArea * Subcatch[j].subArea[i].fArea;
-        Subcatch[j].subArea[i].runoff =
-            getSubareaRunoff(j, i, area, netPrecip[i], evapRate, tStep);
-        subAreaRunoff = Subcatch[j].subArea[i].runoff * area;
-        if (i == PERV) vPervRunoff = subAreaRunoff * tStep;
-        else           vImpervRunoff += subAreaRunoff * tStep;
-        runoff += subAreaRunoff;
+        for (i = IMPERV0; i <= PERV; i++)
+        {
+            // --- get runoff from sub-area updating Vevap, Vpevap,
+            //     Vinfil & Voutflow)
+            area = nonLidArea * Subcatch[j].subArea[i].fArea;
+            Subcatch[j].subArea[i].runoff =
+                getSubareaRunoff(j, i, area, netPrecip[i], evapRate, tStep);
+            subAreaRunoff = Subcatch[j].subArea[i].runoff * area;
+            if (i == PERV) vPervRunoff = subAreaRunoff * tStep;
+            else           vImpervRunoff += subAreaRunoff * tStep;
+            runoff += subAreaRunoff;
+        }
     }
 
     // --- evaluate any LID treatment provided (updating Vevap,
