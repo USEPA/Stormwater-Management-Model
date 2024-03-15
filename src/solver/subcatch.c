@@ -588,6 +588,7 @@ void subcatch_getRunon(int j)
     {
         pervArea = Subcatch[j].subArea[PERV].fArea *
                    (Subcatch[j].area - Subcatch[j].lidArea);
+
         q = lid_getFlowToPerv(j);
         if ( pervArea > 0.0 )
         {
