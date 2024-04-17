@@ -146,7 +146,11 @@ int report_readOptions(char* tok[], int ntoks)
         for (t = 1; t < ntoks; t++)
         {
             j = project_findObject(m, tok[t]);
-            if ( j < 0 ) return error_setInpError(ERR_NAME, tok[t]);
+            // --- check if object can be found
+            if ( j < 0 ) {
+                report_writeWarningMsg(WARN13, tok[t]);
+                continue;
+            }
             switch ( m )
             {
               case SUBCATCH:  Subcatch[j].rptFlag = TRUE;  break;
