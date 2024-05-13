@@ -70,11 +70,11 @@ Clicking on a keyword will take you to a description of the data supplied in tha
 
 @page title  [TITLE]
 
-## Purpose:
+**Purpose:**
 
 Attaches a descriptive title to the project being analyzed.
 
-## Format:
+**Format:**
 
 Any number of lines may be entered. The first line will be used as a page header in the output report.
 
@@ -84,11 +84,11 @@ Any number of lines may be entered. The first line will be used as a page header
 
 @page options  [OPTIONS]
 
-## Purpose:
+**Purpose:**
 
 Provides values for various analysis options.
 
-## Format:
+**Format:**
 
 |                         |                                                                                     |
 | :---------------------- | :---------------------------------------------------------------------------------- |
@@ -132,7 +132,7 @@ Provides values for various analysis options.
 | **HEAD_TOLERANCE**      | _value_                                                                             |
 | **THREADS**             | _value_                                                                             |
 
-## Remarks:
+**Remarks:**
 
 **FLOW_UNITS** makes a choice of flow units. Selecting a US flow unit means that all other quantities will be expressed in US customary units, while choosing a metric flow unit will force all quantities to be expressed in SI metric units. (Exceptions are pollutant concentration and Manning’s roughness coefficient (n) which are always in metric units). The default is **CFS**.
 
@@ -218,11 +218,11 @@ Provides values for various analysis options.
 
 @page report  [REPORT]
 
-## Purpose:
+**Purpose:**
 
 Describes the contents of the report file that SWMM produces.
 
-## Formats:
+**Formats:**
 
 |                   |                                                 |
 | :---------------- | :---------------------------------------------- |
@@ -235,7 +235,7 @@ Describes the contents of the report file that SWMM produces.
 | **LINKS**         | **ALL / NONE** / \<list of link names\>         |
 | **LID**           | _Name  Subcatch  Fname_                         |
 
-## Remarks:
+**Remarks:**
 
 **INPUT** specifies whether or not a summary of the input data should be provided in the output report. The default is **NO**.
 
@@ -261,11 +261,11 @@ The SUBCATCHMENTS, NODES, LINKS, and LID lines can be repeated multiple times.
 
 @page files  [FILES]
 
-## Purpose:
+**Purpose:**
 
 Identifies optional interface files used or saved by a run.
 
-## Formats:
+**Formats:**
 
 |                             |         |
 | --------------------------- | ------- |
@@ -276,11 +276,11 @@ Identifies optional interface files used or saved by a run.
 | **USE** **INFLOWS**         | _Fname_ |
 | **SAVE** **OUTFLOWS**       | _Fname_ |
 
-## Parameters:
+**Parameters:**
 
-*Fname* the name of an interface file.
+*Fname* -- the name of an interface file.
 
-## Remarks:
+**Remarks:**
 
 SWMM can use several different kinds of interface files that contain either externally imposed inputs (e.g., rainfall or infiltration/inflow hydrographs) or the results of previously run analyses (e.g., runoff or routing results). These files can help speed up simulations, simplify comparisons of different loading scenarios, and allow large study areas to be broken up into smaller areas that can be analyzed individually. The different types of interface files that are currently available include:
 
@@ -305,321 +305,202 @@ Enclose the external file name in double quotes if it contains spaces and includ
 @page raingages  [RAINGAGES]
 
 
-## Purpose:
+**Purpose:**
 
-Identifies each rain gage that provides rainfall data for the study
-area.
+Identifies each rain gage that provides rainfall data for the study area.
 
- 
+**Formats:**
 
-## Formats:
+_Name_ _Form_ _Intvl_ _SCF_ **TIMESERIES** _Tseries_
 
-Name Form Intvl SCF TIMESERIES Tseries
+_Name_ _Form_ _Intvl_ _SCF_ **FILE** _Fname_ (_Sta_ _Units_)
 
-Name Form Intvl SCF FILE Fname (Sta Units)
 
- 
+**Parameters:**
 
-## Parameters:
+  _Name_ -- name assigned to rain gage.
 
-  ------ -----------------------------
-  Name   name assigned to rain gage.
-  ------ -----------------------------
+  _Form_ -- form of recorded rainfall, either **INTENSITY**, **VOLUME** or **CUMULATIVE**.
 
-  ------ --------------------------------------------------------------------
-  Form   form of recorded rainfall, either INTENSITY, VOLUME or CUMULATIVE.
-  ------ --------------------------------------------------------------------
+  _Intvl_ -- time interval between gage readings in decimal hours or hours:minutes format (e.g., 0:15 for 15-minute readings).
 
-  ------- -------------------------------------------------------------------------------------------------------------------
-  Intvl   time interval between gage readings in decimal hours or hours:minutes format (e.g., 0:15 for 15-minute readings).
-  ------- -------------------------------------------------------------------------------------------------------------------
+  _SCF_ -- snow catch deficiency correction factor (use 1.0 for no adjustment).
 
-  ----- ----------------------------------------------------------------------
-  SCF   snow catch deficiency correction factor (use 1.0 for no adjustment).
-  ----- ----------------------------------------------------------------------
+  _Tseries_ -- name of a time series in the [TIMESERIES] section with rainfall data.
 
-  --------- -----------------------------------------------------------------------
-  Tseries   name of a time series in the [TIMESERIES] section with rainfall data.
-  --------- -----------------------------------------------------------------------
+  _Fname_ -- name of an external file with rainfall data. Rainfall files are discussed in Section 11.3.
 
-  ------- --------------------------------------------------------------------------------------------
-  Fname   name of an external file with rainfall data. Rainfall files are discussed in Section 11.3.
-  ------- --------------------------------------------------------------------------------------------
+  _Sta_ -- name of the recording station in a user-prepared formatted rain file.
 
-  ----- -----------------------------------------------------------------------
-  Sta   name of the recording station in a user-prepared formatted rain file.
-  ----- -----------------------------------------------------------------------
+  _Units_ -- rain depth units for the data in a user-prepared formatted rain file, either **IN** (inches) or **MM** (millimeters).
 
-  ------- ---------------------------------------------------------------------------------------------------------------
-  Units   rain depth units for the data in a user-prepared formatted rain file, either IN (inches) or MM (millimeters).
-  ------- ---------------------------------------------------------------------------------------------------------------
+**Remarks:**
 
- 
+Enclose the external file name in double quotes if it contains spaces and include its full path if it resides in a different directory than the SWMM input file.
 
-## Remarks:
-
-Enclose the external file name in double quotes if it contains spaces
-and include its full path if it resides in a different directory than
-the SWMM input file.
-
-The station name and depth units entries are only required when using a
-user-prepared formatted rainfall file.
+The station name and depth units entries are only required when using a user-prepared formatted rainfall file.
 
 <!---
   evaporation
 -->
+
 @page evaporation  [EVAPORATION]
 
+**Purpose:**
 
-## Purpose:
-
-Specifies how daily potential evaporation rates vary with time for the
-study area.
+Specifies how daily potential evaporation rates vary with time for the study area.
 
  
 
-## Formats:
+**Formats:**
 
-+-----------------------------------+-----------------------------------+
-| CONSTANT                          | evap                              |
-+-----------------------------------+-----------------------------------+
-| MONTHLY                           | e1 e2 e3 e4 e5 e6 e7 e8 e9 e10    |
-|                                   | e11 e12                           |
-+-----------------------------------+-----------------------------------+
-| TIMESERIES                        | Tseries                           |
-+-----------------------------------+-----------------------------------+
-| TEMPERATURE                       |                                   |
-+-----------------------------------+-----------------------------------+
-| FILE                              | (p1 p2 p3 p4 p5 p6 p7 p8 p9 p10   |
-|                                   | p11 p12)                          |
-+-----------------------------------+-----------------------------------+
-| RECOVERY                          | patternID                         |
-+-----------------------------------+-----------------------------------+
-| DRY_ONLY                          | NO / YES                          |
-+-----------------------------------+-----------------------------------+
+|                 |                                            |
+| :-------------- | :----------------------------------------- |
+| **CONSTANT**    | _evap_                                     |
+| **MONTHLY**     | _e1 e2 e3 e4 e5 e6 e7 e8 e9 e10 e11 e12_   |
+| **TIMESERIES**  | _Tseries_                                  |
+| **TEMPERATURE** |                                            |
+| **FILE**        | (_p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12_) |
+| **RECOVERY**    | _patternID_                                |
+| **DRY_ONLY**    | **NO / YES**                               |
 
-## Parameters:
+**Parameters:**
 
-+-----------------------------------+-----------------------------------+
-| evap                              | constant evaporation rate (in/day |
-|                                   | or mm/day).                       |
-+-----------------------------------+-----------------------------------+
-| e1                                | evaporation rate in January       |
-|                                   | (in/day or mm/day).               |
-+-----------------------------------+-----------------------------------+
-| ...                               |                                   |
-+-----------------------------------+-----------------------------------+
-| e12                               | evaporation rate in December      |
-|                                   | (in/day or mm/day).               |
-+-----------------------------------+-----------------------------------+
-| Tseries                           | name of a time series in the      |
-|                                   | [TIMESERIES] section with         |
-|                                   | evaporation data.                 |
-+-----------------------------------+-----------------------------------+
-| p1                                | pan coefficient for January.      |
-+-----------------------------------+-----------------------------------+
-| ...                               |                                   |
-+-----------------------------------+-----------------------------------+
-| p12                               | pan coefficient for December.     |
-+-----------------------------------+-----------------------------------+
-| patID                             | name of a monthly time pattern.   |
-+-----------------------------------+-----------------------------------+
+_evap_ -- constant evaporation rate (in/day or mm/day).
 
-## Remarks:
+_e1_ -- evaporation rate in January (in/day or mm/day).
 
-Use only one of the above formats (CONSTANT, MONTHLY, TIMESERIES,
-TEMPERATURE, or FILE). If no [EVAPORATION] section appears, then
-evaporation is assumed to be 0.
+...
 
-TEMPERATURE indicates that evaporation rates will be computed from the
-daily air temperatures contained in an external climate file whose name
-is provided in the [TEMPERATURE] section. This method also uses the
-site’s latitude, which can also be specified in the [TEMPERATURE]
-section.
+_e12_ -- evaporation rate in December (in/day or mm/day).
 
-FILE indicates that evaporation data will be read directly from the same
-external climate file used for air        temperatures as specified in
-the [TEMPERATURE] section. Supplying monthly pan coefficients for these
-data is optional.
+_Tseries_ -- name of a time series in the [TIMESERIES] section with evaporation data.
 
-RECOVERY identifies an optional monthly time pattern of multipliers used
-to modify infiltration recovery rates during dry periods. For example,
-if the normal infiltration recovery rate was 1% during a specific time
-period and a pattern factor of 0.8 applied to this period, then the
-actual recovery rate would be 0.8%.
+_p1_ -- pan coefficient for January.
 
-DRY_ONLY determines if evaporation only occurs during periods with no
-precipitation. The default is NO.
+...
 
-The evaporation rates provided in this section are potential rates. The
-actual amount of water evaporated will depend on the amount available as
-a simulation progresses.
+_p12_ -- pan coefficient for December.
+
+_patID_ -- name of a monthly time pattern.
+
+
+**Remarks:**
+
+Use only one of the above formats (**CONSTANT**, **MONTHLY**, **TIMESERIES**, **TEMPERATURE**, or **FILE**). If no [EVAPORATION] section appears, then evaporation is assumed to be 0.
+
+**TEMPERATURE** indicates that evaporation rates will be computed from the daily air temperatures contained in an external climate file whose name is provided in the [TEMPERATURE] section. This method also uses the site’s latitude, which can also be specified in the [TEMPERATURE] section.
+
+**FILE** indicates that evaporation data will be read directly from the same external climate file used for air temperatures as specified in the [TEMPERATURE] section. Supplying monthly pan coefficients for these data is optional.
+
+**RECOVERY** identifies an optional monthly time pattern of multipliers used to modify infiltration recovery rates during dry periods. For example, if the normal infiltration recovery rate was 1% during a specific time period and a pattern factor of 0.8 applied to this period, then the actual recovery rate would be 0.8%.
+
+**DRY_ONLY** determines if evaporation only occurs during periods with no precipitation. The default is **NO**.
+
+The evaporation rates provided in this section are potential rates. The actual amount of water evaporated will depend on the amount available as a simulation progresses.
 
 <!---
   temperature
 -->
+
 @page temperature  [TEMPERATURE]
 
+**Purpose:**
 
-  ---------- --
-  ## Purpose:
-  ---------- --
+Specifies daily air temperatures, monthly wind speed, and various snowmelt parameters for the study area. Required only when snowmelt is being modeled or when evaporation rates are computed from daily temperatures or are read from an external climate file.
 
-Specifies daily air temperatures, monthly wind speed, and various
-snowmelt parameters for the study area. Required only when snowmelt is
-being modeled or when evaporation rates are computed from daily
-temperatures or are read from an external climate file.
+**Formats:**
 
- 
+|                    |                                                      |
+| :----------------- | :--------------------------------------------------- |
+| **TIMESERIES**     | _Tseries_                                            |
+| **FILE**           | _Fname_ (_Start_) (_Units_)                          |
+| **WINDSPEED**      | **MONTHLY** _s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12_ |
+| **WINDSPEED**      | **FILE**                                             |
+| **SNOWMELT**       | _Stemp  ATIwt RNM Elev Lat DTLong_                   |
+| **ADC IMPERVIOUS** | _f.0 f.1 f.2 f.3 f.4 f.5 f.6 f.7 f.8 f.9_            |
+| **ADC PERVIOUS**   | _f.0 f.1 f.2 f.3 f.4 f.5 f.6 f.7 f.8 f.9_            |
 
-## Formats:
+**Parameters:**
 
-  ---------------- ------------------------------------------------
-  TIMESERIES       Tseries
-  FILE             Fname (Start) (Units)
-  WINDSPEED        MONTHLY s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12
-  WINDSPEED        FILE
-  SNOWMELT         Stemp  ATIwt  RNM  Elev  Lat  DTLong
-  ADC IMPERVIOUS   f.0 f.1 f.2 f.3 f.4 f.5 f.6 f.7 f.8 f.9
-  ADC PERVIOUS     f.0 f.1 f.2 f.3 f.4 f.5 f.6 f.7 f.8 f.9
-  ---------------- ------------------------------------------------
+_Tseries_ -- name of a time series in the [TIMESERIES] section with temperature data.
 
- 
+_Fname_ -- name of an external Climate file with temperature data.
 
-## Parameters:
+_Start_ --date to begin reading from the file in month/day/year format (default is the beginning of the file).
 
-  --------- --------------------------------------------------------------------------
-  Tseries   name of a time series in the [TIMESERIES] section with temperature data.
-  --------- --------------------------------------------------------------------------
+_Units_ -- temperature units for GHCN files (**C10** for tenths of a degree C (the default), **C** for degrees C or **F** for degrees F.
 
-  ------- ---------------------------------------------------------
-  Fname   name of an external Climate file with temperature data.
-  ------- ---------------------------------------------------------
-
-  ------- ------------------------------------------------------------------------------------------------------
-  Start   date to begin reading from the file in month/day/year format (default is the beginning of the file).
-  ------- ------------------------------------------------------------------------------------------------------
-
-  ------- -------------------------------------------------------------------------------------------------------------------
-  Units   temperature units for GHCN files (C10 for tenths of a degree C (the default), C for degrees C or F for degrees F.
-  ------- -------------------------------------------------------------------------------------------------------------------
-
-  ---- -----------------------------------------------
-  s1   average wind speed in January (mph or km/hr).
-  ---- -----------------------------------------------
+_s1_ -- average wind speed in January (mph or km/hr).
 
 ...
 
-  ----- ------------------------------------------------
-  s12   average wind speed in December (mph or km/hr).
-  ----- ------------------------------------------------
+_s12_ -- average wind speed in December (mph or km/hr).
 
-  ------- --------------------------------------------------------------------
-  Stemp   air temperature at which precipitation falls as snow (deg F or C).
-  ------- --------------------------------------------------------------------
+_Stemp_ -- air temperature at which precipitation falls as snow (deg F or C).
 
-  ------- -------------------------------------------------------
-  ATIwt   antecedent temperature index weight (default is 0.5).
-  ------- -------------------------------------------------------
+_ATIwt_ -- antecedent temperature index weight (default is 0.5).
 
-  ----- ---------------------------------------
-  RNM   negative melt ratio (default is 0.6).
-  ----- ---------------------------------------
+_RNM_ -- negative melt ratio (default is 0.6).
 
-  ------ --------------------------------------------------------------------------------
-  Elev   average elevation of study area above mean sea level (ft or m) (default is 0).
-  ------ --------------------------------------------------------------------------------
+_Elev_ -- average elevation of study area above mean sea level (ft or m) (default is 0).
 
-  ----- --------------------------------------------------------------
-  Lat   latitude of the study area in degrees North (default is 50).
-  ----- --------------------------------------------------------------
+_Lat_ -- latitude of the study area in degrees North (default is 50).
 
-  -------- -----------------------------------------------------------------------------------------------------
-  DTLong   correction, in minutes of time, between true solar time and the standard clock time (default is 0).
-  -------- -----------------------------------------------------------------------------------------------------
+_DTLong_ -- correction, in minutes of time, between true solar time and the standard clock time (default is 0).
 
-  ----- ---------------------------------------------------------------------------------------
-  f.0   fraction of area covered by snow when ratio of snow depth to depth at 100% cover is 0
-  ----- ---------------------------------------------------------------------------------------
+_f.0_ -- fraction of area covered by snow when ratio of snow depth to depth at 100% cover is 0
 
 ...
 
-  ----- ------------------------------------------------------------------------------------------
-  f.9   fraction of area covered by snow when ratio of snow depth to depth at 100% cover is 0.9.
-  ----- ------------------------------------------------------------------------------------------
+_f.9_ -- fraction of area covered by snow when ratio of snow depth to depth at 100% cover is 0.9.
 
- 
+**Remarks:**
 
-## Remarks:
+Use the **TIMESERIES** line to read air temperature from a time series or the **FILE** line to read it from an external Climate file. Climate files are discussed in Section 11.4. If neither format is used, then air temperature remains constant at 70 degrees F.
 
-Use the TIMESERIES line to read air temperature from a time series or
-the FILE line to read it from an external Climate file. Climate files
-are discussed in Section 11.4. If neither format is used, then air
-temperature remains constant at 70 degrees F.
+Enclose the Climate file name in double quotes if it contains spaces and include its full path if it resides in a different directory than the SWMM input file.
 
-Enclose the Climate file name in double quotes if it contains spaces and
-include its full path if it resides in a different directory than the
-SWMM input file.
+Temperatures supplied from NOAA's latest Climate Data Online GHCN files should have their units (**C** or **F**) specified. Older versions of these files listed temperatures in tenths of a degree C (**C10**). An asterisk can be entered for the Start date if it defaults to the beginning of the file.
 
-Temperatures supplied from NOAA's latest Climate Data Online GHCN files
-should have their units (C or F) specified. Older versions of these
-files listed temperatures in tenths of a degree C (C10). An asterisk can
-be entered for the Start date if it defaults to the beginning of the
-file.
+Wind speed can be specified either by monthly average values or by the same Climate file used for air temperature. If neither option appears, then wind speed is assumed to be 0.
 
-Wind speed can be specified either by monthly average values or by the
-same Climate file used for air temperature. If neither option appears,
-then wind speed is assumed to be 0.
-
-Separate Areal Depletion Curves (ADC) can be defined for impervious and
-pervious sub-areas. The ADC parameters will default to 1.0 (meaning no
-depletion) if no data are supplied for a particular type of sub-area.
+Separate Areal Depletion Curves (ADC) can be defined for impervious and pervious sub-areas. The ADC parameters will default to 1.0 (meaning no depletion) if no data are supplied for a particular type of sub-area.
 
 <!---
   adjustments
 -->
+
 @page adjustments  [ADJUSTMENTS]
 
-
-## Purpose:
+**Purpose:**
 
 Specifies optional monthly adjustments to be made to temperature,
 evaporation rate, rainfall intensity and hydraulic conductivity in each
 time period of a simulation.
 
- 
+**Formats:**
 
-## Formats:
+|                  |                                          |
+| :--------------- | :--------------------------------------- |
+| **TEMPERATURE**  | _t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12_ |
+| **EVAPORATION**  | _e1 e2 e3 e4 e5 e6 e7 e8 e9 e10 e11 e12_ |
+| **RAINFALL**     | _r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12_ |
+| **CONDUCTIVITY** | _c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12_ |
 
-  -------------- ----------------------------------------
-  TEMPERATURE    t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12
-  EVAPORATION    e1 e2 e3 e4 e5 e6 e7 e8 e9 e10 e11 e12
-  RAINFALL       r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12
-  CONDUCTIVITY   c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12
-  -------------- ----------------------------------------
+**Parameters:**
 
-## Parameters:
+  _t1..t12_ -- adjustments to temperature in January, February, etc., as plus or minus degrees F (degrees C).
 
-  --------- ------------------------------------------------------------------------------------------------
-  t1..t12   adjustments to temperature in January, February, etc., as plus or minus degrees F (degrees C).
-  --------- ------------------------------------------------------------------------------------------------
+  _e1..e12_ -- adjustments to evaporation rate in January, February, etc., as plus or minus in/day (mm/day).
 
-  --------- -----------------------------------------------------------------------------------------------
-  e1..e12   adjustments to evaporation rate in January, February, etc., as plus or minus in/day (mm/day).
-  --------- -----------------------------------------------------------------------------------------------
+  _r1..r12_ -- multipliers applied to precipitation rate in January, February, etc.
 
-  --------- ----------------------------------------------------------------------
-  r1..r12   multipliers applied to precipitation rate in January, February, etc.
-  --------- ----------------------------------------------------------------------
+  _c1..c12_ -- multipliers applied to soil hydraulic conductivity in January, February, etc. used in either Horton or Green-Ampt infiltration.
 
-  --------- ---------------------------------------------------------------------------------------------------------------------------------
-  c1..c12   multipliers applied to soil hydraulic conductivity in January, February, etc. used in either Horton or Green-Ampt infiltration.
-  --------- ---------------------------------------------------------------------------------------------------------------------------------
+**Remarks:**
 
-## Remarks:
-
-The same adjustment is applied for each time period within a given month
-and is repeated for that month in each subsequent year being simulated.
+The same adjustment is applied for each time period within a given month and is repeated for that month in each subsequent year being simulated.
 
 <!---
   subcatchments
@@ -627,113 +508,65 @@ and is repeated for that month in each subsequent year being simulated.
 
 @page subcatchments  [SUBCATCHMENTS]
 
-
-## Purpose:
-
+**Purpose:**
 Identifies each subcatchment within the study area. Subcatchments are
 land area units which generate runoff from rainfall.
 
- 
+**Format:**
 
-## Format:
+_Name Rgage OutID Area %Imperv Width Slope Clength (Spack)_
 
-Name Rgage OutID Area %Imperv Width Slope Clength (Spack)
+**Parameters:**
 
- 
+_Name_ -- name assigned to the subcatchment.
 
-## Parameters:
+_Rgage_ -- name of a rain gage in the [RAINGAGES] section assigned to the subcatchment.
 
-  ------ ------------------------------------
-  Name   name assigned to the subcatchment.
-  ------ ------------------------------------
+_OutID_ -- name of the node or subcatchment that receives runoff from the subcatchment.
 
-  ------- ------------------------------------------------------------------------------
-  Rgage   name of a rain gage in the [RAINGAGES] section assigned to the subcatchment.
-  ------- ------------------------------------------------------------------------------
+_Area_ -- area of the subcatchment (acres or hectares).
 
-  ------- ------------------------------------------------------------------------------
-  OutID   name of the node or subcatchment that receives runoff from the subcatchment.
-  ------- ------------------------------------------------------------------------------
+_%Imperv_ -- percentage of the subcatchment’s area that is impervious.
 
-  ------ -----------------------------------------------
-  Area   area of the subcatchment (acres or hectares).
-  ------ -----------------------------------------------
+_Width_ -- characteristic width of the subcatchment (ft or meters).
 
-  --------- -----------------------------------------------------------
-  %Imperv   percentage of the subcatchment’s area that is impervious.
-  --------- -----------------------------------------------------------
+_Slope_ -- the subcatchment’s slope (percent).
 
-  ------- ----------------------------------------------------------
-  Width   characteristic width of the subcatchment (ft or meters).
-  ------- ----------------------------------------------------------
+_Clength_ -- total curb length (any length units) used to describe pollutant buildup. Use 0 if not applicable.
 
-  ------- -------------------------------------
-  Slope   the subcatchment’s slope (percent).
-  ------- -------------------------------------
-
-  --------- ---------------------------------------------------------------------------------------------------
-  Clength   total curb length (any length units) used to describe pollutant buildup. Use 0 if not applicable.
-  --------- ---------------------------------------------------------------------------------------------------
-
-  ------- --------------------------------------------------------------------------------------------------------------------------------------------
-  Spack   optional name of a snow pack object (from the [SNOWPACKS] section) that characterizes snow accumulation and melting over the subcatchment.
-  ------- --------------------------------------------------------------------------------------------------------------------------------------------
-
+_Spack_ -- optional name of a snow pack object (from the [SNOWPACKS] section) that characterizes snow accumulation and melting over the subcatchment.
  
 <!---
   subareas
 -->
+
 @page subareas  [SUBAREAS]
 
+**Purpose:**
 
-## Purpose:
+Supplies information about pervious and impervious areas for each subcatchment. Each subcatchment can consist of a pervious sub-area, an impervious sub-area with depression storage, and an impervious sub-area without depression storage.
 
-Supplies information about pervious and impervious areas for each
-subcatchment. Each subcatchment can consist of a pervious sub-area, an
-impervious sub-area with depression storage, and an impervious sub-area
-without depression storage.
+**Format:**
 
- 
+_Subcat Nimp Nperv Simp Sperv %Zero RouteTo (%Routed)_
 
-## Format:
+**Parameters:**
 
-Subcat Nimp Nperv Simp Sperv %Zero RouteTo (%Routed)
+_Subcat_ -- subcatchment name.
 
- 
+_Nimp_ -- Manning's coefficient (n) for overland flow over the impervious sub-area.
 
-## Parameters:
+_Nperv_ -- Manning's coefficient (n) for overland flow over the pervious sub-area.
 
-  -------- --------------------
-  Subcat   subcatchment name.
-  -------- --------------------
+_Simp_ -- depression storage for the impervious sub-area (inches or mm).
 
-  ------ ---------------------------------------------------------------------------
-  Nimp   Manning's coefficient (n) for overland flow over the impervious sub-area.
-  ------ ---------------------------------------------------------------------------
+_Sperv_ -- depression storage for the pervious sub-area (inches or mm).
 
-  ------- -------------------------------------------------------------------------
-  Nperv   Manning's coefficient (n) for overland flow over the pervious sub-area.
-  ------- -------------------------------------------------------------------------
+_%Zero_ -- percent of impervious area with no depression storage.
 
-  ------ ----------------------------------------------------------------
-  Simp   depression storage for the impervious sub-area (inches or mm).
-  ------ ----------------------------------------------------------------
+_RouteTo_ -- **IMPERVIOUS** if pervious area runoff runs onto impervious area, **PERVIOUS** if impervious runoff runs onto pervious area, or **OUTLET** if both areas drain to the subcatchment's outlet (default = **OUTLET**).
 
-  ------- --------------------------------------------------------------
-  Sperv   depression storage for the pervious sub-area (inches or mm).
-  ------- --------------------------------------------------------------
-
-  ------- --------------------------------------------------------
-  %Zero   percent of impervious area with no depression storage.
-  ------- --------------------------------------------------------
-
-  --------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  RouteTo   IMPERVIOUS if pervious area runoff runs onto impervious area, PERVIOUS if impervious runoff runs onto pervious area, or OUTLET if both areas drain to the subcatchment's outlet (default = OUTLET).
-  --------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-  --------- ----------------------------------------------------------------------------
-  %Routed   percent of runoff routed from one type of area to another (default = 100).
-  --------- ----------------------------------------------------------------------------
+_%Routed_ -- percent of runoff routed from one type of area to another (default = 100).
 
 <!---
   infiltration
@@ -741,377 +574,216 @@ Subcat Nimp Nperv Simp Sperv %Zero RouteTo (%Routed)
 
 @page infiltration  [INFILTRATION]
 
+**Purpose:**
 
-## Purpose:
+Supplies infiltration parameters for each subcatchment. Rainfall lost to infiltration only occurs over the pervious sub-area of a subcatchment.
 
-Supplies infiltration parameters for each subcatchment. Rainfall lost to
-infiltration only occurs over the pervious sub-area of a subcatchment.
+**Format:**
 
- 
+_Subcat  p1  p2  p3  (p4  p5)  (Method)_
 
-## Format:
+**Parameters:**
 
-Subcat  p1  p2  p3  (p4  p5)  (Method)
+Subcat -- subcatchment name.
 
- 
+Method -- either **HORTON**, **MODIFIED_HORTON**, **GREEN_AMPT**, **MODIFIED_GREEN_AMPT**, or **CURVE_NUMBER**. If not specified then the infiltration method supplied in the [OPTIONS] section is used.
 
-## Parameters:
+<u>For Horton and Modified Horton Infiltration:</u>
 
-+-----------------------------------+-----------------------------------+
-| Subcat                            | subcatchment name.                |
-+-----------------------------------+-----------------------------------+
-| Method                            | either HORTON, MODIFIED_HORTON,   |
-|                                   | GREEN_AMPT,                       |
-|                                   |                                   |
-|                                   | MODIFIED_GREEN_AMPT, or           |
-|                                   | CURVE_NUMBER.                     |
-|                                   |                                   |
-|                                   | If not specified then the         |
-|                                   | infiltration method supplied in   |
-|                                   | the [OPTIONS] section is used.    |
-+-----------------------------------+-----------------------------------+
+_p1_ -- maximum infiltration rate on the Horton curve (in/hr or mm/hr).
 
-For Horton and Modified Horton Infiltration:
+_p2_ -- minimum infiltration rate on the Horton curve (in/hr or mm/hr).
 
-  ---- -----------------------------------------------------------------
-  p1   maximum infiltration rate on the Horton curve (in/hr or mm/hr).
-  ---- -----------------------------------------------------------------
+_p3_ -- decay rate constant of the Horton curve (1/hr).
 
-  ---- -----------------------------------------------------------------
-  p2   minimum infiltration rate on the Horton curve (in/hr or mm/hr).
-  ---- -----------------------------------------------------------------
+_p4_ -- time it takes for a fully saturated soil to dry  (days).
 
-  ---- -------------------------------------------------
-  p3   decay rate constant of the Horton curve (1/hr).
-  ---- -------------------------------------------------
+_p5_ -- maximum infiltration volume possible (0 if not applicable) (in or mm).
 
-  ---- ----------------------------------------------------------
-  p4   time it takes for a fully saturated soil to dry  (days).
-  ---- ----------------------------------------------------------
+<u>For Green-Ampt and Modified Green-Ampt Infiltration:</u>
 
-  ---- ------------------------------------------------------------------------
-  p5   maximum infiltration volume possible (0 if not applicable) (in or mm).
-  ---- ------------------------------------------------------------------------
+_p1_ -- soil capillary suction (in or mm).
 
-For Green-Ampt and Modified Green-Ampt Infiltration:
+_p2_ -- soil saturated hydraulic conductivity (in/hr or mm/hr).
 
-  ---- ------------------------------------
-  p1   soil capillary suction (in or mm).
-  ---- ------------------------------------
+_p3_ -- initial soil moisture deficit (porosity minus moisture content) (fraction).
 
-  ---- ---------------------------------------------------------
-  p2   soil saturated hydraulic conductivity (in/hr or mm/hr).
-  ---- ---------------------------------------------------------
+<u>For Curve-Number Infiltration:</u>
 
-  ---- -----------------------------------------------------------------------------
-  p3   initial soil moisture deficit (porosity minus moisture content) (fraction).
-  ---- -----------------------------------------------------------------------------
+_p1_ -- SCS Curve Number.
 
-For Curve-Number Infiltration:
+_p2_ -- no longer used.
 
-  ---- -------------------
-  p1   SCS Curve Number.
-  ---- -------------------
+_p3_ -- time it takes for a fully saturated soil to dry (days).
 
-  ---- -----------------
-  p2   no longer used.
-  ---- -----------------
+<!---
+  lid_controls
+-->
 
-  ---- ---------------------------------------------------------
-  p3   time it takes for a fully saturated soil to dry (days).
-  ---- ---------------------------------------------------------
-
-  <!---
-    lid_controls
-  -->
 @page lid_controls  [LID_CONTROLS]
 
+**Purpose:**
 
-## Purpose:
+Defines scale-independent LID controls that can be deployed within subcatchments.
 
-Defines scale-independent LID controls that can be deployed within
-subcatchments.
+**Formats:**
 
- 
-
-## Formats:
-
-Name        Type
+|        |              |
+| :----- | :----------- |
+| _Name_ | _Type_       |
 
 followed by one or more of the following lines depending on Type:
 
-  ------ ---------- ----------------------------------------------
-  Name   SURFACE    StorHt VegFrac Rough Slope Xslope
-  Name   SOIL       Thick Por FC WP Ksat Kcoeff Suct
-  Name   PAVEMENT   Thick Vratio FracImp Perm Vclog (Treg Freg)
-  Name   STORAGE    Height Vratio Seepage Vclog (Covrd)
-  Name   DRAIN      Coeff Expon Offset Delay (Hopen Hclose Qcrv)
-  Name   DRAINMAT   Thick Vratio Rough
-  Name   REMOVALS   Pollut Rmvl Pollut Rmvl ...
-  ------ ---------- ----------------------------------------------
+|        |              |                                                |
+| :----- | :----------- | :--------------------------------------------- |
+| _Name_ | **SURFACE**  | _StorHt VegFrac Rough Slope Xslope_            |
+| _Name_ | **SOIL**     | _Thick Por FC WP Ksat Kcoeff Suct_             |
+| _Name_ | **PAVEMENT** | _Thick Vratio FracImp Perm Vclog (Treg Freg)_  |
+| _Name_ | **STORAGE**  | _Height Vratio Seepage Vclog (Covrd)_          |
+| _Name_ | **DRAIN**    | _Coeff Expon Offset Delay (Hopen Hclose Qcrv)_ |
+| _Name_ | **DRAINMAT** | _Thick Vratio Rough_                           |
+| _Name_ | **REMOVALS** | _Pollut Rmvl Pollut Rmvl ..._                  |
 
-## Parameters:
+**Parameters:**
 
-  ------ -------------------------------
-  Name   name assigned to LID process.
-  ------ -------------------------------
+_Name_ -- name assigned to LID process.
 
-  ------ -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Type   BC for bio-retention cell; RG for rain garden; GR for green roof; IT for infiltration trench; PP for permeable pavement; RB for rain barrel; RD for rooftop disconnection; VS for vegetative swale.
-  ------ -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+_Type_ -- **BC** for bio-retention cell; **RG** for rain garden; **GR** for green roof; **IT** for infiltration trench; **PP** for permeable pavement; **RB** for rain barrel; **RD** for rooftop disconnection; **VS** for vegetative swale.
 
-  -------- ---------------------
-  Pollut   name of a pollutant
-  -------- ---------------------
+_Pollut_ -- name of a pollutant
 
-  ------ -------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Rmvl   the percent removal the LID achieves for the pollutant (several pollutant removals can be placed on the same line or specified in separate REMOVALS lines).
-  ------ -------------------------------------------------------------------------------------------------------------------------------------------------------------
+_Rmvl_ -- the percent removal the LID achieves for the pollutant (several pollutant removals can be placed on the same line or specified in separate **REMOVALS** lines).
 
- 
+<u>For LIDs with Surface Layers:</u>
 
-For LIDs with Surface Layers:
+_StorHt_ -- when confining walls or berms are present this is the maximum depth to which water can pond above the surface of the unit before overflow occurs (in inches or mm). For LIDs that experience overland flow it is the height of any surface depression storage. For swales, it is the height of its trapezoidal cross-section.
 
-  -------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  StorHt   when confining walls or berms are present this is the maximum depth to which water can pond above the surface of the unit before overflow occurs (in inches or mm). For LIDs that experience overland flow it is the height of any surface depression storage. For swales, it is the height of its trapezoidal cross-section.
-  -------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+_VegFrac_ -- fraction of the surface storage volume that is filled with vegetation.
 
-  --------- ------------------------------------------------------------------------
-  VegFrac   fraction of the surface storage volume that is filled with vegetation.
-  --------- ------------------------------------------------------------------------
+_Rough_ -- Manning's coefficient (n) for overland flow over surface soil cover, pavement, roof surface or a vegetative swale. Use 0 for other types of LIDs.
 
-  ------- ---------------------------------------------------------------------------------------------------------------------------------------------------
-  Rough   Manning's coefficient (n) for overland flow over surface soil cover, pavement, roof surface or a vegetative swale. Use 0 for other types of LIDs.
-  ------- ---------------------------------------------------------------------------------------------------------------------------------------------------
+_Slope_ -- slope of a roof surface, pavement surface or vegetative swale (percent). Use 0 for other types of LIDs.
 
-  ------- ---------------------------------------------------------------------------------------------------------
-  Slope   slope of a roof surface, pavement surface or vegetative swale (percent). Use 0 for other types of LIDs.
-  ------- ---------------------------------------------------------------------------------------------------------
+_Xslope_ -- slope (run over rise) of the side walls of a vegetative swale's cross-section. Use 0 for other types of LIDs.
 
-  -------- ---------------------------------------------------------------------------------------------------------------
-  Xslope   slope (run over rise) of the side walls of a vegetative swale's cross-section. Use 0 for other types of LIDs.
-  -------- ---------------------------------------------------------------------------------------------------------------
-
-If either Rough or Slope values are 0 then any ponded water that exceeds
+If either _Rough_ or _Slope_ values are 0 then any ponded water that exceeds
 the surface storage depth is assumed to completely overflow the LID
 control within a single time step.
 
+<u>For LIDs with Pavement Layers:</u>
+
+_Thick_ -- thickness of the pavement layer (inches or mm).
+
+_Vratio_ -- void ratio (volume of void space relative to the volume of solids in the pavement for continuous systems or for the fill material used in modular systems). Note that porosity = void ratio / (1 + void ratio).
+
+_FracImp_ -- ratio of impervious paver material to total area for modular systems; 0 for continuous porous pavement systems.
+
+_Perm_ -- permeability of the concrete or asphalt used in continuous systems or hydraulic conductivity of the fill material (gravel or sand) used in modular systems (in/hr or mm/hr).
+
+_Vclog_ -- the number of pavement layer void volumes of runoff treated it takes to completely clog the pavement. Use a value of 0 to ignore clogging.
+
+_Treg_ -- the number of days that the pavement layer is allowed to clog before its permeability is restored, typically by vacuuming its surface. A value of 0 (the default) indicates that no permeability regeneration occurs.
+
+_Freg_ -- The fractional degree to which the pavement's permeability is restored when a regeneration interval is reached. The default is 0 (no restoration) while a value of 1 indicates complete restoration to the original permeability value. Once regeneration occurs the pavement begins to clog once again at a rate determined by Vclog.
+
+<u>For LIDs with Soil Layers:</u>
+
+_Thick_ -- thickness of the soil layer (inches or mm).
+
+_Por_ -- soil porosity (pore space volume / total volume).
+
+_FC_ -- soil field capacity (moisture content of a fully drained soil).
+
+_WP_ -- soil wilting point (moisture content of a fully dried soil).
+
+_Ksat_ -- soil’s saturated hydraulic conductivity (in/hr or mm/hr).
+
+_Kcoeff_ -- slope of the curve of log(conductivity) versus soil moisture deficit (porosity minus soil moisture) (dimensionless).
+
+_Suct_ -- soil capillary suction (in or mm).
+
+<u>For LIDs with Storage Layers:</u>
+
+_Height_ -- thickness of the storage layer or height of a rain barrel (inches or mm).
+
+_Vratio_ -- void ratio (volume of void space relative to the volume of solids in the layer). Note that porosity = void ratio / (1 + void ratio).
+
+_Seepage_ -- the rate at which water seeps from the layer into the underlying native soil when first constructed (in/hr or mm/hr). If there is an impermeable floor or liner below the layer then use a value of 0.
+
+_Vclog_ -- number of storage layer void volumes of runoff treated it takes to completely clog the layer. Use a value of 0 to ignore clogging.
+
+_Covrd_ -- **YES** (the default) if a rain barrel is covered, **NO** if it is not.
+
+Values for _Vratio_, _Seepage_, and _Vclog_ are ignored for rain barrels while _Covrd_ applies only to rain barrels. 
+
+<u>For LIDs with Drain Systems:</u>
+
+_Coeff_ -- coefficient C that determines the rate of flow through the drain as a function of height of stored water above the drain bottom. For Rooftop Disconnection it is the maximum flow rate (in inches/hour or mm/hour) that the roof’s gutters and downspouts can handle before overflowing.
+
+_Expon_ -- exponent n that determines the rate of flow through the drain as a function of height of stored water above the drain outlet.
+
+_Offset_ -- height of the drain line above the bottom of the storage layer or rain barrel (inches or mm).
+
+_Delay_ -- number of dry weather hours that must elapse before the drain line in a rain barrel is opened (the line is assumed to be closed once rainfall begins). A value of 0 signifies that the barrel's drain line is always open and drains continuously.  This parameter is ignored for other types of LIDs.
+
+_Hopen_ -- The height of water  (in inches or mm) in the drain's Storage Layer that causes the drain to automatically open. Use 0 to disable this feature.
+
+_Hclose_ -- The height of water (in inches or mm) in the drain's Storage Layer that causes the drain to automatically close. Use 0 to disable this feature.
+
+_Qcurve_ -- The name of an optional Control Curve that adjusts the computed drain flow as a function of the head of water above the drain. Leave blank if not applicable.
  
+<u>For Green Roof LIDs with Drainage Mats:</u>
 
-For LIDs with Pavement Layers:
+_Thick_ -- thickness of the drainage mat (inches or mm).
 
-  ------- -------------------------------------------------
-  Thick   thickness of the pavement layer (inches or mm).
-  ------- -------------------------------------------------
+_Vratio_ -- ratio of void volume to total volume in the mat.
 
-  -------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Vratio   void ratio (volume of void space relative to the volume of solids in the pavement for continuous systems or for the fill material used in modular systems). Note that porosity = void ratio / (1 + void ratio).
-  -------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+_Rough_ -- Manning's coefficient (n) used to compute the horizontal flow rate of drained water through the mat.
 
-  --------- -----------------------------------------------------------------------------------------------------------------
-  FracImp   ratio of impervious paver material to total area for modular systems; 0 for continuous porous pavement systems.
-  --------- -----------------------------------------------------------------------------------------------------------------
+**Remarks:**
 
-  ------ ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Perm   permeability of the concrete or asphalt used in continuous systems or hydraulic conductivity of the fill material (gravel or sand) used in modular systems (in/hr or mm/hr).
-  ------ ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+The following table shows which layers are required (x) or are optional (o) for each type of LID process:
 
-  ------- --------------------------------------------------------------------------------------------------------------------------------------------
-  Vclog   the number of pavement layer void volumes of runoff treated it takes to completely clog the pavement. Use a value of 0 to ignore clogging.
-  ------- --------------------------------------------------------------------------------------------------------------------------------------------
+| LID Type              | Surface | Pavement | Soil | Storage | Drain | Drain Mat |
+| :-------------------- | :-----: | :------: | :--: | :-----: | :---: | :-------: |
+| Bio-Retention Cell    |    x    |          |   x  |    x    |  o    |           |
+| Rain Garden           |    x    |          |  x   |         |       |           |
+| Green Roof            |   x     |          | x    |         |       |     x     |
+| Infiltration Trench   |   x     |          |      |   x     |   o   |           |
+| Permeable Pavement    |    x    |    x     |  o   |    x    |  o    |           |
+| Rain Barrel           |         |          |      |    x    |   x   |           |
+| Rooftop Disconnection |    x    |          |      |         |   x   |           |
+| Vegetative Swale      |    x    |          |      |         |       |           |
 
-  ------ -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Treg   the number of days that the pavement layer is allowed to clog before its permeability is restored, typically by vacuuming its surface. A value of 0 (the default) indicates that no permeability regeneration occurs.
-  ------ -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+The equation used to compute flow rate out of the underdrain per unit area of the LID (in in/hr or mm/hr) is \f( q = C(h-H_{d})^{n} \f)  where _q_ is outflow, _h_ is height of stored water (inches or mm) and _H_<sub>_d_</sub> is the drain offset height. Note that the units of _C_ depend on the unit system being used as well as the value assigned to _n_.
 
-  ------ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Freg   The fractional degree to which the pavement's permeability is restored when a regeneration interval is reached. The default is 0 (no restoration) while a value of 1 indicates complete restoration to the original permeability value. Once regeneration occurs the pavement begins to clog once again at a rate determined by Vclog.
-  ------ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+The actual dimensions of an LID control are provided in the [LID_USAGE] section when it is placed in a particular subcatchment.
 
- 
+**Examples:**
 
-For LIDs with Soil Layers:
-
-  ------- ---------------------------------------------
-  Thick   thickness of the soil layer (inches or mm).
-  ------- ---------------------------------------------
-
-  ----- ---------------------------------------------------
-  Por   soil porosity (pore space volume / total volume).
-  ----- ---------------------------------------------------
-
-  ---- -----------------------------------------------------------------
-  FC   soil field capacity (moisture content of a fully drained soil).
-  ---- -----------------------------------------------------------------
-
-  ---- --------------------------------------------------------------
-  WP   soil wilting point (moisture content of a fully dried soil).
-  ---- --------------------------------------------------------------
-
-  ------ -----------------------------------------------------------
-  Ksat   soil’s saturated hydraulic conductivity (in/hr or mm/hr).
-  ------ -----------------------------------------------------------
-
-  -------- ----------------------------------------------------------------------------------------------------------------------
-  Kcoeff   slope of the curve of log(conductivity) versus soil moisture deficit (porosity minus soil moisture) (dimensionless).
-  -------- ----------------------------------------------------------------------------------------------------------------------
-
-  ------ ------------------------------------
-  Suct   soil capillary suction (in or mm).
-  ------ ------------------------------------
-
- 
-
-For LIDs with Storage Layers:
-
-  -------- ---------------------------------------------------------------------------
-  Height   thickness of the storage layer or height of a rain barrel (inches or mm).
-  -------- ---------------------------------------------------------------------------
-
-  -------- --------------------------------------------------------------------------------------------------------------------------------------
-  Vratio   void ratio (volume of void space relative to the volume of solids in the layer). Note that porosity = void ratio / (1 + void ratio).
-  -------- --------------------------------------------------------------------------------------------------------------------------------------
-
-  --------- --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Seepage   the rate at which water seeps from the layer into the underlying native soil when first constructed (in/hr or mm/hr). If there is an impermeable floor or liner below the layer then use a value of 0.
-  --------- --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-  ------- ------------------------------------------------------------------------------------------------------------------------------------
-  Vclog   number of storage layer void volumes of runoff treated it takes to completely clog the layer. Use a value of 0 to ignore clogging.
-  ------- ------------------------------------------------------------------------------------------------------------------------------------
-
-  ------- -----------------------------------------------------------------
-  Covrd   YES (the default) if a rain barrel is covered, NO if it is not.
-  ------- -----------------------------------------------------------------
-
-Values for Vratio, Seepage, and Vclog  are ignored for rain barrels
-while Covrd applies only to rain barrels.
-
- 
-
-For LIDs with Drain Systems:
-
-  ------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Coeff   coefficient C that determines the rate of flow through the drain as a function of height of stored water above the drain bottom. For Rooftop Disconnection it is the maximum flow rate (in inches/hour or mm/hour) that the roof’s gutters and downspouts can handle before overflowing.
-  ------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-  ------- -------------------------------------------------------------------------------------------------------------------------------
-  Expon   exponent n that determines the rate of flow through the drain as a function of height of stored water above the drain outlet.
-  ------- -------------------------------------------------------------------------------------------------------------------------------
-
-  -------- -----------------------------------------------------------------------------------------------
-  Offset   height of the drain line above the bottom of the storage layer or rain barrel (inches or mm).
-  -------- -----------------------------------------------------------------------------------------------
-
-  ------- --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Delay   number of dry weather hours that must elapse before the drain line in a rain barrel is opened (the line is assumed to be closed once rainfall begins). A value of 0 signifies that the barrel's drain line is always open and drains continuously.  This parameter is ignored for other types of LIDs.
-  ------- --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-  ------- -------------------------------------------------------------------------------------------------------------------------------------------------
-  Hopen   The height of water  (in inches or mm) in the drain's Storage Layer that causes the drain to automatically open. Use 0 to disable this feature.
-  ------- -------------------------------------------------------------------------------------------------------------------------------------------------
-
-  -------- -------------------------------------------------------------------------------------------------------------------------------------------------
-  Hclose   The height of water (in inches or mm) in the drain's Storage Layer that causes the drain to automatically close. Use 0 to disable this feature.
-  -------- -------------------------------------------------------------------------------------------------------------------------------------------------
-
-  -------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Qcurve   The name of an optional Control Curve that adjusts the computed drain flow as a function of the head of water above the drain. Leave blank if not applicable.
-  -------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-
- 
-
-For Green Roof LIDs with Drainage Mats:
-
-  ------- -----------------------------------------------
-  Thick   thickness of the drainage mat (inches or mm).
-  ------- -----------------------------------------------
-
-  -------- --------------------------------------------------
-  Vratio   ratio of void volume to total volume in the mat.
-  -------- --------------------------------------------------
-
-  ------- ------------------------------------------------------------------------------------------------------
-  Rough   Manning's coefficient (n) used to compute the horizontal flow rate of drained water through the mat.
-  ------- ------------------------------------------------------------------------------------------------------
-
- 
-
-## Remarks:
-
-The following table shows which layers are required (x) or are optional
-(o) for each type of LID process:
-
- 
-
-  ----------------------- --------- ---------- ------ --------- ------- -----------
-  LID Type                Surface   Pavement   Soil   Storage   Drain   Drain Mat
-  Bio-Retention Cell      x                    x      x         o        
-  Rain Garden             x                    x                         
-  Green Roof              x                    x                        x
-  Infiltration Trench     x                           x         o        
-  Permeable Pavement      x         x          o      x         o        
-  Rain Barrel                                         x         x        
-  Rooftop Disconnection   x                                     x        
-  Vegetative Swale        x                                              
-  ----------------------- --------- ---------- ------ --------- ------- -----------
-
- 
-
-The equation used to compute flow rate out of the underdrain per unit
-area of the LID (in in/hr or mm/hr) is q = C(h-Hd)n  where q is outflow,
-h is height of stored water (inches or mm) and Hd is the drain offset
-height. Note that the units of C depend on the unit system being used as
-well as the value assigned to n.
-
-The actual dimensions of an LID control are provided in the [LID_USAGE]
-section when it is placed in a particular subcatchment.
-
- 
-
-## Examples:
-
+```
 ;A street planter with no drain
-
 Planter  BC
-
 Planter  SURFACE   6  0.3  0    0     0
-
 Planter  SOIL     24  0.5  0.1  0.05  1.2  2.4
-
 Planter  STORAGE  12  0.5  0.5  0
-
  
-
 ;A green roof with impermeable bottom
-
 GR1  BC
-
 GR1  SURFACE  3  0    0    0     0
-
 GR1  SOIL     3  0.5  0.1  0.05  1.2  2.4
-
 GR1  STORAGE  3  0.5  0    0
-
 GR1  DRAIN    5  0.5  0    0
 
- 
-
 ;A rain barrel that drains 6 hours after rainfall ends
-
 RB12  RB
-
 RB12  STORAGE  36  0    0  0
-
 RB12  DRAIN    10  0.5  0  6
 
- 
-
 ;A grass swale 24 in. high with 5:1 side slope
-
 Swale  VS
-
 Swale  SURFACE  24  0  0.2  3  5
+```
 
 <!---
   lid_usage
@@ -1119,256 +791,172 @@ Swale  SURFACE  24  0  0.2  3  5
 
 @page lid_usage  [LID_USAGE]
 
-
-## Purpose:
+**Purpose:**
 
 Deploys LID controls within specific subcatchment areas.
 
- 
+**Format:**
 
-## Format:
+_Subcat LID Number Area Width InitSat FromImp ToPerv_
 
-Subcat LID Number Area Width InitSat FromImp ToPerv
+(_RptFile DrainTo FromPerv_)
 
-(RptFile DrainTo FromPerv)                                              
-                                                 
+**Parameters:**
 
-## Parameters:
+_Subcat_ -- name of the subcatchment using the LID process.
 
-  ---------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Subcat     name of the subcatchment using the LID process.
-  LID        name of an LID process defined in the [LID_CONTROLS] section.
-  Number     number of replicate LID units deployed.
-  Area       area of each replicate unit (ft2 or m2)
-  Width      width of the outflow face of each identical LID unit (in ft or m). This parameter applies to roofs, pavement, trenches, and swales that use overland flow to convey surface runoff off of the unit. It can be set to 0 for other LID processes, such as bio-retention cells, rain gardens, and rain barrels that simply spill any excess captured runoff over their berms.
-  InitSat    the percent to which the LID's soil, storage, and drain mat zones are initially filled with water. For soil zones 0 % saturation corresponds to the wilting point moisture content while 100 % saturation has the moisture content equal to the porosity.
-  FromImp    the percent of the impervious portion of the subcatchment’s non-LID area whose runoff is treated by the LID practice. (E.g., if rain barrels are used to capture roof runoff and roofs represent 60% of the impervious area, then the impervious area treated is 60%). If the LID unit treats only direct rainfall, such as with a green roof, then this value should be 0. If the LID takes up the entire subcatchment then this field is ignored.
-  ToPerv     a value of 1 indicates that the surface and drain flow from the LID unit should be routed back onto the pervious area of the subcatchment that contains it. This would be a common choice to make for rain barrels, rooftop disconnection, and possibly green roofs. The default value is 0.
-  RptFile    optional name of a file to which detailed time series results for the LID will be written. Enclose the name in double quotes if it contains spaces and include its full path if it resides in a different directory than the SWMM input file. Use ‘*’ if not applicable and an entry for DrainTo or FromPerv follows
-  DrainTo    optional name of subcatchment or node that receives flow from the unit’s drain line, if different from the outlet of the subcatchment that the LID is placed in. Use ‘*’ if not applicable and an entry for FromPerv follows.
-  FromPerv   optional percent of the pervious portion of the subcatchment’s non-LID area whose runoff is treated by the LID practice. The default value is 0.
-  ---------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+_LID_ -- name of an LID process defined in the [LID_CONTROLS] section.
 
-## Remarks:
+_Number_ -- number of replicate LID units deployed.
 
-If ToPerv is set to 1 and DrainTo set to some other outlet, then only
-the excess surface flow from the LID unit will be routed back to the
-subcatchment’s pervious area while the underdrain flow will be sent to
-DrainTo.
+_Area_ -- area of each replicate unit (ft2 or m2)
 
-More than one type of LID process can be deployed within a subcatchment
-as long as their total area does not exceed that of the subcatchment and
-the total percent impervious area treated does not exceed 100.
+_Width_ -- width of the outflow face of each identical LID unit (in ft or m).
+This parameter applies to roofs, pavement, trenches, and swales that use overland flow to convey surface runoff off of the unit. It can be set to 0 for other LID processes, such as bio-retention cells, rain gardens, and rain barrels that simply spill any excess captured runoff over their berms.
 
- 
+_InitSat_ -- the percent to which the LID's soil, storage, and drain mat zones are initially filled with water. For soil zones 0 % saturation corresponds to the wilting point moisture content while 100 % saturation has the moisture content equal to the porosity.
 
-## Examples:
+_FromImp_ -- the percent of the impervious portion of the subcatchment’s non-LID area whose runoff is treated by the LID practice. (E.g., if rain barrels are used to capture roof runoff and roofs represent 60% of the impervious area, then the impervious area treated is 60%). If the LID unit treats only direct rainfall, such as with a green roof, then this value should be 0. If the LID takes up the entire subcatchment then this field is ignored.
 
+_ToPerv_ -- a value of 1 indicates that the surface and drain flow from the LID unit should be routed back onto the pervious area of the subcatchment that contains it. This would be a common choice to make for rain barrels, rooftop disconnection, and possibly green roofs. The default value is 0.
+
+_RptFile_ -- optional name of a file to which detailed time series results for the LID will be written. Enclose the name in double quotes if it contains spaces and include its full path if it resides in a different directory than the SWMM input file. Use ‘*’ if not applicable and an entry for DrainTo or FromPerv follows
+
+_DrainTo_ -- optional name of subcatchment or node that receives flow from the unit’s drain line, if different from the outlet of the subcatchment that the LID is placed in. Use ‘*’ if not applicable and an entry for FromPerv follows.
+
+_FromPerv_ -- optional percent of the pervious portion of the subcatchment’s non-LID area whose runoff is treated by the LID practice. The default value is 0.
+
+**Remarks:**
+
+If _ToPerv_ is set to 1 and _DrainTo_ set to some other outlet, then only the excess surface flow from the LID unit will be routed back to the subcatchment’s pervious area while the underdrain flow will be sent to _DrainTo_.
+
+More than one type of LID process can be deployed within a subcatchment as long as their total area does not exceed that of the subcatchment and the total percent impervious area treated does not exceed 100.
+
+**Examples:**
+
+```
 ;34 rain barrels of 12 sq ft each are placed in
-
 ;subcatchment S1. They are initially empty and treat 17%
-
 ;of the runoff from the subcatchment’s impervious area.
-
-;The outflow from the barrels is returned to the ;subcatchment’s
-pervious area.
-
+;The outflow from the barrels is returned to the
+;subcatchment’s pervious area.
 S1  RB14  34  12  0  0  17  1
 
- 
-
-;Subcatchment S2 consists entirely of a single vegetative ;swale 200 ft
-long by 50 ft wide.
-
+;Subcatchment S2 consists entirely of a single vegetative
+;swale 200 ft long by 50 ft wide.
 S2  Swale  1  10000  50  0  0  0  “swale.rpt”
+```
+
 <!---
   aquifers
 -->
 
 @page aquifers  [AQUIFERS]
 
+**Purpose:**
 
-## Purpose:
+Supplies parameters for each unconfined groundwater aquifer in the study area. Aquifers consist of two zones – a lower saturated zone and an upper unsaturated zone with a moving boundary between the two.
 
-Supplies parameters for each unconfined groundwater aquifer in the study
-area. Aquifers consist of two zones – a lower saturated zone and an
-upper unsaturated zone with a moving boundary between the two.
+**Format:**
 
- 
+_Name Por WP FC Ks Kslp Tslp ETu ETs Seep Ebot Egw Umc (Epat)_
 
-## Format:
+**Parameters:**
 
-Name Por WP FC Ks Kslp Tslp ETu ETs Seep Ebot Egw Umc (Epat)      
+_Name_ -- name assigned to aquifer.
 
- 
+_Por_ -- soil porosity (pore space volume / total volume).
 
-## Parameters:
+_WP_ -- soil wilting point (moisture content of a fully dried soil).
 
-  ------ ---------------------------
-  Name   name assigned to aquifer.
-  ------ ---------------------------
+_FC_ -- soil field capacity (moisture content of a fully drained soil).
 
-  ----- ---------------------------------------------------
-  Por   soil porosity (pore space volume / total volume).
-  ----- ---------------------------------------------------
+_Ks_ -- saturated hydraulic conductivity (in/hr or mm/hr).
 
-  ---- --------------------------------------------------------------
-  WP   soil wilting point (moisture content of a fully dried soil).
-  ---- --------------------------------------------------------------
+_Kslp_ -- slope of the logarithm of hydraulic conductivity versus moisture deficit (porosity minus moisture content) curve (dimensionless).
 
-  ---- -----------------------------------------------------------------
-  FC   soil field capacity (moisture content of a fully drained soil).
-  ---- -----------------------------------------------------------------
+_Tslp_ -- slope of soil tension versus moisture content curve (inches or mm).
 
-  ---- ----------------------------------------------------
-  Ks   saturated hydraulic conductivity (in/hr or mm/hr).
-  ---- ----------------------------------------------------
+_ETu_ -- fraction of total evaporation available for evapotranspiration in the upper unsaturated zone.
 
-  ------ -----------------------------------------------------------------------------------------------------------------------------------
-  Kslp   slope of the logarithm of hydraulic conductivity versus moisture deficit (porosity minus moisture content) curve (dimensionless).
-  ------ -----------------------------------------------------------------------------------------------------------------------------------
+_ETs_ -- maximum depth into the lower saturated zone over which evapotranspiration can occur (ft or m).
 
-  ------ ---------------------------------------------------------------------
-  Tslp   slope of soil tension versus moisture content curve (inches or mm).
-  ------ ---------------------------------------------------------------------
+_Seep_ -- seepage rate from saturated zone to deep groundwater when water table is at ground surface (in/hr or mm/hr).
 
-  ----- -----------------------------------------------------------------------------------------------
-  ETu   fraction of total evaporation available for evapotranspiration in the upper unsaturated zone.
-  ----- -----------------------------------------------------------------------------------------------
+_Ebot_ -- elevation of the bottom of the aquifer (ft or m).
 
-  ----- ------------------------------------------------------------------------------------------------
-  ETs   maximum depth into the lower saturated zone over which evapotranspiration can occur (ft or m).
-  ----- ------------------------------------------------------------------------------------------------
+_Egw_ -- groundwater table elevation at start of simulation (ft or m).
 
-  ------ --------------------------------------------------------------------------------------------------------------
-  Seep   seepage rate from saturated zone to deep groundwater when water table is at ground surface (in/hr or mm/hr).
-  ------ --------------------------------------------------------------------------------------------------------------
+_Umc_ -- unsaturated zone moisture content at start of simulation (volumetric fraction).
 
-  ------ ---------------------------------------------------
-  Ebot   elevation of the bottom of the aquifer (ft or m).
-  ------ ---------------------------------------------------
+_Epat_ -- name of optional monthly time pattern used to adjust the upper zone evaporation fraction for different months of the year.
 
-  ----- ---------------------------------------------------------------
-  Egw   groundwater table elevation at start of simulation (ft or m).
-  ----- ---------------------------------------------------------------
+**Remarks:**
 
-  ----- ---------------------------------------------------------------------------------
-  Umc   unsaturated zone moisture content at start of simulation (volumetric fraction).
-  ----- ---------------------------------------------------------------------------------
-
-  ------ ----------------------------------------------------------------------------------------------------------------------------
-  Epat   name of optional monthly time pattern used to adjust the upper zone evaporation fraction for different months of the year.
-  ------ ----------------------------------------------------------------------------------------------------------------------------
-
-## Remarks:
-
-Local values for Ebot, Egw, and Umc can be assigned to specific
-subcatchments in the [GROUNDWATER] section.
+Local values for _Ebot_, _Egw_, and _Umc_ can be assigned to specific subcatchments in the [GROUNDWATER] section.
 
 <!---
   groundwater
 -->
+
 @page groundwater  [GROUNDWATER]
 
 
-## Purpose:
+**Purpose:**
 
-Supplies parameters that determine the rate of groundwater flow between
-the aquifer underneath a subcatchment and a node of the conveyance
-system.
+Supplies parameters that determine the rate of groundwater flow between the aquifer underneath a subcatchment and a node of the conveyance system.
 
- 
+**Format:**
 
-## Format:
+_Subcat Aquifer Node Esurf A1 B1 A2 B2 A3 Dsw (Egwt Ebot Egw Umc)_
 
-Subcat Aquifer Node Esurf A1 B1 A2 B2 A3 Dsw (Egwt Ebot Egw Umc)
+**Parameters:**
 
- 
+_Subcat_ -- subcatchment name.
 
-## Parameters:
+_Aquifer_ -- name of groundwater aquifer underneath the subcatchment.
 
-  -------- --------------------
-  Subcat   subcatchment name.
-  -------- --------------------
+_Node_ -- name of a node in the conveyance system exchanging groundwater with the aquifer.
 
-  --------- ----------------------------------------------------------
-  Aquifer   name of groundwater aquifer underneath the subcatchment.
-  --------- ----------------------------------------------------------
+_Esurf_ -- surface elevation of the subcatchment (ft or m).
 
-  ------ ----------------------------------------------------------------------------------
-  Node   name of a node in the conveyance system exchanging groundwater with the aquifer.
-  ------ ----------------------------------------------------------------------------------
+_A1_ -- groundwater flow coefficient (see below).
 
-  ------- --------------------------------------------------
-  Esurf   surface elevation of the subcatchment (ft or m).
-  ------- --------------------------------------------------
+_B1_ -- groundwater flow exponent (see below).
 
-  ---- -------------------------------------------
-  A1   groundwater flow coefficient (see below).
-  ---- -------------------------------------------
+_A2_ -- surface water flow coefficient (see below).
 
-  ---- ----------------------------------------
-  B1   groundwater flow exponent (see below).
-  ---- ----------------------------------------
+_B2_ -- surface water flow exponent (see below).
 
-  ---- ---------------------------------------------
-  A2   surface water flow coefficient (see below).
-  ---- ---------------------------------------------
+_A3_ -- surface water – groundwater interaction coefficient (see below).
 
-  ---- ------------------------------------------
-  B2   surface water flow exponent (see below).
-  ---- ------------------------------------------
+_Dsw_ -- fixed depth of surface water at the receiving node (ft or m) (set to zero if surface water depth will vary as computed by flow routing).
 
-  ---- ------------------------------------------------------------------
-  A3   surface water – groundwater interaction coefficient (see below).
-  ---- ------------------------------------------------------------------
+_Egwt_ -- threshold groundwater table elevation which must be reached before any flow occurs (ft or m). Leave blank (or enter *) to use the elevation of the receiving node's invert.
 
-  ----- ------------------------------------------------------------------------------------------------------------------------------------------
-  Dsw   fixed depth of surface water at the receiving node (ft or m) (set to zero if surface water depth will vary as computed by flow routing).
-  ----- ------------------------------------------------------------------------------------------------------------------------------------------
+The following optional parameters can be used to override the values supplied for the subcatchment’s aquifer.
 
-  ------ -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Egwt   threshold groundwater table elevation which must be reached before any flow occurs (ft or m). Leave blank (or enter *) to use the elevation of the receiving node's invert.
-  ------ -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Ebot -- elevation of the bottom of the aquifer (ft or m).
 
-The following optional parameters can be used to override the values
-supplied for the subcatchment’s aquifer.
+Egw -- groundwater table elevation at the start of the simulation (ft or m).
 
-  ------ ---------------------------------------------------
-  Ebot   elevation of the bottom of the aquifer (ft or m).
-  ------ ---------------------------------------------------
+Umc -- unsaturated zone moisture content at start of simulation (volumetric fraction).
 
-  ----- -----------------------------------------------------------------------
-  Egw   groundwater table elevation at the start of the simulation (ft or m).
-  ----- -----------------------------------------------------------------------
+**Remarks:**
 
-  ----- ---------------------------------------------------------------------------------
-  Umc   unsaturated zone moisture content at start of simulation (volumetric fraction).
-  ----- ---------------------------------------------------------------------------------
+The flow coefficients are used in the following equation that determines the lateral groundwater flow rate based on groundwater and surface water elevations:
 
- 
-
-## Remarks:
-
-The flow coefficients are used in the following equation that determines
-the lateral groundwater flow rate based on groundwater and surface water
-elevations:
-
- QL  =  A1 (Hgw  –  Hcb) B1  –  A2 (Hsw  –  Hcb) B2  +  A3 Hgw Hsw
+ \f[ Q_{L}  =  A1 (H_{gw}  –  H_{cb})^{B1}  –  A2 (H_{sw}  –  H_{cb})^{B2}  +  A3 H_{gw} H_{sw} \f]
 
 where:
 
-QL   =        lateral groundwater flow (cfs per acre or cms per
-hectare),
+\f$ Q_{L \f$ = lateral groundwater flow (cfs per acre or cms per hectare),
 
-Hgw   =        height of saturated zone above the bottom of the aquifer
-(ft or m),
+\f$ H_{gw} \f$ = height of saturated zone above the bottom of the aquifer (ft or m),
 
-Hsw  =        height of surface water at the receiving node above the
-aquifer bottom (ft or m),
+\f$ H_{sw} \f$ = height of surface water at the receiving node above the aquifer bottom (ft or m),
 
-Hcb   =        height of the channel bottom above the aquifer bottom (ft
-or m).
+\f$ H_{cb} \f$ = height of the channel bottom above the aquifer bottom (ft or m).
 
 <!---
   gwf
@@ -1376,179 +964,112 @@ or m).
 
 @page gwf  [GWF]
 
-
-## Purpose:
+**Purpose:**
 
 Defines custom groundwater flow equations for specific subcatchments.
 
- 
+**Format:**
 
-## Format:
+_Subcat LATERAL/DEEP  Expr_
 
-Subcat LATERAL/DEEP  Expr
+**Parameters:**
 
- 
+_Subcat_ -- subcatchment name.
 
-## Parameters:
+_Expr_ -- a math formula expressing the rate of groundwater flow (in cfs per acre or cms per hectare for lateral flow or in/hr or mm/hr for deep flow) as a function of the following variables:
 
-  -------- --------------------
-  Subcat   subcatchment name.
-  -------- --------------------
+  - **Hgw** (for height of the groundwater table)
+  - **Hsw** (for height of the surface water)
+  - **Hcb** (for height of the channel bottom)
+  - **Hgs** (for height of ground surface)
 
-  ------ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Expr   a math formula expressing the rate of groundwater flow (in cfs per acre or cms per hectare for lateral flow or in/hr or mm/hr for deep flow) as a function of the following variables:
-  ------ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-  ----------------------------------------------------------------------------------------------- --------------------------------------------------------------------------
-  Hgw                                                                                             (for height of the groundwater table)
-  Hsw                                                                                             (for height of the surface water)
-  Hcb                                                                                             (for height of the channel bottom)
-  Hgs                                                                                             (for height of ground surface)
   where all heights are relative to the aquifer bottom and have units of either feet or meters;
-  Ks                                                                                              (for saturated hydraulic conductivity in in/hr or mm/hr)
-  K                                                                                               (for unsaturated hydraulic conductivity in in/hr or mm/hr)
-  Theta                                                                                           (for moisture content of the unsaturated zone)
-  Phi                                                                                             (for aquifer soil porosity)
-  Fi                                                                                              (for infiltration rate from the ground surface in in/hr or mm/hr)
-  Fu                                                                                              (for percolation rate from the upper unsaturated zone in in/hr or mm/hr)
-  A                                                                                               (for subcatchment area in acres or hectares)
-  ----------------------------------------------------------------------------------------------- --------------------------------------------------------------------------
 
-## Remarks:
+  - **Ks** (for saturated hydraulic conductivity in in/hr or mm/hr)
+  - **K**  (for unsaturated hydraulic conductivity in in/hr or mm/hr)
+  - **Theta** (for moisture content of the unsaturated zone)
+  - **Phi** (for aquifer soil porosity)
+  - **Fi**  (for infiltration rate from the ground surface in in/hr or mm/hr)
+  - **Fu**  (for percolation rate from the upper unsaturated zone in in/hr or mm/hr)
+  - **A**  (for subcatchment area in acres or hectares)
 
-Use LATERAL to designate an expression for lateral groundwater flow (to
-a node of the conveyance network) and DEEP for vertical loss to deep
-groundwater.
+**Remarks:**
 
-See the [TREATMENT] section for a list of built-in math functions that
-can be used in Expr. In particular, the STEP(x) function is 1 when x > 0
-and is 0 otherwise.
+Use **LATERAL** to designate an expression for lateral groundwater flow (to a node of the conveyance network) and **DEEP** for vertical loss to deep groundwater.
 
- 
+See the [TREATMENT] section for a list of built-in math functions that can be used in Expr. In particular, the STEP(x) function is 1 when x > 0 and is 0 otherwise.
 
-## Examples:
+**Examples:**
 
+```
 ;Two-stage linear reservoir for lateral flow
-
 Subcatch1 LATERAL 0.001*Hgw + 0.05*(Hgw–5)*STEP(Hgw–5)
 
- 
-
 ;Constant seepage rate to deep aquifer
-
 Subactch1  DEEP  0.002
+```
 
 <!---
   snowpacks
 -->
+
 @page snowpacks  [SNOWPACKS]
 
+**Purpose:**
 
-## Purpose:
+Specifies parameters that govern how snowfall accumulates and melts on the plowable, impervious and pervious surfaces of subcatchments.
 
-Specifies parameters that govern how snowfall accumulates and melts on
-the plowable, impervious and pervious surfaces of subcatchments.
+**Formats:**
 
- 
+|        |                |                                              |
+| ------ | -------------- | -------------------------------------------- |
+| _Name_ | **PLOWABLE**   | _Cmin  Cmax  Tbase  FWF  SD0  FW0  SNN0_     |
+| _Name_ | **IMPERVIOUS** | _Cmin  Cmax  Tbase  FWF  SD0  FW0  SD100_    |
+| _Name_ | **PERVIOUS**   | _Cmin  Cmax  Tbase  FWF  SD0  FW0  SD100_    |
+| _Name_ | **REMOVAL**    | _Dplow Fout Fimp Fperv Fimelt (Fsub Scatch)_ |
 
-## Formats:
 
-  ------ ------------ --------------------------------------------
-  Name   PLOWABLE     Cmin  Cmax  Tbase  FWF  SD0  FW0  SNN0
-  Name   IMPERVIOUS   Cmin  Cmax  Tbase  FWF  SD0  FW0  SD100
-  Name   PERVIOUS     Cmin  Cmax  Tbase  FWF  SD0  FW0  SD100
-  Name   REMOVAL      Dplow Fout Fimp Fperv Fimelt (Fsub Scatch)
-  ------ ------------ --------------------------------------------
+**Parameters:**
 
-## Parameters:
+_Name_ -- name assigned to snowpack parameter set .
 
-  ------ -------------------------------------------
-  Name   name assigned to snowpack parameter set .
-  ------ -------------------------------------------
+_Cmin_ -- minimum melt coefficient (in/hr-deg F or mm/hr-deg C).
 
-  ------ --------------------------------------------------------
-  Cmin   minimum melt coefficient (in/hr-deg F or mm/hr-deg C).
-  ------ --------------------------------------------------------
+_Cmax_ -- maximum melt coefficient (in/hr-deg F or mm/hr-deg C).
 
-  ------ --------------------------------------------------------
-  Cmax   maximum melt coefficient (in/hr-deg F or mm/hr-deg C).
-  ------ --------------------------------------------------------
+_Tbase_ -- snow melt base temperature (deg F or deg C).
 
-  ------- ----------------------------------------------
-  Tbase   snow melt base temperature (deg F or deg C).
-  ------- ----------------------------------------------
+_FWF_ -- ratio of free water holding capacity to snow depth (fraction).
 
-  ----- ----------------------------------------------------------------
-  FWF   ratio of free water holding capacity to snow depth (fraction).
-  ----- ----------------------------------------------------------------
+_SD0_ -- initial snow depth (in or mm water equivalent).
 
-  ----- -------------------------------------------------
-  SD0   initial snow depth (in or mm water equivalent).
-  ----- -------------------------------------------------
+_FW0_ -- initial free water in pack (in or mm).
 
-  ----- ----------------------------------------
-  FW0   initial free water in pack (in or mm).
-  ----- ----------------------------------------
+_SNN0_ -- fraction of impervious area that can be plowed.
 
-  ------ -------------------------------------------------
-  SNN0   fraction of impervious area that can be plowed.
-  ------ -------------------------------------------------
+_SD100_ -- snow depth above which there is 100% cover (in or mm water equivalent).
 
-  ------- -------------------------------------------------------------------------
-  SD100   snow depth above which there is 100% cover (in or mm water equivalent).
-  ------- -------------------------------------------------------------------------
+_Dplow_ -- depth of snow on plowable areas at which snow removal begins (in or mm).
 
-  ------- --------------------------------------------------------------------------
-  Dplow   depth of snow on plowable areas at which snow removal begins (in or mm).
-  ------- --------------------------------------------------------------------------
+_Fout_ -- fraction of snow on plowable area transferred out of watershed.
 
-  ------ -----------------------------------------------------------------
-  Fout   fraction of snow on plowable area transferred out of watershed.
-  ------ -----------------------------------------------------------------
+_Fimp_ -- fraction of snow on plowable area transferred to impervious area by plowing.
 
-  ------ ------------------------------------------------------------------------------
-  Fimp   fraction of snow on plowable area transferred to impervious area by plowing.
-  ------ ------------------------------------------------------------------------------
+_Fperv_ -- fraction of snow on plowable area transferred to pervious area by plowing.
 
-  ------- ----------------------------------------------------------------------------
-  Fperv   fraction of snow on plowable area transferred to pervious area by plowing.
-  ------- ----------------------------------------------------------------------------
+_Fimelt_ -- fraction of snow on plowable area converted into immediate melt.
 
-  -------- ------------------------------------------------------------------
-  Fimelt   fraction of snow on plowable area converted into immediate melt.
-  -------- ------------------------------------------------------------------
+_Fsub_ -- fraction of snow on plowable area transferred to pervious area in another subcatchment.
 
-  ------ -----------------------------------------------------------------------------------------
-  Fsub   fraction of snow on plowable area transferred to pervious area in another subcatchment.
-  ------ -----------------------------------------------------------------------------------------
+_Scatch_ -- name of subcatchment receiving the Fsub fraction of transferred snow.
 
-  -------- -----------------------------------------------------------------------
-  Scatch   name of subcatchment receiving the Fsub fraction of transferred snow.
-  -------- -----------------------------------------------------------------------
+**Remarks:**
 
- 
+Use one set of **PLOWABLE**, **IMPERVIOUS**, and **PERVIOUS** lines for each snow pack parameter set created. Snow pack parameter sets are assigned to specific subcatchments in the [SUBCATCHMENTS] section. Multiple subcatchments can share the same set of snow pack parameters.
 
- 
+The **PLOWABLE** line contains parameters for the impervious area of a subcatchment that is subject to snow removal by plowing but not to areal depletion. This area is the fraction _SNN0_ of the total impervious area. The **IMPERVIOUS** line contains parameter values for the remaining impervious area and the **PERVIOUS** line does the same for the entire pervious area. Both of the latter two areas are subject to areal depletion.
 
-## Remarks:
-
-Use one set of PLOWABLE, IMPERVIOUS, and PERVIOUS lines for each snow
-pack parameter set created. Snow pack parameter sets are assigned to
-specific subcatchments in the [SUBCATCHMENTS] section. Multiple
-subcatchments can share the same set of snow pack parameters.
-
-The PLOWABLE line contains parameters for the impervious area of a
-subcatchment that is subject to snow removal by plowing but not to areal
-depletion. This area is the fraction SNN0 of the total impervious area.
-The IMPERVIOUS line contains parameter values for the remaining
-impervious area and the PERVIOUS line does the same for the entire
-pervious area. Both of the latter two areas are subject to areal
-depletion.
-
-The REMOVAL line describes how snow removed from the plowable area is
-transferred onto other areas. The various transfer fractions should sum
-to no more than 1.0. If the line is omitted then no snow removal takes
-place.
+The **REMOVAL** line describes how snow removed from the plowable area is transferred onto other areas. The various transfer fractions should sum to no more than 1.0. If the line is omitted then no snow removal takes place.
 
 <!---
   junctions
@@ -1556,134 +1077,82 @@ place.
 
 @page junctions  [JUNCTIONS]
 
+**Purpose:**
 
-## Purpose:
+Identifies each junction node of the drainage system.  Junctions are points in space where channels and pipes connect together. For sewer systems they can be either connection fittings or manholes.
 
-Identifies each junction node of the drainage system.  Junctions are
-points in space where channels and pipes connect together. For sewer
-systems they can be either connection fittings or manholes.
+**Format:**
 
- 
+_Name  Elev  (Ymax  Y0  Ysur  Apond)_
 
-## Format:
+**Parameters:**
 
-Name  Elev  (Ymax  Y0  Ysur  Apond)
+_Name_ -- name assigned to junction node.
 
- 
+_Elev_ -- elevation of the junction’s invert (ft or m).
 
-## Parameters:
+_Ymax_ -- depth from ground to invert elevation (ft or m) (default is 0).
 
-  ------ ---------------------------------
-  Name   name assigned to junction node.
-  ------ ---------------------------------
+_Y0_ -- water depth at the start of the simulation (ft or m) (default is 0).
 
-  ------ -----------------------------------------------
-  Elev   elevation of the junction’s invert (ft or m).
-  ------ -----------------------------------------------
+_Ysur_ -- maximum additional pressure head above the ground elevation that the junction can sustain under surcharge conditions (ft or m) (default is 0).
 
-  ------ -----------------------------------------------------------------
-  Ymax   depth from ground to invert elevation (ft or m) (default is 0).
-  ------ -----------------------------------------------------------------
+_Apond_ -- area subjected to surface ponding once water depth exceeds Ymax + Ysur (ft<sup>2</sup> or m<sup>2</sup>) (default is 0).
 
-  ---- ----------------------------------------------------------------------
-  Y0   water depth at the start of the simulation (ft or m) (default is 0).
-  ---- ----------------------------------------------------------------------
+**Remarks:**
 
-  ------ ------------------------------------------------------------------------------------------------------------------------------------------------
-  Ysur   maximum additional pressure head above the ground elevation that the junction can sustain under surcharge conditions (ft or m) (default is 0).
-  ------ ------------------------------------------------------------------------------------------------------------------------------------------------
+If _Ymax_ is 0 then SWMM sets the junction’s maximum depth to the distance from its invert to the top of the highest connecting link.
 
-  ------- ------------------------------------------------------------------------------------
-  Apond   area subjected to surface ponding once water depth exceeds Ymax + Ysur (ft2 or m2)
-  ------- ------------------------------------------------------------------------------------
+If the junction is part of a force main section of the system then set Ysur to the maximum pressure that the system can sustain.
 
-(default is 0).
-
- 
-
-## Remarks:
-
-If Ymax is 0 then SWMM sets the junction’s maximum depth to the distance
-from its invert to the top of the highest connecting link.
-
-If the junction is part of a force main section of the system then set
-Ysur to the maximum pressure that the system can sustain.
-
-Surface ponding can only occur when Apond is non-zero and the
-ALLOW_PONDING analysis option is turned on.
+Surface ponding can only occur when Apond is non-zero and the **ALLOW_PONDING** analysis option is turned on.
 
 <!---
   outfalls
 -->
+
 @page outfalls  [OUTFALLS]
 
+**Purpose:**
+Identifies each outfall node (i.e., final downstream boundary) of the drainage system and the corresponding water stage elevation.  Only one link can be incident on an outfall node.
 
-## Purpose:
+**Formats:**
 
-Identifies each outfall node (i.e., final downstream boundary) of the
-drainage system and the corresponding water stage elevation.  Only one
-link can be incident on an outfall node.
+|        |        |                |           |             |             |
+| :----- | :----- | :------------- | :-------- | :---------- | :---------- |
+| _Name_ | _Elev_ | **FREE**       | (_Gated_) | (_RouteTo_) |             |
+| _Name_ | _Elev_ | **NORMAL**     | (_Gated_) | (_RouteTo_) |             |
+| _Name_ | _Elev_ | **FIXED**      | _Stage_   | (_Gated_)   | (_RouteTo_) |
+| _Name_ | _Elev_ | **TIDAL**      | _Tcurve_  | (_Gated_)   | (_RouteTo_) |
+| _Name_ | _Elev_ | **TIMESERIES** | _Tseries_ | (_Gated_)   | (_RouteTo_) |
 
- 
+**Parameters:**
 
-## Formats:
+_Name_ -- name assigned to outfall node.
 
-+-----------+-----------+-----------+-----------+-----------+-----------+
-| Name      | Elev      | FREE      | (Gated)   | (RouteTo) |           |
-+-----------+-----------+-----------+-----------+-----------+-----------+
-| Name      | Elev      | NORMAL    | (Gated)   | (RouteTo) |           |
-+-----------+-----------+-----------+-----------+-----------+-----------+
-| Name      | Elev      | FIXED     | Stage     | (Gated)   | (RouteTo) |
-+-----------+-----------+-----------+-----------+-----------+-----------+
-| Name      | Elev      | TIDAL     | Tcurve    | (Gated)   | (RouteTo) |
-+-----------+-----------+-----------+-----------+-----------+-----------+
-| Name      | Elev      | T         | Tseries   | (Gated)   | (RouteTo) |
-|           |           | IMESERIES |           |           |           |
-+-----------+-----------+-----------+-----------+-----------+-----------+
+_Elev_ -- node’s invert elevation (ft or m).
 
-## Parameters:
+_Stage_ -- elevation of a fixed stage outfall (ft or m).
 
-  ------ --------------------------------
-  Name   name assigned to outfall node.
-  ------ --------------------------------
+_Tcurve_ -- name of a curve in the [CURVES] section containing tidal height (i.e., outfall stage) v. hour of day over a complete tidal cycle.
 
-  ------ ------------------------------------
-  Elev   node’s invert elevation (ft or m).
-  ------ ------------------------------------
+_Tseries_ -- name of a time series in [TIMESERIES] section that describes how outfall stage varies with time.
 
-  ------- -----------------------------------------------
-  Stage   elevation of a fixed stage outfall (ft or m).
-  ------- -----------------------------------------------
+_Gated_ -- **YES** or **NO** depending on whether a flap gate is present that prevents reverse flow. The default is **NO**.
 
-  -------- -----------------------------------------------------------------------------------------------------------------------------------
-  Tcurve   name of a curve in the [CURVES] section containing tidal height (i.e., outfall stage) v. hour of day over a complete tidal cycle.
-  -------- -----------------------------------------------------------------------------------------------------------------------------------
+_RouteTo_ -- optional name of a subcatchment that receives the outfall's discharge. The default is not to route the outfall’s discharge.
 
-  --------- --------------------------------------------------------------------------------------------------
-  Tseries   name of a time series in [TIMESERIES] section that describes how outfall stage varies with time.
-  --------- --------------------------------------------------------------------------------------------------
+<!---
+  dividers
+-->
 
-  ------- ------------------------------------------------------------------------------------------------------
-  Gated   YES or NO depending on whether a flap gate is present that prevents reverse flow. The default is NO.
-  ------- ------------------------------------------------------------------------------------------------------
-
-  --------- -----------------------------------------------------------------------------------------------------------------------------
-  RouteTo   optional name of a subcatchment that receives the outfall's discharge. The default is not to route the outfall’s discharge.
-  --------- -----------------------------------------------------------------------------------------------------------------------------
-
-  ------------ ----------------------------------------
 @page dividers  [DIVIDERS]
-  ------------ ----------------------------------------
 
-## Purpose:
+**Purpose:**
 
-Identifies each flow divider node of the drainage system. Flow dividers
-are junctions with exactly two outflow conduits where the total outflow
-is divided between the two in a prescribed manner.
+Identifies each flow divider node of the drainage system. Flow dividers are junctions with exactly two outflow conduits where the total outflow is divided between the two in a prescribed manner.
 
- 
-
-## Formats:
+**Formats:**
 
   ------ ------ --------- ---------- ---------------------------------
   Name   Elev   DivLink   OVERFLOW   (Ymax Y0 Ysur Apond)
@@ -1692,7 +1161,7 @@ is divided between the two in a prescribed manner.
   Name   Elev   DivLink   WEIR       Qmin Ht Cd (Ymax Y0 Ysur Apond)
   ------ ------ --------- ---------- ---------------------------------
 
-## Parameters:
+**Parameters:**
 
   ------ --------------------------------
   Name   name assigned to divider node.
@@ -1745,15 +1214,14 @@ is divided between the two in a prescribed manner.
 @page storage  [STORAGE]
 
 
-## Purpose:
-
+**Purpose:**
 Identifies each storage node of the drainage system. Storage nodes can
 have any shape as specified by a surface area versus water depth
 relation.
 
  
 
-## Formats:
+**Formats:**
 
   ------ ------ ------ ---- ------------ ------------------------------------
   Name   Elev   Ymax   Y0   TABULAR      Acurve   (Ysur Fevap Psi Ksat IMD)
@@ -1761,7 +1229,7 @@ relation.
   Name   Elev   Ymax   Y0   Shape        L  W  Z  (Ysur Fevap Psi Ksat IMD)
   ------ ------ ------ ---- ------------ ------------------------------------
 
-## Parameters:
+**Parameters:**
 
   ------ --------------------------------
   Name   name assigned to storage node.
@@ -1825,7 +1293,7 @@ Optional seepage parameters for soil surrounding the storage unit:
   IMD   initial moisture deficit (porosity minus moisture content) (fraction).
   ----- ------------------------------------------------------------------------
 
-## Remarks:
+**Remarks:**
 
 A1, A2, and A0 are used in the following expression that relates surface
 area (ft2 or m2) to water depth (ft or m) for a storage unit with
@@ -1874,20 +1342,19 @@ rate equal to Ksat. Otherwise seepage rate will vary with storage depth.
 @page conduits  [CONDUITS]
 
 
-## Purpose:
-
+**Purpose:**
 Identifies each conduit link of the drainage system. Conduits are pipes
 or channels that convey water from one node to another.
 
  
 
-## Format:
+**Format:**
 
 Name  Node1  Node2  Length  N  Z1  Z2  (Q0  Qmax)
 
  
 
-## Parameters:
+**Parameters:**
 
   ------ --------------------------------
   Name   name assigned to conduit link.
@@ -1927,7 +1394,7 @@ Name  Node1  Node2  Length  N  Z1  Z2  (Q0  Qmax)
 
  
 
-## Remarks:
+**Remarks:**
 
 The figure below illustrates the meaning of the Z1 and Z2 parameters.
 
@@ -1944,19 +1411,18 @@ absolute elevation if it is set to ELEVATION.
 @page pumps  [PUMPS]
 
 
-## Purpose:
-
+**Purpose:**
 Identifies each pump link of the drainage system.
 
  
 
-## Format:
+**Format:**
 
 Name  Node1  Node2  Pcurve  (Status  Startup  Shutoff)
 
  
 
-## Parameters:
+**Parameters:**
 
   ------ -----------------------------
   Name   name assigned to pump link.
@@ -1988,7 +1454,7 @@ Name  Node1  Node2  Pcurve  (Status  Startup  Shutoff)
 
  
 
-## Remarks:
+**Remarks:**
 
 A pump curve describes the relation between a pump's flow rate and
 conditions at its inlet and outlet nodes. The following types of pump
@@ -2025,21 +1491,20 @@ curves are supported:
 @page orifices  [ORIFICES]
 
 
-## Purpose:
-
+**Purpose:**
 Identifies each orifice link of the drainage system. An orifice link
 serves to limit the flow exiting a node and is often used to model flow
 diversions and storage node outlets.
 
  
 
-## Format:
+**Format:**
 
 Name  Node1  Node2  Type  Offset  Cd  (Gated  Orate)
 
  
 
-## Parameters:
+**Parameters:**
 
   ------ --------------------------------
   Name   name assigned to orifice link.
@@ -2075,7 +1540,7 @@ Name  Node1  Node2  Type  Offset  Cd  (Gated  Orate)
 
  
 
-## Remarks:
+**Remarks:**
 
 The geometry of an orifice’s opening must be described in the
 [XSECTIONS] section. The only allowable shapes are CIRCULAR and
@@ -2094,20 +1559,19 @@ RECT_CLOSED (closed rectangular).
  @page weirs [WEIRS]
 
 
-## Purpose:
-
+**Purpose:**
 Identifies each weir link of the drainage system. Weirs are used to
 model flow diversions and storage node outlets.
 
  
 
-## Format:        
+**Format:**        
 
 Name Node1 Node2 Type CrstHt Cd (Gated EC Cd2 Sur (Width Surf))
 
  
 
-## Parameters:
+**Parameters:**
 
   ------ -----------------------------
   Name   name assigned to weir link.
@@ -2161,7 +1625,7 @@ The following parameters apply only to ROADWAY weirs:
 
  
 
-## Remarks:
+**Remarks:**
 
 The geometry of a weir’s opening is described in the [XSECTIONS]
 section. The following shapes must be used with each type of weir:
@@ -2196,15 +1660,14 @@ outlets
 @page outlets  [OUTLETS]
   ----------- ----------------------------------------
 
-## Purpose:
-
+**Purpose:**
 Identifies each outlet flow control device of the drainage system. These
 are devices used to model outflows from storage units or flow diversions
 that have a user-defined relation between flow rate and water depth.
 
  
 
-## Formats:
+**Formats:**
 
   ------ ------- ------- -------- ------------------ ----------------
   Name   Node1   Node2   Offset   TABULAR/DEPTH      Qcurve (Gated)
@@ -2213,7 +1676,7 @@ that have a user-defined relation between flow rate and water depth.
   Name   Node1   Node2   Offset   FUNCTIONAL/HEAD    C1 C2 (Gated)
   ------ ------- ------- -------- ------------------ ----------------
 
-## Parameters:
+**Parameters:**
 
   ------ -------------------------------
   Name   name assigned to outlet link.
@@ -2266,14 +1729,13 @@ that have a user-defined relation between flow rate and water depth.
  @page xsections [XSECTIONS]
 
 
-## Purpose:
-
+**Purpose:**
 Provides cross-section geometric data for conduit and regulator links of
 the drainage system.
 
  
 
-## Formats:
+**Formats:**
 
   ------ ----------- -------------------------------------------
   Link   Shape       Geom1 Geom2 Geom3 Geom4 (Barrels Culvert)
@@ -2281,7 +1743,7 @@ the drainage system.
   Link   STREET      Street
   ------ ----------- -------------------------------------------
 
-## Parameters:
+**Parameters:**
 
   ------ --------------------------------------
   Link   name of a conduit, orifice, or weir.
@@ -2321,7 +1783,7 @@ the drainage system.
 
  
 
-## Remarks:
+**Remarks:**
 
 The standard conduit shapes and their geometric parameters are listed in
 the following table:
@@ -2402,14 +1864,13 @@ FHWA HDS-5 methodology.
 @page transects  [TRANSECTS]
 
 
-## Purpose:
-
+**Purpose:**
 Describes the cross-section geometry of natural channels or conduits
 with irregular shapes following the HEC-2 data format.
 
  
 
-## Formats:
+**Formats:**
 
   ---- ----------------------------------- -------- --------------------------------------------
   NC   Nleft                               Nright   Nchanl
@@ -2417,7 +1878,7 @@ with irregular shapes following the HEC-2 data format.
   GR   Elev  Station  ...  Elev  Station
   ---- ----------------------------------- -------- --------------------------------------------
 
-## Parameters:
+**Parameters:**
 
   ------- ----------------------------------------------------------------------------------------------------------------------
   Nleft   Manning’s roughness coefficient (n) of right overbank portion of channel (use 0 if no change from previous NC line).
@@ -2471,7 +1932,7 @@ with irregular shapes following the HEC-2 data format.
 
  
 
-## Remarks:
+**Remarks:**
 
 Transect geometry is described as shown below, assuming that one is
 looking in a downstream direction:
@@ -2510,19 +1971,18 @@ channel roughness to account for its longer length.
 @page streets  [STREETS]
   ----------- ----------------------------------------
 
-## Purpose:
-
+**Purpose:**
 Describes the cross-section geometry of conduits that represent streets.
 
  
 
-## Format:
+**Format:**
 
 Name Tcrown Hcurb Sx nRoad (a W)(Sides Tback Sback nBack)
 
  
 
-## Parameters:
+**Parameters:**
 
   ------ -------------------------------------------
   Name   name assigned to the street cross-section
@@ -2570,7 +2030,7 @@ Name Tcrown Hcurb Sx nRoad (a W)(Sides Tback Sback nBack)
 
  
 
-## Remarks:
+**Remarks:**
 
 []
 
@@ -2587,14 +2047,13 @@ parameters can be omitted.
 @page inlets  [INLETS]
   ---------- ----------------------------------------
 
-## Purpose:
-
+**Purpose:**
 Defines inlet structure designs used to capture street and channel flow
 that are sent to below ground sewers.
 
  
 
-## Format:
+**Format:**
 
   ------ ------------------ -----------------------------------
   Name   GRATE/DROP_GRATE   Length Width Type (Aopen Vsplash)
@@ -2603,7 +2062,7 @@ that are sent to below ground sewers.
   Name   CUSTOM             Dcurve/Rcurve
   ------ ------------------ -----------------------------------
 
-## Parameters:
+**Parameters:**
 
   ------ ---------------------------------------
   Name   name assigned to the inlet structure.
@@ -2647,7 +2106,7 @@ that are sent to below ground sewers.
 
  
 
-## Remarks:
+**Remarks:**
 
 These are the different types of standard inlets that SWMM can model:
 
@@ -2724,7 +2183,7 @@ inlets.
 
  
 
-## Examples:
+**Examples:**
 
 ; A 2-ft x 2-ft parallel bar grate
 
@@ -2747,19 +2206,18 @@ InletType3  CUSTOM  Curve1
 @page inlet_usage  [INLET_USAGE]
 
 
-## Purpose:
-
+**Purpose:**
 Assigns inlet structures to specific street and open channel conduits.
 
  
 
-## Format:
+**Format:**
 
 Conduit Inlet Node (Number %Clogged Qmax aLocal wLocal Placement)
 
  
 
-## Parameters:
+**Parameters:**
 
   --------- ----------------------------------------------------------------
   Conduit   name of a street or open channel conduit containing the inlet.
@@ -2799,7 +2257,7 @@ Conduit Inlet Node (Number %Clogged Qmax aLocal wLocal Placement)
 
  
 
-## Remarks:
+**Remarks:**
 
 Only conduits with a STREET cross section can be assigned a curb and
 gutter inlet while drop inlets can only be assigned to conduits with a
@@ -2828,20 +2286,19 @@ flow except into the inlet.
 @page losses  [LOSSES]
 
 
-## Purpose:
-
+**Purpose:**
 Specifies minor head loss coefficients, flap gates, and seepage rates
 for conduits.
 
  
 
-## Format:
+**Format:**
 
 Conduit  Kentry  Kexit  Kavg  (Flap  Seepage)
 
  
 
-## Parameters:
+**Parameters:**
 
   --------- ---------------------------------------------------------------------------------------------
   Conduit   name of a conduit.
@@ -2852,7 +2309,7 @@ Conduit  Kentry  Kexit  Kavg  (Flap  Seepage)
   Seepage   Rate of seepage loss into the surrounding soil (in/hr or mm/hr). (Default is 0.)
   --------- ---------------------------------------------------------------------------------------------
 
-## Remarks:
+**Remarks:**
 
 Minor losses are only computed for the Dynamic Wave flow routing option
 (see the [OPTIONS] section). They are computed as Kv2/2g where K = minor
@@ -2871,14 +2328,13 @@ valves, or seepage losses.
 @page controls  [CONTROLS]
 
 
-## Purpose:
-
+**Purpose:**
 Determines how pumps and regulators will be adjusted based on simulation
 time or conditions at specific nodes and links.
 
  
 
-## Formats:
+**Formats:**
 
 Each control rule is a series of statements of the form:
 
@@ -2910,7 +2366,7 @@ PRIORITY value
 
  
 
-## Parameters:
+**Parameters:**
 
   ------------- ------------------------------------------------
   ruleID        an ID label assigned to the rule.
@@ -2919,7 +2375,7 @@ PRIORITY value
   value         a priority value (e.g., a number from 1 to 5).
   ------------- ------------------------------------------------
 
-## Remarks:
+**Remarks:**
 
 Keywords are shown in boldface and ruleID is an ID label assigned to the
 rule, condition_n is a Condition Clause, action_n is an Action Clause,
@@ -2974,19 +2430,18 @@ first is given the higher priority.
 @page pollutants  [POLLUTANTS]
 
 
-## Purpose:
-
+**Purpose:**
 Identifies the pollutants being analyzed.
 
  
 
-## Format:
+**Format:**
 
 Name Units Crain Cgw Cii Kd (Sflag CoPoll CoFract Cdwf Cinit)
 
  
 
-## Parameters:
+**Parameters:**
 
   ------ -------------------------------
   Name   name assigned to a pollutant.
@@ -3032,7 +2487,7 @@ Name Units Crain Cgw Cii Kd (Sflag CoPoll CoFract Cdwf Cinit)
   Cinit   pollutant concentration throughout the conveyance system at the start of the simulation (default is 0).
   ------- ---------------------------------------------------------------------------------------------------------
 
-## Remarks:
+**Remarks:**
 
 FLOW  is a reserved word and cannot be used to name a pollutant.
 
@@ -3054,8 +2509,7 @@ node of the conveyance system by editing the node’s Inflows property
 
 @page landuses  [LANDUSES]
 
-## Purpose:
-
+**Purpose:**
 Identifies the various categories of land uses within the drainage area.
 Each subcatchment area can be assigned a different mix of land uses.
 Each land use can be subjected to a different street sweeping schedule.
@@ -3064,13 +2518,13 @@ off.
 
  
 
-## Format:
+**Format:**
 
 Name  (SweepInterval  Availability  LastSweep)
 
  
 
-## Parameters:
+**Parameters:**
 
   ------ ----------------
   Name   land use name.
@@ -3095,20 +2549,19 @@ Name  (SweepInterval  Availability  LastSweep)
 @page coverages  [COVERAGES]
 
 
-## Purpose:
-
+**Purpose:**
 Specifies the percentage of a subcatchment’s area that is covered by
 each category of land use.
 
  
 
-## Format:
+**Format:**
 
  Subcat  Landuse  Percent  Landuse  Percent  . . .
 
  
 
-## Parameters:
+**Parameters:**
 
   -------- --------------------
   Subcat   subcatchment name.
@@ -3124,7 +2577,7 @@ each category of land use.
 
  
 
-## Remarks:
+**Remarks:**
 
 More than one pair of land use - percentage values can be entered per
 line. If more than one line is needed, then the subcatchment name must
@@ -3143,20 +2596,19 @@ will appear in the runoff from the subcatchment.
 @page loadings  [LOADINGS]
 
 
-## Purpose:
-
+**Purpose:**
 Specifies the pollutant buildup that exists on each subcatchment at the
 start of a simulation.
 
  
 
-## Format:
+**Format:**
 
 Subcat  Pollut  InitBuildup  Pollut  InitBuildup ...
 
  
 
-## Parameters:
+**Parameters:**
 
   ------------- ------------------------------------------------------------
   Subcat        name of a subcatchment.
@@ -3164,7 +2616,7 @@ Subcat  Pollut  InitBuildup  Pollut  InitBuildup ...
   InitBuildup   initial buildup of the pollutant (lbs/acre or kg/hectare).
   ------------- ------------------------------------------------------------
 
-## Remarks:
+**Remarks:**
 
 More than one pair of pollutant - buildup values can be entered per
 line. If more than one line is needed, then the subcatchment name must
@@ -3182,20 +2634,19 @@ in the subcatchment.
 @page buildup  [BUILDUP]
 
 
-## Purpose:
-
+**Purpose:**
 Specifies the rate at which pollutants build up over different land uses
 between rain events.
 
  
 
-## Format:
+**Format:**
 
 Landuse  Pollutant  FuncType  C1  C2  C3  PerUnit
 
  
 
-## Parameters:
+**Parameters:**
 
   ----------- ---------------------------------------------------------------------
   Landuse     land use name.
@@ -3205,7 +2656,7 @@ Landuse  Pollutant  FuncType  C1  C2  C3  PerUnit
   PerUnit     AREA if buildup is per unit area, CURBLENGTH if per length of curb.
   ----------- ---------------------------------------------------------------------
 
-## Remarks:
+**Remarks:**
 
 Buildup is measured in pounds (kilograms) per unit of area (or curb
 length) for pollutants whose concentration units are either mg/L or
@@ -3240,20 +2691,19 @@ length per day) as a function of time.
 @page washoff  [WASHOFF]
 
 
-## Purpose:
-
+**Purpose:**
 Specifies the rate at which pollutants are washed off from different
 land uses during rain events.
 
  
 
-## Format:
+**Format:**
 
 Landuse  Pollutant  FuncType  C1  C2  SweepRmvl BmpRmvl
 
  
 
-## Parameters:
+**Parameters:**
 
   ----------- -------------------------------------------------
   Landuse     land use name.
@@ -3264,7 +2714,7 @@ Landuse  Pollutant  FuncType  C1  C2  SweepRmvl BmpRmvl
   BmpRmvl     BMP removal efficiency (percent).
   ----------- -------------------------------------------------
 
-## Remarks:
+**Remarks:**
 
 The equations used for each type of washoff function are as follows:
 
@@ -3305,20 +2755,19 @@ concentration) function, C1 is always in concentration units.
 @page treatment  [TREATMENT]
 
 
-## Purpose:
-
+**Purpose:**
 Specifies the degree of treatment received by pollutants at specific
 nodes of the drainage system.
 
  
 
-## Format:
+**Format:**
 
 Node  Pollut  Result = Func
 
  
 
-## Parameters:
+**Parameters:**
 
   ------ ------------------------------------------
   Node   Name of the node where treatment occurs.
@@ -3342,7 +2791,7 @@ R  (function computes fractional removal).
 
  
 
-## Remarks:
+**Remarks:**
 
 Treatment functions can be any well-formed mathematical expression
 involving:
@@ -3437,21 +2886,20 @@ Node23  Lead  R = 0.2 * R_TSS    
 @page inflows  [INFLOWS]
 
 
-## Purpose:
-
+**Purpose:**
 Specifies external hydrographs and pollutographs that enter the drainage
 system at specific nodes.
 
  
 
-## Formats:
+**Formats:**
 
   ------ -------- --------- -----------------------------------
   Node   FLOW     Tseries   (FLOW (1.0 Sfactor Base Pat))
   Node   Pollut   Tseries   (Type (Mfactor Sfactor Base Pat))
   ------ -------- --------- -----------------------------------
 
-## Parameters:
+**Parameters:**
 
   ------ ------------------------------------------------
   Node   name of the node where external inflow enters.
@@ -3487,7 +2935,7 @@ system at specific nodes.
 
  
 
-## Remarks:
+**Remarks:**
 
 External inflows are represented by both a constant and time varying
 component as follows:
@@ -3505,7 +2953,7 @@ FLOW inflow.
 
  
 
-## Examples:
+**Examples:**
 
 ; NODE2 receives flow inflow from time series N2FLOW
 
@@ -3540,20 +2988,19 @@ N176  FLOW  FLOW_176  FLOW  1.0  0.5  12.7  FlowPat
 @page dwf  [DWF]
 
 
-## Purpose:
-
+**Purpose:**
 Specifies dry weather flow and its quality entering the drainage system
 at specific nodes.
 
  
 
-## Format:
+**Format:**
 
 Node  Type  Base  (Pat1  Pat2  Pat3  Pat4)
 
  
 
-## Parameters:
+**Parameters:**
 
   ------ -----------------------------------------------
   Node   name of a node where dry weather flow enters.
@@ -3579,7 +3026,7 @@ Pat2,
 
  
 
-## Remarks:
+**Remarks:**
 
 The actual dry weather input will equal the product of the baseline
 value and any adjustment factors supplied by the specified patterns. (If
@@ -3595,21 +3042,20 @@ for more details.
 
 @page rdii  [RDII]
 
-## Purpose:
-
+**Purpose:**
 Specifies the parameters that describe rainfall-dependent
 infiltration/inflow (RDII) entering the drainage system at specific
 nodes.
 
  
 
-## Format:
+**Format:**
 
  Node  UHgroup  SewerArea
 
  
 
-## Parameters:
+**Parameters:**
 
   ------ -------------------------------------
   Node   name of a node receiving RDII flow.
@@ -3630,15 +3076,14 @@ nodes.
 @page hydrographs  [HYDROGRAPHS]
 
 
-## Purpose:
-
+**Purpose:**
 Specifies the shapes of the triangular unit hydrographs that determine
 the amount of rainfall-dependent infiltration/inflow (RDII) entering the
 drainage system.
 
  
 
-## Format:
+**Format:**
 
 Name  Raingage
 
@@ -3646,7 +3091,7 @@ Name  Month SHORT/MEDIUM/LONG  R  T  K (Dmax Drec D0)
 
  
 
-## Remarks:
+**Remarks:**
 
   ------ -------------------------------------------
   Name   name assigned to a unit hydrograph group.
@@ -3686,7 +3131,7 @@ Name  Month SHORT/MEDIUM/LONG  R  T  K (Dmax Drec D0)
 
  
 
-## Remarks:
+**Remarks:**
 
 For each group of unit hydrographs, use one line to specify its rain
 gage followed by as many lines as are needed to define each unit
@@ -3737,13 +3182,12 @@ UH101  JUL MEDIUM 0.011 2.0  2.0
 @page curves  [CURVES]
 
 
-## Purpose:
-
+**Purpose:**
 Describes a relationship between two variables in tabular format.
 
  
 
-## Format:
+**Format:**
 
 Name  Type
 
@@ -3751,7 +3195,7 @@ Name  X-value  Y-value  ...
 
  
 
-## Parameters:
+**Parameters:**
 
 +-----------------------------------+-----------------------------------+
 | Name                              | name assigned to the curve.       |
@@ -3773,7 +3217,7 @@ Name  X-value  Y-value  ...
 |                                   | corresponding to X.               |
 +-----------------------------------+-----------------------------------+
 
-## Remarks:
+**Remarks:**
 
 Each curve should have its name and type on the first line with its data
 points entered on subsequent lines.
@@ -3871,13 +3315,12 @@ PC2  6  0
 @page timeseries  [TIMESERIES]
 
 
-## Purpose:
-
+**Purpose:**
 Describes how a quantity varies over time.
 
  
 
-## Formats:
+**Formats:**
 
 Name  ( Date )  Hour  Value  ...
 
@@ -3887,7 +3330,7 @@ Name FILE  Fname
 
  
 
-## Parameters:
+**Parameters:**
 
   ------ -----------------------------------
   Name   name assigned to the time series.
@@ -3915,7 +3358,7 @@ Name FILE  Fname
 
  
 
-## Remarks:
+**Remarks:**
 
 There are two options for supplying the data for a time series:
 
@@ -3962,7 +3405,7 @@ between the recorded values.
 
  
 
-## Examples:
+**Examples:**
 
 ; Hourly rainfall time series with dates specified using
 
@@ -3999,14 +3442,13 @@ HY1  32:10 0  34.0 57  35.33 85  48.67 24  50 0
 @page patterns  [PATTERNS]
 
 
-## Purpose:
-
+**Purpose:**
 Specifies time patterns of dry weather flow or quality in the form of
 adjustment factors applied as multipliers to baseline values.
 
  
 
-## Format:
+**Format:**
 
   ------ --------- ---------------------------------
   Name   MONTHLY   Factor1  Factor2  ...  Factor12
@@ -4015,7 +3457,7 @@ adjustment factors applied as multipliers to baseline values.
   Name   WEEKEND   Factor1  Factor2  ...  Factor24
   ------ --------- ---------------------------------
 
-## Parameters:
+**Parameters:**
 
   ------ ------------------------------------
   Name   name used to identify the pattern.
@@ -4031,7 +3473,7 @@ Factor2,
 
  
 
-## Remarks:
+**Remarks:**
 
 The MONTHLY format is used to set monthly pattern factors for dry
 weather flow constituents.
@@ -4053,7 +3495,7 @@ weather flows or quality concentrations supplied in the [DWF] section.
 
  
 
-## Examples:
+**Examples:**
 
 ; Day of week adjustment factors
 
