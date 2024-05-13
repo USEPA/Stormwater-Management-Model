@@ -35,6 +35,9 @@
 //   - Link control setting bug when reading a hot start file fixed.    
 //   Build 5.1.015:
 //   - Support added for multiple infiltration methods within a project.
+//   Build 5.2.5:
+//   - Fixed bug in fwrite count argument when writing catchment landuse pollutant
+//     build-up.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -416,7 +419,7 @@ void  saveRunoff(void)
                 for (j=0; j<Nobjects[POLLUT]; j++)
                 {
                     x[0] = Subcatch[i].landFactor[k].buildup[j];
-                    fwrite(x, sizeof(double), Nobjects[POLLUT], f);
+                    fwrite(x, sizeof(double), 1, f);
                 }
                 x[0] = Subcatch[i].landFactor[k].lastSwept;
                 fwrite(x, sizeof(double), 1, f);

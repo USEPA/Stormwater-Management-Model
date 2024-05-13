@@ -67,7 +67,7 @@ jobs:
     - name: Setup python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.7'
+        python-version: '3.11'
 
     - name: Install requirements
       run: |
@@ -80,7 +80,7 @@ jobs:
     - name: Before reg test
       env:
         NRTESTS_URL: https://github.com/USEPA/swmm-nrtestsuite
-        BENCHMARK_TAG: v2.2.0
+        BENCHMARK_TAG: v2.5.0-dev
       run: before-nrtest.cmd ${{ env.BENCHMARK_TAG }}
 
     - name: Run reg test

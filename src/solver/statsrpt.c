@@ -30,6 +30,9 @@
 //   Build 5.2.2
 //   - Calculation of % Evaporation and % Exfiltration losses for storage
 //     units was corrected.
+//   Build 5.2.5
+//   - Changed flow format to scientific to prevent the merging of extremely 
+//     large flows that make it difficult to interpret results.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -89,8 +92,8 @@ void statsrpt_writeReport()
 //
 {
     // --- set number of decimal places for reporting flow values
-    if ( FlowUnits == MGD || FlowUnits == CMS ) sstrncpy(FlowFmt, "%9.3f", 5);
-    else sstrncpy(FlowFmt, "%9.2f", 5);
+    if ( FlowUnits == MGD || FlowUnits == CMS ) sstrncpy(FlowFmt, "%9.3g", 5);
+    else sstrncpy(FlowFmt, "%9.2g", 5);
 
     // --- conversion factor from cu. ft. to mil. gallons or megaliters
     if (UnitSystem == US) Vcf = 7.48 / 1.0e6;

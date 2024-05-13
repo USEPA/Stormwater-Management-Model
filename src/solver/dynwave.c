@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     11/01/21  (Build 5.2.0)
+//   Date:     07/13/23  (Build 5.2.4)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -44,6 +44,9 @@
 //   - Roll back the 5.1.014 change for conduit losses in updateNodeFlows().
 //   Build 5.2.0:
 //   - Support added for reporting most frequent non-converging links.
+//   Build 5.2.4:
+//   - Conduit evap+seepage outflow split evenly between outflow from
+//     conduit's upstream and non-outfall downstream nodes.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -129,7 +132,7 @@ void dynwave_init()
             " Not enough memory for dynamic wave routing.");
         return;
     }
-
+    
     // --- initialize node surface areas & crown elev.
     for (i = 0; i < Nobjects[NODE]; i++ )
     {
@@ -144,6 +147,7 @@ void dynwave_init()
         j = Link[i].node1;
         z = Node[j].invertElev + Link[i].offset1 + Link[i].xsect.yFull;
         Node[j].crownElev = MAX(Node[j].crownElev, z);
+        
         j = Link[i].node2;
         z = Node[j].invertElev + Link[i].offset2 + Link[i].xsect.yFull;
         Node[j].crownElev = MAX(Node[j].crownElev, z);
@@ -534,29 +538,39 @@ void updateNodeFlows(int i)
     int    n1 = Link[i].node1;
     int    n2 = Link[i].node2;
     double q = Link[i].newFlow;
-    double uniformLossRate = 0.0;
-
-    // --- compute any uniform seepage loss from a conduit
-    if ( Link[i].type == CONDUIT )
-    {
-        k = Link[i].subIndex;
-        uniformLossRate = Conduit[k].evapLossRate + Conduit[k].seepLossRate; 
-        barrels = Conduit[k].barrels;
-        uniformLossRate *= barrels;
-    }
+    double conduitLossRate = 0.0;
 
     // --- update total inflow & outflow at upstream/downstream nodes
     if ( q >= 0.0 )
     {
-        Node[n1].outflow += q + uniformLossRate;
+        Node[n1].outflow += q;
         Node[n2].inflow  += q;
     }
     else
     {
         Node[n1].inflow   -= q;
-        Node[n2].outflow  -= q - uniformLossRate;
+        Node[n2].outflow  -= q;
     }
-
+ 
+    // --- add any uniform evap & seepage loss from conduit link
+    if ( Link[i].type == CONDUIT )
+    {
+        k = Link[i].subIndex;
+        barrels = Conduit[k].barrels;
+        conduitLossRate = (Conduit[k].evapLossRate + Conduit[k].seepLossRate) *
+                          barrels;
+        if (conduitLossRate > 0.0)
+        {
+            // --- outfall nodes do not share evap & seepage losses
+            if (Node[n1].type != OUTFALL && Node[n2].type != OUTFALL)
+                conduitLossRate /= 2.0;
+            if (Node[n1].type != OUTFALL)
+                Node[n1].outflow += conduitLossRate;
+            if (Node[n2].type != OUTFALL)
+                Node[n2].outflow += conduitLossRate;
+        }
+    }
+    
     // --- add surf. area contributions to upstream/downstream nodes
     Xnode[Link[i].node1].newSurfArea += Link[i].surfArea1 * barrels;
     Xnode[Link[i].node2].newSurfArea += Link[i].surfArea2 * barrels;
@@ -585,7 +599,7 @@ int findNodeDepths(double dt)
 //
 {
     int i;
-    double yOld;        // previous node depth (ft)
+    double yOld = 0.0;       // previous node depth (ft)
 
     // --- compute outfall depths based on flow in connecting link
     for ( i = 0; i < Nobjects[LINK]; i++ ) link_setOutfallDepth(i);
@@ -654,11 +668,10 @@ void setNodeDepth(int i, double dt)
     Node[i].overflow = 0.0;
     surfArea = Xnode[i].newSurfArea;
     surfArea = MAX(surfArea, MinSurfArea);
-
+    
     // --- determine average net flow volume into node over the time step
     dQ = Node[i].inflow - Node[i].outflow;
     dV = 0.5 * (Node[i].oldNetInflow + dQ) * dt;
-
 
     // --- determine if node is EXTRAN surcharged
     if (SurchargeMethod == EXTRAN)
