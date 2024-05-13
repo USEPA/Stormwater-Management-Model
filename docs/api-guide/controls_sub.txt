@@ -1,0 +1,392 @@
+  ------------------- ----------------------------------------
+  Condition Clauses     [Top]  [Previous Topic]   [Next Topic]
+  ------------------- ----------------------------------------
+
+A Condition Clause of a control rule has the following formats:
+
+object id attribute relation value
+
+object id attribute relation object id attribute
+
+where:
+
+object                is a category of object
+
+id                        is the object's ID name
+
+attribute        is an attribute or property of the object
+
+relation        is a relational operator (=, <>, <, <=, >, >=)
+
+value                is an attribute value
+
+ 
+
+Some examples of condition clauses are:
+
+GAGE  G1   6-HR_DEPTH > 0.5
+
+NODE  N23  DEPTH  >  10
+
+NODE  N23  DEPTH  >  NODE N25 DEPTH
+
+PUMP  P45  STATUS =  OFF
+
+SIMULATION CLOCKTIME = 22:45:00
+
+ 
+
+The objects and attributes that can appear in a condition clause are as
+follows:
+
+ 
+
++-----------------------+-----------------------+-----------------------+
+| Object                | Attributes            | Value                 |
++-----------------------+-----------------------+-----------------------+
+| GAGE                  | INTENSITY             | numerical value       |
+|                       |                       |                       |
+|                       | n-HR_DEPTH            |                       |
++-----------------------+-----------------------+-----------------------+
+| NODE                  | DEPTH                 | numerical value       |
+|                       |                       |                       |
+|                       | MAXDEPTH              |                       |
+|                       |                       |                       |
+|                       | HEAD                  |                       |
+|                       |                       |                       |
+|                       | VOLUME                |                       |
+|                       |                       |                       |
+|                       | INFLOW                |                       |
++-----------------------+-----------------------+-----------------------+
+| LINK or               | FLOW                  | numerical value       |
+|                       |                       |                       |
+| CONDUIT               | FULLFLOW              |                       |
+|                       |                       |                       |
+|                       | DEPTH                 |                       |
+|                       |                       |                       |
+|                       | MAXDEPTH              |                       |
+|                       |                       |                       |
+|                       | VELOCITY              |                       |
+|                       |                       |                       |
+|                       | LENGTH                |                       |
+|                       |                       |                       |
+|                       | SLOPE                 |                       |
++-----------------------+-----------------------+-----------------------+
+|                       | STATUS                | OPEN or CLOSED        |
++-----------------------+-----------------------+-----------------------+
+|                       | TIMEOPEN              | decimal hours or      |
+|                       |                       | hr:min                |
+|                       | TIMECLOSED            |                       |
++-----------------------+-----------------------+-----------------------+
+| PUMP                  | STATUS                | ON or OFF             |
++-----------------------+-----------------------+-----------------------+
+|                       | SETTING               | pump curve multiplier |
++-----------------------+-----------------------+-----------------------+
+|                       | FLOW                  | numerical value       |
++-----------------------+-----------------------+-----------------------+
+| ORIFICE               | SETTING               | fraction open         |
++-----------------------+-----------------------+-----------------------+
+| WEIR                  | SETTING               | fraction open         |
++-----------------------+-----------------------+-----------------------+
+| OUTLET                | SETTING               | rating curve          |
+|                       |                       | multiplier            |
++-----------------------+-----------------------+-----------------------+
+| SIMULATION            | TIME                  | elapsed time in       |
+|                       |                       | decimal hours or      |
+|                       |                       | hr:min:sec            |
++-----------------------+-----------------------+-----------------------+
+|                       | DATE                  | month/day/year        |
++-----------------------+-----------------------+-----------------------+
+|                       | MONTH                 | month of year         |
+|                       |                       | (January = 1)         |
++-----------------------+-----------------------+-----------------------+
+|                       | DAY                   | day of week (Sunday = |
+|                       |                       | 1)                    |
++-----------------------+-----------------------+-----------------------+
+|                       | CLOCKTIME             | time of day in        |
+|                       |                       | hr:min:sec            |
++-----------------------+-----------------------+-----------------------+
+
+ 
+
+Gage INTENSITY is the rainfall intensity for a specific rain gage in the
+current simulation time period. Gage n-HR_DEPTH is a gage's total
+rainfall depth over the past n hours where n is a number between 1 and
+48.
+
+ 
+
+TIMEOPEN is the duration a link has been in an OPEN or ON state or have
+its SETTING be greater than zero; TIMECLOSED is the duration it has
+remained in a CLOSED or OFF state or have its SETTING be zero.
+  ---------------- ----------------------------------------
+  Action Clauses     [Top]  [Previous Topic]   [Next Topic]
+  ---------------- ----------------------------------------
+
+An Action Clause of a control rule can have one of the following
+formats:
+
+CONDUIT id STATUS = OPEN/CLOSED
+
+PUMP id STATUS = ON/OFF
+
+PUMP/ORIFICE/WEIR/OUTLET id SETTING = value
+
+where the meaning of SETTING depends on the object being controlled:
+
+  --- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  §   for Pumps it is a multiplier applied to the flow computed from the pump curve (for a Type5 pump curve it is a relative speed setting that shifts the curve up or down),
+  --- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  --- --------------------------------------------------------------------------
+  §   for Orifices it is the fractional amount that the orifice is fully open,
+  --- --------------------------------------------------------------------------
+
+  --- ---------------------------------------------------------------------------------------------------------------------------------------------------------
+  §   for Weirs it is the fractional amount of the original freeboard that exists (i.e., weir control is accomplished by moving the crest height up or down),
+  --- ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  --- ---------------------------------------------------------------------------------------------
+  §   for Outlets it is a multiplier applied to the flow computed from the outlet's rating curve.
+  --- ---------------------------------------------------------------------------------------------
+
+ 
+
+Some examples of action clauses are:
+
+PUMP P67 STATUS = OFF
+
+ORIFICE O212 SETTING = 0.5
+  -------------------- ----------------------------------------
+  Modulated Controls     [Top]  [Previous Topic]   [Next Topic]
+  -------------------- ----------------------------------------
+
+Modulated controls are control rules that provide for a continuous
+degree of control applied to a pump or flow regulator as determined by
+the value of some controller variable, such as water depth at a node, or
+by time. The functional relation between the control setting and the
+controller variable can be specified by using a Control Curve, a Time
+Series, or a PID Controller. Some examples of modulated control rules
+are:
+
+ 
+
+RULE MC1
+
+IF NODE N2 DEPTH >= 0
+
+THEN WEIR W25 SETTING = CURVE C25
+
+ 
+
+RULE MC2
+
+IF SIMULATION TIME > 0
+
+THEN PUMP P12 SETTING = TIMESERIES TS101
+
+ 
+
+RULE MC3
+
+IF LINK L33 FLOW <> 1.6
+
+THEN ORIFICE O12 SETTING = PID 0.1 0.0 0.0
+
+ 
+
+Note how a modified form of the action clause is used to specify the
+name of the control curve, time series or PID parameter set that defines
+the degree of control. A PID parameter set contains three values -- a
+proportional gain coefficient, an integral time (in minutes), and a
+derivative time (in minutes). Also, by convention the controller
+variable used in a Control Curve or PID Controller will always be the
+object and attribute named in the last condition clause of the rule. As
+an example, in rule MC1 above Curve C25 would define how the fractional
+setting at Weir W25 varied with the water depth at Node N2. In rule MC3,
+the PID controller adjusts the opening of Orifice O12 to maintain a flow
+of 1.6 in Link L33.
+  ----------------- ----------------------------------------
+  PID Controllers     [Top]  [Previous Topic]   [Next Topic]
+  ----------------- ----------------------------------------
+
+A PID (Proportional-Integral-Derivative) Controller is a generic
+closed-loop control scheme that tries to maintain a desired set-point on
+some process variable by computing and applying a corrective action that
+adjusts the process accordingly. In the context of a hydraulic
+conveyance system a PID controller might be used to adjust the opening
+on a gated orifice to maintain a target flow rate in a specific conduit
+or to adjust a variable speed pump to maintain a desired depth in a
+storage unit. The classical PID controller has the form:
+
+[]
+
+where m(t) = controller output, Kp = proportional coefficient (gain), Ti
+= integral time, Td = derivative time, e(t) = error (difference between
+setpoint and observed variable value), and t = time.
+
+ 
+
+The controller output m(t) has the same meaning as a link setting used
+in a rule's Action Clause while dt is the current flow routing time step
+in minutes. Because link settings are relative values (with respect to
+either a pump's standard operating curve or to the full opening height
+of an orifice or weir) the error e(t) used by the controller is also a
+relative value. It is defined as the difference between the control
+variable setpoint x* and its value at time t, x(t), normalized to the
+setpoint value: e(t) = (x* - x(t)) / x*.
+
+ 
+
+Note that for direct action control, where an increase in the link
+setting causes an increase in the controlled variable, the sign of Kp
+must be positive. For reverse action control, where the controlled
+variable decreases as the link setting increases, the sign of Kp must be
+negative. The user must recognize whether the control is direct or
+reverse action and use the proper sign on Kp accordingly. For example,
+adjusting an orifice opening to maintain a desired downstream flow is
+direct action. Adjusting it to maintain an upstream water level is
+reverse action. Controlling a pump to maintain a fixed wet well water
+level would be reverse action while using it to maintain a fixed
+downstream flow is direct action.
+  ----------------- ----------------------------------------
+  Named Variables     [Top]  [Previous Topic]   [Next Topic]
+  ----------------- ----------------------------------------
+
+Named Variables are aliases used to represent the triplet of <object
+type | object id | object attribute> (or a doublet for Simulation times)
+that appear in the condition clauses of control rules. They allow
+condition clauses to be written as:
+
+variable relation value
+
+variable relation variable
+
+where variable is defined on a separate line before its first use in a
+rule using the format:
+
+VARIABLE  name = object id attribute
+
+ 
+
+Here is an example of using this feature:
+
+VARIABLE  N123_Depth = NODE N123 DEPTH
+
+VARIABLE  N456_Depth = NODE N456 DEPTH
+
+VARIABLE  P45 = PUMP 45 STATUS
+
+RULE 1
+
+IF    N123_Depth > N456_Depth
+
+AND   P45 = OFF
+
+THEN  PUMP 45 STATUS = ON
+
+ 
+
+RULE 2
+
+IF   N123_Depth < 1
+
+THEN PUMP 45 STATUS = OFF
+
+ 
+
+A variable is not allowed to have the same name as an object attribute.
+
+ 
+
+Aside from saving some typing, named variables are required when using
+arithmetic expressions in rule condition clauses.
+  ------------------------ ----------------------------------------
+  Arithmetic Expressions     [Top]  [Previous Topic]   [Next Topic]
+  ------------------------ ----------------------------------------
+
+In addition to a simple condition placed on a single variable, a control
+condition clause can also contain an arithmetic expression formed from
+several variables whose value is compared against. Thus the format of a
+condition clause can be extended as follows:
+
+expression  relation  value
+
+expression  relation  variable
+
+where expression is defined on a separate line before its first use in a
+rule using the format:
+
+EXPRESSION  name = f(variable1, variable2, ...)
+
+ 
+
+The function f(...) can be any well-formed mathematical expression
+containing one or more named variables as well as any of the following
+math functions (which are case insensitive) and operators:
+
+  --- --------------------------------
+  §   abs(x) for absolute value of x
+  --- --------------------------------
+
+  --- -----------------------------------------------
+  §   sgn(x) which is +1 for x >= 0 or -1 otherwise
+  --- -----------------------------------------------
+
+  --- -----------------------------------------------
+  §   step(x) which is 0 for x <= 0 and 1 otherwise
+  --- -----------------------------------------------
+
+  --- ----------------------------------
+  §   sqrt(x) for the square root of x
+  --- ----------------------------------
+
+  --- ----------------------------------
+  §   log(x) for logarithm base e of x
+  --- ----------------------------------
+
+  --- -------------------------------------
+  §   log10(x) for logarithm base 10 of x
+  --- -------------------------------------
+
+  --- ------------------------------------
+  §   exp(x) for e raised to the x power
+  --- ------------------------------------
+
+  --- ------------------------------------------------------
+  §   the standard trig functions (sin, cos, tan, and cot)
+  --- ------------------------------------------------------
+
+  --- ---------------------------------------------------------
+  §   the inverse trig functions (asin, acos, atan, and acot)
+  --- ---------------------------------------------------------
+
+  --- ------------------------------------------------------------
+  §   the hyperbolic trig functions (sinh, cosh, tanh, and coth)
+  --- ------------------------------------------------------------
+
+  --- --------------------------------------------------------------------------------------------------
+  §   the standard operators  +, -, *, /, ^ (for exponentiation ) and any level of nested parentheses.
+  --- --------------------------------------------------------------------------------------------------
+
+ 
+
+Here is an example of using this feature:
+
+VARIABLE  P1_flow = LINK 1 FLOW
+
+VARIABLE  P2_flow = LINK 2 FLOW
+
+VARIABLE  O3_flow = Link 3 FLOW
+
+EXPRESSION Net_Inflow = (P1_flow + P2_flow)/2 - O3_flow
+
+ 
+
+RULE 1
+
+IF   Net_Inflow > 0.1
+
+THEN ORIFICE 3 SETTING = 1
+
+ELSE ORIFICE 3 SETTING = 0.5
