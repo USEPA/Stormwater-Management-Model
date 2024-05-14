@@ -68,7 +68,7 @@ Clicking on a keyword will take you to a description of the data supplied in tha
   title
 -->
 
-@page title  [TITLE]
+@page title [TITLE]
 
 **Purpose:**
 
@@ -82,7 +82,7 @@ Any number of lines may be entered. The first line will be used as a page header
   options
 -->
 
-@page options  [OPTIONS]
+@page options [OPTIONS]
 
 **Purpose:**
 
@@ -216,7 +216,7 @@ Provides values for various analysis options.
   report
 -->
 
-@page report  [REPORT]
+@page report [REPORT]
 
 **Purpose:**
 
@@ -251,7 +251,7 @@ Describes the contents of the report file that SWMM produces.
 
 **LINKS** gives a list of links whose results are to be reported. The default is **NONE**.
 
-**LID** specifies that the LID control Name in subcatchment *Subcatch* should have a detailed performance report for it written to file Fname.
+**LID** specifies that the LID control Name in subcatchment _Subcatch_ should have a detailed performance report for it written to file Fname.
 
 The SUBCATCHMENTS, NODES, LINKS, and LID lines can be repeated multiple times.
 
@@ -259,7 +259,7 @@ The SUBCATCHMENTS, NODES, LINKS, and LID lines can be repeated multiple times.
   files
 -->
 
-@page files  [FILES]
+@page files [FILES]
 
 **Purpose:**
 
@@ -278,21 +278,21 @@ Identifies optional interface files used or saved by a run.
 
 **Parameters:**
 
-*Fname* -- the name of an interface file.
+_Fname_ -- the name of an interface file.
 
 **Remarks:**
 
 SWMM can use several different kinds of interface files that contain either externally imposed inputs (e.g., rainfall or infiltration/inflow hydrographs) or the results of previously run analyses (e.g., runoff or routing results). These files can help speed up simulations, simplify comparisons of different loading scenarios, and allow large study areas to be broken up into smaller areas that can be analyzed individually. The different types of interface files that are currently available include:
 
- - rainfall interface file
+- rainfall interface file
 
- - runoff interface file
+- runoff interface file
 
- - hot start file
+- hot start file
 
- - RDII interface file
+- RDII interface file
 
- - routing interface files
+- routing interface files
 
 Rainfall, Runoff, and RDII files can either be used or saved in a run, but not both. A run can both use and save a Hot Start file (with different names).
 
@@ -302,8 +302,7 @@ Enclose the external file name in double quotes if it contains spaces and includ
   raingages
 -->
 
-@page raingages  [RAINGAGES]
-
+@page raingages [RAINGAGES]
 
 **Purpose:**
 
@@ -315,24 +314,23 @@ _Name_ _Form_ _Intvl_ _SCF_ **TIMESERIES** _Tseries_
 
 _Name_ _Form_ _Intvl_ _SCF_ **FILE** _Fname_ (_Sta_ _Units_)
 
-
 **Parameters:**
 
-  _Name_ -- name assigned to rain gage.
+_Name_ -- name assigned to rain gage.
 
-  _Form_ -- form of recorded rainfall, either **INTENSITY**, **VOLUME** or **CUMULATIVE**.
+_Form_ -- form of recorded rainfall, either **INTENSITY**, **VOLUME** or **CUMULATIVE**.
 
-  _Intvl_ -- time interval between gage readings in decimal hours or hours:minutes format (e.g., 0:15 for 15-minute readings).
+_Intvl_ -- time interval between gage readings in decimal hours or hours:minutes format (e.g., 0:15 for 15-minute readings).
 
-  _SCF_ -- snow catch deficiency correction factor (use 1.0 for no adjustment).
+_SCF_ -- snow catch deficiency correction factor (use 1.0 for no adjustment).
 
-  _Tseries_ -- name of a time series in the [TIMESERIES] section with rainfall data.
+_Tseries_ -- name of a time series in the [TIMESERIES] section with rainfall data.
 
-  _Fname_ -- name of an external file with rainfall data. Rainfall files are discussed in Section 11.3.
+_Fname_ -- name of an external file with rainfall data. Rainfall files are discussed in Section 11.3.
 
-  _Sta_ -- name of the recording station in a user-prepared formatted rain file.
+_Sta_ -- name of the recording station in a user-prepared formatted rain file.
 
-  _Units_ -- rain depth units for the data in a user-prepared formatted rain file, either **IN** (inches) or **MM** (millimeters).
+_Units_ -- rain depth units for the data in a user-prepared formatted rain file, either **IN** (inches) or **MM** (millimeters).
 
 **Remarks:**
 
@@ -344,13 +342,11 @@ The station name and depth units entries are only required when using a user-pre
   evaporation
 -->
 
-@page evaporation  [EVAPORATION]
+@page evaporation [EVAPORATION]
 
 **Purpose:**
 
 Specifies how daily potential evaporation rates vary with time for the study area.
-
- 
 
 **Formats:**
 
@@ -384,7 +380,6 @@ _p12_ -- pan coefficient for December.
 
 _patID_ -- name of a monthly time pattern.
 
-
 **Remarks:**
 
 Use only one of the above formats (**CONSTANT**, **MONTHLY**, **TIMESERIES**, **TEMPERATURE**, or **FILE**). If no [EVAPORATION] section appears, then evaporation is assumed to be 0.
@@ -403,7 +398,7 @@ The evaporation rates provided in this section are potential rates. The actual a
   temperature
 -->
 
-@page temperature  [TEMPERATURE]
+@page temperature [TEMPERATURE]
 
 **Purpose:**
 
@@ -471,7 +466,7 @@ Separate Areal Depletion Curves (ADC) can be defined for impervious and pervious
   adjustments
 -->
 
-@page adjustments  [ADJUSTMENTS]
+@page adjustments [ADJUSTMENTS]
 
 **Purpose:**
 
@@ -490,13 +485,13 @@ time period of a simulation.
 
 **Parameters:**
 
-  _t1..t12_ -- adjustments to temperature in January, February, etc., as plus or minus degrees F (degrees C).
+_t1..t12_ -- adjustments to temperature in January, February, etc., as plus or minus degrees F (degrees C).
 
-  _e1..e12_ -- adjustments to evaporation rate in January, February, etc., as plus or minus in/day (mm/day).
+_e1..e12_ -- adjustments to evaporation rate in January, February, etc., as plus or minus in/day (mm/day).
 
-  _r1..r12_ -- multipliers applied to precipitation rate in January, February, etc.
+_r1..r12_ -- multipliers applied to precipitation rate in January, February, etc.
 
-  _c1..c12_ -- multipliers applied to soil hydraulic conductivity in January, February, etc. used in either Horton or Green-Ampt infiltration.
+_c1..c12_ -- multipliers applied to soil hydraulic conductivity in January, February, etc. used in either Horton or Green-Ampt infiltration.
 
 **Remarks:**
 
@@ -506,7 +501,7 @@ The same adjustment is applied for each time period within a given month and is 
   subcatchments
 -->
 
-@page subcatchments  [SUBCATCHMENTS]
+@page subcatchments [SUBCATCHMENTS]
 
 **Purpose:**
 Identifies each subcatchment within the study area. Subcatchments are
@@ -535,12 +530,12 @@ _Slope_ -- the subcatchment’s slope (percent).
 _Clength_ -- total curb length (any length units) used to describe pollutant buildup. Use 0 if not applicable.
 
 _Spack_ -- optional name of a snow pack object (from the [SNOWPACKS] section) that characterizes snow accumulation and melting over the subcatchment.
- 
+
 <!---
   subareas
 -->
 
-@page subareas  [SUBAREAS]
+@page subareas [SUBAREAS]
 
 **Purpose:**
 
@@ -572,7 +567,7 @@ _%Routed_ -- percent of runoff routed from one type of area to another (default 
   infiltration
 -->
 
-@page infiltration  [INFILTRATION]
+@page infiltration [INFILTRATION]
 
 **Purpose:**
 
@@ -620,7 +615,7 @@ _p3_ -- time it takes for a fully saturated soil to dry (days).
   lid_controls
 -->
 
-@page lid_controls  [LID_CONTROLS]
+@page lid_controls [LID_CONTROLS]
 
 **Purpose:**
 
@@ -628,9 +623,9 @@ Defines scale-independent LID controls that can be deployed within subcatchments
 
 **Formats:**
 
-|        |              |
-| :----- | :----------- |
-| _Name_ | _Type_       |
+|        |        |
+| :----- | :----- |
+| _Name_ | _Type_ |
 
 followed by one or more of the following lines depending on Type:
 
@@ -714,7 +709,7 @@ _Vclog_ -- number of storage layer void volumes of runoff treated it takes to co
 
 _Covrd_ -- **YES** (the default) if a rain barrel is covered, **NO** if it is not.
 
-Values for _Vratio_, _Seepage_, and _Vclog_ are ignored for rain barrels while _Covrd_ applies only to rain barrels. 
+Values for _Vratio_, _Seepage_, and _Vclog_ are ignored for rain barrels while _Covrd_ applies only to rain barrels.
 
 <u>For LIDs with Drain Systems:</u>
 
@@ -731,7 +726,7 @@ _Hopen_ -- The height of water  (in inches or mm) in the drain's Storage Layer 
 _Hclose_ -- The height of water (in inches or mm) in the drain's Storage Layer that causes the drain to automatically close. Use 0 to disable this feature.
 
 _Qcurve_ -- The name of an optional Control Curve that adjusts the computed drain flow as a function of the head of water above the drain. Leave blank if not applicable.
- 
+
 <u>For Green Roof LIDs with Drainage Mats:</u>
 
 _Thick_ -- thickness of the drainage mat (inches or mm).
@@ -755,7 +750,7 @@ The following table shows which layers are required (x) or are optional (o) for 
 | Rooftop Disconnection |    x    |          |      |         |   x   |           |
 | Vegetative Swale      |    x    |          |      |         |       |           |
 
-The equation used to compute flow rate out of the underdrain per unit area of the LID (in in/hr or mm/hr) is \f( q = C(h-H_{d})^{n} \f)  where _q_ is outflow, _h_ is height of stored water (inches or mm) and _H_<sub>_d_</sub> is the drain offset height. Note that the units of _C_ depend on the unit system being used as well as the value assigned to _n_.
+The equation used to compute flow rate out of the underdrain per unit area of the LID (in in/hr or mm/hr) is \f( q = C(h-H*{d})^{n} \f)  where \_q* is outflow, _h_ is height of stored water (inches or mm) and _H_<sub>_d_</sub> is the drain offset height. Note that the units of _C_ depend on the unit system being used as well as the value assigned to _n_.
 
 The actual dimensions of an LID control are provided in the [LID_USAGE] section when it is placed in a particular subcatchment.
 
@@ -789,7 +784,7 @@ Swale  SURFACE  24  0  0.2  3  5
   lid_usage
 -->
 
-@page lid_usage  [LID_USAGE]
+@page lid_usage [LID_USAGE]
 
 **Purpose:**
 
@@ -820,9 +815,9 @@ _FromImp_ -- the percent of the impervious portion of the subcatchment’s non-L
 
 _ToPerv_ -- a value of 1 indicates that the surface and drain flow from the LID unit should be routed back onto the pervious area of the subcatchment that contains it. This would be a common choice to make for rain barrels, rooftop disconnection, and possibly green roofs. The default value is 0.
 
-_RptFile_ -- optional name of a file to which detailed time series results for the LID will be written. Enclose the name in double quotes if it contains spaces and include its full path if it resides in a different directory than the SWMM input file. Use ‘*’ if not applicable and an entry for DrainTo or FromPerv follows
+_RptFile_ -- optional name of a file to which detailed time series results for the LID will be written. Enclose the name in double quotes if it contains spaces and include its full path if it resides in a different directory than the SWMM input file. Use ‘\*’ if not applicable and an entry for DrainTo or FromPerv follows
 
-_DrainTo_ -- optional name of subcatchment or node that receives flow from the unit’s drain line, if different from the outlet of the subcatchment that the LID is placed in. Use ‘*’ if not applicable and an entry for FromPerv follows.
+_DrainTo_ -- optional name of subcatchment or node that receives flow from the unit’s drain line, if different from the outlet of the subcatchment that the LID is placed in. Use ‘\*’ if not applicable and an entry for FromPerv follows.
 
 _FromPerv_ -- optional percent of the pervious portion of the subcatchment’s non-LID area whose runoff is treated by the LID practice. The default value is 0.
 
@@ -851,7 +846,7 @@ S2  Swale  1  10000  50  0  0  0  “swale.rpt”
   aquifers
 -->
 
-@page aquifers  [AQUIFERS]
+@page aquifers [AQUIFERS]
 
 **Purpose:**
 
@@ -899,8 +894,7 @@ Local values for _Ebot_, _Egw_, and _Umc_ can be assigned to specific subcatchme
   groundwater
 -->
 
-@page groundwater  [GROUNDWATER]
-
+@page groundwater [GROUNDWATER]
 
 **Purpose:**
 
@@ -932,7 +926,7 @@ _A3_ -- surface water – groundwater interaction coefficient (see below).
 
 _Dsw_ -- fixed depth of surface water at the receiving node (ft or m) (set to zero if surface water depth will vary as computed by flow routing).
 
-_Egwt_ -- threshold groundwater table elevation which must be reached before any flow occurs (ft or m). Leave blank (or enter *) to use the elevation of the receiving node's invert.
+_Egwt_ -- threshold groundwater table elevation which must be reached before any flow occurs (ft or m). Leave blank (or enter \*) to use the elevation of the receiving node's invert.
 
 The following optional parameters can be used to override the values supplied for the subcatchment’s aquifer.
 
@@ -946,23 +940,23 @@ Umc -- unsaturated zone moisture content at start of simulation (volumetric frac
 
 The flow coefficients are used in the following equation that determines the lateral groundwater flow rate based on groundwater and surface water elevations:
 
- \f[ Q_{L}  =  A1 (H_{gw}  –  H_{cb})^{B1}  –  A2 (H_{sw}  –  H_{cb})^{B2}  +  A3 H_{gw} H_{sw} \f]
+\f[ Q_{L}  =  A1 (H_{gw}  –  H_{cb})^{B1}  –  A2 (H_{sw}  –  H_{cb})^{B2}  +  A3 H_{gw} H_{sw} \f]
 
 where:
 
-\f$ Q_{L \f$ = lateral groundwater flow (cfs per acre or cms per hectare),
+\f$ Q\_{L \f$ = lateral groundwater flow (cfs per acre or cms per hectare),
 
-\f$ H_{gw} \f$ = height of saturated zone above the bottom of the aquifer (ft or m),
+\f$ H\_{gw} \f$ = height of saturated zone above the bottom of the aquifer (ft or m),
 
-\f$ H_{sw} \f$ = height of surface water at the receiving node above the aquifer bottom (ft or m),
+\f$ H\_{sw} \f$ = height of surface water at the receiving node above the aquifer bottom (ft or m),
 
-\f$ H_{cb} \f$ = height of the channel bottom above the aquifer bottom (ft or m).
+\f$ H\_{cb} \f$ = height of the channel bottom above the aquifer bottom (ft or m).
 
 <!---
   gwf
 -->
 
-@page gwf  [GWF]
+@page gwf [GWF]
 
 **Purpose:**
 
@@ -978,20 +972,20 @@ _Subcat_ -- subcatchment name.
 
 _Expr_ -- a math formula expressing the rate of groundwater flow (in cfs per acre or cms per hectare for lateral flow or in/hr or mm/hr for deep flow) as a function of the following variables:
 
-  - **Hgw** (for height of the groundwater table)
-  - **Hsw** (for height of the surface water)
-  - **Hcb** (for height of the channel bottom)
-  - **Hgs** (for height of ground surface)
+- **Hgw** (for height of the groundwater table)
+- **Hsw** (for height of the surface water)
+- **Hcb** (for height of the channel bottom)
+- **Hgs** (for height of ground surface)
 
-  where all heights are relative to the aquifer bottom and have units of either feet or meters;
+where all heights are relative to the aquifer bottom and have units of either feet or meters;
 
-  - **Ks** (for saturated hydraulic conductivity in in/hr or mm/hr)
-  - **K**  (for unsaturated hydraulic conductivity in in/hr or mm/hr)
-  - **Theta** (for moisture content of the unsaturated zone)
-  - **Phi** (for aquifer soil porosity)
-  - **Fi**  (for infiltration rate from the ground surface in in/hr or mm/hr)
-  - **Fu**  (for percolation rate from the upper unsaturated zone in in/hr or mm/hr)
-  - **A**  (for subcatchment area in acres or hectares)
+- **Ks** (for saturated hydraulic conductivity in in/hr or mm/hr)
+- **K** (for unsaturated hydraulic conductivity in in/hr or mm/hr)
+- **Theta** (for moisture content of the unsaturated zone)
+- **Phi** (for aquifer soil porosity)
+- **Fi** (for infiltration rate from the ground surface in in/hr or mm/hr)
+- **Fu** (for percolation rate from the upper unsaturated zone in in/hr or mm/hr)
+- **A** (for subcatchment area in acres or hectares)
 
 **Remarks:**
 
@@ -1013,7 +1007,7 @@ Subactch1  DEEP  0.002
   snowpacks
 -->
 
-@page snowpacks  [SNOWPACKS]
+@page snowpacks [SNOWPACKS]
 
 **Purpose:**
 
@@ -1027,7 +1021,6 @@ Specifies parameters that govern how snowfall accumulates and melts on the plowa
 | _Name_ | **IMPERVIOUS** | _Cmin  Cmax  Tbase  FWF  SD0  FW0  SD100_    |
 | _Name_ | **PERVIOUS**   | _Cmin  Cmax  Tbase  FWF  SD0  FW0  SD100_    |
 | _Name_ | **REMOVAL**    | _Dplow Fout Fimp Fperv Fimelt (Fsub Scatch)_ |
-
 
 **Parameters:**
 
@@ -1075,7 +1068,7 @@ The **REMOVAL** line describes how snow removed from the plowable area is transf
   junctions
 -->
 
-@page junctions  [JUNCTIONS]
+@page junctions [JUNCTIONS]
 
 **Purpose:**
 
@@ -1111,7 +1104,7 @@ Surface ponding can only occur when Apond is non-zero and the **ALLOW_PONDING** 
   outfalls
 -->
 
-@page outfalls  [OUTFALLS]
+@page outfalls [OUTFALLS]
 
 **Purpose:**
 Identifies each outfall node (i.e., final downstream boundary) of the drainage system and the corresponding water stage elevation.  Only one link can be incident on an outfall node.
@@ -1146,7 +1139,7 @@ _RouteTo_ -- optional name of a subcatchment that receives the outfall's dischar
   dividers
 -->
 
-@page dividers  [DIVIDERS]
+@page dividers [DIVIDERS]
 
 **Purpose:**
 
@@ -1154,2171 +1147,1510 @@ Identifies each flow divider node of the drainage system. Flow dividers are junc
 
 **Formats:**
 
-  ------ ------ --------- ---------- ---------------------------------
-  Name   Elev   DivLink   OVERFLOW   (Ymax Y0 Ysur Apond)
-  Name   Elev   DivLink   CUTOFF     Qmin (Ymax Y0 Ysur Apond)
-  Name   Elev   DivLink   TABULAR    Dcurve (Ymax Y0 Ysur Apond)
-  Name   Elev   DivLink   WEIR       Qmin Ht Cd (Ymax Y0 Ysur Apond)
-  ------ ------ --------- ---------- ---------------------------------
+|        |        |           |              |            |                        |
+| :----- | :----- | :-------- | :----------- | :--------- | :--------------------- |
+| _Name_ | _Elev_ | _DivLink_ | **OVERFLOW** |            | (_Ymax Y0 Ysur Apond_) |
+| _Name_ | _Elev_ | _DivLink_ | **CUTOFF**   | Qmin       | (_Ymax Y0 Ysur Apond)_ |
+| _Name_ | _Elev_ | _DivLink_ | **TABULAR**  | Dcurve     | (_Ymax Y0 Ysur Apond_) |
+| _Name_ | _Elev_ | _DivLink_ | **WEIR**     | Qmin Ht Cd | (_Ymax Y0 Ysur Apond_) |
 
 **Parameters:**
 
-  ------ --------------------------------
-  Name   name assigned to divider node.
-  ------ --------------------------------
+_Name_ -- name assigned to divider node.
 
-  ------ ------------------------------------
-  Elev   node’s invert elevation (ft or m).
-  ------ ------------------------------------
+_Elev_ -- node’s invert elevation (ft or m).
 
-  --------- ---------------------------------------------
-  DivLink   name of the link to which flow is diverted.
-  --------- ---------------------------------------------
+_DivLink_ -- name of the link to which flow is diverted.
 
-  ------ ----------------------------------------------------------------------------------
-  Qmin   flow at which diversion begins for either a CUTOFF or WEIR divider (flow units).
-  ------ ----------------------------------------------------------------------------------
+_Qmin_ -- flow at which diversion begins for either a CUTOFF or WEIR divider (flow units).
 
-  -------- ---------------------------------------------------------------------------------
-  Dcurve   name of a curve for a TABULAR divider that relates diverted flow to total flow.
-  -------- ---------------------------------------------------------------------------------
+_Dcurve_ -- name of a curve for a TABULAR divider that relates diverted flow to total flow.
 
-  ---- -------------------------------------
-  Ht   height of a WEIR divider (ft or m).
-  ---- -------------------------------------
+_Ht_ -- height of a WEIR divider (ft or m).
 
-  ---- -------------------------------------------
-  Cd   discharge coefficient for a WEIR divider.
-  ---- -------------------------------------------
+_Cd_ -- discharge coefficient for a WEIR divider.
 
-  ------ --------------------------------------------------------------------------------
-  Ymax   depth from the ground to the node’s invert elevation (ft or m) (default is 0).
-  ------ --------------------------------------------------------------------------------
+_Ymax_ -- depth from the ground to the node’s invert elevation (ft or m) (default is 0).
 
-  ---- ----------------------------------------------------------------------
-  Y0   water depth at the start of the simulation (ft or m) (default is 0).
-  ---- ----------------------------------------------------------------------
+_Y0_ -- water depth at the start of the simulation (ft or m) (default is 0).
 
-  ------ --------------------------------------------------------------------------------------------------------------------------------------------
-  Ysur   maximum additional pressure head above the ground elevation that the node can sustain under surcharge conditions (ft or m) (default is 0).
-  ------ --------------------------------------------------------------------------------------------------------------------------------------------
+_Ysur_ -- maximum additional pressure head above the ground elevation that the node can sustain under surcharge conditions (ft or m) (default is 0).
 
-  ------- -----------------------------------------------------------------------------------------------------
-  Apond   area subjected to surface ponding once water depth exceeds Ymax + Ysur  (ft2 or m2) (default is 0).
-  ------- -----------------------------------------------------------------------------------------------------
+_Apond_ -- area subjected to surface ponding once water depth exceeds Ymax + Ysur (ft<sup>2</sup> or m<sup>2</sup>) (default is 0).
 
 <!---
   storage
 -->
 
-@page storage  [STORAGE]
-
+@page storage [STORAGE]
 
 **Purpose:**
-Identifies each storage node of the drainage system. Storage nodes can
-have any shape as specified by a surface area versus water depth
-relation.
 
- 
+Identifies each storage node of the drainage system. Storage nodes can have any shape as specified by a surface area versus water depth relation.
 
 **Formats:**
 
-  ------ ------ ------ ---- ------------ ------------------------------------
-  Name   Elev   Ymax   Y0   TABULAR      Acurve   (Ysur Fevap Psi Ksat IMD)
-  Name   Elev   Ymax   Y0   FUNCTIONAL   A1 A2 A0 (Ysur Fevap Psi Ksat IMD)
-  Name   Elev   Ymax   Y0   Shape        L  W  Z  (Ysur Fevap Psi Ksat IMD)
-  ------ ------ ------ ---- ------------ ------------------------------------
+|        |        |        |      |                |             |                             |
+| :----- | :----- | :----- | :--- | :------------- | :---------- | :-------------------------- |
+| _Name_ | _Elev_ | _Ymax_ | _Y0_ | **TABULAR**    | _Acurve_    | (_Ysur Fevap Psi Ksat IMD_) |
+| _Name_ | _Elev_ | _Ymax_ | _Y0_ | **FUNCTIONAL** | _A1 A2 A0_  | (_Ysur Fevap Psi Ksat IMD_) |
+| _Name_ | _Elev_ | _Ymax_ | _Y0_ | _Shape_        | _L  W  Z_   | (_Ysur Fevap Psi Ksat IMD_) |
 
 **Parameters:**
 
-  ------ --------------------------------
-  Name   name assigned to storage node.
-  ------ --------------------------------
+_Name_ -- name assigned to storage node.
 
-  ------ ------------------------------------
-  Elev   node’s invert elevation (ft or m).
-  ------ ------------------------------------
+_Elev_ -- node’s invert elevation (ft or m).
 
-  ------ ------------------------------------------------------
-  Ymax   water depth when the storage node is full (ft or m).
-  ------ ------------------------------------------------------
+_Ymax_ -- water depth when the storage node is full (ft or m).
 
-  ---- -------------------------------------------------------
-  Y0   water depth at the start of the simulation (ft or m).
-  ---- -------------------------------------------------------
+_Y0_ -- water depth at the start of the simulation (ft or m).
 
-  -------- ------------------------------------------------------------------------------------------------------------------------
-  Acurve   name of a curve in the [CURVES] section that relates surface area (ft2 or m2) to depth (ft or m) for TABULAR geometry.
-  -------- ------------------------------------------------------------------------------------------------------------------------
+_Acurve_ -- name of a curve in the [CURVES] section that relates surface area (ft<sup>2</sup> or m<sup>2</sup>) to depth (ft or m) for **TABULAR** geometry.
 
-  ---- ----------------------------------------------------------------------
-  A1   coefficient of a FUNCTIONAL relation between surface area and depth.
-  ---- ----------------------------------------------------------------------
+_A1_ -- coefficient of a **FUNCTIONAL** relation between surface area and depth.
 
-  ---- -------------------------------------------------------------------
-  A2   exponent of a FUNCTIONAL relation between surface area and depth.
-  ---- -------------------------------------------------------------------
+_A2_ -- exponent of a **FUNCTIONAL** relation between surface area and depth.
 
-  ---- -------------------------------------------------------------------
-  A0   constant of a FUNCTIONAL relation between surface area and depth.
-  ---- -------------------------------------------------------------------
+_A0_ -- constant of a **FUNCTIONAL** relation between surface area and depth.
 
-  ------- ---------------------------------------------------------------------------------------------------------
-  Shape   shape used to relate surface area to depth; choices are CYLINDRICAL, CONICAL, PARABOLOID, or PYRAMIDAL.
-  ------- ---------------------------------------------------------------------------------------------------------
+_Shape_ -- shape used to relate surface area to depth; choices are **CYLINDRICAL**, **CONICAL**, **PARABOLOID**, or **PYRAMIDAL**.
 
-  ------ -----------------------------------------------------------------------------------------------------------------------------------------------
-  Ysur   maximum additional pressure head above full depth that a closed storage unit can sustain under surcharge conditions (ft or m) (default is 0).
-  ------ -----------------------------------------------------------------------------------------------------------------------------------------------
+_Ysur_ -- maximum additional pressure head above full depth that a closed storage unit can sustain under surcharge conditions (ft or m) (default is 0).
 
-  --------- -----------------------------------------------------------
-  L, W, Z   dimensions of the storage unit's shape (see table below).
-  --------- -----------------------------------------------------------
+_L, W, Z_ -- dimensions of the storage unit's shape (see table below).
 
-  ------- --------------------------------------------------------------------------------------------------
-  Fevap   fraction of potential evaporation from the storage unit’s water surface realized (default is 0).
-  ------- --------------------------------------------------------------------------------------------------
+_Fevap_ -- fraction of potential evaporation from the storage unit’s water surface realized (default is 0).
 
 Optional seepage parameters for soil surrounding the storage unit:
 
-  ----- ------------------------------
-  Psi   suction head (inches or mm).
-  ----- ------------------------------
+_Psi_ -- suction head (inches or mm).
 
-  ------ -----------------------------------------------------
-  Ksat   saturated hydraulic conductivity  (in/hr or mm/hr).
-  ------ -----------------------------------------------------
+_Ksat_ -- saturated hydraulic conductivity  (in/hr or mm/hr).
 
-  ----- ------------------------------------------------------------------------
-  IMD   initial moisture deficit (porosity minus moisture content) (fraction).
-  ----- ------------------------------------------------------------------------
+_IMD_ -- initial moisture deficit (porosity minus moisture content) (fraction).
 
 **Remarks:**
 
-A1, A2, and A0 are used in the following expression that relates surface
-area (ft2 or m2) to water depth (ft or m) for a storage unit with
-FUNCTIONAL geometry:
+_A1_, _A2_, and _A0_ are used in the following expression that relates surface area (ft2 or m2) to water depth (ft or m) for a storage unit with
+**FUNCTIONAL** geometry:
 
-[]
+\f[ Area = A0 + A1 Depth^{A2} \f]
 
-For TABULAR geometry, the surface area curve will be extrapolated
-outwards to meet the unit's maximum depth if need be.
+For **TABULAR** geometry, the surface area curve will be extrapolated outwards to meet the unit's maximum depth if need be.
 
-The dimensions of storage units with other shapes are defined as
-follows:
+The dimensions of storage units with other shapes are defined as follows:
 
-+-----------------+-----------------+-----------------+-----------------+
-| Shape           | L               | W               | Z               |
-+=================+=================+=================+=================+
-| CYLINDRICAL     | major axis      | minor axis      | not used        |
-|                 | length          | width           |                 |
-| []              |                 |                 |                 |
-+-----------------+-----------------+-----------------+-----------------+
-| CONICAL         | major axis      | minor axis      | side slope      |
-|                 | length of base  | width of base   | (run/rise)      |
-|     []          |                 |                 |                 |
-+-----------------+-----------------+-----------------+-----------------+
-| PARABOLOID      | major axis      | minor axis      | full height     |
-|                 | length at full  | width at full   |                 |
-| []              | height          | height          |                 |
-+-----------------+-----------------+-----------------+-----------------+
-| PYRAMIDAL       | base length     | base width      | side slope      |
-|                 |                 |                 | (run/rise)      |
-|       []        |                 |                 |                 |
-+-----------------+-----------------+-----------------+-----------------+
+|                Shape                 |                L                 |                W                |           Z           |
+| :----------------------------------: | :------------------------------: | :-----------------------------: | :-------------------: |
+| **CYLINDRICAL** <br> ![](embim3.jpg) |        major axis length         |        minor axis width         |       not used        |
+|   **CONICAL** <br> ![](embim4.jpg)   |    major axis length of base     |    minor axis width of base     | side slope (run/rise) |
+| **PARABOLOID** <br> ![](embim5.jpg)  | major axis length at full height | minor axis width at full height |      full height      |
+|  **PYRAMIDAL** <br> ![](embim6.jpg)  |           base length            |           base width            | side slope (run/rise) |
 
- 
-
-The parameters Psi, Ksat, and IMD need only be supplied if seepage loss
-through the soil at the bottom and sloped sides of the storage unit
-should be considered. They are the same Green-Ampt infiltration
-parameters described in the [INFILTRATION] section. If Ksat is zero then
-no seepage occurs while if IMD is zero then seepage occurs at a constant
-rate equal to Ksat. Otherwise seepage rate will vary with storage depth.
+The parameters _Psi_, _Ksat_, and _IMD_ need only be supplied if seepage loss through the soil at the bottom and sloped sides of the storage unit should be considered. They are the same Green-Ampt infiltration parameters described in the [INFILTRATION] section. If _Ksat_ is zero then no seepage occurs while if _IMD_ is zero then seepage occurs at a constant rate equal to _Ksat_. Otherwise seepage rate will vary with storage depth.
 
 <!---
   conduits
 -->
-@page conduits  [CONDUITS]
 
+@page conduits [CONDUITS]
 
 **Purpose:**
-Identifies each conduit link of the drainage system. Conduits are pipes
-or channels that convey water from one node to another.
 
- 
+Identifies each conduit link of the drainage system. Conduits are pipes or channels that convey water from one node to another.
 
 **Format:**
 
-Name  Node1  Node2  Length  N  Z1  Z2  (Q0  Qmax)
-
- 
+_Name  Node1  Node2  Length  N  Z1  Z2_  (_Q0  Qmax_)
 
 **Parameters:**
 
-  ------ --------------------------------
-  Name   name assigned to conduit link.
-  ------ --------------------------------
+_Name_ -- name assigned to conduit link.
 
-  ------- --------------------------------------
-  Node1   name of the conduit’s upstream node.
-  ------- --------------------------------------
+_Node1_ -- name of the conduit’s upstream node.
 
-  ------- ----------------------------------------
-  Node2   name of the conduit’s downstream node.
-  ------- ----------------------------------------
+_Node2_ -- name of the conduit’s downstream node.
 
-  -------- ---------------------------
-  Length   conduit length (ft or m).
-  -------- ---------------------------
+_Length_ -- conduit length (ft or m).
 
-  --- --------------------------------------
-  N   Manning’s roughness coefficient (n).
-  --- --------------------------------------
+_N_ -- Manning’s roughness coefficient (n).
 
-  ---- ---------------------------------------------------------------------------------------
-  Z1   offset of the conduit’s upstream end above the invert of its upstream node (ft or m).
-  ---- ---------------------------------------------------------------------------------------
+_Z1_ -- offset of the conduit’s upstream end above the invert of its upstream node (ft or m).
 
-  ---- -------------------------------------------------------------------------------------------
-  Z2   offset of the conduit’s downstream end above the invert of its downstream node (ft or m).
-  ---- -------------------------------------------------------------------------------------------
+_Z2_ -- offset of the conduit’s downstream end above the invert of its downstream node (ft or m).
 
-  ---- ---------------------------------------------------------------------------------
-  Q0   flow in the conduit at the start of the simulation (flow units) (default is 0).
-  ---- ---------------------------------------------------------------------------------
+_Q0_ -- flow in the conduit at the start of the simulation (flow units) (default is 0).
 
-  ------ -------------------------------------------------------------------------
-  Qmax   maximum flow allowed in the conduit (flow units) (default is no limit).
-  ------ -------------------------------------------------------------------------
-
- 
+_Qmax_ -- maximum flow allowed in the conduit (flow units) (default is no limit).
 
 **Remarks:**
 
-The figure below illustrates the meaning of the Z1 and Z2 parameters.
+The figure below illustrates the meaning of the _Z1_ and _Z2_ parameters.
 
-[Link_offset]
+![Link_offset](link_offset.png)
 
-These offsets are expressed as a relative distance above the node invert
-if the LINK_OFFSETS option is set to DEPTH (the default) or as an
-absolute elevation if it is set to ELEVATION.
+These offsets are expressed as a relative distance above the node invert if the **LINK_OFFSETS** option is set to **DEPTH** (the default) or as an absolute elevation if it is set to **ELEVATION**.
 
 <!---
   pumps
 -->
 
-@page pumps  [PUMPS]
-
+@page pumps [PUMPS]
 
 **Purpose:**
-Identifies each pump link of the drainage system.
 
- 
+Identifies each pump link of the drainage system.
 
 **Format:**
 
-Name  Node1  Node2  Pcurve  (Status  Startup  Shutoff)
-
- 
+_Name  Node1  Node2  Pcurve_  (_Status  Startup  Shutoff_)
 
 **Parameters:**
 
-  ------ -----------------------------
-  Name   name assigned to pump link.
-  ------ -----------------------------
+_Name_ -- name assigned to pump link.
 
-  ------- --------------------------------
-  Node1   name of the pump’s inlet node.
-  ------- --------------------------------
+_Node1_ -- name of the pump’s inlet node.
 
-  ------- ---------------------------------
-  Node2   name of the pump’s outlet node.
-  ------- ---------------------------------
+_Node2_ -- name of the pump’s outlet node.
 
-  -------- -------------------------------------------------------------------
-  Pcurve   name of a pump curve listed in the [CURVES] section of the input.
-  -------- -------------------------------------------------------------------
+_Pcurve_ -- name of a pump curve listed in the [CURVES] section of the input.
 
-  -------- ---------------------------------------------------------------------------------
-  Status   pump’s status at the start of the simulation (either ON or OFF; default is ON).
-  -------- ---------------------------------------------------------------------------------
+_Status_ -- pump’s status at the start of the simulation (either **ON** or **OFF**; default is **ON**).
 
-  --------- --------------------------------------------------------------------------
-  Startup   depth at the inlet node when the pump turns on (ft or m) (default is 0).
-  --------- --------------------------------------------------------------------------
+_Startup_ -- depth at the inlet node when the pump turns on (ft or m) (default is 0).
 
-  --------- -----------------------------------------------------------------------
-  Shutoff   depth at inlet node when the pump shuts off (ft or m) (default is 0).
-  --------- -----------------------------------------------------------------------
-
- 
+_Shutoff_ -- depth at inlet node when the pump shuts off (ft or m) (default is 0).
 
 **Remarks:**
 
-A pump curve describes the relation between a pump's flow rate and
-conditions at its inlet and outlet nodes. The following types of pump
-curves are supported:
+A pump curve describes the relation between a pump's flow rate and conditions at its inlet and outlet nodes. The following types of pump curves are supported:
 
-  ------- -----------------------------------------------------------------------------------------------------
-  Type1   An off-line pump with a wet well where flow increases incrementally with available wet well volume.
-  ------- -----------------------------------------------------------------------------------------------------
+_Type1_ -- An off-line pump with a wet well where flow increases incrementally with available wet well volume.
 
-  ------- ---------------------------------------------------------------------------
-  Type2   An in-line pump where flow increases incrementally with inlet node depth.
-  ------- ---------------------------------------------------------------------------
+_Type2_ -- An in-line pump where flow increases incrementally with inlet node depth.
 
-  ------- ---------------------------------------------------------------------------------------------------------
-  Type3   An in-line pump where flow varies continuously with head difference between the inlet and outlet nodes.
-  ------- ---------------------------------------------------------------------------------------------------------
+_Type3_ -- An in-line pump where flow varies continuously with head difference between the inlet and outlet nodes.
 
-  ------- -------------------------------------------------------------------------------------
-  Type4   A variable speed in-line pump where flow varies continuously with inlet node depth.
-  ------- -------------------------------------------------------------------------------------
+_Type4_ -- A variable speed in-line pump where flow varies continuously with inlet node depth.
 
-  ------- -----------------------------------------------------------------------------------------------------------------------
-  Type5   A variable speed version of the Type3 pump where the head v. flow curve shifts position as the speed setting changes.
-  ------- -----------------------------------------------------------------------------------------------------------------------
+_Type5_ -- A variable speed version of the Type3 pump where the head v. flow curve shifts position as the speed setting changes.
 
-  ------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Ideal   A transfer pump that does not require a pump curve and is used mainly for preliminary design. Its flow rate equals the inflow rate to its inlet node no matter what the head difference is between its inlet and outlet nodes. Use an asterisk (*) as the value for Pcurve.
-  ------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+_Ideal_ -- A transfer pump that does not require a pump curve and is used mainly for preliminary design. Its flow rate equals the inflow rate to its inlet node no matter what the head difference is between its inlet and outlet nodes. Use an asterisk (\*) as the value for Pcurve.
 
- <!---
+<!---
   orifices
 -->
 
-@page orifices  [ORIFICES]
-
+@page orifices [ORIFICES]
 
 **Purpose:**
-Identifies each orifice link of the drainage system. An orifice link
-serves to limit the flow exiting a node and is often used to model flow
-diversions and storage node outlets.
 
- 
+Identifies each orifice link of the drainage system. An orifice link serves to limit the flow exiting a node and is often used to model flow diversions and storage node outlets.
 
 **Format:**
 
-Name  Node1  Node2  Type  Offset  Cd  (Gated  Orate)
-
- 
+_Name  Node1  Node2  Type  Offset  Cd_  (_Gated  Orate_)
 
 **Parameters:**
 
-  ------ --------------------------------
-  Name   name assigned to orifice link.
-  ------ --------------------------------
+_Name_ -- name assigned to orifice link.
 
-  ------- -----------------------------------
-  Node1   name of the orifice’s inlet node.
-  ------- -----------------------------------
+_Node1_ -- name of the orifice’s inlet node.
 
-  ------- ------------------------------------
-  Node2   name of the orifice’s outlet node.
-  ------- ------------------------------------
+_Node2_ -- name of the orifice’s outlet node.
 
-  ------ ----------------------------------------------------------------------------------------------------------------
-  Type   the type of orifice - either SIDE if oriented in a vertical plane or BOTTOM if oriented in a horizontal plane.
-  ------ ----------------------------------------------------------------------------------------------------------------
+_Type_ -- the type of orifice - either **SIDE** if oriented in a vertical plane or **BOTTOM** if oriented in a horizontal plane.
 
-  -------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Offset   amount that a Side Orifice’s bottom or the position of a Bottom Orifice is offset above the invert of inlet node (ft or m, expressed as either a depth or as an elevation, depending on the LINK_OFFSETS option setting).
-  -------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+_Offset_ -- amount that a Side Orifice’s bottom or the position of a Bottom Orifice is offset above the invert of inlet node (ft or m, expressed as either a depth or as an elevation, depending on the **LINK_OFFSETS** option setting).
 
-  ---- -----------------------------------
-  Cd   discharge coefficient (unitless).
-  ---- -----------------------------------
+_Cd_ -- discharge coefficient (unitless).
 
-  ------ ----------------------------------------------------------------------
-  Flap   YES if a flap gate prevents reverse flow, NO if not (default is NO).
-  ------ ----------------------------------------------------------------------
+_Flap_ -- **YES** if a flap gate prevents reverse flow, **NO** if not (default is **NO**).
 
-  ------- ----------------------------------------------------------------------------------------------------------------------------------------
-  Orate   time in decimal hours to open a fully closed orifice (or close a fully open one). Use 0 if the orifice can open/close instantaneously.
-  ------- ----------------------------------------------------------------------------------------------------------------------------------------
-
- 
+_Orate_ -- time in decimal hours to open a fully closed orifice (or close a fully open one). Use 0 if the orifice can open/close instantaneously.
 
 **Remarks:**
 
-The geometry of an orifice’s opening must be described in the
-[XSECTIONS] section. The only allowable shapes are CIRCULAR and
-RECT_CLOSED (closed rectangular).
+The geometry of an orifice’s opening must be described in the [XSECTIONS] section. The only allowable shapes are **CIRCULAR** and **RECT_CLOSED** (closed rectangular).
 
- 
+![](embim7.jpg)
 
-[]
-
- 
-
- <!---
+<!---
   weirs
 -->
 
- @page weirs [WEIRS]
-
+@page weirs [WEIRS]
 
 **Purpose:**
-Identifies each weir link of the drainage system. Weirs are used to
-model flow diversions and storage node outlets.
 
- 
+Identifies each weir link of the drainage system. Weirs are used to model flow diversions and storage node outlets.
 
-**Format:**        
+**Format:**
 
-Name Node1 Node2 Type CrstHt Cd (Gated EC Cd2 Sur (Width Surf))
-
- 
+_Name Node1 Node2 Type CrstHt Cd_ (_Gated EC Cd2 Sur_ (_Width Surf_))
 
 **Parameters:**
 
-  ------ -----------------------------
-  Name   name assigned to weir link.
-  ------ -----------------------------
+_Name_ -- name assigned to weir link.
 
-  ------- --------------------------------
-  Node1   name of the weir’s inlet node.
-  ------- --------------------------------
+_Node1_ -- name of the weir’s inlet node.
 
-  ------- ---------------------------------
-  Node2   name of the weir’s outlet node.
-  ------- ---------------------------------
+_Node2_ -- name of the weir’s outlet node.
 
-  ------ --------------------------------------------------------
-  Type   TRANSVERSE, SIDEFLOW, V-NOTCH, TRAPEZOIDAL or ROADWAY.
-  ------ --------------------------------------------------------
+_Type_ -- **TRANSVERSE**, **SIDEFLOW**, **V-NOTCH**, **TRAPEZOIDAL** or **ROADWAY**.
 
-  -------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  CrstHt   amount that the weir’s opening is offset above the invert of inlet node (ft or m, expressed as either a depth or as an elevation, depending on the LINK_OFFSETS option setting).
-  -------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+_CrstHt_ -- amount that the weir’s opening is offset above the invert of inlet node (ft or m, expressed as either a depth or as an elevation, depending on the **LINK_OFFSETS** option setting).
 
-  ---- ------------------------------------------------------------------------------------------------
-  Cd   weir discharge coefficient (for CFS if using US flow units or CMS if using metric flow units).
-  ---- ------------------------------------------------------------------------------------------------
+_Cd_ -- weir discharge coefficient (for CFS if using US flow units or CMS if using metric flow units).
 
-  ------- ----------------------------------------------------------------------
-  Gated   YES if a flap gate prevents reverse flow, NO if not (default is NO).
-  ------- ----------------------------------------------------------------------
+_Gated_ -- **YES** if a flap gate prevents reverse flow, **NO** if not (default is **NO**).
 
-  ---- ---------------------------------------------------------------------------------
-  EC   number of end contractions for a TRANSVERSE or TRAPEZOIDAL weir (default is 0).
-  ---- ---------------------------------------------------------------------------------
+_EC_ -- number of end contractions for a **TRANSVERSE** or **TRAPEZOIDAL** weir (default is 0).
 
-  ----- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Cd2   discharge coefficient for the triangular ends of a TRAPEZOIDAL weir (for CFS if using US flow units or CMS if using metric flow units) (default is the value of Cd).
-  ----- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+_Cd2_ -- discharge coefficient for the triangular ends of a **TRAPEZOIDAL** weir (for CFS if using US flow units or CMS if using metric flow units) (default is the value of _Cd_).
 
-  ----- ----------------------------------------------------------------------------------------------------------------------------------------------
-  Sur   YES if the weir can surcharge (have an upstream water level higher than the height of the weir’s opening); NO if it cannot (default is YES).
-  ----- ----------------------------------------------------------------------------------------------------------------------------------------------
+_Sur_ -- **YES** if the weir can surcharge (have an upstream water level higher than the height of the weir’s opening); **NO** if it cannot (default is **YES**).
 
-The following parameters apply only to ROADWAY weirs:
+The following parameters apply only to **ROADWAY** weirs:
 
-  ------- -----------------------------------------------------------------
-  Width   width of road lanes and shoulders for a ROADWAY weir (ft or m).
-  ------- -----------------------------------------------------------------
+_Width_ -- width of road lanes and shoulders for a **ROADWAY** weir (ft or m).
 
-  ------ -----------------------------------------------------------
-  Surf   type of road surface for a ROADWAY weir: PAVED or GRAVEL.
-  ------ -----------------------------------------------------------
-
- 
+_Surf_ -- type of road surface for a **ROADWAY** weir: **PAVED** or **GRAVEL**.
 
 **Remarks:**
 
-The geometry of a weir’s opening is described in the [XSECTIONS]
-section. The following shapes must be used with each type of weir:
+The geometry of a weir’s opening is described in the [XSECTIONS] section. The following shapes must be used with each type of weir:
 
- 
+| Weir Type   | Cross-Section Shape |
+| :---------- | :-----------------: |
+| Transverse  |      RECT_OPEN      |
+| Sideflow    |      RECT_OPEN      |
+| V-Notch     |     TRIANGULAR      |
+| Trapezoidal |     TRAPEZOIDAL     |
+| Roadway     |      RECT_OPEN      |
 
-  ------------- ---------------------
-  Weir Type     Cross-Section Shape
-  Transverse    RECT_OPEN
-  Sideflow      RECT_OPEN
-  V-Notch       TRIANGULAR
-  Trapezoidal   TRAPEZOIDAL
-  Roadway       RECT_OPEN
-  ------------- ---------------------
-
- 
-
-The ROADWAY weir is a broad crested rectangular weir used model roadway
-crossings usually in conjunction with culvert-type conduits. It uses the
-FHWA HDS-5 method to determine a discharge coefficient as a function of
-flow depth and roadway width and surface. If no roadway data are
-provided then the weir behaves as a TRANSVERSE weir with Cd as its
-discharge coefficient. Note that if roadway data are provided, then
-values for the other optional weir parameters (NO for Gated, 0 for EC, 0
-for Cd2, and NO for Sur) must be entered even though they do not apply
-to ROADWAY weirs.
+The **ROADWAY** weir is a broad crested rectangular weir used model roadway crossings usually in conjunction with culvert-type conduits. It uses the FHWA HDS-5 method to determine a discharge coefficient as a function of flow depth and roadway width and surface. If no roadway data are provided then the weir behaves as a **TRANSVERSE** weir with Cd as its discharge coefficient. Note that if roadway data are provided, then values for the other optional weir parameters (**NO** for _Gated_, **0** for _EC_, **0** for _Cd2_, and **NO** for _Sur_) must be entered even though they do not apply to **ROADWAY** weirs.
 
 <!---
 outlets
 -->
------------ ----------------------------------------
-@page outlets  [OUTLETS]
-  ----------- ----------------------------------------
+
+@page outlets [OUTLETS]
 
 **Purpose:**
-Identifies each outlet flow control device of the drainage system. These
-are devices used to model outflows from storage units or flow diversions
-that have a user-defined relation between flow rate and water depth.
 
- 
+Identifies each outlet flow control device of the drainage system. These are devices used to model outflows from storage units or flow diversions that have a user-defined relation between flow rate and water depth.
 
 **Formats:**
 
-  ------ ------- ------- -------- ------------------ ----------------
-  Name   Node1   Node2   Offset   TABULAR/DEPTH      Qcurve (Gated)
-  Name   Node1   Node2   Offset   TABULAR/HEAD       Qcurve (Gated)
-  Name   Node1   Node2   Offset   FUNCTIONAL/DEPTH   C1 C2 (Gated)
-  Name   Node1   Node2   Offset   FUNCTIONAL/HEAD    C1 C2 (Gated)
-  ------ ------- ------- -------- ------------------ ----------------
+|        |         |         |          |                      |          |           |
+| :----- | :------ | :------ | :------- | :------------------- | -------- | --------- |
+| _Name_ | _Node1_ | _Node2_ | _Offset_ | **TABULAR/DEPTH**    | _Qcurve_ | (_Gated_) |
+| _Name_ | _Node1_ | _Node2_ | _Offset_ | **TABULAR/HEAD**     | _Qcurve_ | (_Gated_) |
+| _Name_ | _Node1_ | _Node2_ | _Offset_ | **FUNCTIONAL/DEPTH** | _C1 C2_  | (_Gated_) |
+| _Name_ | _Node1_ | _Node2_ | _Offset_ | **FUNCTIONAL/HEAD**  | _C1 C2_  | (_Gated_) |
 
 **Parameters:**
 
-  ------ -------------------------------
-  Name   name assigned to outlet link.
-  ------ -------------------------------
+_Name_ -- name assigned to outlet link.
 
-  ------- ----------------------------------
-  Node1   name of the outlet’s inlet node.
-  ------- ----------------------------------
+_Node1_ -- name of the outlet’s inlet node.
 
-  ------- -----------------------------------
-  Node2   name of the outlet’s outlet node.
-  ------- -----------------------------------
+_Node2_ -- name of the outlet’s outlet node.
 
-  -------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Offset   amount that the outlet is offset above the invert of its inlet node (ft or m, expressed as either a depth or as an elevation, depending on the LINK_OFFSETS option setting).
-  -------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+_Offset_ -- amount that the outlet is offset above the invert of its inlet node (ft or m, expressed as either a depth or as an elevation, depending on the **LINK_OFFSETS** option setting).
 
-  -------- --------------------------------------------------------------------------------------------------------------------
-  Qcurve   name of the rating curve listed in the [CURVES] section that describes outflow rate (flow units) as a function of:
-  -------- --------------------------------------------------------------------------------------------------------------------
+_Qcurve_ -- name of the rating curve listed in the [CURVES] section that describes outflow rate (flow units) as a function of:
 
-  --- -----------------------------------------------------------------------------------------------
-  §   water depth above the offset elevation at the inlet node (ft or m) for a TABULAR/DEPTH outlet
-  --- -----------------------------------------------------------------------------------------------
+- water depth above the offset elevation at the inlet node (ft or m) for a **TABULAR/DEPTH** outlet
 
-  --- ------------------------------------------------------------------------------------------
-  §   head difference (ft or m) between the inlet and outflow nodes for a TABULAR/HEAD outlet.
-  --- ------------------------------------------------------------------------------------------
+- head difference (ft or m) between the inlet and outflow nodes for a **TABULAR/HEAD** outlet.
 
-  -------- --------------------------------------------------------------------------------------
-  C1, C2   coefficient and exponent, respectively, of a power function that relates outflow to:
-  -------- --------------------------------------------------------------------------------------
+_C1, C2_ -- coefficient and exponent, respectively, of a power function that relates outflow to:
 
-  --- --------------------------------------------------------------------------------------------------
-  §   water depth (ft or m) above the offset elevation at the inlet node for a FUNCTIONAL/DEPTH outlet
-  --- --------------------------------------------------------------------------------------------------
+- water depth (ft or m) above the offset elevation at the inlet node for a **FUNCTIONAL/DEPTH** outlet
 
-  --- ----------------------------------------------------------------------------------------------
-  §   head difference  (ft or m) between the inlet and outflow nodes for a FUNCTIONAL/HEAD outlet.
-  --- ----------------------------------------------------------------------------------------------
+- head difference  (ft or m) between the inlet and outflow nodes for a **FUNCTIONAL/HEAD** outlet.
 
-  ------- ----------------------------------------------------------------------
-  Gated   YES if a flap gate prevents reverse flow, NO if not (default is NO).
-  ------- ----------------------------------------------------------------------
+_Gated_ -- **YES** if a flap gate prevents reverse flow, **NO** if not (default is **NO**).
 
   <!---
     xsections
   -->
 
- @page xsections [XSECTIONS]
-
+@page xsections [XSECTIONS]
 
 **Purpose:**
-Provides cross-section geometric data for conduit and regulator links of
-the drainage system.
 
- 
+Provides cross-section geometric data for conduit and regulator links of the drainage system.
 
 **Formats:**
 
-  ------ ----------- -------------------------------------------
-  Link   Shape       Geom1 Geom2 Geom3 Geom4 (Barrels Culvert)
-  Link   IRREGULAR   Tsect
-  Link   STREET      Street
-  ------ ----------- -------------------------------------------
+|        |               |                                               |
+| :----- | :------------ | :-------------------------------------------- |
+| _Link_ | _Shape_       | _Geom1 Geom2 Geom3 Geom4_ (_Barrels Culvert_) |
+| _Link_ | **IRREGULAR** | _Tsect_                                       |
+| _Link_ | **STREET**    | _Street_                                      |
 
 **Parameters:**
 
-  ------ --------------------------------------
-  Link   name of a conduit, orifice, or weir.
-  ------ --------------------------------------
+_Link_ -- name of a conduit, orifice, or weir.
 
-  ------- --------------------------------------------------------------------
-  Shape   a cross-section shape (see Tables D-1 below for available shapes).
-  ------- --------------------------------------------------------------------
+_Shape_ -- a cross-section shape (see Tables D-1 below for available shapes).
 
-  ------- ---------------------------------------------
-  Geom1   full height of the cross-section (ft or m).
-  ------- ---------------------------------------------
+_Geom1_ -- full height of the cross-section (ft or m).
 
-  --------- -------------------------------------------------------------------------
-  Geom2-4   auxiliary parameters (width, side slopes, etc.) as listed in Table D-1.
-  --------- -------------------------------------------------------------------------
+_Geom2-4_ -- auxiliary parameters (width, side slopes, etc.) as listed in Table D-1.
 
-  --------- ----------------------------------------------------------------------------------------------------------------------------------
-  Barrels   number of barrels (i.e., number of parallel pipes of equal size, slope, and roughness) associated with a conduit (default is 1).
-  --------- ----------------------------------------------------------------------------------------------------------------------------------
+_Barrels_ -- number of barrels (i.e., number of parallel pipes of equal size, slope, and roughness) associated with a conduit (default is 1).
 
-  --------- -------------------------------------------------------------------------------------------------------------------------------------------------
-  Culvert   code number from Table A.10 for the conduit’s inlet geometry if it is a culvert subject to possible inlet flow control (leave blank otherwise).
-  --------- -------------------------------------------------------------------------------------------------------------------------------------------------
+_Culvert_ -- code number from Table A.10 for the conduit’s inlet geometry if it is a culvert subject to possible inlet flow control (leave blank otherwise).
 
-  ------- -------------------------------------------------------------------------------------------------------
-  Curve   name of a Shape Curve in the [CURVES] section that defines how cross-section width varies with depth.
-  ------- -------------------------------------------------------------------------------------------------------
+_Curve_ -- name of a Shape Curve in the [CURVES] section that defines how cross-section width varies with depth.
 
-  ------- ----------------------------------------------------------------------------------------------------------------
-  Tsect   name of an entry in the [TRANSECTS] section that describes the cross-section geometry of an irregular channel.
-  ------- ----------------------------------------------------------------------------------------------------------------
+_Tsect_ -- name of an entry in the [TRANSECTS] section that describes the cross-section geometry of an irregular channel.
 
-  -------- --------------------------------------------------------------------------------------------------
-  Street   name of an entry in the [STREETS] section that describes the cross-section geometry of a street.
-  -------- --------------------------------------------------------------------------------------------------
-
- 
+_Street_ -- name of an entry in the [STREETS] section that describes the cross-section geometry of a street.
 
 **Remarks:**
 
-The standard conduit shapes and their geometric parameters are listed in
-the following table:
+The standard conduit shapes and their geometric parameters are listed in the following table:
 
-  ------------------ ------------- ---------------- ----------------- --------------
-  Shape              Geom1         Geom2            Geom3             Geom4
-  CIRCULAR           Diameter                                          
-  FORCE_MAIN         Diameter      Roughness1                          
-  FILLED_CIRCULAR2   Diameter      Sediment Depth                      
-  RECT_CLOSED        Full Height   Top Width                           
-  RECT_OPEN          Full Height   Top Width                           
-  TRAPEZOIDAL        Full Height   Base Width       Left  Slope3      Right Slope3
-  TRIANGULAR         Full Height   Top Width                           
-  HORIZ_ELLIPSE      Full Height   Max. Width       Size Code4         
-  VERT_ELLIPSE       Full Height   Max. Width       Size Code4         
-  ARCH               Full Height   Max. Width       Size Code5         
-  PARABOLIC          Full Height   Top Width                           
-  POWER              Full Height   Top Width        Exponent           
-  RECT_TRIANGULAR    Full Height   Top Width        Triangle Height    
-  RECT_ROUND         Full Height   Top Width        Bottom Radius      
-  MODBASKETHANDLE    Full Height   Base Width       Top Radius6        
-  EGG                Full Height                                       
-  HORSESHOE          Full Height                                       
-  GOTHIC             Full Height                                       
-  CATENARY           Full Height                                       
-  SEMIELLIPTICAL     Full Height                                       
-  BASKETHANDLE       Full Height                                       
-  SEMICIRCULAR       Full Height                                       
-  CUSTOM             Full Height   Shape Curve                         
-  ------------------ ------------- ---------------- ----------------- --------------
+| Shape               | Geom1           | Geom2          | Geom3           | Geom4           |
+| :------------------ | :-------------- | :------------- | :-------------- | :-------------- |
+| CIRCULAR            | Diameter        |                |                 |                 |
+| FORCE_MAIN          | Diameter        | Roughness[^1]  |                 |                 |
+| FILLED_CIRCULAR[^2] | Diameter        | Sediment Depth |                 |                 |
+| RECT_CLOSED         | Full Height     | Top Width      |                 |                 |
+| RECT_OPEN           | Full Height     | Top Width      |                 |                 |
+| TRAPEZOIDAL         | Full Height     | Base Width     | Left  Slope[^3] | Right Slope[^3] |
+| TRIANGULAR          | Full Height     | Top Width      |                 |                 |
+| HORIZ_ELLIPSE       | Full Height     | Max. Width     | Size Code[^4]   |                 |
+| VERT_ELLIPSE        | Full Height     | Max. Width     | Size Code[^4]   |                 |
+| ARCH                | Full Height     | Max. Width     | Size Code[^5]   |                 |
+| PARABOLIC           | Full Height     | Top Width      |                 |                 |
+| POWER               | Full Height     | Top Width      | Exponent        |                 |
+| RECT_TRIANGULAR     | Full Height     | Top Width      | Triangle Height |                 |
+| RECT_ROUND          | Full Height     | Top Width      | Bottom Radius   |                 |
+| MODBASKETHANDLE     | Full Height     | Base Width     | Top Radius[^6]  |                 |
+| EGG                 | Full Height     |                |                 |                 |
+| HORSESHOE           | Full Height     |                |                 |                 |
+| GOTHIC              | Full Height     |                |                 |                 |
+| CATENARY            | Full Height     |                |                 |                 |
+| SEMIELLIPTICAL      | Full Height     |                |                 |                 |
+| BASKETHANDLE        | Full Height     |                |                 |                 |
+| SEMICIRCULAR        | Full Height     |                |                 |                 |
+| CUSTOM              | Full Height     | Shape Curve    |                 |                 |
 
-  ---- ----------------------------------------------------------------------------------------------------------------------------------------------------
-  1.   C-factors are used when H-W is the FORCE_MAIN_EQUATION choice in the [OPTIONS] section while roughness heights (in inches or mm) are used for D-W.
-  ---- ----------------------------------------------------------------------------------------------------------------------------------------------------
+[^1]:
+    C-factors are used when **H-W** is the **FORCE_MAIN_EQUATION** choice in the [OPTIONS] section while roughness heights (in inches or mm) are used for
+    **D-W**.
 
-  ---- -------------------------------------------------------------------------
-  2.   A circular conduit partially filled with sediment to a specified depth.
-  ---- -------------------------------------------------------------------------
+[^2]: A circular conduit partially filled with sediment to a specified depth.
+[^3]: Slopes are horizontal run / vertical rise.
+[^4]: Size code of a standard shaped elliptical pipe. Leave blank (or 0) if the pipe has a custom dimensions.
+[^5]: Size code of a standard arch pipe. Leave blank (or 0) if the pipe has custom dimensions).
+[^6]: Set to zero to use a standard modified baskethandle shape whose top radius is half the base width.
 
-  ---- --------------------------------------------
-  3.   Slopes are horizontal run / vertical rise.
-  ---- --------------------------------------------
+Size codes for standard elliptical and arch pipes and for culverts can be found in the SWMM Users Manual.
 
-  ---- ---------------------------------------------------------------------------------------------------------
-  4.   Size code of a standard shaped elliptical pipe. Leave blank (or 0) if the pipe has a custom dimensions.
-  ---- ---------------------------------------------------------------------------------------------------------
+The **CUSTOM** shape is a closed conduit whose width versus height is described by a user-supplied Shape Curve.
 
-  ---- -------------------------------------------------------------------------------------------
-  5.   Size code of a standard arch pipe. Leave blank (or 0) if the pipe has custom dimensions).
-  ---- -------------------------------------------------------------------------------------------
+An **IRREGULAR** cross-section is used to model an open channel whose geometry is described by a Transect object.
 
-  ---- ----------------------------------------------------------------------------------------------------
-  6.   Set to zero to use a standard modified baskethandle shape whose top radius is half the base width.
-  ---- ----------------------------------------------------------------------------------------------------
+A **STREET** cross-section is used to model street conduits and inlet flow capture (see the [INLETS] and [INLETS_USAGE] sections).
 
- 
-
-Size codes for standard elliptical and arch pipes and for culverts can
-be found in the SWMM Users Manual.
-
-The CUSTOM shape is a closed conduit whose width versus height is
-described by a user-supplied Shape Curve.
-
-An IRREGULAR cross-section is used to model an open channel whose
-geometry is described by a Transect object.
-
-A STREET cross-section is used to model street conduits and inlet flow
-capture (see the [INLETS] and [INLETS_USAGE] sections).
-
-The Culvert code number is used only for closed conduits acting as
-culverts that should be analyzed for inlet control conditions using the
-FHWA HDS-5 methodology.
+The _Culvert_ code number is used only for closed conduits acting as culverts that should be analyzed for inlet control conditions using the FHWA HDS-5 methodology.
 
 <!---
   transects
 -->
 
-@page transects  [TRANSECTS]
-
+@page transects [TRANSECTS]
 
 **Purpose:**
-Describes the cross-section geometry of natural channels or conduits
-with irregular shapes following the HEC-2 data format.
 
- 
+Describes the cross-section geometry of natural channels or conduits with irregular shapes following the HEC-2 data format.
 
 **Formats:**
 
-  ---- ----------------------------------- -------- --------------------------------------------
-  NC   Nleft                               Nright   Nchanl
-  X1   Name                                Nsta     Xleft Xright 0 0 0 Lfactor Wfactor Eoffset
-  GR   Elev  Station  ...  Elev  Station
-  ---- ----------------------------------- -------- --------------------------------------------
+|        |          |                                                     |
+| :----- | :------- | :-------------------------------------------------- |
+| **NC** | _Nleft_  | _Nright Nchanl_                                     |
+| **X1** | _Name_   | _Nsta_ _Xleft Xright 0 0 0 Lfactor Wfactor Eoffset_ |
+| **GR** | _Elev_   | _Station_ ... _Elev  Station_                       |
 
 **Parameters:**
 
-  ------- ----------------------------------------------------------------------------------------------------------------------
-  Nleft   Manning’s roughness coefficient (n) of right overbank portion of channel (use 0 if no change from previous NC line).
-  ------- ----------------------------------------------------------------------------------------------------------------------
+_Nleft_ -- Manning’s roughness coefficient (n) of right overbank portion of channel (use 0 if no change from previous **NC** line).
 
-  -------- ---------------------------------------------------------------------------------------------------------------------
-  Nright   Manning’s roughness coefficient (n) of right overbank portion of channel (use 0 if no change from previous NC line.
-  -------- ---------------------------------------------------------------------------------------------------------------------
+_Nright_ -- Manning’s roughness coefficient (n) of right overbank portion of channel (use 0 if no change from previous **NC** line.
 
-  -------- -------------------------------------------------------------------------------------------------------------------
-  Nchanl   Manning’s roughness coefficient (n) of main channel portion of channel (use 0 if no change from previous NC line.
-  -------- -------------------------------------------------------------------------------------------------------------------
+_Nchanl_ -- Manning’s roughness coefficient (n) of main channel portion of channel (use 0 if no change from previous **NC** line.
 
-  ------ --------------------------------
-  Name   name assigned to the transect.
-  ------ --------------------------------
+_Name_ -- name assigned to the transect.
 
-  ------ ------------------------------------------------------------------------------------------
-  Nsta   number of stations across the cross-section’s width at which elevation data is supplied.
-  ------ ------------------------------------------------------------------------------------------
+_Nsta_ -- number of stations across the cross-section’s width at which elevation data is supplied.
 
-  ------- ---------------------------------------------------------------------------------
-  Xleft   station position which ends the left overbank portion of the channel (ft or m).
-  ------- ---------------------------------------------------------------------------------
+_Xleft_ -- station position which ends the left overbank portion of the channel (ft or m).
 
-  -------- ------------------------------------------------------------------------------------
-  Xright   station position which begins the right overbank portion of the channel (ft or m).
-  -------- ------------------------------------------------------------------------------------
+_Xright_ -- station position which begins the right overbank portion of the channel (ft or m).
 
-  --------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Lfactor   meander modifier that represents the ratio of the length of a meandering main channel to the length of the overbank area that surrounds it (use 0 if not applicable).
-  --------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+_Lfactor_ -- meander modifier that represents the ratio of the length of a meandering main channel to the length of the overbank area that surrounds it (use 0 if not applicable).
 
-  --------- -------------------------------------------------------------------------------------------------------------------------------------------------
-  Wfactor   factor by which distances between stations should be multiplied to increase (or decrease) the width of the channel (enter 0 if not applicable).
-  --------- -------------------------------------------------------------------------------------------------------------------------------------------------
+_Wfactor_ -- factor by which distances between stations should be multiplied to increase (or decrease) the width of the channel (enter 0 if not applicable).
 
-  --------- ----------------------------------------------------------------------------------
-  Eoffset   amount to be added (or subtracted) from the elevation of each station (ft or m).
-  --------- ----------------------------------------------------------------------------------
+_Eoffset_ -- amount to be added (or subtracted) from the elevation of each station (ft or m).
 
-  ------ --------------------------------------------------------------------------------------------------------
-  Elev   elevation of the channel bottom at a cross-section station relative to some fixed reference (ft or m).
-  ------ --------------------------------------------------------------------------------------------------------
+_Elev_ -- elevation of the channel bottom at a cross-section station relative to some fixed reference (ft or m).
 
-  --------- --------------------------------------------------------------------------
-  Station   distance of a cross-section station from some fixed reference (ft or m).
-  --------- --------------------------------------------------------------------------
-
- 
-
- 
+_Station_ -- distance of a cross-section station from some fixed reference (ft or m).
 
 **Remarks:**
 
-Transect geometry is described as shown below, assuming that one is
-looking in a downstream direction:
+Transect geometry is described as shown below, assuming that one is looking in a downstream direction:
 
-[]
+![](embim8.gif)
 
- 
+The first line in this section must always be a **NC** line. After that, the **NC** line is only needed when a transect has different Manning’s n values than the previous one.
 
-The first line in this section must always be a NC line. After that, the
-NC line is only needed when a transect has different Manning’s n values
-than the previous one.
+The Manning’s n values on the **NC** line will supersede any roughness value entered for the conduit which uses the irregular cross-section.
 
-The Manning’s n values on the NC line will supersede any roughness value
-entered for the conduit which uses the irregular cross-section.
+There should be one **X1** line for each transect. Any number of **GR** lines may follow, and each **GR** line can have any number of Elevation-Station data pairs. (In HEC-2 the **GR** line is limited to 5 stations.)
 
-There should be one X1 line for each transect. Any number of GR lines
-may follow, and each GR line can have any number of Elevation-Station
-data pairs. (In HEC-2 the GR line is limited to 5 stations.)
+The station that defines the left overbank boundary on the **X1** line must correspond to one of the station entries on the **GR** lines that follow. The same holds true for the right overbank boundary. If there is no match, a warning will be issued and the program will assume that no overbank area exists.
 
-The station that defines the left overbank boundary on the X1 line must
-correspond to one of the station entries on the GR lines that follow.
-The same holds true for the right overbank boundary. If there is no
-match, a warning will be issued and the program will assume that no
-overbank area exists.
-
-The meander modifier is applied to all conduits that use this particular
-transect for their cross section. It assumes that the length supplied
-for these conduits is that of the longer main channel. SWMM will use the
-shorter overbank length in its calculations while increasing the main
-channel roughness to account for its longer length.
+The meander modifier is applied to all conduits that use this particular transect for their cross section. It assumes that the length supplied for these conduits is that of the longer main channel. SWMM will use the shorter overbank length in its calculations while increasing the main channel roughness to account for its longer length.
 
 <!---
   streets
 -->
------------ ----------------------------------------
-@page streets  [STREETS]
-  ----------- ----------------------------------------
+
+@page streets [STREETS]
 
 **Purpose:**
-Describes the cross-section geometry of conduits that represent streets.
 
- 
+Describes the cross-section geometry of conduits that represent streets.
 
 **Format:**
 
-Name Tcrown Hcurb Sx nRoad (a W)(Sides Tback Sback nBack)
-
- 
+_Name Tcrown Hcurb Sx nRoad_ (_a W_)(_Sides Tback Sback nBack_)
 
 **Parameters:**
 
-  ------ -------------------------------------------
-  Name   name assigned to the street cross-section
-  ------ -------------------------------------------
+_Name_ -- name assigned to the street cross-section
 
-  -------- ----------------------------------------------------
-  Tcrown   distance from street’s curb to its crown (ft or m)
-  -------- ----------------------------------------------------
+_Tcrown_ -- distance from street’s curb to its crown (ft or m)
 
-  ------- -----------------------
-  Hcurb   curb height (ft or m)
-  ------- -----------------------
+_Hcurb_ -- curb height (ft or m)
 
-  ---- ------------------------
-  Sx   street cross slope (%)
-  ---- ------------------------
+_Sx_ -- street cross slope (%)
 
-  ------- ---------------------------------------------------------
-  nRoad   Manning’s roughness coefficient (n) of the road surface
-  ------- ---------------------------------------------------------
+_nRoad_ -- Manning’s roughness coefficient (n) of the road surface
 
-  --- ---------------------------------------------------
-  a   gutter depression height (in or mm) (default = 0)
-  --- ---------------------------------------------------
+_a_ -- gutter depression height (in or mm) (default = 0)
 
-  --- ------------------------------------------------
-  W   depressed gutter width (ft or m) (default = 0)
-  --- ------------------------------------------------
+_W_ -- depressed gutter width (ft or m) (default = 0)
 
-  ------- -------------------------------------------------------------------
-  Sides   1 for single sided street or 2 for two-sided street (default = 2)
-  ------- -------------------------------------------------------------------
+_Sides_ -- 1 for single sided street or 2 for two-sided street (default = 2)
 
-  ------- ----------------------------------------------
-  Tback   street backing width (ft or m) (default = 0)
-  ------- ----------------------------------------------
+_Tback_ -- street backing width (ft or m) (default = 0)
 
-  ------- ----------------------------------------
-  Sback   street backing slope (%) (default = 0)
-  ------- ----------------------------------------
+_Sback_ -- street backing slope (%) (default = 0)
 
-  ------- ------------------------------------------------------------------
-  nBack   street backing Manning’s roughness coefficient (n) (default = 0)
-  ------- ------------------------------------------------------------------
-
- 
+_nBack_ -- street backing Manning’s roughness coefficient (n) (default = 0)
 
 **Remarks:**
 
-[]
+![](embim9.gif)
 
- 
+If the street has no depressed gutter (a = 0) then the gutter width entry is ignored. If the street has no backing then the three backing parameters can be omitted.
 
-If the street has no depressed gutter (a = 0) then the gutter width
-entry is ignored. If the street has no backing then the three backing
-parameters can be omitted.
-
- <!---
+<!---
   inlets
 -->
-  ---------- ----------------------------------------
-@page inlets  [INLETS]
-  ---------- ----------------------------------------
+
+@page inlets [INLETS]
 
 **Purpose:**
-Defines inlet structure designs used to capture street and channel flow
-that are sent to below ground sewers.
 
- 
+Defines inlet structure designs used to capture street and channel flow that are sent to below ground sewers.
 
 **Format:**
 
-  ------ ------------------ -----------------------------------
-  Name   GRATE/DROP_GRATE   Length Width Type (Aopen Vsplash)
-  Name   CURB/DROP_CURB     Length Height (Throat)
-  Name   SLOTTED            Length Width
-  Name   CUSTOM             Dcurve/Rcurve
-  ------ ------------------ -----------------------------------
+|        |                      |                                       |
+| :----- | :------------------- | :------------------------------------ |
+| _Name_ | **GRATE/DROP_GRATE** | _Length Width Type_ (_Aopen Vsplash_) |
+| _Name_ | **CURB/DROP_CURB**   | _Length Height_ (_Throat_)            |
+| _Name_ | **SLOTTED**          | _Length Width_                        |
+| _Name_ | **CUSTOM**           | _Dcurve/Rcurve_                       |
 
 **Parameters:**
 
-  ------ ---------------------------------------
-  Name   name assigned to the inlet structure.
-  ------ ---------------------------------------
+_Name_ -- name assigned to the inlet structure.
 
-  -------- ------------------------------------------------------------
-  Length   length of the inlet parallel to the street curb (ft or m).
-  -------- ------------------------------------------------------------
+_Length_ -- length of the inlet parallel to the street curb (ft or m).
 
-  ------- ----------------------------------------------
-  Width   width of a GRATE or SLOTTED inlet (ft or m).
-  ------- ----------------------------------------------
+_Width_ -- width of a **GRATE** or **SLOTTED** inlet (ft or m).
 
-  -------- -------------------------------------------
-  Height   height of a CURB opening inlet (ft or m).
-  -------- -------------------------------------------
+_Height_ -- height of a **CURB** opening inlet (ft or m).
 
-  ------ ---------------------------------
-  Type   type of GRATE used (see below).
-  ------ ---------------------------------
+_Type_ -- type of **GRATE** used (see below).
 
-  ------- --------------------------------------------------
-  Aopen   fraction of a GENERIC grate’s area that is open.
-  ------- --------------------------------------------------
+_Aopen_ -- fraction of a **GENERIC** grate’s area that is open.
 
-  --------- ---------------------------------------------------------
-  Vsplash   splash over velocity for a GENERIC grate (ft/s or m/s).
-  --------- ---------------------------------------------------------
+_Vsplash_ -- splash over velocity for a **GENERIC** grate (ft/s or m/s).
 
-  -------- ------------------------------------------------------------------------------
-  Throat   the throat angle of a CURB opening inlet (HORIZONTAL, INCLINED or VERTICAL).
-  -------- ------------------------------------------------------------------------------
+_Throat_ -- the throat angle of a **CURB** opening inlet (**HORIZONTAL, INCLINED or VERTICAL**).
 
-  -------- -------------------------------------------------------------------------------------
-  Dcurve   name of a Diversion-type curve (captured flow v. approach flow) for a CUSTOM inlet.
-  -------- -------------------------------------------------------------------------------------
+_Dcurve_ -- name of a Diversion-type curve (captured flow v. approach flow) for a **CUSTOM** inlet.
 
-  -------- --------------------------------------------------------------------------------
-  Rcurve   name of a Rating-type curve (captured flow v. water depth) for a CUSTOM inlet.
-  -------- --------------------------------------------------------------------------------
-
- 
+_Rcurve_ -- name of a Rating-type curve (captured flow v. water depth) for a **CUSTOM** inlet.
 
 **Remarks:**
 
 These are the different types of standard inlets that SWMM can model:
 
-[]
+![](embim10.jpg)
 
-Use one line for each inlet design except for a combination inlet where
-one GRATE line describes its grated inlet and a second CURB line (with
-the same inlet name) describes its curb opening inlet.
+Use one line for each inlet design except for a combination inlet where one **GRATE** line describes its grated inlet and a second **CURB** line (with the same inlet name) describes its curb opening inlet.
 
-GRATE, CURB, and SLOTTED inlets are used with STREET conduits,
-DROP_GRATE and DROP_CURB inlets with open channels, and a CUSTOM inlet
-with any conduit.
+**GRATE**, **CURB**, and **SLOTTED** inlets are used with **STREET** conduits, **DROP_GRATE** and **DROP_CURB** inlets with open channels, and a **CUSTOM** inlet with any conduit.
 
-GRATE and DROP_GRATE  types can be any of the following:
+**GRATE** and **DROP_GRATE** types can be any of the following:
 
-+-----------------------+-----------------------+-----------------------+
-| Grate Type            | Sketch                | Description           |
-+-----------------------+-----------------------+-----------------------+
-| P_BAR-50              | []                    | Parallel bar grate    |
-|                       |                       | with bar spacing      |
-|                       |                       | 1-7/8-in on center    |
-+-----------------------+-----------------------+-----------------------+
-| P_BAR-50X100          | []                    | Parallel bar grate    |
-|                       |                       | with bar spacing      |
-|                       |                       | 1-7/8-in on center    |
-|                       |                       | and 3/8-in diameter   |
-|                       |                       | lateral rods spaced   |
-|                       |                       | at 4-in on center     |
-+-----------------------+-----------------------+-----------------------+
-| P_BAR-30              | []                    | Parallel bar grate    |
-|                       |                       | with 1-1/8-in on      |
-|                       |                       | center bar spacing    |
-+-----------------------+-----------------------+-----------------------+
-| CURVED_VANE           | []                    | Curved vane grate     |
-|                       |                       | with 3-1/4-in         |
-|                       |                       | longitudinal bar and  |
-|                       |                       | 4-1/4-in transverse   |
-|                       |                       | bar spacing on center |
-+-----------------------+-----------------------+-----------------------+
-| TILT_BAR-45           | []                    | 45 degree tilt bar    |
-|                       |                       | grate with 2-1/4-in   |
-|                       |                       | longitudinal bar and  |
-|                       |                       | 4-in transverse bar   |
-|                       |                       | spacing on center     |
-+-----------------------+-----------------------+-----------------------+
-| TILT_BAR-30           | []                    | 30 degree tilt bar    |
-|                       |                       | grate with 3-1/4-in   |
-|                       |                       | and 4-in on center    |
-|                       |                       | longitudinal and      |
-|                       |                       | lateral bar spacing   |
-|                       |                       | respectively          |
-+-----------------------+-----------------------+-----------------------+
-| RETICULINE            | []                    | "Honeycomb" pattern   |
-|                       |                       | of lateral bars and   |
-|                       |                       | longitudinal bearing  |
-|                       |                       | bars                  |
-+-----------------------+-----------------------+-----------------------+
-| GENERIC               |                       | A generic grate       |
-|                       |                       | design.               |
-+-----------------------+-----------------------+-----------------------+
+| Grate Type       | Sketch           | Description                                                                                                      |
+| :--------------- | :--------------- | :--------------------------------------------------------------------------------------------------------------- |
+| **P_BAR-50**     | ![](embim11.gif) | Parallel bar grate with bar spacing 1-7/8-in on center                                                           |
+| **P_BAR-50X100** | ![](embim12.gif) | Parallel bar grate with bar spacing 1-7/8-in on center and 3/8-in diameter lateral rods spaced at 4-in on center |
+| **P_BAR-30**     | ![](embim13.gif) | Parallel bar grate with 1-1/8-in on center bar spacing                                                           |
+| **CURVED_VANE**  | ![](embim14.jpg) | Curved vane grate with 3-1/4-in longitudinal bar and 4-1/4-in transverse bar spacing on center                   |
+| **TILT_BAR-45**  | ![](embim15.jpg) | 45 degree tilt bar grate with 2-1/4-in longitudinal bar and4-in transverse bar spacing on center                 |
+| **TILT_BAR-30**  | ![](embim16.jpg) | 30 degree tilt bar grate with 3-1/4-in and 4-in on center longitudinal and lateral bar spacing respectively      |
+| **RETICULINE**   | ![](embim17.gif) | "Honeycomb" pattern of lateral bars and longitudinal bearing bars                                                |
+| **GENERIC**      |                  | A generic grate design.                                                                                          |
 
- 
+Only a **GENERIC** type grate requires that Aopen and Vsplash values be provided. The other standard grate types have predetermined values of these parameters. (Splash over velocity is the minimum velocity that will cause some water to shoot over the inlet thus reducing its capture efficiency).
 
-Only a GENERIC type grate requires that Aopen and Vsplash values be
-provided. The other standard grate types have predetermined values of
-these parameters. (Splash over velocity is the minimum velocity that
-will cause some water to shoot over the inlet thus reducing its capture
-efficiency).
-
-A CUSTOM inlet takes the name of either a Diversion curve or a Rating
-curve as its only parameter (see the [CURVES] section).  Diversion
-curves are best suited for on-grade inlets and Rating curves for on-sag
-inlets.
-
- 
+A **CUSTOM** inlet takes the name of either a Diversion curve or a Rating curve as its only parameter (see the [CURVES] section).  Diversion curves are best suited for on-grade inlets and Rating curves for on-sag inlets.
 
 **Examples:**
 
+```
 ; A 2-ft x 2-ft parallel bar grate
-
 InletType1  GRATE  2  2  P-BAR-30
 
 ; A combination inlet
-
 InletType2  GRATE  2  2  CURVED_VANE
-
 InletType2  CURB   4  0.5  HORIZONTAL
 
 ; A custom inlet using Curve1 as its capture curve
-
 InletType3  CUSTOM  Curve1
+```
 
 <!---
   inlet_usage
 -->
 
-@page inlet_usage  [INLET_USAGE]
-
+@page inlet_usage [INLET_USAGE]
 
 **Purpose:**
-Assigns inlet structures to specific street and open channel conduits.
 
- 
+Assigns inlet structures to specific street and open channel conduits.
 
 **Format:**
 
-Conduit Inlet Node (Number %Clogged Qmax aLocal wLocal Placement)
-
- 
+_Conduit Inlet Node_ (_Number %Clogged Qmax aLocal wLocal Placement_)
 
 **Parameters:**
 
-  --------- ----------------------------------------------------------------
-  Conduit   name of a street or open channel conduit containing the inlet.
-  --------- ----------------------------------------------------------------
+_Conduit_ -- name of a street or open channel conduit containing the inlet.
 
-  ------- ----------------------------------------------------------------
-  Inlet   name of an inlet structure (from the [INLETS] section) to use.
-  ------- ----------------------------------------------------------------
+_Inlet_ -- name of an inlet structure (from the [INLETS] section) to use.
 
-  ------ --------------------------------------------------------------
-  Node   name of the sewer node receiving flow captured by the inlet.
-  ------ --------------------------------------------------------------
+_Node_ -- name of the sewer node receiving flow captured by the inlet.
 
-  -------- ---------------------------------------------------------------
-  Number   number of replicate inlets placed on each side of the street.
-  -------- ---------------------------------------------------------------
+_Number_ -- number of replicate inlets placed on each side of the street.
 
-  ---------- ----------------------------------------------------------------
-  %Clogged   degree to which inlet capacity is reduced due to clogging (%).
-  ---------- ----------------------------------------------------------------
+_%Clogged_ -- degree to which inlet capacity is reduced due to clogging (%).
 
-  ------ -------------------------------------------------------
-  Qmax   maximum flow that the inlet can capture (flow units).
-  ------ -------------------------------------------------------
+_Qmax_ -- maximum flow that the inlet can capture (flow units).
 
-  -------- -----------------------------------------------
-  aLocal   height of local gutter depression (in or mm).
-  -------- -----------------------------------------------
+_aLocal_ -- height of local gutter depression (in or mm).
 
-  -------- ---------------------------------------------
-  wLocal   width of local gutter depression (ft or m).
-  -------- ---------------------------------------------
+_wLocal_ -- width of local gutter depression (ft or m).
 
-  ----------- ---------------------------------
-  Placement   AUTOMATIC, ON_GRADE, or ON_SAG.
-  ----------- ---------------------------------
-
- 
+_Placement_ -- **AUTOMATIC**, **ON_GRADE**, or **ON_SAG**.
 
 **Remarks:**
 
-Only conduits with a STREET cross section can be assigned a curb and
-gutter inlet while drop inlets can only be assigned to conduits with a
-RECT_OPEN or TRAPEZOIDAL cross section.
+Only conduits with a **STREET** cross section can be assigned a curb and gutter inlet while drop inlets can only be assigned to conduits with a **RECT_OPEN** or **TRAPEZOIDAL** cross section.
 
-Only the first three parameters are required. The default number of
-inlets is 1 (for each side of a two-sided street) while the remaining
-parameters have default values of 0.
+Only the first three parameters are required. The default number of inlets is 1 (for each side of a two-sided street) while the remaining parameters have default values of 0.
 
 A Qmax value of 0 indicates that the inlet has no flow restriction.
 
-The local gutter depression applies only over the length of the inlet
-unlike the continuous depression for a STREET cross section which exists
-over the full curb length.
+The local gutter depression applies only over the length of the inlet unlike the continuous depression for a **STREET** cross section which exists over the full curb length.
 
-The default inlet placement is AUTOMATIC, meaning that the program uses
-the network topography to determine whether an inlet operates on-grade
-or on-sag. On-grade means the inlet is located on a continuous grade.
-On-sag means the inlet is located at a sag or sump point where all
-adjacent conduits slope towards the inlet leaving no place for water to
-flow except into the inlet.
+The default inlet placement is **AUTOMATIC**, meaning that the program uses the network topography to determine whether an inlet operates on-grade or on-sag. On-grade means the inlet is located on a continuous grade. On-sag means the inlet is located at a sag or sump point where all adjacent conduits slope towards the inlet leaving no place for water to flow except into the inlet.
 
 <!---
   losses
 -->
-@page losses  [LOSSES]
 
+@page losses [LOSSES]
 
 **Purpose:**
-Specifies minor head loss coefficients, flap gates, and seepage rates
-for conduits.
 
- 
+Specifies minor head loss coefficients, flap gates, and seepage rates for conduits.
 
 **Format:**
 
-Conduit  Kentry  Kexit  Kavg  (Flap  Seepage)
-
- 
+_Conduit  Kentry  Kexit  Kavg_  (_Flap  Seepage_)
 
 **Parameters:**
 
-  --------- ---------------------------------------------------------------------------------------------
-  Conduit   name of a conduit.
-  Kentry    minor head loss coefficient at the conduit’s entrance.
-  Kexit     minor head loss coefficient at the conduit’s exit.
-  Kavg      average minor head loss coefficient across the length of the conduit.
-  Flap      YES if the conduit has a flap valve that prevents back flow, NO otherwise. (Default is NO).
-  Seepage   Rate of seepage loss into the surrounding soil (in/hr or mm/hr). (Default is 0.)
-  --------- ---------------------------------------------------------------------------------------------
+_Conduit_ -- name of a conduit.
+
+_Kentry_ -- minor head loss coefficient at the conduit’s entrance.
+
+_Kexit_ -- minor head loss coefficient at the conduit’s exit.
+
+_Kavg_ -- average minor head loss coefficient across the length of the conduit.
+
+_Flap_ -- **YES** if the conduit has a flap valve that prevents back flow, **NO** otherwise. (Default is **NO**).
+
+_Seepage_ -- Rate of seepage loss into the surrounding soil (in/hr or mm/hr). (Default is 0.)
 
 **Remarks:**
 
-Minor losses are only computed for the Dynamic Wave flow routing option
-(see the [OPTIONS] section). They are computed as Kv2/2g where K = minor
-loss coefficient, v = velocity, and g = acceleration of gravity.
-Entrance losses are based on the velocity at the entrance of the
-conduit, exit losses on the exit velocity, and average losses on the
-average velocity.
+Minor losses are only computed for the Dynamic Wave flow routing option (see the [OPTIONS] section). They are computed as \f$ Kv^{2}/2g \f$ where K = minor loss coefficient, v = velocity, and g = acceleration of gravity. Entrance losses are based on the velocity at the entrance of the conduit, exit losses on the exit velocity, and average losses on the average velocity.
 
-Only enter data for conduits that actually have minor losses, flap
-valves, or seepage losses.
+Only enter data for conduits that actually have minor losses, flap valves, or seepage losses.
 
 <!---
   controls
 -->
 
-@page controls  [CONTROLS]
-
+@page controls [CONTROLS]
 
 **Purpose:**
-Determines how pumps and regulators will be adjusted based on simulation
-time or conditions at specific nodes and links.
 
- 
+Determines how pumps and regulators will be adjusted based on simulation time or conditions at specific nodes and links.
 
 **Formats:**
 
 Each control rule is a series of statements of the form:
 
-RULE        ruleID
+**RULE** _ruleID_
 
-IF                condition_1
+**IF** _condition_1_
 
-AND        condition_2
+**AND** _condition_2_
 
-OR                condition_3
+**OR** _condition_3_
 
-AND        condition_4
-
-Etc.
-
-THEN        action_1
-
-AND        action_2
+**AND** _condition_4_
 
 Etc.
 
-ELSE        action_3
+**THEN** _action_1_
 
-AND        action_4
+**AND** _action_2_
 
 Etc.
 
-PRIORITY value
+**ELSE** _action_3_
 
- 
+**AND** _action_4_
+
+Etc.
+
+**PRIORITY** _value_
 
 **Parameters:**
 
-  ------------- ------------------------------------------------
-  ruleID        an ID label assigned to the rule.
-  condition_n   a condition clause.
-  action_n      an action clause.
-  value         a priority value (e.g., a number from 1 to 5).
-  ------------- ------------------------------------------------
+_ruleID_ -- an ID label assigned to the rule.
+
+_condition_n_ -- a condition clause.
+
+_action_n_ -- an action clause.
+
+_value_ -- a priority value (e.g., a number from 1 to 5).
 
 **Remarks:**
 
-Keywords are shown in boldface and ruleID is an ID label assigned to the
-rule, condition_n is a Condition Clause, action_n is an Action Clause,
-and value is a priority value (e.g., a number from 1 to 5). The formats
-used for Condition and Action clauses are discussed below.
+Keywords are shown in boldface and _ruleID_ is an ID label assigned to the rule, _condition_n_ is a Condition Clause, _action_n_ is an Action Clause, and value is a priority value (e.g., a number from 1 to 5). The formats used for Condition and Action clauses are discussed below.
 
- 
+Only the RULE, IF and THEN portions of a rule are required; the ELSE and PRIORITY portions are optional.
 
-Only the RULE, IF and THEN portions of a rule are required; the ELSE and
-PRIORITY portions are optional.
+Blank lines between clauses are permitted and any text to the right of a semicolon is considered a comment.
 
- 
+When mixing AND and OR clauses, the OR operator has higher precedence than AND, i.e.,
 
-Blank lines between clauses are permitted and any text to the right of a
-semicolon is considered a comment.
-
- 
-
-When mixing AND and OR clauses, the OR operator has higher precedence
-than AND, i.e.,
-
-IF A or B and C
+    IF A or B and C
 
 is equivalent to
 
-IF (A or B) and C.
+    IF (A or B) and C.
 
 If the interpretation was meant to be
 
-IF A or (B and C)
+    IF A or (B and C)
 
 then this can be expressed using two rules as in
 
-IF A THEN ...
+    IF A THEN ...
+    IF B and C THEN ...
 
-IF B and C THEN ...
+The PRIORITY value is used to determine which rule applies when two or more rules require that conflicting actions be taken on a link. A conflicting rule with a higher priority value has precedence over one with a lower value (e.g., PRIORITY 5 outranks PRIORITY 1). A rule without a priority value always has a lower priority than one with a value. For two rules with the same priority value, the rule that appears first is given the higher priority.
 
- 
+<!---
+  controls_subpages
+-->
 
-The PRIORITY value is used to determine which rule applies when two or
-more rules require that conflicting actions be taken on a link. A
-conflicting rule with a higher priority value has precedence over one
-with a lower value (e.g., PRIORITY 5 outranks PRIORITY 1). A rule
-without a priority value always has a lower priority than one with a
-value. For two rules with the same priority value, the rule that appears
-first is given the higher priority.
+@subpage conditional_clauses
+@subpage action_clauses
+@subpage modulated_controls
+@subpage pid_controllers
+@subpage named_variables
+@subpage arithmetic_expressions
+
+<!---
+  conditional_clauses
+-->
+
+@page conditional_clauses Condition Clauses
+
+A Condition Clause of a control rule has the following formats:
+
+    object id attribute relation value
+    object id attribute relation object id attribute
+
+where:
+
+`object` -- is a category of object
+
+`id` -- is the object's ID name
+
+`attribute` -- is an attribute or property of the object
+
+`relation` -- is a relational operator (=, <>, <, <=, >, >=)
+
+`value` -- is an attribute value
+
+Some examples of condition clauses are:
+
+    GAGE  G1   6-HR_DEPTH > 0.5
+    NODE  N23  DEPTH  >  10
+    NODE  N23  DEPTH  >  NODE N25 DEPTH
+    PUMP  P45  STATUS =  OFF
+    SIMULATION CLOCKTIME = 22:45:00
+
+The objects and attributes that can appear in a condition clause are as
+follows:
+
+| Object                   | Attributes                                                                                     | Value                                       |
+| :----------------------- | :--------------------------------------------------------------------------------------------- | :------------------------------------------ |
+| `GAGE`                   | `INTENSITY` <br> `n-HR_DEPTH`                                                                  | numerical value                             |
+| `NODE`                   | `DEPTH` <br> `MAXDEPTH` <br> `HEAD` <br> `VOLUME` <br> `INFLOW`                                | numerical value                             |
+| `LINK` or <br> `CONDUIT` | `FLOW` <br> `FULLFLOW` <br> `DEPTH` <br> `MAXDEPTH` <br> `VELOCITY` <br> `LENGTH` <br> `SLOPE` | numerical value                             |
+| ^                        | `STATUS`                                                                                       | `OPEN` or `CLOSED`                          |
+| ^                        | `TIMEOPEN` <br> `TIMECLOSED`                                                                   | decimal hours or hr:min                     |
+| `PUMP`                   | `STATUS`                                                                                       | `ON` or `OFF`                               |
+| ^                        | `SETTING`                                                                                      | pump curve multiplier                       |
+| ^                        | `FLOW`                                                                                         | numerical value                             |
+| `ORIFICE`                | `SETTING`                                                                                      | fraction open                               |
+| `WEIR`                   | `SETTING`                                                                                      | fraction open                               |
+| `OUTLET`                 | `SETTING`                                                                                      | rating curve multiplier                     |
+| `SIMULATION`             | `TIME`                                                                                         | elapsed time in decimal hours or hr:min:sec |
+| ^                        | `DATE`                                                                                         | month/day/year                              |
+| ^                        | `MONTH`                                                                                        | month of year (January = 1)                 |
+| ^                        | `DAY`                                                                                          | day of week (Sunday = 1)                    |
+| ^                        | `CLOCKTIME`                                                                                    | time of day in hr:min:sec                   |
+
+Gage INTENSITY is the rainfall intensity for a specific rain gage in the current simulation time period. Gage n-HR_DEPTH is a gage's total rainfall depth over the past n hours where n is a number between 1 and 48.
+
+TIMEOPEN is the duration a link has been in an OPEN or ON state or have its SETTING be greater than zero; TIMECLOSED is the duration it has remained in a CLOSED or OFF state or have its SETTING be zero.
+
+<!---
+  action_clauses
+-->
+
+@page action_clauses Action Clauses
+
+An Action Clause of a control rule can have one of the following formats:
+
+    CONDUIT id STATUS = OPEN/CLOSED
+    PUMP id STATUS = ON/OFF
+    PUMP/ORIFICE/WEIR/OUTLET id SETTING = value
+
+where the meaning of SETTING depends on the object being controlled:
+
+- for Pumps it is a multiplier applied to the flow computed from the pump curve (for a Type5 pump curve it is a relative speed setting that shifts the curve up or down),
+
+- for Orifices it is the fractional amount that the orifice is fully open,
+
+- for Weirs it is the fractional amount of the original freeboard that exists (i.e., weir control is accomplished by moving the crest height up or down),
+
+- for Outlets it is a multiplier applied to the flow computed from the outlet's rating curve.
+
+Some examples of action clauses are:
+
+    PUMP P67 STATUS = OFF
+    ORIFICE O212 SETTING = 0.5
+
+<!---
+  modulated_controls
+-->
+
+@page modulated_controls Modulated Controls
+
+Modulated controls are control rules that provide for a continuous degree of control applied to a pump or flow regulator as determined by the value of some controller variable, such as water depth at a node, or by time. The functional relation between the control setting and the controller variable can be specified by using a Control Curve, a Time Series, or a PID Controller. Some examples of modulated control rules are:
+
+    RULE MC1
+    IF NODE N2 DEPTH >= 0
+    THEN WEIR W25 SETTING = CURVE C25
+
+    RULE MC2
+    IF SIMULATION TIME > 0
+    THEN PUMP P12 SETTING = TIMESERIES TS101
+
+    RULE MC3
+    IF LINK L33 FLOW <> 1.6
+    THEN ORIFICE O12 SETTING = PID 0.1 0.0 0.0
+
+Note how a modified form of the action clause is used to specify the name of the control curve, time series or PID parameter set that defines the degree of control. A PID parameter set contains three values -- a proportional gain coefficient, an integral time (in minutes), and a derivative time (in minutes). Also, by convention the controller variable used in a Control Curve or PID Controller will always be the object and attribute named in the last condition clause of the rule. As an example, in rule MC1 above Curve C25 would define how the fractional setting at Weir W25 varied with the water depth at Node N2. In rule MC3, the PID controller adjusts the opening of Orifice O12 to maintain a flow of 1.6 in Link L33.
+
+<!---
+  pid_controllers
+-->
+
+@page pid_controllers PID Controllers
+
+A PID (Proportional-Integral-Derivative) Controller is a generic closed-loop control scheme that tries to maintain a desired set-point on some process variable by computing and applying a corrective action that adjusts the process accordingly. In the context of a hydraulic conveyance system a PID controller might be used to adjust the opening on a gated orifice to maintain a target flow rate in a specific conduit or to adjust a variable speed pump to maintain a desired depth in a storage unit. The classical PID controller has the form:
+
+\f[ m(t) = K_{p} \[ e(t) + \frac{1}{T_{i}} \int e(\tau) d\tau + T_{d} \frac{de(t)}{dt} \] \f]
+
+where m(t) = controller output, Kp = proportional coefficient (gain), Ti = integral time, Td = derivative time, e(t) = error (difference between setpoint and observed variable value), and t = time.
+
+The controller output m(t) has the same meaning as a link setting used in a rule's Action Clause while dt is the current flow routing time step in minutes. Because link settings are relative values (with respect to either a pump's standard operating curve or to the full opening height of an orifice or weir) the error e(t) used by the controller is also a relative value. It is defined as the difference between the control variable setpoint x* and its value at time t, x(t), normalized to the setpoint value: \f$ e(t) = (x* - x(t)) / x\* \f$.
+
+Note that for direct action control, where an increase in the link setting causes an increase in the controlled variable, the sign of Kp must be positive. For reverse action control, where the controlled variable decreases as the link setting increases, the sign of Kp must be negative. The user must recognize whether the control is direct or reverse action and use the proper sign on Kp accordingly. For example, adjusting an orifice opening to maintain a desired downstream flow is direct action. Adjusting it to maintain an upstream water level is reverse action. Controlling a pump to maintain a fixed wet well water level would be reverse action while using it to maintain a fixed downstream flow is direct action.
+
+<!---
+  named_variables
+-->
+
+@page named_variables Named Variables
+
+Named Variables are aliases used to represent the triplet of <object type | object id | object attribute> (or a doublet for Simulation times) that appear in the condition clauses of control rules. They allow condition clauses to be written as:
+
+    variable relation value
+    variable relation variable
+
+where variable is defined on a separate line before its first use in a
+rule using the format:
+
+    VARIABLE  name = object id attribute
+
+Here is an example of using this feature:
+
+    VARIABLE  N123_Depth = NODE N123 DEPTH
+    VARIABLE  N456_Depth = NODE N456 DEPTH
+    VARIABLE  P45 = PUMP 45 STATUS
+
+    RULE 1
+    IF    N123_Depth > N456_Depth
+    AND   P45 = OFF
+    THEN  PUMP 45 STATUS = ON
+
+    RULE 2
+    IF   N123_Depth < 1
+    THEN PUMP 45 STATUS = OFF
+
+A variable is not allowed to have the same name as an object attribute.
+
+Aside from saving some typing, named variables are required when using arithmetic expressions in rule condition clauses.
+
+<!---
+arithmetic_expressions
+-->
+
+@page arithmetic_expressions Arithmetic Expressions
+
+In addition to a simple condition placed on a single variable, a control condition clause can also contain an arithmetic expression formed from several variables whose value is compared against. Thus the format of a condition clause can be extended as follows:
+
+    expression  relation  value
+    expression  relation  variable
+
+where expression is defined on a separate line before its first use in a rule using the format:
+
+    EXPRESSION  name = f(variable1, variable2, ...)
+
+The function f(...) can be any well-formed mathematical expression containing one or more named variables as well as any of the following math functions (which are case insensitive) and operators:
+
+- abs(x) for absolute value of x
+
+- sgn(x) which is +1 for x >= 0 or -1 otherwise
+
+- step(x) which is 0 for x <= 0 and 1 otherwise
+
+- sqrt(x) for the square root of x
+
+- log(x) for logarithm base e of x
+
+- log10(x) for logarithm base 10 of x
+
+- exp(x) for e raised to the x power
+
+- the standard trig functions (sin, cos, tan, and cot)
+
+- the inverse trig functions (asin, acos, atan, and acot)
+
+- the hyperbolic trig functions (sinh, cosh, tanh, and coth)
+
+- the standard operators  +, -, \*, /, ^ (for exponentiation ) and any level of nested parentheses.
+
+Here is an example of using this feature:
+
+    VARIABLE  P1_flow = LINK 1 FLOW
+    VARIABLE  P2_flow = LINK 2 FLOW
+    VARIABLE  O3_flow = Link 3 FLOW
+    EXPRESSION Net_Inflow = (P1_flow + P2_flow)/2 - O3_flow
+
+    RULE 1
+    IF   Net_Inflow > 0.1
+    THEN ORIFICE 3 SETTING = 1
+    ELSE ORIFICE 3 SETTING = 0.5
 
 <!---
   pollutants
 -->
 
-@page pollutants  [POLLUTANTS]
-
+@page pollutants [POLLUTANTS]
 
 **Purpose:**
-Identifies the pollutants being analyzed.
 
- 
+Identifies the pollutants being analyzed.
 
 **Format:**
 
-Name Units Crain Cgw Cii Kd (Sflag CoPoll CoFract Cdwf Cinit)
-
- 
+_Name Units Crain Cgw Cii Kd_ (_Sflag CoPoll CoFract Cdwf Cinit_)
 
 **Parameters:**
 
-  ------ -------------------------------
-  Name   name assigned to a pollutant.
-  ------ -------------------------------
+_Name_ -- name assigned to a pollutant.
 
-  ------- ------------------------------------------------------------------------------------------------------------------------
-  Units   concentration units (MG/L for milligrams per liter, UG/L for micrograms per liter, or #/L for direct count per liter).
-  ------- ------------------------------------------------------------------------------------------------------------------------
+_Units_ -- concentration units (**MG/L** for milligrams per liter, **UG/L** for micrograms per liter, or **#/L** for direct count per liter).
 
-  ------- -------------------------------------------------------------------
-  Crain   concentration of the pollutant in rainfall (concentration units).
-  ------- -------------------------------------------------------------------
+_Crain_ -- concentration of the pollutant in rainfall (concentration units).
 
-  ----- ----------------------------------------------------------------------
-  Cgw   concentration of the pollutant in groundwater (concentration units).
-  ----- ----------------------------------------------------------------------
+_Cgw_ -- concentration of the pollutant in groundwater (concentration units).
 
-  ----- ------------------------------------------------------------------------------
-  Cii   concentration of the pollutant in inflow/infiltration (concentration units).
-  ----- ------------------------------------------------------------------------------
+_Cii_ -- concentration of the pollutant in inflow/infiltration (concentration units).
 
-  -------- -----------------------------------------
-  Kdecay   first-order decay coefficient (1/days).
-  -------- -----------------------------------------
+_Kdecay_ -- first-order decay coefficient (1/days).
 
-  ------- ----------------------------------------------------------------------------------------------
-  Sflag   YES if pollutant buildup occurs only when there is snow cover, NO otherwise (default is NO).
-  ------- ----------------------------------------------------------------------------------------------
+_Sflag_ -- **YES** if pollutant buildup occurs only when there is snow cover, **NO** otherwise (default is **NO**).
 
-  -------- ------------------------------------------------------------------------
-  CoPoll   name of a co-pollutant (default is no co-pollutant designated by a *).
-  -------- ------------------------------------------------------------------------
+_CoPoll_ -- name of a co-pollutant (default is no co-pollutant designated by a \*).
 
-  --------- --------------------------------------------------------------
-  CoFract   fraction of the co-pollutant’s concentration (default is 0).
-  --------- --------------------------------------------------------------
+_CoFract_ -- fraction of the co-pollutant’s concentration (default is 0).
 
-  ------ -------------------------------------------------------------
-  Cdwf   pollutant concentration in dry weather flow (default is 0).
-  ------ -------------------------------------------------------------
+_Cdwf_ -- pollutant concentration in dry weather flow (default is 0).
 
-  ------- ---------------------------------------------------------------------------------------------------------
-  Cinit   pollutant concentration throughout the conveyance system at the start of the simulation (default is 0).
-  ------- ---------------------------------------------------------------------------------------------------------
+_Cinit_ -- pollutant concentration throughout the conveyance system at the start of the simulation (default is 0).
 
 **Remarks:**
 
-FLOW  is a reserved word and cannot be used to name a pollutant.
+**FLOW** is a reserved word and cannot be used to name a pollutant.
 
-Parameters Sflag through Cinit can be omitted if they assume their
-default values. If there is no co-pollutant but non-default values for
-Cdwf or Cinit, then enter an asterisk (*) for the co-pollutant name.
+Parameters _Sflag_ through _Cinit_ can be omitted if they assume their default values. If there is no co-pollutant but non-default values for _Cdwf_ or _Cinit_, then enter an asterisk (\*) for the co-pollutant name.
 
-When pollutant X has a co-pollutant Y, it means that fraction CoFract of
-pollutant Y’s runoff concentration is added to pollutant X’s runoff
-concentration when wash off from a subcatchment is computed.
+When pollutant X has a co-pollutant Y, it means that fraction _CoFract_ of pollutant Y’s runoff concentration is added to pollutant X’s runoff concentration when wash off from a subcatchment is computed.
 
-The dry weather flow concentration can be overridden for any specific
-node of the conveyance system by editing the node’s Inflows property
-(see the [INFLOWS] section).
+The dry weather flow concentration can be overridden for any specific node of the conveyance system by editing the node’s Inflows property (see the [INFLOWS] section).
 
 <!---
   landuses
 -->
 
-@page landuses  [LANDUSES]
+@page landuses [LANDUSES]
 
 **Purpose:**
-Identifies the various categories of land uses within the drainage area.
-Each subcatchment area can be assigned a different mix of land uses.
-Each land use can be subjected to a different street sweeping schedule.
-Land uses are only used in conjunction with pollutant buildup and wash
-off.
 
- 
+Identifies the various categories of land uses within the drainage area. Each subcatchment area can be assigned a different mix of land uses. Each land use can be subjected to a different street sweeping schedule. Land uses are only used in conjunction with pollutant buildup and wash off.
 
 **Format:**
 
-Name  (SweepInterval  Availability  LastSweep)
-
- 
+_Name_  (_SweepInterval  Availability  LastSweep_)
 
 **Parameters:**
 
-  ------ ----------------
-  Name   land use name.
-  ------ ----------------
+_Name_ -- land use name.
 
-  --------------- -------------------------------
-  SweepInterval   days between street sweeping.
-  --------------- -------------------------------
+_SweepInterval_ -- days between street sweeping.
 
-  -------------- -------------------------------------------------------------------------
-  Availability   fraction of pollutant buildup available for removal by street sweeping.
-  -------------- -------------------------------------------------------------------------
+_Availability_ -- fraction of pollutant buildup available for removal by street sweeping.
 
-  ----------- ----------------------------------------------------------
-  LastSweep   days since last sweeping at the start of the simulation.
-  ----------- ----------------------------------------------------------
+_LastSweep_ -- days since last sweeping at the start of the simulation.
 
-  <!---
-    coverages
-  -->
+<!---
+  coverages
+-->
 
-@page coverages  [COVERAGES]
-
+@page coverages [COVERAGES]
 
 **Purpose:**
-Specifies the percentage of a subcatchment’s area that is covered by
-each category of land use.
 
- 
+Specifies the percentage of a subcatchment’s area that is covered by each category of land use.
 
 **Format:**
 
- Subcat  Landuse  Percent  Landuse  Percent  . . .
-
- 
+_Subcat  Landuse  Percent  Landuse  Percent_  ...
 
 **Parameters:**
 
-  -------- --------------------
-  Subcat   subcatchment name.
-  -------- --------------------
+_Subcat_ -- subcatchment name.
 
-  --------- ----------------
-  Landuse   land use name.
-  --------- ----------------
+_Landuse_ -- land use name.
 
-  --------- -------------------------------------------------------------
-  Percent   percent of the subcatchment’s area covered by the land use.
-  --------- -------------------------------------------------------------
-
- 
+_Percent_ -- percent of the subcatchment’s area covered by the land use.
 
 **Remarks:**
 
-More than one pair of land use - percentage values can be entered per
-line. If more than one line is needed, then the subcatchment name must
-still be entered first on the succeeding lines.
+More than one pair of land use - percentage values can be entered per line. If more than one line is needed, then the subcatchment name must still be entered first on the succeeding lines.
 
-If a land use does not pertain to a subcatchment, then it does not have
-to be entered.
+If a land use does not pertain to a subcatchment, then it does not have to be entered.
 
-If no land uses are associated with a subcatchment then no pollutants
-will appear in the runoff from the subcatchment.
+If no land uses are associated with a subcatchment then no pollutants will appear in the runoff from the subcatchment.
 
 <!---
   loadings
 -->
 
-@page loadings  [LOADINGS]
-
+@page loadings [LOADINGS]
 
 **Purpose:**
-Specifies the pollutant buildup that exists on each subcatchment at the
-start of a simulation.
 
- 
+Specifies the pollutant buildup that exists on each subcatchment at the start of a simulation.
 
 **Format:**
 
-Subcat  Pollut  InitBuildup  Pollut  InitBuildup ...
-
- 
+_Subcat  Pollut  InitBuildup  Pollut  InitBuildup_ ...
 
 **Parameters:**
 
-  ------------- ------------------------------------------------------------
-  Subcat        name of a subcatchment.
-  Pollut        name of a pollutant.
-  InitBuildup   initial buildup of the pollutant (lbs/acre or kg/hectare).
-  ------------- ------------------------------------------------------------
+_Subcat_ -- name of a subcatchment.
+
+_Pollut_ -- name of a pollutant.
+
+_InitBuildup_ -- initial buildup of the pollutant (lbs/acre or kg/hectare).
 
 **Remarks:**
 
-More than one pair of pollutant - buildup values can be entered per
-line. If more than one line is needed, then the subcatchment name must
-still be entered first on the succeeding lines.
+More than one pair of pollutant - buildup values can be entered per line. If more than one line is needed, then the subcatchment name must still be entered first on the succeeding lines.
 
-If an initial buildup is not specified for a pollutant, then its initial
-buildup is computed by applying the DRY_DAYS option (specified in the
-[OPTIONS] section) to the pollutant’s buildup function for each land use
-in the subcatchment.
+If an initial buildup is not specified for a pollutant, then its initial buildup is computed by applying the DRY_DAYS option (specified in the [OPTIONS] section) to the pollutant’s buildup function for each land use in the subcatchment.
 
 <!---
   buildup
 -->
 
-@page buildup  [BUILDUP]
-
+@page buildup [BUILDUP]
 
 **Purpose:**
-Specifies the rate at which pollutants build up over different land uses
-between rain events.
 
- 
+Specifies the rate at which pollutants build up over different land uses between rain events.
 
 **Format:**
 
-Landuse  Pollutant  FuncType  C1  C2  C3  PerUnit
-
- 
+_Landuse  Pollutant  FuncType  C1  C2  C3  PerUnit_
 
 **Parameters:**
 
-  ----------- ---------------------------------------------------------------------
-  Landuse     land use name.
-  Pollutant   pollutant name.
-  FuncType    buildup function type: ( POW / EXP / SAT / EXT ).
-  C1,C2,C3    buildup function parameters (see table below).
-  PerUnit     AREA if buildup is per unit area, CURBLENGTH if per length of curb.
-  ----------- ---------------------------------------------------------------------
+_Landuse_ -- land use name.
+
+_Pollutant_ -- pollutant name.
+
+_FuncType_ -- buildup function type: ( **POW / EXP / SAT / EXT** ).
+
+_C1, C2, C3_ -- buildup function parameters (see table below).
+
+_PerUnit_ -- **AREA** if buildup is per unit area, **CURBLENGTH** if per length of curb.
 
 **Remarks:**
 
-Buildup is measured in pounds (kilograms) per unit of area (or curb
-length) for pollutants whose concentration units are either mg/L or
-ug/L. If the concentration units are counts/L, then buildup is expressed
-as counts per unit of area (or curb length).
-
- 
+Buildup is measured in pounds (kilograms) per unit of area (or curb length) for pollutants whose concentration units are either mg/L or ug/L. If the concentration units are counts/L, then buildup is expressed as counts per unit of area (or curb length).
 
 The buildup functions associated with each function type are:
 
-  ------ ------------- ---------------------
-  Type   Function      Equation*
-  POW    Power         Min (C1, C2*tC3)
-  EXP    Exponential   C1*(1 – exp(-C2*t))
-  SAT    Saturation    C1*t / (C3 + t)
-  EXT    External      See below
-  ------ ------------- ---------------------
+| Type    | Function    | Equation[^*]                |
+| ------- | ----------- | --------------------------- |
+| **POW** | Power       | Min \f$ (C1, C2 t^{C3}) \f$ |
+| **EXP** | Exponential | \f$ C1 (1 – exp(-C2 t)) \f$ |
+| **SAT** | Saturation  | \f$ C1 t / (C3 + t) \f$     |
+| **EXT** | External    | See below                   |
 
-*t is antecedent dry days.
+[^*] t is antecedent dry days.
 
- 
-
-For the EXT buildup function, C1 is the maximum possible buildup (mass
-per area or curb length), C2 is a scaling factor, and C3 is the name of
-a Time Series that contains buildup rates (as mass per area or curb
-length per day) as a function of time.
+For the **EXT** buildup function, C1 is the maximum possible buildup (mass per area or curb length), C2 is a scaling factor, and C3 is the name of a Time Series that contains buildup rates (as mass per area or curb length per day) as a function of time.
 
 <!---
   washoff
 -->
 
-@page washoff  [WASHOFF]
-
+@page washoff [WASHOFF]
 
 **Purpose:**
-Specifies the rate at which pollutants are washed off from different
-land uses during rain events.
 
- 
+Specifies the rate at which pollutants are washed off from different land uses during rain events.
 
 **Format:**
 
-Landuse  Pollutant  FuncType  C1  C2  SweepRmvl BmpRmvl
-
- 
+_Landuse  Pollutant  FuncType  C1  C2  SweepRmvl BmpRmvl_
 
 **Parameters:**
 
-  ----------- -------------------------------------------------
-  Landuse     land use name.
-  Pollutant   pollutant name.
-  FuncType    washoff function type: EXP / RC / EMC.
-  C1, C2      washoff function coefficients(see table below).
-  SweepRmvl   street sweeping removal efficiency (percent).
-  BmpRmvl     BMP removal efficiency (percent).
-  ----------- -------------------------------------------------
+_Landuse_ -- land use name.
+
+_Pollutant_ -- pollutant name.
+
+_FuncType_ -- washoff function type: **EXP / RC / EMC**.
+
+_C1, C2_ -- washoff function coefficients(see table below).
+
+_SweepRmvl_ -- street sweeping removal efficiency (percent).
+
+_BmpRmvl_ -- BMP removal efficiency (percent).
 
 **Remarks:**
 
 The equations used for each type of washoff function are as follows:
 
-+-----------------+-----------------+-----------------+-----------------+
-| Type            | Function        | Equation        | Units           |
-+-----------------+-----------------+-----------------+-----------------+
-| EXP             | Exponential     | C1 (runoff)C2   | Mass/hour       |
-|                 |                 | (buildup)       |                 |
-+-----------------+-----------------+-----------------+-----------------+
-| RC              | Rating Curve    | C1 (runoff)C2   | Mass/sec        |
-+-----------------+-----------------+-----------------+-----------------+
-| EMC             | Event Mean      | C1              | Mass/Liter      |
-|                 |                 |                 |                 |
-|                 | Concentration   |                 |                 |
-+-----------------+-----------------+-----------------+-----------------+
-
- 
+| Type | Function                 | Equation                                | Units      |
+| :--- | :----------------------- | :-------------------------------------- | :--------- |
+| EXP  | Exponential              | \f$ C1 (runoff)^{C2} \f$ <br> (buildup) | Mass/hour  |
+| RC   | Rating Curve             | \f$ C1 (runoff)^{C2} \f$                | Mass/sec   |
+| EMC  | Event Mean Concentration | \f$ C1 \f$                              | Mass/Liter |
 
 Each washoff function expresses its results in different units.
 
-For the Exponential function the runoff variable is expressed in
-catchment depth per unit of time (inches per hour or millimeters per
-hour), while for the Rating Curve function it is in whatever flow units
-were specified in the [OPTIONS] section of the input file (e.g., CFS,
-CMS, etc.).
+For the **Exponential** function the **runoff** variable is expressed in catchment depth per unit of time (inches per hour or millimeters per hour), while for the **Rating Curve** function it is in whatever flow units were specified in the [OPTIONS] section of the input file (e.g., CFS, CMS, etc.).
 
-The buildup parameter in the Exponential function is the current total
-buildup over the subcatchment’s land use area in mass units. The units
-of C1 in the Exponential function are (in/hr)-C2  per hour (or
-(mm/hr)-C2  per hour). For the Rating Curve function, the units of C1
-depend on the flow units employed. For the EMC (event mean
-concentration) function, C1 is always in concentration units.
+The buildup parameter in the **Exponential** function is the current total buildup over the subcatchment’s land use area in mass units. The units of C1 in the Exponential function are (in/hr)<sup>-C2</sup> per hour (or (mm/hr)<sup>-C2</sup> per hour). For the **Rating Curve** function, the units of _C1_ depend on the flow units employed. For the **EMC** (event mean concentration) function, _C1_ is always in concentration units.
 
 <!---
   treatment
 -->
 
-@page treatment  [TREATMENT]
-
+@page treatment [TREATMENT]
 
 **Purpose:**
-Specifies the degree of treatment received by pollutants at specific
-nodes of the drainage system.
 
- 
+Specifies the degree of treatment received by pollutants at specific nodes of the drainage system.
 
 **Format:**
 
-Node  Pollut  Result = Func
-
- 
+_Node  Pollut  Result_ = _Func_
 
 **Parameters:**
 
-  ------ ------------------------------------------
-  Node   Name of the node where treatment occurs.
-  ------ ------------------------------------------
+_Node_ -- Name of the node where treatment occurs.
 
-  -------- ----------------------------------------
-  Pollut   Name of pollutant receiving treatment.
-  -------- ----------------------------------------
+_Pollut_ -- Name of pollutant receiving treatment.
 
-  -------- -----------------------------------------------------
-  Result   Result computed by treatment function. Choices are:
-  -------- -----------------------------------------------------
+_Result_ -- Result computed by treatment function. Choices are:
 
-C  (function computes effluent concentration)
+_C_ -- (function computes effluent concentration)
 
-R  (function computes fractional removal).
+_R_ -- (function computes fractional removal).
 
-  ------ -------------------------------------------------------------------------------------------------------------------------------------------------------
-  Func   mathematical function expressing treatment result in terms of pollutant concentrations, pollutant removals, and other standard variables (see below).
-  ------ -------------------------------------------------------------------------------------------------------------------------------------------------------
-
- 
+_Func_ -- mathematical function expressing treatment result in terms of pollutant concentrations, pollutant removals, and other standard variables (see below).
 
 **Remarks:**
 
-Treatment functions can be any well-formed mathematical expression
-involving:
+Treatment functions can be any well-formed mathematical expression involving:
 
-  --- --------------------------------------------------------------------------------------
-  ·   inlet pollutant concentrations (use the pollutant name to represent a concentration)
-  --- --------------------------------------------------------------------------------------
+- inlet pollutant concentrations (use the pollutant name to represent a concentration)
 
-  --- --------------------------------------------------------------------------------------------
-  ·   removal of other pollutants (use R_ pre-pended to the pollutant name to represent removal)
-  --- --------------------------------------------------------------------------------------------
+- removal of other pollutants (use R\_ pre-pended to the pollutant name to represent removal)
 
-  --- ----------------------------------
-  ·   process variables which include:
-  --- ----------------------------------
-
-FLOW        for flow rate into node (user’s flow units)
-
-DEPTH        for water depth above node invert (ft or m)
-
-AREA        for node surface area (ft2 or m2)
-
-DT                for routing time step (seconds)
-
-HRT        for hydraulic residence time (hours)
-
- 
+- process variables which include:
+  - **FLOW** for flow rate into node (user’s flow units)
+  - **DEPTH** for water depth above node invert (ft or m)
+  - **AREA** for node surface area (ft2 or m2)
+  - **DT** for routing time step (seconds)
+  - **HRT** for hydraulic residence time (hours)
 
 Any of the following math functions can be used in a treatment function:
 
-  --- --------------------------------
-  ·   abs(x) for absolute value of x
-  --- --------------------------------
+- abs(x) for absolute value of x
+- sgn(x) which is +1 for x >= 0 or -1 otherwise
+- step(x) which is 0 for x <= 0 and 1 otherwise
+- sqrt(x) for the square root of x
+- log(x) for logarithm base e of x
+- log10(x) for logarithm base 10 of x
+- exp(x) for e raised to the x power
+- the standard trig functions (sin, cos, tan, and cot)
+- the inverse trig functions (asin, acos, atan, and acot)
+- the hyperbolic trig functions (sinh, cosh, tanh, and coth)
 
-  --- -----------------------------------------------
-  ·   sgn(x) which is +1 for x >= 0 or -1 otherwise
-  --- -----------------------------------------------
-
-  --- -----------------------------------------------
-  ·   step(x) which is 0 for x <= 0 and 1 otherwise
-  --- -----------------------------------------------
-
-  --- ----------------------------------
-  ·   sqrt(x) for the square root of x
-  --- ----------------------------------
-
-  --- ----------------------------------
-  ·   log(x) for logarithm base e of x
-  --- ----------------------------------
-
-  --- -------------------------------------
-  ·   log10(x) for logarithm base 10 of x
-  --- -------------------------------------
-
-  --- ------------------------------------
-  ·   exp(x) for e raised to the x power
-  --- ------------------------------------
-
-  --- ------------------------------------------------------
-  ·   the standard trig functions (sin, cos, tan, and cot)
-  --- ------------------------------------------------------
-
-  --- ---------------------------------------------------------
-  ·   the inverse trig functions (asin, acos, atan, and acot)
-  --- ---------------------------------------------------------
-
-  --- ------------------------------------------------------------
-  ·   the hyperbolic trig functions (sinh, cosh, tanh, and coth)
-  --- ------------------------------------------------------------
-
-along with the standard operators +, -, *, /, ^ (for exponentiation )
-and any level of nested parentheses.
-
- 
+along with the standard operators +, -, \*, /, ^ (for exponentiation ) and any level of nested parentheses.
 
 Examples:
 
-; 1-st order decay of BOD
+    ; 1-st order decay of BOD
+    Node23  BOD   C = BOD * exp(-0.05*HRT)
 
-Node23  BOD   C = BOD * exp(-0.05*HRT)
-
- 
-
-; lead removal is 20% of TSS removal
-
-Node23  Lead  R = 0.2 * R_TSS    
+    ; lead removal is 20% of TSS removal
+    Node23  Lead  R = 0.2 \* R_TSS
 
 <!---
   inflows
 -->
 
-@page inflows  [INFLOWS]
-
+@page inflows [INFLOWS]
 
 **Purpose:**
-Specifies external hydrographs and pollutographs that enter the drainage
-system at specific nodes.
 
- 
+Specifies external hydrographs and pollutographs that enter the drainage system at specific nodes.
 
 **Formats:**
 
-  ------ -------- --------- -----------------------------------
-  Node   FLOW     Tseries   (FLOW (1.0 Sfactor Base Pat))
-  Node   Pollut   Tseries   (Type (Mfactor Sfactor Base Pat))
-  ------ -------- --------- -----------------------------------
+|        |          |           |                                       |
+| :----- | :------- | :-------- | :------------------------------------ |
+| _Node_ | **FLOW** | _Tseries_ | (**FLOW** (_1.0 Sfactor Base Pat_))   |
+| _Node_ | _Pollut_ | _Tseries_ | (_Type_ (_Mfactor Sfactor Base Pat_)) |
 
 **Parameters:**
 
-  ------ ------------------------------------------------
-  Node   name of the node where external inflow enters.
-  ------ ------------------------------------------------
+Node name of the node where external inflow enters.
 
-  -------- ----------------------
-  Pollut   name of a pollutant.
-  -------- ----------------------
+Pollut name of a pollutant.
 
-  --------- -----------------------------------------------------------------------------------------------------------------------
-  Tseries   name of a time series in the [TIMESERIES] section describing how external flow or pollutant loading varies with time.
-  --------- -----------------------------------------------------------------------------------------------------------------------
+Tseries name of a time series in the [TIMESERIES] section describing how external flow or pollutant loading varies with time.
 
-  ------ ------------------------------------------------------------------------------------------------------------------------------
-  Type   CONCEN if pollutant inflow is described as a concentration, MASS if it is described as a mass flow rate (default is CONCEN).
-  ------ ------------------------------------------------------------------------------------------------------------------------------
+Type **CONCEN** if pollutant inflow is described as a concentration, **MASS** if it is described as a mass flow rate (default is **CONCEN**).
 
-  --------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Mfactor   the factor that converts the inflow’s mass flow rate units into the project’s mass units per second, where the project’s mass units are those specified for the pollutant in the [POLLUTANTS] section (default is 1.0 - see example below).
-  --------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Mfactor the factor that converts the inflow’s mass flow rate units into the project’s mass units per second, where the project’s mass units are those specified for the pollutant in the [POLLUTANTS] section (default is 1.0 - see example below).
 
-  --------- ------------------------------------------------------------------------------------
-  Sfactor   a scaling factor that multiplies the recorded time series values (default is 1.0).
-  --------- ------------------------------------------------------------------------------------
+Sfactor a scaling factor that multiplies the recorded time series values (default is 1.0).
 
-  ------ ----------------------------------------------------------------------------
-  Base   a constant baseline value added to the time series value (default is 0.0).
-  ------ ----------------------------------------------------------------------------
+Base a constant baseline value added to the time series value (default is 0.0).
 
-  ----- -------------------------------------------------------------------------------------------------------------------
-  Pat   name of an optional time pattern in the [PATTERNS] section used to adjust the baseline value on a periodic basis.
-  ----- -------------------------------------------------------------------------------------------------------------------
-
- 
+Pat name of an optional time pattern in the [PATTERNS] section used to adjust the baseline value on a periodic basis.
 
 **Remarks:**
 
 External inflows are represented by both a constant and time varying
 component as follows:
 
-Inflow = (Baseline value)*(Pattern factor) +
+_Inflow_ = (_Baseline value_)\*(_Pattern factor_) + (_Scaling factor_)\*(_Time series value_)
 
-(Scaling factor)*(Time series value)
-
-If an external inflow of a pollutant concentration is specified for a
-node, then there must also be an external inflow of FLOW provided for
-the same node, unless the node is an Outfall. In that case a pollutant
-can enter the system during periods when the outfall is submerged and
-reverse flow occurs. External pollutant mass inflows do not require a
-FLOW inflow.
-
- 
+If an external inflow of a pollutant concentration is specified for a node, then there must also be an external inflow of **FLOW** provided for the same node, unless the node is an Outfall. In that case a pollutant can enter the system during periods when the outfall is submerged and reverse flow occurs. External pollutant mass inflows do not require a **FLOW** inflow.
 
 **Examples:**
 
-; NODE2 receives flow inflow from time series N2FLOW
+    ; NODE2 receives flow inflow from time series N2FLOW
+    ; and TSS concentration from time series N2TSS
+    NODE2   FLOW  N2FLOW
+    NODE2   TSS   N33TSS  CONCEN
 
-; and TSS concentration from time series N2TSS
+    ; NODE65 has a mass inflow of BOD from time series N65BOD\
+    ; listed in lbs/hr (126 converts lbs/hr to mg/sec)
+    NODE65  BOD  N65BOD  MASS  126
 
-NODE2   FLOW  N2FLOW
-
-NODE2   TSS   N33TSS  CONCEN
-
- 
-
-; NODE65 has a mass inflow of BOD from time series N65BOD
-
-; listed in lbs/hr (126 converts lbs/hr to mg/sec)
-
-NODE65  BOD  N65BOD  MASS  126
-
- 
-
-; Flow inflow to Node N176 consists of the flow time series
-
-; FLOW_176 scaled at 0.5 plus a baseline flow of 12.7
-
-; adjusted by pattern FlowPat
-
-N176  FLOW  FLOW_176  FLOW  1.0  0.5  12.7  FlowPat
+    ; Flow inflow to Node N176 consists of the flow time series
+    ; FLOW_176 scaled at 0.5 plus a baseline flow of 12.7
+    ; adjusted by pattern FlowPat
+    N176  FLOW  FLOW_176  FLOW  1.0  0.5  12.7  FlowPat
 
 <!---
   dwf
 -->
 
-@page dwf  [DWF]
-
+@page dwf [DWF]
 
 **Purpose:**
-Specifies dry weather flow and its quality entering the drainage system
-at specific nodes.
 
- 
+Specifies dry weather flow and its quality entering the drainage system at specific nodes.
 
 **Format:**
 
-Node  Type  Base  (Pat1  Pat2  Pat3  Pat4)
-
- 
+_Node  Type  Base_  (_Pat1  Pat2  Pat3  Pat4_)
 
 **Parameters:**
 
-  ------ -----------------------------------------------
-  Node   name of a node where dry weather flow enters.
-  ------ -----------------------------------------------
+_Node_ -- name of a node where dry weather flow enters.
 
-  ------ ----------------------------------------------------------------------
-  Type   keyword FLOW for flow or a pollutant name for a quality constituent.
-  ------ ----------------------------------------------------------------------
+_Type_ -- keyword **FLOW** for flow or a pollutant name for a quality constituent.
 
-  ------ --------------------------------------------------------------------------------------
-  Base   average baseline value for corresponding constituent  (flow or concentration units).
-  ------ --------------------------------------------------------------------------------------
+_Base_ -- average baseline value for corresponding constituent  (flow or concentration units).
 
-  ------- --
-  Pat1,
-  ------- --
-
-Pat2,
-
-  ------ ------------------------------------------------------------------------
-  etc.   names of up to four time patterns appearing in the [PATTERNS] section.
-  ------ ------------------------------------------------------------------------
-
- 
+_Pat1_, _Pat2_, etc. -- names of up to four time patterns appearing in the [PATTERNS] section.
 
 **Remarks:**
 
-The actual dry weather input will equal the product of the baseline
-value and any adjustment factors supplied by the specified patterns. (If
-not supplied, an adjustment factor defaults to 1.0.)
+The actual dry weather input will equal the product of the baseline value and any adjustment factors supplied by the specified patterns. (If not supplied, an adjustment factor defaults to 1.0.)
 
-The patterns can be any combination of monthly, daily, hourly and
-weekend hourly patterns, listed in any order. See the [PATTERNS] section
-for more details.
+The patterns can be any combination of monthly, daily, hourly and weekend hourly patterns, listed in any order. See the [PATTERNS] section for more details.
 
 <!---
   rdii
 -->
 
-@page rdii  [RDII]
+@page rdii [RDII]
 
 **Purpose:**
-Specifies the parameters that describe rainfall-dependent
-infiltration/inflow (RDII) entering the drainage system at specific
-nodes.
 
- 
+Specifies the parameters that describe rainfall-dependent infiltration/inflow (RDII) entering the drainage system at specific nodes.
 
 **Format:**
 
- Node  UHgroup  SewerArea
-
- 
+_Node  UHgroup  SewerArea_
 
 **Parameters:**
 
-  ------ -------------------------------------
-  Node   name of a node receiving RDII flow.
-  ------ -------------------------------------
+_Node_ -- name of a node receiving RDII flow.
 
-  --------- -------------------------------------------------------------------------------
-  UHgroup   name of an RDII unit hydrograph group appearing in the [HYDROGRAPHS] section.
-  --------- -------------------------------------------------------------------------------
+_UHgroup_ -- name of an RDII unit hydrograph group appearing in the [HYDROGRAPHS] section.
 
-  ----------- ------------------------------------------------------------------------------
-  SewerArea   area of the sewershed that contributes RDII to the node (acres or hectares).
-  ----------- ------------------------------------------------------------------------------
+_SewerArea_ -- area of the sewershed that contributes RDII to the node (acres or hectares).
 
-  <!---
-    hydrographs
-  -->
+<!---
+  hydrographs
+-->
 
-@page hydrographs  [HYDROGRAPHS]
-
+@page hydrographs [HYDROGRAPHS]
 
 **Purpose:**
-Specifies the shapes of the triangular unit hydrographs that determine
-the amount of rainfall-dependent infiltration/inflow (RDII) entering the
-drainage system.
 
- 
+Specifies the shapes of the triangular unit hydrographs that determine the amount of rainfall-dependent infiltration/inflow (RDII) entering the\ drainage system.
 
 **Format:**
 
-Name  Raingage
+_Name_ _Raingage_
 
-Name  Month SHORT/MEDIUM/LONG  R  T  K (Dmax Drec D0)
-
- 
+_Name_  *Month* **SHORT/MEDIUM/LONG** _R  T  K_ (_Dmax Drec D0_)
 
 **Remarks:**
 
-  ------ -------------------------------------------
-  Name   name assigned to a unit hydrograph group.
-  ------ -------------------------------------------
+_Name_ -- name assigned to a unit hydrograph group.
 
-  ---------- ----------------------------------------------------------
-  Raingage   name of the rain gage used by the unit hydrograph group.
-  ---------- ----------------------------------------------------------
+_Raingage_ -- name of the rain gage used by the unit hydrograph group.
 
-  ------- -----------------------------------------------------------------
-  Month   month of the year (e.g., JAN, FEB, etc. or ALL for all months).
-  ------- -----------------------------------------------------------------
+_Month_ -- month of the year (e.g., **JAN**, **FEB**, etc. or **ALL** for all months).
 
-  --- -----------------------------------------
-  R   response ratio for the unit hydrograph.
-  --- -----------------------------------------
+_R_ -- response ratio for the unit hydrograph.
 
-  --- -----------------------------------------------
-  T   time to peak (hours) for the unit hydrograph.
-  --- -----------------------------------------------
+_T_ -- time to peak (hours) for the unit hydrograph.
 
-  --- -----------------------------------------------
-  K   recession limb ratio for the unit hydrograph.
-  --- -----------------------------------------------
+_K_ -- recession limb ratio for the unit hydrograph.
 
-  ------ --------------------------------------------------------------------
-  Dmax   maximum initial abstraction depth available (in rain depth units).
-  ------ --------------------------------------------------------------------
+_Dmax_ -- maximum initial abstraction depth available (in rain depth units).
 
-  ------ -----------------------------------------------------------------
-  Drec   initial abstraction recovery rate (in rain depth units per day)
-  ------ -----------------------------------------------------------------
+_Drec_ -- initial abstraction recovery rate (in rain depth units per day)
 
-  ---- ------------------------------------------------------------------------------------------------
-  D0   initial abstraction depth already filled at the start of the simulation (in rain depth units).
-  ---- ------------------------------------------------------------------------------------------------
-
- 
+_D0_ -- initial abstraction depth already filled at the start of the simulation (in rain depth units).
 
 **Remarks:**
 
-For each group of unit hydrographs, use one line to specify its rain
-gage followed by as many lines as are needed to define each unit
-hydrograph used by the group throughout the year. Three separate unit
-hydrographs, that represent the short-term, medium-term, and long-term
-RDII responses, can be defined for each month (or all months taken
-together). Months not listed are assumed to have no RDII.
+For each group of unit hydrographs, use one line to specify its rain gage followed by as many lines as are needed to define each unit hydrograph used by the group throughout the year. Three separate unit hydrographs, that represent the short-term, medium-term, and long-term RDII responses, can be defined for each month (or all months taken together). Months not listed are assumed to have no RDII.
 
-The response ratio (R) is the fraction of a unit of rainfall depth that
-becomes RDII. The sum of the ratios for a set of three hydrographs does
-not have to equal 1.0.
+The response ratio (R) is the fraction of a unit of rainfall depth that becomes RDII. The sum of the ratios for a set of three hydrographs does not have to equal 1.0.
 
-The recession limb ratio (K) is the ratio of the duration of the
-hydrograph’s recession limb to the time to peak (T) making the
-hydrograph time base equal to T*(1+K) hours. The area under each unit
-hydrograph is 1 inch (or mm).
+The recession limb ratio (K) is the ratio of the duration of the hydrograph’s recession limb to the time to peak (T) making the hydrograph time base equal to \f$ T\*(1+K) \f$ hours. The area under each unit hydrograph is 1 inch (or mm).
 
-The optional initial abstraction parameters determine how much rainfall
-is lost at the start of a storm to interception and depression storage.
-If not supplied then the default is no initial abstraction.
-
- 
+The optional initial abstraction parameters determine how much rainfall is lost at the start of a storm to interception and depression storage. If not supplied then the default is no initial abstraction.
 
 # Example:
 
-;  All three unit hydrographs in this group have the same shapes except
-those in July,
-
-;  which have only a short- and medium-term response and a different
-shape.
-
-UH101  RG1
-
-UH101  ALL SHORT  0.033 1.0  2.0
-
-UH101  ALL MEDIUM 0.300 3.0  2.0
-
-UH101  ALL LONG   0.033 10.0 2.0
-
-UH101  JUL SHORT  0.033 0.5  2.0
-
-UH101  JUL MEDIUM 0.011 2.0  2.0
+    ;  All three unit hydrographs in this group have the same shapes except
+    those in July,
+    ;  which have only a short- and medium-term response and a different
+    shape.
+    UH101  RG1
+    UH101  ALL SHORT  0.033 1.0  2.0
+    UH101  ALL MEDIUM 0.300 3.0  2.0
+    UH101  ALL LONG   0.033 10.0 2.0
+    UH101  JUL SHORT  0.033 0.5  2.0
+    UH101  JUL MEDIUM 0.011 2.0  2.0
 
 <!---
   curves
 -->
 
-@page curves  [CURVES]
-
+@page curves [CURVES]
 
 **Purpose:**
-Describes a relationship between two variables in tabular format.
 
- 
+Describes a relationship between two variables in tabular format.
 
 **Format:**
 
-Name  Type
+_Name_ _Type_
 
-Name  X-value  Y-value  ...
-
- 
+_Name_ _X-value_ _Y-value_  ...
 
 **Parameters:**
 
-+-----------------------------------+-----------------------------------+
-| Name                              | name assigned to the curve.       |
-+-----------------------------------+-----------------------------------+
-| Type                              | the type of curve being defined:  |
-|                                   |                                   |
-|                                   | STORAGE / SHAPE / DIVERSION /     |
-|                                   | TIDAL /                           |
-|                                   |                                   |
-|                                   | PUMP1 / PUMP2 / PUMP3 / PUMP4 /   |
-|                                   | PUMP5 /                           |
-|                                   |                                   |
-|                                   | RATING / CONTROL / WEIR.          |
-+-----------------------------------+-----------------------------------+
-| X-value                           | an X (independent variable)       |
-|                                   | value.                            |
-+-----------------------------------+-----------------------------------+
-| Y-value                           | the Y (dependent variable) value  |
-|                                   | corresponding to X.               |
-+-----------------------------------+-----------------------------------+
+|           |                                                                                                                                                                    |
+| :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _Name_    | name assigned to the curve.                                                                                                                                        |
+| _Type_    | the type of curve being defined: <br> **STORAGE / SHAPE / DIVERSION / TIDAL /** <br> **PUMP1 / PUMP2 / PUMP3 / PUMP4 / PUMP5 /** <br> **RATING / CONTROL / WEIR**. |
+| _X-value_ | an X (independent variable) value.                                                                                                                                 |
+| _Y-value_ | the Y (dependent variable) value corresponding to X.                                                                                                               |
 
 **Remarks:**
 
-Each curve should have its name and type on the first line with its data
-points entered on subsequent lines.
+Each curve should have its name and type on the first line with its data points entered on subsequent lines.
 
-Multiple pairs of x-y values can appear on a line. If more than one line
-is needed, repeat the curve's name on subsequent lines.
+Multiple pairs of x-y values can appear on a line. If more than one line is needed, repeat the curve's name on subsequent lines.
 
 X-values must be entered in increasing order.
 
-Choices for curve type have the following meanings (flows are expressed
-in the user’s choice of flow units set in the [OPTIONS] section):
+Choices for curve type have the following meanings (flows are expressed in the user’s choice of flow units set in the [OPTIONS] section):
 
-  --------- ---------------------------------------------------------------------
-  STORAGE   surface area in ft2 (m2) v. depth in ft (m) for a storage unit node
-  --------- ---------------------------------------------------------------------
+- **STORAGE** surface area in ft<sup>2</sup> (m<sup>2</sup>) v. depth in ft (m) for a storage unit node
+- **SHAPE** width v. depth for a custom closed cross-section, both normalized with respect to full depth
+- **DIVERSION** diverted outflow v. total inflow for a flow divider node or a Custom inlet
+- **TIDAL** water surface elevation in ft (m) v. hour of the day for an outfall node
+- **PUMP1** pump outflow v. increment of inlet node volume in ft<sup>3</sup> (m<sup>3</sup>)
+- **PUMP2** pump outflow v. increment of inlet node depth in ft (m)
+- **PUMP3** pump outflow v. head difference between outlet and inlet nodes in ft (m) that has decreasing flow with increasing head
+- **PUMP4** pump outflow v. continuous inlet node depth in ft (m)
+- **PUMP5** pump outflow v. head difference between outlet and inlet nodes in ft (m) that has decreasing flow with increasing head
+- **RATING** flow v. head in ft (m) for an Outlet link or a Custom inlet
+- **CONTROL** control setting for a pump or flow regulator v. a controller variable (such as a node water level) in a modulated control; flow adjustment setting v. head for an LID unit’s underdrain
+- **WEIR** discharge coefficient for flow in CFS (CMS) v. head in ft (m)
 
-  ------- ----------------------------------------------------------------------------------------------
-  SHAPE   width v. depth for a custom closed cross-section, both normalized with respect to full depth
-  ------- ----------------------------------------------------------------------------------------------
+**Examples:**
 
-  ----------- ----------------------------------------------------------------------------
-  DIVERSION   diverted outflow v. total inflow for a flow divider node or a Custom inlet
-  ----------- ----------------------------------------------------------------------------
+    ; Storage curve (x = depth, y = surface area)
+    AC1  STORAGE
+    AC1  0  1000  2  2000  4  3500  6  4200  8  5000
 
-  ------- --------------------------------------------------------------------------
-  TIDAL   water surface elevation in ft (m) v. hour of the day for an outfall node
-  ------- --------------------------------------------------------------------------
+    ; Type 1 pump curve (x = inlet wet well volume, y = flow)
+    PC1  PUMP1
+    PC1  100  5  300  10  500  20
 
-  ------- ------------------------------------------------------------
-  PUMP1   pump outflow v. increment of inlet node volume in ft3 (m3)
-  ------- ------------------------------------------------------------
-
-  ------- ---------------------------------------------------------
-  PUMP2   pump outflow v. increment of inlet node depth in ft (m)
-  ------- ---------------------------------------------------------
-
-  ------- ------------------------------------------------------------------------------------------------------------------------
-  PUMP3   pump outflow v. head difference between outlet and inlet nodes in ft (m) that has decreasing flow with increasing head
-  ------- ------------------------------------------------------------------------------------------------------------------------
-
-  ------- -------------------------------------------------------
-  PUMP4   pump outflow v. continuous inlet node depth in ft (m)
-  ------- -------------------------------------------------------
-
-  ------- ------------------------------------------------------------------------------------------------------------------------
-  PUMP5   pump outflow v. head difference between outlet and inlet nodes in ft (m) that has decreasing flow with increasing head
-  ------- ------------------------------------------------------------------------------------------------------------------------
-
-  -------- -------------------------------------------------------------
-  RATING   flow v. head in ft (m) for an Outlet link or a Custom inlet
-  -------- -------------------------------------------------------------
-
-  --------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  CONTROL   control setting for a pump or flow regulator v. a controller variable (such as a node water level) in a modulated control; flow adjustment setting v. head for an LID unit’s underdrain
-  --------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-  ------ ---------------------------------------------------------------
-  WEIR   discharge coefficient for flow in CFS (CMS) v. head in ft (m)
-  ------ ---------------------------------------------------------------
-
- 
-
-Examples:
-
-; Storage curve (x = depth, y = surface area)
-
-AC1  STORAGE
-
-AC1  0  1000  2  2000  4  3500  6  4200  8  5000
-
- 
-
-; Type 1 pump curve (x = inlet wet well volume, y = flow)
-
-PC1  PUMP1
-
-PC1  100  5  300  10  500  20
-
- 
-
-; Type 5 pump curve (x = pump head, y = pump flow)
-
-PC2  PUMP5
-
-PC2  0  4
-
-PC2  4  2
-
-PC2  6  0
+    ; Type 5 pump curve (x = pump head, y = pump flow)
+    PC2  PUMP5
+    PC2  0  4
+    PC2  4  2
+    PC2  6  0
 
 <!---
   timeseries
 -->
 
-@page timeseries  [TIMESERIES]
-
+@page timeseries [TIMESERIES]
 
 **Purpose:**
 Describes how a quantity varies over time.
-
- 
 
 **Formats:**
 
@@ -3328,47 +2660,59 @@ Name  Time  Value  ...
 
 Name FILE  Fname
 
- 
-
 **Parameters:**
 
-  ------ -----------------------------------
-  Name   name assigned to the time series.
-  ------ -----------------------------------
+---
 
-  ------ -------------------------------------------------------------------------
-  Date   date in Month/Day/Year format (e.g., June 15, 2001 would be 6/15/2001).
-  ------ -------------------------------------------------------------------------
+Name name assigned to the time series.
 
-  ------ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Hour   24-hour military time (e.g., 8:40 pm would be 20:40) relative to the last date specified (or to midnight of the starting date of the simulation if no previous date was specified).
-  ------ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---
 
-  ------ ----------------------------------------------------------------------------------------------------------------------------------
-  Time   hours since the start of the simulation, expressed as a decimal number or as hours:minutes (where hours can be greater than 24).
-  ------ ----------------------------------------------------------------------------------------------------------------------------------
+---
 
-  ------- -------------------------------------------------------
-  Value   a value corresponding to the specified date and time.
-  ------- -------------------------------------------------------
+Date date in Month/Day/Year format (e.g., June 15, 2001 would be 6/15/2001).
 
-  ------- -------------------------------------------------------------
-  Fname   the name of a file in which the time series data are stored
-  ------- -------------------------------------------------------------
+---
 
- 
+---
+
+Hour 24-hour military time (e.g., 8:40 pm would be 20:40) relative to the last date specified (or to midnight of the starting date of the simulation if no previous date was specified).
+
+---
+
+---
+
+Time hours since the start of the simulation, expressed as a decimal number or as hours:minutes (where hours can be greater than 24).
+
+---
+
+---
+
+Value a value corresponding to the specified date and time.
+
+---
+
+---
+
+Fname the name of a file in which the time series data are stored
+
+---
 
 **Remarks:**
 
 There are two options for supplying the data for a time series:
 
-  ---- -------------------------------------------------------------------------------
-  i.   directly within this input file section as described by the first two formats
-  ---- -------------------------------------------------------------------------------
+---
 
-  ----- ------------------------------------------------------------
-  ii.   through an external data file named with the third format.
-  ----- ------------------------------------------------------------
+i. directly within this input file section as described by the first two formats
+
+---
+
+---
+
+ii. through an external data file named with the third format.
+
+---
 
 When direct data entry is used, multiple date-time-value or time-value
 entries can appear on a line. If more than one line is needed, the
@@ -3385,13 +2729,17 @@ directory than the SWMM input file.
 There are two options for describing the occurrence time of time series
 data:
 
-  --- -------------------------------------------------------------------------------------------------------------------
-  ·   as calendar date plus time of day (which requires that at least one date, at the start of the series, be entered)
-  --- -------------------------------------------------------------------------------------------------------------------
+---
 
-  --- -----------------------------------------------------
-  ·   as elapsed hours since the start of the simulation.
-  --- -----------------------------------------------------
+· as calendar date plus time of day (which requires that at least one date, at the start of the series, be entered)
+
+---
+
+---
+
+· as elapsed hours since the start of the simulation.
+
+---
 
 For the first method, dates need only be entered at points in time when
 a new day occurs.
@@ -3402,8 +2750,6 @@ constant value lasting over the recording interval specified for the
 rain gage which utilizes the time series. For all other types of time
 series, SWMM uses interpolation to estimate values at times that fall in
 between the recorded values.
-
- 
 
 **Examples:**
 
@@ -3427,8 +2773,6 @@ TS2           14:00 0.1
 
 TS2           15:00 0
 
- 
-
 ;Inflow hydrograph - time relative to start of simulation
 
 HY1  0  0  1.25 100  2:30 150  3.0 120  4.5 0
@@ -3439,39 +2783,40 @@ HY1  32:10 0  34.0 57  35.33 85  48.67 24  50 0
   patterns
 -->
 
-@page patterns  [PATTERNS]
-
+@page patterns [PATTERNS]
 
 **Purpose:**
 Specifies time patterns of dry weather flow or quality in the form of
 adjustment factors applied as multipliers to baseline values.
 
- 
-
 **Format:**
 
-  ------ --------- ---------------------------------
-  Name   MONTHLY   Factor1  Factor2  ...  Factor12
-  Name   DAILY     Factor1  Factor2  ...  Factor7
-  Name   HOURLY    Factor1  Factor2  ...  Factor24
-  Name   WEEKEND   Factor1  Factor2  ...  Factor24
-  ------ --------- ---------------------------------
+---
+
+Name MONTHLY Factor1  Factor2  ...  Factor12
+Name DAILY Factor1  Factor2  ...  Factor7
+Name HOURLY Factor1  Factor2  ...  Factor24
+Name WEEKEND Factor1  Factor2  ...  Factor24
+
+---
 
 **Parameters:**
 
-  ------ ------------------------------------
-  Name   name used to identify the pattern.
-  ------ ------------------------------------
+---
+
+Name name used to identify the pattern.
+
+---
 
 Factor1,
 
 Factor2,
 
-  ------ --------------------
-  etc.   multiplier values.
-  ------ --------------------
+---
 
- 
+etc. multiplier values.
+
+---
 
 **Remarks:**
 
@@ -3493,8 +2838,6 @@ additional line.
 The pattern factors are applied as multipliers to any baseline dry
 weather flows or quality concentrations supplied in the [DWF] section.
 
- 
-
 **Examples:**
 
 ; Day of week adjustment factors
@@ -3502,8 +2845,6 @@ weather flows or quality concentrations supplied in the [DWF] section.
 D1  DAILY  0.5  1.0  1.0  1.0  1.0  1.0  0.5
 
 D2  DAILY  0.8  0.9  1.0  1.1  1.0  0.9  0.8
-
- 
 
 ; Hourly adjustment factors
 
