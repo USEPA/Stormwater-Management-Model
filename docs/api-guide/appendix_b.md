@@ -2650,134 +2650,69 @@ Choices for curve type have the following meanings (flows are expressed in the u
 @page timeseries [TIMESERIES]
 
 **Purpose:**
+
 Describes how a quantity varies over time.
 
 **Formats:**
 
-Name  ( Date )  Hour  Value  ...
+_Name_ ( _Date_ ) _Hour_ _Value_ ...
 
-Name  Time  Value  ...
+_Name_ _Time_ _Value_ ...
 
-Name FILE  Fname
+_Name_ _FILE_ _Fname_
 
 **Parameters:**
 
----
+_Name_ -- name assigned to the time series.
 
-Name name assigned to the time series.
+_Date_ -- date in Month/Day/Year format (e.g., June 15, 2001 would be 6/15/2001).
 
----
+_Hour_ -- 24-hour military time (e.g., 8:40 pm would be 20:40) relative to the last date specified (or to midnight of the starting date of the simulation if no previous date was specified).
 
----
+_Time_ -- hours since the start of the simulation, expressed as a decimal number or as hours:minutes (where hours can be greater than 24).
 
-Date date in Month/Day/Year format (e.g., June 15, 2001 would be 6/15/2001).
+_Value_ -- a value corresponding to the specified date and time.
 
----
-
----
-
-Hour 24-hour military time (e.g., 8:40 pm would be 20:40) relative to the last date specified (or to midnight of the starting date of the simulation if no previous date was specified).
-
----
-
----
-
-Time hours since the start of the simulation, expressed as a decimal number or as hours:minutes (where hours can be greater than 24).
-
----
-
----
-
-Value a value corresponding to the specified date and time.
-
----
-
----
-
-Fname the name of a file in which the time series data are stored
-
----
+_Fname_ -- the name of a file in which the time series data are stored
 
 **Remarks:**
 
 There are two options for supplying the data for a time series:
 
----
+1. directly within this input file section as described by the first two formats
 
-i. directly within this input file section as described by the first two formats
+2. through an external data file named with the third format.
 
----
+When direct data entry is used, multiple date-time-value or time-value entries can appear on a line. If more than one line is needed, the table's name must be repeated as the first entry on subsequent lines.
 
----
+When an external file is used, each line in the file must use the same formats listed above, except that only one date-time-value (or time-value) entry is allowed per line. Any line that begins with a semicolon is considered a comment line and is ignored. Blank lines are also permitted. Enclose the external file name in double quotes if it contains spaces and include its full path if it resides in a different directory than the SWMM input file.
 
-ii. through an external data file named with the third format.
+There are two options for describing the occurrence time of time series data:
 
----
+- as calendar date plus time of day (which requires that at least one date, at the start of the series, be entered)
 
-When direct data entry is used, multiple date-time-value or time-value
-entries can appear on a line. If more than one line is needed, the
-table's name must be repeated as the first entry on subsequent lines.
+- as elapsed hours since the start of the simulation.
 
-When an external file is used, each line in the file must use the same
-formats listed above, except that only one date-time-value (or
-time-value) entry is allowed per line. Any line that begins with a
-semicolon is considered a comment line and is ignored. Blank lines are
-also permitted. Enclose the external file name in double quotes if it
-contains spaces and include its full path if it resides in a different
-directory than the SWMM input file.
+For the first method, dates need only be entered at points in time when a new day occurs.
 
-There are two options for describing the occurrence time of time series
-data:
-
----
-
-· as calendar date plus time of day (which requires that at least one date, at the start of the series, be entered)
-
----
-
----
-
-· as elapsed hours since the start of the simulation.
-
----
-
-For the first method, dates need only be entered at points in time when
-a new day occurs.
-
-For rainfall time series, it is only necessary to enter periods with
-non-zero rainfall amounts. SWMM interprets the rainfall value as a
-constant value lasting over the recording interval specified for the
-rain gage which utilizes the time series. For all other types of time
-series, SWMM uses interpolation to estimate values at times that fall in
-between the recorded values.
+For rainfall time series, it is only necessary to enter periods with non-zero rainfall amounts. SWMM interprets the rainfall value as a constant value lasting over the recording interval specified for the rain gage which utilizes the time series. For all other types of time series, SWMM uses interpolation to estimate values at times that fall in between the recorded values.
 
 **Examples:**
 
-; Hourly rainfall time series with dates specified using
+    ; Hourly rainfall time series with dates specified using
+    ; one data point per line to emphasize when dates change
+    TS1 6-15-2001 7:00  0.1
+    TS1           8:00  0.2
+    TS1           9:00  0.05
+    TS1           10:00 0
+    TS1 6-21-2001 4:00  0.2
+    TS2           5:00  0
+    TS2           14:00 0.1
+    TS2           15:00 0
 
-; one data point per line to emphasize when dates change
-
-TS1 6-15-2001 7:00  0.1
-
-TS1           8:00  0.2
-
-TS1           9:00  0.05
-
-TS1           10:00 0
-
-TS1 6-21-2001 4:00  0.2
-
-TS2           5:00  0
-
-TS2           14:00 0.1
-
-TS2           15:00 0
-
-;Inflow hydrograph - time relative to start of simulation
-
-HY1  0  0  1.25 100  2:30 150  3.0 120  4.5 0
-
-HY1  32:10 0  34.0 57  35.33 85  48.67 24  50 0
+    ;Inflow hydrograph - time relative to start of simulation
+    HY1  0  0  1.25 100  2:30 150  3.0 120  4.5 0
+    HY1  32:10 0  34.0 57  35.33 85  48.67 24  50 0
 
 <!---
   patterns
@@ -2786,72 +2721,48 @@ HY1  32:10 0  34.0 57  35.33 85  48.67 24  50 0
 @page patterns [PATTERNS]
 
 **Purpose:**
-Specifies time patterns of dry weather flow or quality in the form of
-adjustment factors applied as multipliers to baseline values.
+
+Specifies time patterns of dry weather flow or quality in the form of adjustment factors applied as multipliers to baseline values.
 
 **Format:**
 
----
-
-Name MONTHLY Factor1  Factor2  ...  Factor12
-Name DAILY Factor1  Factor2  ...  Factor7
-Name HOURLY Factor1  Factor2  ...  Factor24
-Name WEEKEND Factor1  Factor2  ...  Factor24
-
----
+|        |             |                                    |
+| :----- | :---------- | :--------------------------------- |
+| _Name_ | **MONTHLY** | _Factor1_ _Factor2_ ... _Factor12_ |
+| _Name_ | **DAILY**   | _Factor1_ _Factor2_ ... _Factor7_  |
+| _Name_ | **HOURLY**  | _Factor1_ _Factor2_ ... _Factor24_ |
+| _Name_ | **WEEKEND** | _Factor1_ _Factor2_ ... _Factor24_ |
 
 **Parameters:**
 
----
+_Name_ -- name used to identify the pattern.
 
-Name name used to identify the pattern.
+_Factor1_,
 
----
-
-Factor1,
-
-Factor2,
-
----
+_Factor2_,
 
 etc. multiplier values.
 
----
-
 **Remarks:**
 
-The MONTHLY format is used to set monthly pattern factors for dry
-weather flow constituents.
+The **MONTHLY** format is used to set monthly pattern factors for dry weather flow constituents.
 
-The DAILY format is used to set dry weather pattern factors for each day
-of the week, where Sunday is day 1.
+The **DAILY** format is used to set dry weather pattern factors for each day of the week, where Sunday is day 1.
 
-The HOURLY format is used to set dry weather factors for each hour of
-the day starting from midnight. If these factors are different for
-weekend days than for weekday days then the WEEKEND format can be used
-to specify hourly adjustment factors just for weekends.
+The **HOURLY** format is used to set dry weather factors for each hour of the day starting from midnight. If these factors are different for weekend days than for weekday days then the **WEEKEND** format can be used to specify hourly adjustment factors just for weekends.
 
-More than one line can be used to enter a pattern’s factors by repeating
-the pattern’s name (but not the pattern type) at the beginning of each
-additional line.
+More than one line can be used to enter a pattern’s factors by repeating the pattern’s name (but not the pattern type) at the beginning of each additional line.
 
-The pattern factors are applied as multipliers to any baseline dry
-weather flows or quality concentrations supplied in the [DWF] section.
+The pattern factors are applied as multipliers to any baseline dry weather flows or quality concentrations supplied in the [DWF] section.
 
 **Examples:**
 
-; Day of week adjustment factors
+    ; Day of week adjustment factors
+    D1  DAILY  0.5  1.0  1.0  1.0  1.0  1.0  0.5
+    D2  DAILY  0.8  0.9  1.0  1.1  1.0  0.9  0.8
 
-D1  DAILY  0.5  1.0  1.0  1.0  1.0  1.0  0.5
-
-D2  DAILY  0.8  0.9  1.0  1.1  1.0  0.9  0.8
-
-; Hourly adjustment factors
-
-H1 HOURLY  0.5 0.6 0.7 0.8 0.8 0.9
-
-H1         1.1 1.2 1.3 1.5 1.1 1.0
-
-H1         0.9 0.8 0.7 0.6 0.5 0.5
-
-H1         0.5 0.5 0.5 0.5 0.5 0.5
+    ; Hourly adjustment factors
+    H1 HOURLY  0.5 0.6 0.7 0.8 0.8 0.9
+    H1         1.1 1.2 1.3 1.5 1.1 1.0
+    H1         0.9 0.8 0.7 0.6 0.5 0.5
+    H1         0.5 0.5 0.5 0.5 0.5 0.5
