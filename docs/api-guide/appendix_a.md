@@ -1,4 +1,4 @@
-# Appendix A. SWMM5's API Functions {#appendix_a}
+## Appendix A. SWMM5's API Functions {#appendix-a}
 
 The following functions make up the SWMM 5 API:
 
