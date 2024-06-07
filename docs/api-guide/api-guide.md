@@ -3629,12 +3629,12 @@ Buildup is measured in pounds (kilograms) per unit of area (or curb length) for 
 
 The buildup functions associated with each function type are:
 
-| Type    | Function    | Equation[^*]                |
-| ------- | ----------- | --------------------------- |
-| **POW** | Power       | Min \f$ (C1, C2 t^{C3}) \f$ |
-| **EXP** | Exponential | \f$ C1 (1 – exp(-C2 t)) \f$ |
-| **SAT** | Saturation  | \f$ C1 t / (C3 + t) \f$     |
-| **EXT** | External    | See below                   |
+| Type    | Function    | Equation[^*]                   |
+| ------- | ----------- | ------------------------------ |
+| **POW** | Power       | Min \f$ (C1, C2 \, t^{C3}) \f$ |
+| **EXP** | Exponential | \f$ C1 (1 – exp(-C2 \, t)) \f$ |
+| **SAT** | Saturation  | \f$ C1 \, t / (C3 + t) \f$     |
+| **EXT** | External    | See below                      |
 
 [^*] t is antecedent dry days.
 
@@ -3674,11 +3674,11 @@ _BmpRmvl_ -- BMP removal efficiency (percent).
 
 The equations used for each type of washoff function are as follows:
 
-| Type | Function                 | Equation                                | Units      |
-| :--- | :----------------------- | :-------------------------------------- | :--------- |
-| EXP  | Exponential              | \f$ C1 (runoff)^{C2} \f$ <br> (buildup) | Mass/hour  |
-| RC   | Rating Curve             | \f$ C1 (runoff)^{C2} \f$                | Mass/sec   |
-| EMC  | Event Mean Concentration | \f$ C1 \f$                              | Mass/Liter |
+| Type | Function                 | Equation                         | Units      |
+| :--- | :----------------------- | :------------------------------- | :--------- |
+| EXP  | Exponential              | \f$C1 (runoff)^{C2} (buildup)\f$ | Mass/hour  |
+| RC   | Rating Curve             | \f$C1 (runoff)^{C2}\f$           | Mass/sec   |
+| EMC  | Event Mean Concentration | \f$C1\f$                         | Mass/Liter |
 
 Each washoff function expresses its results in different units.
 
