@@ -8,5 +8,6 @@
 build/
 nrtests/
 upload/
+docs/html
 
 *_export.h

@@ -940,17 +940,17 @@ Umc -- unsaturated zone moisture content at start of simulation (volumetric frac
 
 The flow coefficients are used in the following equation that determines the lateral groundwater flow rate based on groundwater and surface water elevations:
 
-\f[ Q_{L}  =  A1 (H_{gw}  –  H_{cb})^{B1}  –  A2 (H_{sw}  –  H_{cb})^{B2}  +  A3 H_{gw} H_{sw} \f]
+\f[Q_{L} = A1 (H_{gw} – H_{cb})^{B1} – A2 (H_{sw} – H_{cb})^{B2} + A3 H_{gw} H_{sw}\f]
 
 where:
 
-\f$ Q\_{L \f$ = lateral groundwater flow (cfs per acre or cms per hectare),
+\f$Q_{L}\f$ = lateral groundwater flow (cfs per acre or cms per hectare),
 
-\f$ H\_{gw} \f$ = height of saturated zone above the bottom of the aquifer (ft or m),
+\f$H_{gw}\f$ = height of saturated zone above the bottom of the aquifer (ft or m),
 
-\f$ H\_{sw} \f$ = height of surface water at the receiving node above the aquifer bottom (ft or m),
+\f$H_{sw}\f$ = height of surface water at the receiving node above the aquifer bottom (ft or m),
 
-\f$ H\_{cb} \f$ = height of the channel bottom above the aquifer bottom (ft or m).
+\f$H_{cb}\f$ = height of the channel bottom above the aquifer bottom (ft or m).
 
 <!---
   gwf
@@ -2562,7 +2562,7 @@ For each group of unit hydrographs, use one line to specify its rain gage follow
 
 The response ratio (R) is the fraction of a unit of rainfall depth that becomes RDII. The sum of the ratios for a set of three hydrographs does not have to equal 1.0.
 
-The recession limb ratio (K) is the ratio of the duration of the hydrograph’s recession limb to the time to peak (T) making the hydrograph time base equal to \f$ T\*(1+K) \f$ hours. The area under each unit hydrograph is 1 inch (or mm).
+The recession limb ratio (K) is the ratio of the duration of the hydrograph’s recession limb to the time to peak (T) making the hydrograph time base equal to \f$ T(1+K) \f$ hours. The area under each unit hydrograph is 1 inch (or mm).
 
 The optional initial abstraction parameters determine how much rainfall is lost at the start of a storm to interception and depression storage. If not supplied then the default is no initial abstraction.
 

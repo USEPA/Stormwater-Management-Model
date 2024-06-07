@@ -437,7 +437,7 @@ with the names of the input and report file as arguments.
 
 ---
 
-## Appendix A. SWMM5's API Functions {#appendix-a}
+## Appendix A. SWMM5's API Functions {#appendix_a}
 
 The following functions make up the SWMM 5 API:
 
@@ -1269,7 +1269,7 @@ The _date_ argument is an input parameter while the others are outputs.
 
 ---
 
-## Appendix B. SWMM5's Input File Format {#appendix-b}
+## Appendix B. SWMM5's Input File Format {#appendix_b}
 
 SWMM 5's input file is organized in sections, where each section begins with a keyword enclosed in square brackets. The various keywords are listed below. Section keywords can appear in mixed lower and upper case. The sections can appear in any arbitrary order in the input file, and not all sections must be present. Each section can contain one or more lines of data. Blank lines may appear anywhere in the file. A semicolon (;) can be used to indicate that what follows on the line is a comment, not data. Data items can appear in any column of a line.
 
@@ -3129,7 +3129,7 @@ The default inlet placement is **AUTOMATIC**, meaning that the program uses the 
   losses
 -->
 
-### [LOSSES] {#inlet_usage}
+### [LOSSES] {#losses}
 
 **Purpose:**
 
@@ -3692,7 +3692,7 @@ The buildup parameter in the **Exponential** function is the current total build
   treatment
 -->
 
-### [TREATMENT] {#washoff}
+### [TREATMENT] {#treatment}
 
 **Purpose:**
 
@@ -4129,7 +4129,7 @@ The pattern factors are applied as multipliers to any baseline dry weather flows
 
 ---
 
-## Appendix C. SWMM5's Output File Format {#appendix-c}
+## Appendix C. SWMM5's Output File Format {#appendix_c}
 
 The **Binary Output File** produced by the SWMM 5 computational engine consists of the following sections:
 
@@ -4248,7 +4248,7 @@ The **Object Properties** section of the binary output file produced by the SWMM
   reporting_variables
 -->
 
-### Reporting Variables {#object_properties}
+### Reporting Variables {#reporting_variables}
 
 The **Reporting Variables** section of the SWMM 5 binary output file contains the number and codes of each variable reported on. The items written to this section, all as 4-byte integers, are as follows:
 
@@ -4325,7 +4325,7 @@ The **Reporting Variables** section of the SWMM 5 binary output file contains th
   reporting_interval
 -->
 
-### Reporting Interval {#object_properties}
+### Reporting Interval {#reporting_interval}
 
 The **Reporting Interval** portion of the SWMM 5 binary output file consists of only two records:
 
