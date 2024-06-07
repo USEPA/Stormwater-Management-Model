@@ -2243,13 +2243,13 @@ The flow coefficients are used in the following equation that determines the lat
 
 where:
 
-\f$ Q\_{L \f$ = lateral groundwater flow (cfs per acre or cms per hectare),
+\f$Q_{L}\f$ = lateral groundwater flow (cfs per acre or cms per hectare),
 
-\f$ H\_{gw} \f$ = height of saturated zone above the bottom of the aquifer (ft or m),
+\f$H_{gw}\f$ = height of saturated zone above the bottom of the aquifer (ft or m),
 
-\f$ H\_{sw} \f$ = height of surface water at the receiving node above the aquifer bottom (ft or m),
+\f$H_{sw}\f$ = height of surface water at the receiving node above the aquifer bottom (ft or m),
 
-\f$ H\_{cb} \f$ = height of the channel bottom above the aquifer bottom (ft or m).
+\f$H_{cb}\f$ = height of the channel bottom above the aquifer bottom (ft or m).
 
 ---
 
