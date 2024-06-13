@@ -142,7 +142,6 @@ BOOST_AUTO_TEST_CASE(
 	BOOST_REQUIRE(error == 0);
 	
 	std::string originalOutputFilepath = std::string(originalFilepath).replace(startPos, extension.length(), ".out");
-	
 	SWMMOutputFile output_file(originalOutputFilepath);
 
 	int *origElementCount;
@@ -153,8 +152,13 @@ BOOST_AUTO_TEST_CASE(
 	int num_periods;
 	double startDate;
 	error = SMO_getTimes(output_file.m_handle, SMO_time::SMO_numPeriods, &num_periods);
+	BOOST_REQUIRE(error == 0);
 
-	SWMMOutputFile hotstart_output_file(output_filepath);
+	error = SMO_getStartDate(output_file.m_handle, &startDate);
+	BOOST_REQUIRE(error == 0);
+
+	std::string outputFilePath = std::string(filepath).replace(startPos, extension.length(), ".out");
+	SWMMOutputFile hotstart_output_file(outputFilePath);
 
 }
 
