@@ -21,10 +21,10 @@ concurrency:
 
 jobs:
   build_docs:
+    name: Build Docs
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    name: Build Docs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
