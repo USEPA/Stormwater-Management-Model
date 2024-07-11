@@ -1,16 +1,29 @@
-name: Build Docs
-
+name: Build and Deploy Docs
 on:
   push:
-    branches: [ master, develop, release, docs ]
-  pull_request:
-    branches: [ master, develop, release, docs ]
+    branches: [docs ]
 
-env:
-  OMP_NUM_THREADS: 1
-    
+  pull_request:
+    branches: [release, docs ]
+   # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+  # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build_docs:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     name: Build Docs
     runs-on: ubuntu-latest
     steps:
@@ -31,4 +44,8 @@ jobs:
         with:
           name: docs
           path: docs/html
+      
+      - name: Deploy Docs
+        id: deployment
+        uses: actions/deploy-pages@v4
 
