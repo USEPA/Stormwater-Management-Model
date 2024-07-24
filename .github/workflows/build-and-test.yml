@@ -70,10 +70,8 @@ jobs:
         python-version: '3.11'
     
     - name: Replace requirements
+      run: sed -i~ "s/https:\/\/github\.com/https:\/\/${{ env.USERNAME }}:${{ secrets.ACCESS_TOKEN }}@github\.com/g" requirements-swmm.txt
       shell: bash
-      run: | 
-        sed -i~ "s/https:\/\/github\.com/https:\/\/${{ env.USERNAME }}:${{ secrets.ACCESS_TOKEN }}@github\.com/g" requirements-swmm.txt
-        cat requirements-swmm.txt
 
     - name: Install requirements
       run: |
