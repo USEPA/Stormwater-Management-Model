@@ -71,12 +71,12 @@ jobs:
     
     - name: Replace requirements
       shell: bash
-      run: sed -i "s/https:\/\/github\.com/https:\/\/${{ env.USERNAME }}:${{ secrets.ACCESS_TOKEN }}@github\.com/g" requirements-swmm.txt
+      run: sed "s/https:\/\/github\.com/https:\/\/${{ env.USERNAME }}:${{ secrets.ACCESS_TOKEN }}@github\.com/g" < requirements-swmm.txt > requirements.txt
       
     - name: Install requirements
       run: |
         python -m pip install --upgrade pip
-        python -m pip install -r requirements-swmm.txt
+        python -m pip install -r requirements.txt
 
     - name: Build
       run: make.cmd /g "Visual Studio 16 2019"
