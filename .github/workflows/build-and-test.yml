@@ -10,6 +10,7 @@ env:
   OMP_NUM_THREADS: 1
   BUILD_HOME: build
   TEST_HOME: nrtests
+  USERNAME: michaeltryby
   PACKAGE_NAME:  vcpkg-export-20240724-151754.1.0.0
   PKG_NAME: vcpkg-export-20240724-151754
 
@@ -29,7 +30,6 @@ jobs:
     - name: Install boost-test
       env:
         REMOTE_STORE: "https://nuget.pkg.github.com/USEPA/index.json"
-        USERNAME: michaeltryby
       run: |
         nuget sources add -Name github -Source ${{ env.REMOTE_STORE }} -Username ${{ env.USERNAME }} -Password ${{ secrets.ACCESS_TOKEN }}
         nuget install ${{env.PKG_NAME}} -Source github
@@ -71,7 +71,7 @@ jobs:
 
     - name: Install requirements
       run: |
-        sed -i "s/https:\/\/github\.com/https:\/\/${{ env.USERNAME }}:${{ secrets.ACCESS_TOKEN}}@github\.com/g" requirements-swmm.txt
+        sed -i "s/https:\/\/github\.com/https:\/\/${{ env.USERNAME }}:${{ secrets.ACCESS_TOKEN }}@github\.com/g" requirements-swmm.txt
         python -m pip install --upgrade pip
         python -m pip install -r requirements-swmm.txt
 
