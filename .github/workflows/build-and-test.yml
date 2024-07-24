@@ -60,7 +60,7 @@ jobs:
     - name: Checkout ci-tools repo
       uses: actions/checkout@v3
       with:
-        repository: michaeltryby/ci-tools
+        repository: USEPA/swmm-ci-tools
         ref: master
         path: ci-tools
 
