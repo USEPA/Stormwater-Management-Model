@@ -71,6 +71,7 @@ jobs:
 
     - name: Install requirements
       run: |
+        sed -i "s/https:\/\/github\.com/https:\/\/${{ env.USERNAME }}:${{ secrets.ACCESS_TOKEN}}@github\.com/g" requirements-swmm.txt
         python -m pip install --upgrade pip
         python -m pip install -r requirements-swmm.txt
 
