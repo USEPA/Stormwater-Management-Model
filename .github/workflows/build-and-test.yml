@@ -71,7 +71,9 @@ jobs:
     
     - name: Replace requirements
       shell: bash
-      run: sed -i~ "s/https:\/\/github\.com/https:\/\/${{ env.USERNAME }}:${{ secrets.ACCESS_TOKEN }}@github\.com/g" requirements-swmm.txt
+      run: | 
+        sed -i~ "s/https:\/\/github\.com/https:\/\/${{ env.USERNAME }}:${{ secrets.ACCESS_TOKEN }}@github\.com/g" requirements-swmm.txt
+        cat requirements-swmm.txt
 
     - name: Install requirements
       run: |
