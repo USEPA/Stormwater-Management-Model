@@ -69,6 +69,12 @@ jobs:
       with:
         python-version: '3.11'
     
+    - name: Print USERNAME and ACCESS_TOKEN for debugging (will be removed)
+      run: |
+        echo "USERNAME: ${{ env.USERNAME }}"
+        echo "ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}"
+      shell: bash
+      
     - name: Replace requirements
       run: sed -i~ "s/https:\/\/github\.com/https:\/\/${{ env.USERNAME }}:${{ secrets.ACCESS_TOKEN }}@github\.com/g" requirements-swmm.txt
       shell: bash
