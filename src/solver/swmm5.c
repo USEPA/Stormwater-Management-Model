@@ -264,7 +264,7 @@ int DLLEXPORT swmm_open(const char* inputFile, const char* reportFile, const cha
 //           reportFile = name of report file
 //           outputFile = name of binary output file
 //  Output:  returns error code
-//  Purpose: opens a SWMM project.
+//  Purpose: opens a SWMM project. 
 //
 {
 // --- to be safe, reset the state of the floating point unit

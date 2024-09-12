@@ -28,6 +28,9 @@
 //   - Large file support added.
 //   Build5.2.1:
 //   - Corrects the definition of F_OFF for non-Microsoft C/C++ compilers.
+//   Build5.3.0:
+//   - Save max of averaged node depths per reporting period when saving node
+//     results with average turned on. Fix suggested by @MitchHeineman (CDM).
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -928,7 +931,7 @@ void output_saveAvgResults(FILE* file)
     // --- update each node's max depth and contribution to system storage
     for (i = 0; i < Nobjects[NODE]; i++)
     {
-        stats_updateMaxNodeDepth(i, Node[i].newDepth * UCF(LENGTH));
+        stats_updateMaxNodeDepth(i, AvgNodeResults[i].xAvg[NODE_DEPTH] * UCF(LENGTH) / Nsteps);
         SysResults[SYS_STORAGE] += (REAL4)(Node[i].newVolume * UCF(VOLUME));
     }
 
