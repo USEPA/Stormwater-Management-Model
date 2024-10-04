@@ -24,7 +24,7 @@ jobs:
 
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install boost-test
       env:
@@ -55,17 +55,17 @@ jobs:
 
     steps:
     - name: Checkout swmm repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Checkout ci-tools repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: USEPA/swmm-ci-tools
         ref: master
         path: ci-tools
 
     - name: Setup python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
