@@ -8,8 +8,18 @@
 #         US EPA ORD/CESER
 #
 
+if(APPLE)
+    set(
+      CMAKE_PREFIX_PATH
+        ../../deps/openmp-16.0.0-Darwin/
+    )
+endif()
 
-find_package(OpenMP)
+find_package(
+  OpenMP
+    COMPONENTS
+        C REQUIRED
+)
 
 
 # configure file groups
