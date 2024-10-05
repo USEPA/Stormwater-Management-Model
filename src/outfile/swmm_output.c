@@ -175,7 +175,12 @@ int EXPORT_OUT_API SMO_open(SMO_Handle p_handle, const char *path)
     if (p_data == NULL)
         return -1;
     else {
+
+#ifdef _MSC_VER
+        strncpy_s(p_data->name, MAXFILENAME, path, MAXFILENAME);
+#else
         strncpy(p_data->name, path, MAXFILENAME);
+#endif
 
         // Attempt to open binary output file for reading only
         if ((_fopen(&(p_data->file), path, "rb")) != 0)
@@ -526,8 +531,19 @@ int EXPORT_OUT_API SMO_getElementName(SMO_Handle p_handle, SMO_elementType type,
             *length = p_data->elementNames[idx].length;
             *name   = newCharArray(*length + 1);
             // Writes IDname and an additional null character to name
+
+
+#ifdef _MSC_VER
+            strncpy_s(
+                *name, 
+                (*length + 1) * sizeof(char),
+                p_data->elementNames[idx].IDname,
+                (*length + 1) * sizeof(char));
+#else
             strncpy(*name, p_data->elementNames[idx].IDname,
-                    (*length + 1) * sizeof(char));
+                (*length + 1) * sizeof(char));
+#endif
+
         }
     }
 
@@ -1036,7 +1052,12 @@ void errorLookup(int errcode, char *dest_msg, int dest_len)
             msg = ERR440;
     }
 
+#ifdef _MSC_VER
+    strncpy_s(dest_msg, MAXMSG, msg, MAXMSG);
+#else
     strncpy(dest_msg, msg, MAXMSG);
+#endif
+
 }
 
 // Local functions:

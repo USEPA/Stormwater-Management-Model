@@ -31,10 +31,14 @@
 //   - Refactored external inflow code.
 //   Build 5.2.4:
 //   - Additional arguments added to function link_getLossRate.
+//   Build 5.3.0:
+//   - Modified code to allow saving multiple hotstart files at different times.
 //-----------------------------------------------------------------------------
 
 #ifndef FUNCS_H
 #define FUNCS_H
+
+
 
 //-----------------------------------------------------------------------------
 //   Project Methods
@@ -163,8 +167,8 @@ void    output_saveResults(double reportTime);
 void    output_updateAvgResults(void);
 void    output_readDateTime(long period, DateTime *aDate);
 void    output_readSubcatchResults(long period, int index);
-void    output_readNodeResults(int long, int index);
-void    output_readLinkResults(int long, int index);
+void    output_readNodeResults(long period, int index);
+void    output_readLinkResults(long period, int index);
 
 //-----------------------------------------------------------------------------
 //   Groundwater Methods
@@ -398,6 +402,9 @@ void    iface_saveOutletResults(DateTime reportDate, FILE* file);
 //   Hot Start File Methods
 //-----------------------------------------------------------------------------
 int     hotstart_open(void);
+void    hotstart_save(void);
+int     hotstart_save_to_file(const char* hotstartFile);
+int     hotstart_is_valid(const char* hotstartFile, int *inputFileVersion);
 void    hotstart_close(void);
 
 //-----------------------------------------------------------------------------

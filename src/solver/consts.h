@@ -7,6 +7,13 @@
 //   Author:  L. Rossman
 //
 //   Various Constants
+//   
+//   Update history
+//   ==============
+//   Biuld 5.3.0
+//   - Added MAXHOTSTARTFILES constant to support saving multiple hotstart files
+//	   at different times.
+// 
 //-----------------------------------------------------------------------------
 
 #ifndef CONSTS_H
@@ -16,7 +23,7 @@
 // General Constants
 //------------------
 
-#define   VERSION            52004 
+#define   VERSION            53000 
 #define   MAGICNUMBER        516114522
 #define   EOFMARK            0x1A           // Use 0x04 for UNIX systems
 #define   MAXTITLE           3              // Max. # title lines
@@ -39,6 +46,7 @@
 /* DEPRECATED
 #define   MAXFILESIZE        2147483647L    // largest file size in bytes
 */
+#define   MAXHOTSTARTFILES   10     // largest file size in bytes
 
 //-----------------------------
 // Units factor in Manning Eqn.

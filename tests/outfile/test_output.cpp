@@ -1,17 +1,14 @@
-/*
- *   test_output.cpp
- *
- *   Created: 11/2/2017
- *   Author: Michael E. Tryby
- *           US EPA - ORD/NRMRL
- *
- *   Unit testing for SWMM outputapi using Boost Test.
- */
+/*!
+* \file est_output.cpp
+* \brief Unit testing for SWMM outputapi using Boost Test.
+* \author Michael E. Tryby (US EPA - ORD/NRMRL)
+* \date 11/2/2017
+* \note Travis installs libboost test version 1.5.4
+*/
 
-// NOTE: Travis installs libboost test version 1.5.4
 //#define BOOST_TEST_DYN_LINK
-
 #define BOOST_TEST_MODULE "output"
+#define BOOST_TEST_DYN_LINK
 #include <boost/test/included/unit_test.hpp>
 
 #include <math.h>
@@ -21,21 +18,27 @@
 
 #include "swmm_output.h"
 
+using namespace std;
+
 // NOTE: Reference data for the unit tests is currently tied to SWMM 5.1.7
 #define DATA_PATH "./Example1.out"
 
-using namespace std;
-
-// Checks for minimum number of correct decimal digits
-boost::test_tools::predicate_result check_cdd_float(std::vector<float>& test,
-    std::vector<float>& ref, long cdd_tol){
+/*!
+* \brief Check for minimum number of correct decimal digits
+* \param test vector of test data
+* \param ref vector of reference data
+* \param cdd_tol minimum number of correct decimal digits
+* \return true if minimum number of correct decimal digits is met
+*/
+boost::test_tools::predicate_result check_cdd_float(const std::vector<float>& test,
+    const std::vector<float>& ref, long cdd_tol){
 
     float tmp, min_cdd = 10.0;
 
     // TODO: What if the vectors aren't the same length?
 
-    std::vector<float>::iterator test_it;
-    std::vector<float>::iterator ref_it;
+    std::vector<float>::const_iterator test_it;
+    std::vector<float>::const_iterator ref_it;
 
     for (test_it = test.begin(), ref_it = ref.begin();
         (test_it < test.end()) && (ref_it < ref.end());
@@ -61,6 +64,13 @@ boost::test_tools::predicate_result check_cdd_float(std::vector<float>& test,
     return floor(min_cdd) >= cdd_tol;
 }
 
+
+/*!
+* \brief Check for string equality
+* \param test string to test
+* \param ref reference string
+* \return true if strings are equal
+*/
 boost::test_tools::predicate_result check_string(std::string test,
     std::string ref) {
 
@@ -70,8 +80,14 @@ boost::test_tools::predicate_result check_string(std::string test,
         return false;
 }
 
+/*!
+* \brief Test SWMM outputapi functions
+*/
 BOOST_AUTO_TEST_SUITE(test_output_auto)
 
+/*!
+* \brief Test the SMO_init function
+*/
 BOOST_AUTO_TEST_CASE(InitTest) {
     SMO_Handle p_handle = NULL;
 
@@ -287,7 +303,6 @@ BOOST_FIXTURE_TEST_CASE(test_getSystemSeries, Fixture) {
 
     BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
 }
-
 
 BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
     error = SMO_getSubcatchResult(p_handle, 1, 1, &array, &array_dim);

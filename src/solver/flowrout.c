@@ -87,7 +87,7 @@ void flowrout_init(int routingModel)
         dynwave_init();
 
         // --- initialize node & link depths if not using a hotstart file
-        if ( Fhotstart1.mode == NO_FILE )
+        if ( FhotstartInput.mode == NO_FILE )
         {
             initNodeDepths();
             initLinkDepths();

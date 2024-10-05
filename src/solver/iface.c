@@ -10,6 +10,8 @@
 //
 //   Build 5.2.0:
 //   - Support added for relative file names.
+//   Build 5.3.0:
+//   - Support added for saving multiple hotstart files at different times.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -75,8 +77,9 @@ int iface_readFileParams(char* tok[], int ntoks)
 //
 {
     char  k;
-    int   j;
+    int   i, j;
     char  fname[MAXFNAME+1];
+    double saveDateTime = 0, saveDate, saveTime;
 
     // --- determine file disposition and type
     if ( ntoks < 2 ) return error_setInpError(ERR_ITEMS, "");
@@ -86,6 +89,21 @@ int iface_readFileParams(char* tok[], int ntoks)
     if ( j < 0 ) return error_setInpError(ERR_KEYWORD, tok[1]);
     if ( ntoks < 3 ) return 0;
     sstrncpy(fname, tok[2], MAXFNAME);
+
+    if (ntoks == 5)
+    {
+        if (!datetime_strToDate(tok[3], &saveDate))
+        {
+            return error_setInpError(ERR_DATETIME, tok[3]);
+        }
+
+        if (!datetime_strToTime(tok[4], &saveTime))
+		{
+			return error_setInpError(ERR_DATETIME, tok[4]);
+		}
+
+        saveDateTime = saveDate + saveTime;
+    }
 
     // --- process file name
     switch ( j )
@@ -103,13 +121,25 @@ int iface_readFileParams(char* tok[], int ntoks)
       case HOTSTART_FILE:
         if ( k == USE_FILE )
         {
-            Fhotstart1.mode = k;
-            sstrncpy(Fhotstart1.name, addAbsolutePath(fname), MAXFNAME);
+            FhotstartInput.mode = k;
+            sstrncpy(FhotstartInput.name, addAbsolutePath(fname), MAXFNAME);
         }
         else if ( k == SAVE_FILE )
-        {
-            Fhotstart2.mode = k;
-            sstrncpy(Fhotstart2.name, addAbsolutePath(fname), MAXFNAME);
+        {   
+            for (i = 0; i < MAXHOTSTARTFILES; i++)
+			{
+				if (FhotstartOutputs[i].mode == NO_FILE)
+				{
+                    FhotstartOutputs[i].mode = k;
+                    sstrncpy(FhotstartOutputs[i].name, addAbsolutePath(fname), MAXFNAME);
+
+                    if(saveDateTime > 0)
+                        FhotstartOutputs[i].saveDateTime = saveDateTime;
+
+					break;
+				}
+			}
+
         }
         break;
 

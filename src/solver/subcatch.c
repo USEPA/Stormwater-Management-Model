@@ -37,6 +37,8 @@
 //   Build 5.1.015: 
 //   - Support added for multiple infiltration methods within a project.
 //   - Only pervious area depression storage receives monthly adjustment.
+//   Build 5.3.0:
+//   - Modified to use global constants defined in consts.h.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -49,7 +51,6 @@
 //-----------------------------------------------------------------------------
 // Constants 
 //-----------------------------------------------------------------------------
-const double MCOEFF    = 1.49;              // constant in Manning Eq.
 const double MEXP      = 1.6666667;         // exponent in Manning Eq.
 const double ODETOL    = 0.0001;            // acceptable error for ODE solver
 
@@ -403,7 +404,7 @@ void  subcatch_validate(int j)
 
         if ( area > 0.0 && Subcatch[j].subArea[i].N > 0.0 )
         {
-            Subcatch[j].subArea[i].alpha = MCOEFF * Subcatch[j].width / area *
+            Subcatch[j].subArea[i].alpha = PHI * Subcatch[j].width / area *
                 sqrt(Subcatch[j].slope) / Subcatch[j].subArea[i].N;
         }
     }
@@ -587,6 +588,7 @@ void subcatch_getRunon(int j)
     {
         pervArea = Subcatch[j].subArea[PERV].fArea *
                    (Subcatch[j].area - Subcatch[j].lidArea);
+
         q = lid_getFlowToPerv(j);
         if ( pervArea > 0.0 )
         {
@@ -669,12 +671,12 @@ double subcatch_getRunoff(int j, double tStep)
     // --- find volume of inflow to non-LID portion of subcatchment as existing
     //     ponded water + any runon volume from upstream areas;
     //     rainfall and snowmelt will be added as each sub-area is analyzed
-    nonLidArea = Subcatch[j].area - Subcatch[j].lidArea;
+    nonLidArea = max(0.0, Subcatch[j].area - Subcatch[j].lidArea);
     vRunon = Subcatch[j].runon * tStep * nonLidArea;
     Vinflow = vRunon + subcatch_getDepth(j) * nonLidArea;
 
     // --- find LID runon only if LID occupies full subcatchment
-    if ( nonLidArea == 0.0 )
+    if ( nonLidArea <= 0.0 )
         vRunon = Subcatch[j].runon * tStep * Subcatch[j].area;
 
     // --- get net precip. (rainfall + snowfall + snowmelt) on the 3 types
@@ -690,17 +692,20 @@ double subcatch_getRunoff(int j, double tStep)
 
     // --- examine each type of sub-area (impervious w/o depression storage,
     //     impervious w/ depression storage, and pervious)
-    if ( nonLidArea > 0.0 ) for (i = IMPERV0; i <= PERV; i++)
+    if (nonLidArea > 0.0)
     {
-        // --- get runoff from sub-area updating Vevap, Vpevap,
-        //     Vinfil & Voutflow)
-        area = nonLidArea * Subcatch[j].subArea[i].fArea;
-        Subcatch[j].subArea[i].runoff =
-            getSubareaRunoff(j, i, area, netPrecip[i], evapRate, tStep);
-        subAreaRunoff = Subcatch[j].subArea[i].runoff * area;
-        if (i == PERV) vPervRunoff = subAreaRunoff * tStep;
-        else           vImpervRunoff += subAreaRunoff * tStep;
-        runoff += subAreaRunoff;
+        for (i = IMPERV0; i <= PERV; i++)
+        {
+            // --- get runoff from sub-area updating Vevap, Vpevap,
+            //     Vinfil & Voutflow)
+            area = nonLidArea * Subcatch[j].subArea[i].fArea;
+            Subcatch[j].subArea[i].runoff =
+                getSubareaRunoff(j, i, area, netPrecip[i], evapRate, tStep);
+            subAreaRunoff = Subcatch[j].subArea[i].runoff * area;
+            if (i == PERV) vPervRunoff = subAreaRunoff * tStep;
+            else           vImpervRunoff += subAreaRunoff * tStep;
+            runoff += subAreaRunoff;
+        }
     }
 
     // --- evaluate any LID treatment provided (updating Vevap,
@@ -713,7 +718,7 @@ double subcatch_getRunoff(int j, double tStep)
     // --- update groundwater levels & flows if applicable
     if ( !IgnoreGwater && Subcatch[j].groundwater )
     {
-        gwater_getGroundwater(j, Vpevap, Vinfil+VlidInfil, tStep);
+        gwater_getGroundwater(j, Vpevap,  Vinfil+VlidInfil, tStep);
     }
 
     // --- save subcatchment's total loss rates (ft/s)

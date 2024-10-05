@@ -44,6 +44,7 @@ typedef struct
    //-----------------------------
    double        tp;              // present time on infiltration curve (sec)
    double        Fe;              // cumulative infiltration (ft)
+   double        Fmh;             // mod Horton cumulative infiltration (ft)   //(5.2.5)
 }  THorton;
 
 

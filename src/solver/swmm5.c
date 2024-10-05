@@ -42,6 +42,10 @@
 //   - Prevented possible infinite loop if swmm_step() called when ErrorCode > 0.
 //   - Prevented early exit from swmm_end() when ErrorCode > 0.
 //   - Support added for relative file names.
+//   Build 5.3.0:
+//   - Added support for saving hot start files at specific times.
+//   - Expanded SWMM api to save and use prescribed hotstart files.
+//   - Expanded SWMM api to allow setting some system options.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -170,10 +174,11 @@ static double getSavedNodeValue(int index, int property, int period);
 static double getSavedLinkValue(int index, int property, int period);
 static double getSystemValue(int property);
 static double getMaxRouteStep();
-static void   setNodeLatFlow(int index, double value);
-static void   setOutfallStage(int index, double value);
-static void   setLinkSetting(int index, double value);
-static void   setRoutingStep(double value);
+static int    setNodeLatFlow(int index, double value);
+static int    setOutfallStage(int index, double value);
+static int    setLinkSetting(int index, double value);
+static int    setRoutingStep(double value);
+static int    setSystemValue(int property, double value);
 static void   getAbsolutePath(const char* fname, char* absPath, size_t size);
 
 // Exception filtering function
@@ -183,11 +188,11 @@ static int  xfilter(int xc, char* module, double elapsedTime, long step);
 
 //=============================================================================
 
-int DLLEXPORT  swmm_run(const char *f1, const char *f2, const char *f3)
+int DLLEXPORT swmm_run(const char* inputFile, const char* reportFile, const char* outputFile)
 //
-//  Input:   f1 = name of input file
-//           f2 = name of report file
-//           f3 = name of binary output file
+//  Input:   inputFile = name of input file
+//           reportFile = name of report file
+//           outputFile = name of binary output file
 //  Output:  returns error code
 //  Purpose: runs a SWMM simulation.
 //
@@ -204,7 +209,7 @@ int DLLEXPORT  swmm_run(const char *f1, const char *f2, const char *f3)
     // --- open the files & read input data
     ErrorCode = 0;
     writecon("\n o  Retrieving project data");
-    swmm_open(f1, f2, f3);
+    swmm_open(inputFile, reportFile, outputFile);
 
     // --- run the simulation if input data OK
     if ( !ErrorCode )
@@ -253,13 +258,13 @@ int DLLEXPORT  swmm_run(const char *f1, const char *f2, const char *f3)
 
 //=============================================================================
 
-int DLLEXPORT swmm_open(const char *f1, const char *f2, const char *f3)
+int DLLEXPORT swmm_open(const char* inputFile, const char* reportFile, const char* outputFile)
 //
-//  Input:   f1 = name of input file
-//           f2 = name of report file
-//           f3 = name of binary output file
+//  Input:   inputFile  = name of input file
+//           reportFile = name of report file
+//           outputFile = name of binary output file
 //  Output:  returns error code
-//  Purpose: opens a SWMM project.
+//  Purpose: opens a SWMM project. 
 //
 {
 // --- to be safe, reset the state of the floating point unit
@@ -284,8 +289,8 @@ int DLLEXPORT swmm_open(const char *f1, const char *f2, const char *f3)
 
         // --- open a SWMM project
         strcpy(InpDir, "");
-        project_open(f1, f2, f3);
-        getAbsolutePath(f1, InpDir, sizeof(InpDir));
+        project_open(inputFile, reportFile, outputFile);
+        getAbsolutePath(inputFile, InpDir, sizeof(InpDir));
         if ( ErrorCode ) return ErrorCode;
         IsOpenFlag = TRUE;
         report_writeLogo();
@@ -405,6 +410,7 @@ int DLLEXPORT swmm_start(int saveResults)
 #endif
     return ErrorCode;
 }
+
 //=============================================================================
 
 int DLLEXPORT swmm_step(double *elapsedTime)
@@ -442,6 +448,9 @@ int DLLEXPORT swmm_step(double *elapsedTime)
         if ( SaveResultsFlag )
             saveResults();
 
+        // --- save hostart files if applicable
+        hotstart_save();
+
         // --- update elapsed time (days)
         if ( NewRoutingTime < RoutingDuration )
             ElapsedTime = NewRoutingTime / MSECperDAY;
@@ -463,7 +472,7 @@ int DLLEXPORT swmm_step(double *elapsedTime)
 
 //=============================================================================
 
-int  DLLEXPORT swmm_stride(int strideStep, double *elapsedTime)
+int DLLEXPORT swmm_stride(int strideStep, double *elapsedTime)
 //
 //  Input:   strideStep = number of seconds to advance the simulation
 //           elapsedTime = current elapsed time in decimal days
@@ -507,6 +516,66 @@ int  DLLEXPORT swmm_stride(int strideStep, double *elapsedTime)
     else ElapsedTime = 0.0;
     *elapsedTime = ElapsedTime;
     return ErrorCode;
+}
+
+//=============================================================================
+
+int DLLEXPORT swmm_useHotStart(const char* hotStartFile)
+//
+//  Input:   hotStartFile = filepath to hotstart file to use
+//  Output:  returns error code
+//  Purpose: Sets the hotstart file to use for simulation. Errors does not terminate simulation unless
+//  there is a prior terminating error.
+{
+    int errorCode = 0;
+    int fileVersion = 0;
+    char  fname[MAXFNAME + 1];
+
+    if (ErrorCode)
+        return ErrorCode;
+    else if (!IsOpenFlag)
+        return (ErrorCode = ERR_API_NOT_OPEN);
+    else if (IsStartedFlag)
+        return (ErrorCode = ERR_API_NOT_ENDED);
+
+    sstrncpy(fname, hotStartFile, MAXFNAME);
+
+    // Try to open the hotstart file first to see if it is valid
+    errorCode = hotstart_is_valid(addAbsolutePath(fname), &fileVersion);
+    if (errorCode)
+	{
+		return errorCode;
+	}
+    else
+    {
+        FhotstartInput.mode = USE_FILE;
+        sstrncpy(FhotstartInput.name, addAbsolutePath(fname), MAXFNAME);
+    }
+
+    return errorCode;
+}
+
+//=============================================================================
+
+int DLLEXPORT swmm_saveHotStart(const char* hotStartFile)
+//
+//  Input:   hotStartFile = filepath to hotstart file to save
+//  Output:  returns error code
+//  Purpose: Saves hotstart file at the current simulation time
+{
+    int errorCode = 0;
+
+    if (ErrorCode)
+        return ErrorCode;
+    else if (!IsOpenFlag)
+        return (ErrorCode = ERR_API_NOT_OPEN);
+    else if (!IsStartedFlag)
+        return (ErrorCode = ERR_API_NOT_STARTED);
+
+   errorCode = hotstart_save_to_file(hotStartFile);
+
+   return errorCode;
+   
 }
 
 //=============================================================================
@@ -612,7 +681,6 @@ void saveResults()
 
 }
 
-
 //=============================================================================
 
 int DLLEXPORT swmm_end(void)
@@ -666,7 +734,7 @@ int DLLEXPORT swmm_report()
 
 //=============================================================================
 
-void  DLLEXPORT swmm_writeLine(const char *line)
+void DLLEXPORT swmm_writeLine(const char *line)
 //
 //  Input:   line = a character string
 //  Output:  returns an error code
@@ -705,7 +773,7 @@ int DLLEXPORT swmm_close()
 
 //=============================================================================
 
-int  DLLEXPORT swmm_getMassBalErr(float *runoffErr, float *flowErr,
+int DLLEXPORT swmm_getMassBalErr(float *runoffErr, float *flowErr,
                                   float *qualErr)
 //
 //  Input:   none
@@ -731,7 +799,7 @@ int  DLLEXPORT swmm_getMassBalErr(float *runoffErr, float *flowErr,
 
 //=============================================================================
 
-int  DLLEXPORT swmm_getVersion()
+int DLLEXPORT swmm_getVersion()
 //
 //  Input:   none
 //  Output:  returns SWMM engine version number
@@ -757,7 +825,7 @@ int DLLEXPORT swmm_getWarnings()
 
 //=============================================================================
 
-int  DLLEXPORT swmm_getError(char *errMsg, int msgLen)
+int DLLEXPORT swmm_getError(char *errMsg, int msgLen)
 //
 //  Input:   errMsg = character array to hold error message text
 //           msgLen = maximum size of errMsg
@@ -768,6 +836,7 @@ int  DLLEXPORT swmm_getError(char *errMsg, int msgLen)
     // --- copy text of last error message into errMsg
     if (ErrorCode > 0 && strlen(ErrorMsg) == 0)
         error_getMsg(ErrorCode, ErrorMsg);
+
     sstrncpy(errMsg, ErrorMsg, msgLen);
 
     // --- remove leading line feed from errMsg
@@ -777,39 +846,56 @@ int  DLLEXPORT swmm_getError(char *errMsg, int msgLen)
 
 //=============================================================================
 
-int  DLLEXPORT swmm_getCount(int objType)
+int DLLEXPORT swmm_getErrorFromCode(int errorCode, char *outErrMsg[1024])
+//
+//  Input:   errorCode = error code number
+//  Output:  outErrMsg = error message text
+//  Purpose: retrieves the text of the error message that corresponds to the
+//           error code number.
+{
+    char err_msg[MAXMSG];
+	error_getMsg(errorCode, err_msg);
+    sstrncpy(*outErrMsg, err_msg, MAXMSG);
+
+	return 0;
+}
+
+//=============================================================================
+
+int DLLEXPORT swmm_getCount(int objType)
 //
 //  Input:   objType = a type of SWMM object
-//  Output:  returns the number of objects;
+//  Output:  returns the number of objects or error code;
 //  Purpose: retrieves the number of objects of a specific type.
 {
     if (!IsOpenFlag)
-        return 0;
+        return ERR_API_NOT_OPEN;
     if (objType < swmm_GAGE || objType > swmm_LINK)
-        return 0;
+        return ERR_API_OBJECT_TYPE;
     return Nobjects[objType];
 }
 
 //=============================================================================
 
-void  DLLEXPORT swmm_getName(int objType, int index, char *name, int size)
+int DLLEXPORT swmm_getName(int objType, int index, char *name, int size)
 //
 //  Input:   objType = a type of SWMM object
 //           index = the object's index in the array of objects
 //           name = a character array
 //           size = size of the name array
-//  Output:  name = the object's ID name;
+//  Output:  name = the object's ID name; 
+//           error code
 //  Purpose: retrieves the ID name of an object.
 {
     char *idName = NULL;
 
     name[0] = '\0';
     if (!IsOpenFlag)
-        return;
+        return ERR_API_NOT_OPEN;
     if (objType < swmm_GAGE || objType > swmm_LINK)
-        return;
+        return ERR_API_OBJECT_TYPE;
     if (index < 0 || index >= Nobjects[objType])
-        return;
+        return ERR_API_OBJECT_INDEX;
     switch (objType)
     {
         case GAGE:     idName = Gage[index].ID;     break;
@@ -819,27 +905,29 @@ void  DLLEXPORT swmm_getName(int objType, int index, char *name, int size)
     }
     if (idName)
         sstrncpy(name, idName, size);
+
+    return 0;
 }
 
 //=============================================================================
 
-int  DLLEXPORT swmm_getIndex(int objType, const char *name)
+int DLLEXPORT swmm_getIndex(int objType, const char *name)
 //
 //  Input:   objType = a type of SWMM object
 //           name = the object's ID name
-//  Output:  returns the object's position in the array of like objects;
+//  Output:  returns the object's position in the array of like objects or error code;
 //  Purpose: retrieves the index of a named object.
 {
     if (!IsOpenFlag)
-        return -1;
+        return ERR_API_NOT_OPEN;
     if (objType < swmm_GAGE || objType > swmm_LINK)
-        return -1;
+        return ERR_API_OBJECT_TYPE;
     return project_findObject(objType, name);
 }
 
 //=============================================================================
 
-double  DLLEXPORT swmm_getValue(int property, int index)
+double DLLEXPORT swmm_getValue(int property, int index)
 //
 //  Input:   property = an object's property code
 //           index = the object's index in the array of like objects
@@ -848,7 +936,7 @@ double  DLLEXPORT swmm_getValue(int property, int index)
 //  Purpose: retrieves the value of an object's property.
 {
     if (!IsOpenFlag)
-        return 0;
+        return ERR_API_NOT_OPEN;
     if (property < 100)
         return getSystemValue(property);
     if (property < 200)
@@ -859,67 +947,84 @@ double  DLLEXPORT swmm_getValue(int property, int index)
         return getNodeValue(property, index);
     if (property < 500)
         return getLinkValue(property, index);
-    return 0;
+
+    return ERR_API_PROPERTY_TYPE;
 }
 
 //=============================================================================
 
-void  DLLEXPORT swmm_setValue(int property, int index, double value)
+int DLLEXPORT swmm_setValue(int property, int index, double value)
 //
 //  Input:   property = an object's property code
 //           index = the object's index in the array of like objects
 //           value = the property's new value
-//  Output:  none
+//  Output:  returns error code
 //  Purpose: sets the value of an object's property.
 {
     if (!IsOpenFlag)
-        return;
+        return ERR_API_NOT_OPEN;
+
+    if (property < 100)
+		return setSystemValue(property, value);
+
+
     switch (property)
     {
     case swmm_GAGE_RAINFALL:
         if (index < 0 || index >= Nobjects[GAGE])
-            return;
-        if (value >= 0.0)
+            return ERR_API_OBJECT_INDEX;
+        else if (value >= 0.0)
+        {
             Gage[index].apiRainfall = value;
-        return;
+            return 0;
+        }
+        else
+            return ERR_API_PROPERTY_VALUE;
+
     case swmm_SUBCATCH_RPTFLAG:
-        if (!IsStartedFlag && index >= 0 && index < Nobjects[SUBCATCH])
+        if(IsStartedFlag)
+          return ERR_API_NOT_ENDED;
+        else if (index >= 0 && index < Nobjects[SUBCATCH])
+        {
             Subcatch[index].rptFlag = (value > 0.0);
-        return;            
+            return 0;            
+		}
+		else
+			return ERR_API_OBJECT_INDEX;
     case swmm_NODE_LATFLOW:
-        setNodeLatFlow(index, value);
-        return;
+        return setNodeLatFlow(index, value);
     case swmm_NODE_HEAD:
-        setOutfallStage(index, value);
-        return;
+        return setOutfallStage(index, value);
     case swmm_NODE_RPTFLAG:
-        if (!IsStartedFlag && index >= 0 && index < Nobjects[NODE])
+        if (IsStartedFlag)
+            return ERR_API_NOT_ENDED;
+        else if (index >= 0 && index < Nobjects[NODE])
+        {
             Node[index].rptFlag = (value > 0.0);
-        return;            
+            return 0;
+        }
+		else
+			return ERR_API_OBJECT_INDEX;
     case swmm_LINK_SETTING:
-        setLinkSetting(index, value);
-        return;
+        return setLinkSetting(index, value);
     case swmm_LINK_RPTFLAG:
-        if (!IsStartedFlag && index >= 0 && index < Nobjects[LINK])
+        if (IsStartedFlag)
+            return ERR_API_NOT_ENDED;
+        if (index >= 0 && index < Nobjects[LINK])
+        {
             Link[index].rptFlag = (value > 0.0);
-        return;            
-    case swmm_ROUTESTEP:
-        setRoutingStep(value);
-        return;
-    case swmm_REPORTSTEP:
-        if (!IsStartedFlag && value > 0)
-            ReportStep = (int)value;                
-        return;
-    case swmm_NOREPORT:
-        if (!IsStartedFlag)
-            RptFlags.disabled = (value > 0.0);
-        return;
+            return 0;
+        }
+        else
+            return ERR_API_OBJECT_INDEX;
+    default:
+        return ERR_API_PROPERTY_TYPE;
     }
 }
 
 //=============================================================================
 
-double  DLLEXPORT swmm_getSavedValue(int property, int index, int period)
+double DLLEXPORT swmm_getSavedValue(int property, int index, int period)
 //
 //  Input:   property = an object's property code
 //           index = the object's index in the array of like objects
@@ -946,7 +1051,7 @@ double  DLLEXPORT swmm_getSavedValue(int property, int index, int period)
 
 //=============================================================================
 
-void  DLLEXPORT swmm_decodeDate(double date, int *year, int *month, int *day,
+void DLLEXPORT swmm_decodeDate(double date, int *year, int *month, int *day,
       int *hour, int *minute, int *second, int *dayOfWeek)
 //
 //  Input:  date = an encoded date in decimal days
@@ -1126,90 +1231,126 @@ double getLinkValue(int property, int index)
 double getSystemValue(int property)
 //
 //  Input:   property = a system property code
-//  Output:  returns current property value
+//  Output:  returns current property value or an error code
 //  Purpose: retrieves current value of a system property.
 {
-    switch (property)
-    {
-        case swmm_STARTDATE:
-          return StartDateTime;
-        case swmm_CURRENTDATE:
-          return StartDateTime + ElapsedTime;
-        case swmm_ELAPSEDTIME:
-          return ElapsedTime;
-        case swmm_ROUTESTEP:
-          return RouteStep;
-        case swmm_MAXROUTESTEP:
-          return getMaxRouteStep();
-        case swmm_REPORTSTEP:
-          return ReportStep;
-        case swmm_TOTALSTEPS:
-          return Nperiods;
-        case swmm_NOREPORT:
-          return RptFlags.disabled;
-        case swmm_FLOWUNITS:
-          return FlowUnits;
-        default:
-          return 0;
-    }
+	switch (property)
+	{
+	case swmm_STARTDATE:
+		return StartDateTime;
+	case swmm_ENDDATE:
+		return EndDateTime;
+	case swmm_REPORTSTART:
+		return ReportStart;
+	case swmm_CURRENTDATE:
+		return StartDateTime + ElapsedTime;
+	case swmm_ELAPSEDTIME:
+		return ElapsedTime;
+	case swmm_ROUTESTEP:
+		return RouteStep;
+	case swmm_MAXROUTESTEP:
+		return getMaxRouteStep();
+	case swmm_REPORTSTEP:
+		return ReportStep;
+	case swmm_TOTALSTEPS:
+		return Nperiods;
+	case swmm_NOREPORT:
+		return RptFlags.disabled;
+	case swmm_FLOWUNITS:
+		return FlowUnits;
+	case swmm_UNITSYSTEM:
+		return UnitSystem;
+	case swmm_SURCHARGEMETHOD:
+		return SurchargeMethod;
+	case swmm_ALLOWPONDING:
+		return AllowPonding;
+	case swmm_INERTIADAMPING:
+		return InertDamping;
+    case swmm_NORMALFLOWLTD:
+        return NormalFlowLtd;
+    case swmm_SKIPSTEADYSTATE:
+        return SkipSteadyState;
+    case swmm_IGNORERAINFALL:
+		return IgnoreRainfall;
+    case swmm_RULESTEP:
+		return RuleStep;
+    case swmm_SWEEPSTART:
+        return SweepStart;
+	default:
+		return ERR_API_PROPERTY_TYPE;
+	}
 }
 
 //=============================================================================
 
-void  setNodeLatFlow(int index, double value)
+int setNodeLatFlow(int index, double value)
 //
 //  Input:   index = the index of a node
 //           value = the node's external inflow value
-//  Output:  none
+//  Output:  returns an error code
 //  Purpose: sets the value of a node's external inflow.
 {
     if (index < 0 || index >= Nobjects[NODE])
-        return;
+        return ERR_API_OBJECT_INDEX;
     Node[index].apiExtInflow = value / UCF(FLOW);
+    return 0;
 }
 
 //=============================================================================
 
-void  setOutfallStage(int index, double value)
+int setOutfallStage(int index, double value)
 //
 //  Input:   index = the index of an outfall node
 //           value = the outfall's fixed stage elevation
-//  Output:  none
+//  Output:  returns an error code
 //  Purpose: sets the value of an outfall node's fixed stage.
 {
     TNode* node;
     if (index < 0 || index >= Nobjects[NODE])
-        return;
+        return ERR_API_OBJECT_INDEX;
+
     node = &Node[index];
+
     if (node->type != OUTFALL)
-        return;
+        return ERR_API_OBJECT_TYPE;
+
     Outfall[node->subIndex].fixedStage = value / UCF(LENGTH);
     Outfall[node->subIndex].type = FIXED_OUTFALL;
+
+    return 0;
 }
 
 //=============================================================================
 
-void  setLinkSetting(int index, double value)
+int setLinkSetting(int index, double value)
 //
 //  Input:   index = the index of a link
 //           value = the link's new setting
-//  Output:  node
+//  Output:  returns an error code
 //  Purpose: sets the value of a link's setting.
 {
     TLink* link;
     if (index < 0 || index >= Nobjects[LINK])
-        return;
+        return ERR_API_OBJECT_INDEX;
+
     link = &Link[index];
     if (value < 0.0  || link->type == CONDUIT)
-        return;
+        return ERR_API_OBJECT_INDEX;
+
     if (link->type != PUMP && value > 1.0)
         value = 1.0;
+
     if (link->targetSetting == value)
-        return;
+        return 0;
+
     link->targetSetting = value;
+    
     if (link->targetSetting * link->setting == 0.0)
         link->timeLastSet = StartDateTime + ElapsedTime;
+
     link_setSetting(index, 0.0);
+
+    return 0;
 }
 
 //=============================================================================
@@ -1227,7 +1368,7 @@ double getSavedDate(int period)
 
 //=============================================================================
 
-double  getSavedSubcatchValue(int property, int index, int period)
+double getSavedSubcatchValue(int property, int index, int period)
 //
 //  Input:   property = index of a computed property
 //           index = index of a subcatchment
@@ -1262,7 +1403,7 @@ double  getSavedSubcatchValue(int property, int index, int period)
 
 //=============================================================================
 
-double  getSavedNodeValue(int property, int index, int period)
+double getSavedNodeValue(int property, int index, int period)
 //
 //  Input:   property = index of a computed property
 //           index = index of a node
@@ -1301,7 +1442,7 @@ double  getSavedNodeValue(int property, int index, int period)
 
 //=============================================================================
 
-double  getSavedLinkValue(int property, int index, int period)
+double getSavedLinkValue(int property, int index, int period)
 //
 //  Input:   property = index of a computed property
 //           index = index of a link
@@ -1357,18 +1498,88 @@ double getMaxRouteStep()
 
 //=============================================================================
 
-void  setRoutingStep(double value)
+int setRoutingStep(double value)
 //
 //  Input:   value = a routing time step (in decimal seconds)
-//  Output:  none
+//  Output:  returns an error code
 //  Purpose: sets the value of the current flow routing time step.
 {
     if (value <= 0.0)
-        return;
+        return ERR_API_PROPERTY_VALUE;
+
     if (value <= MinRouteStep)
         value = MinRouteStep;
+
     CourantFactor = 0.0;
     RouteStep = value;
+    
+    return 0;
+}
+
+//=============================================================================
+
+int setSystemValue(int property, double value)
+//
+//  Input:   property = a system property code
+//           value = the property's new value
+//  Output:  returns an error code
+//  Purpose: sets the value of a system property.
+{
+    int y, m, d, h, min, s;
+
+    if (IsStartedFlag)
+        return ERR_API_NOT_ENDED;
+
+	switch (property)
+	{
+    case swmm_ROUTESTEP:
+        return setRoutingStep(value);
+    case swmm_REPORTSTEP:
+        if (value > 0)
+        {
+            ReportStep = (int)value;
+            return 0;
+        }
+		else
+		{
+			return ERR_API_PROPERTY_VALUE;
+		}
+    
+    case swmm_NOREPORT:
+        RptFlags.disabled = (value > 0.0);
+        return 0;
+	case swmm_STARTDATE:
+		StartDateTime = value;
+        datetime_decodeDate(value, &y, &m, &d);
+        datetime_decodeTime(value, &h, &min, &s);
+        StartDate = datetime_encodeDate(y, m, d);
+        StartTime = datetime_encodeTime(h, min, s);
+        TotalDuration = floor((EndDate - StartDate) * SECperDAY + (EndTime - StartTime) * SECperDAY);
+        // convert total duration to milliseconds
+        TotalDuration *= 1000.0;
+        return 0;
+    case swmm_ENDDATE:
+		EndDateTime = value;
+        datetime_decodeDate(value, &y, &m, &d);
+        datetime_decodeTime(value, &h, &min, &s);
+        EndDate = datetime_encodeDate(y, m, d);
+        EndTime = datetime_encodeTime(h, min, s);
+        TotalDuration = floor((EndDate - StartDate) * SECperDAY + (EndTime - StartTime) * SECperDAY);
+        // convert total duration to milliseconds
+        TotalDuration *= 1000.0;
+        return 0;
+    case swmm_REPORTSTART:
+        ReportStart = value;
+        datetime_decodeDate(value, &y, &m, &d);
+        datetime_decodeTime(value, &h, &min, &s);
+        ReportStartDate = datetime_encodeDate(y, m, d);
+        ReportStartTime = datetime_encodeTime(h, min, s);
+        return 0;
+
+    default:
+        return ERR_API_PROPERTY_TYPE;
+	}
+
 }
 
 //=============================================================================
@@ -1553,7 +1764,7 @@ DateTime getDateTime(double elapsedMsec)
 
 //=============================================================================
 
-int  isRelativePath(const char* fname)
+static int isRelativePath(const char* fname)
 //
 //  Input:   fname = a file name
 //  Output:  returns 1 if fname's path is relative or 0 if absolute

@@ -56,6 +56,9 @@
 //   - Default Inertial Damping changed from SOME to PARTIAL_DAMPING.
 //   - Default CourantFactor changed from 0 (fixed routing time step)
 //   - to 0.75 (variable time step)
+//   Build 5.3.0:
+//   - Fixed potential precision loss when calculating TotalDuration.
+//   - Memory allocation and reading options for saving multiple hotstart files
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -162,7 +165,7 @@ void project_readInput()
     else
     {
         // --- compute total duration of simulation in seconds
-        TotalDuration = floor((EndDateTime - StartDateTime) * SECperDAY);
+        TotalDuration = floor((EndDate - StartDate) * SECperDAY + (EndTime - StartTime) * SECperDAY);
 
         // --- reporting step must be <= total duration
         if ( (double)ReportStep > TotalDuration )
@@ -284,7 +287,7 @@ void project_close()
 
 //=============================================================================
 
-int  project_init(void)
+int project_init(void)
 //
 //  Input:   none
 //  Output:  returns an error code
@@ -331,7 +334,7 @@ int  project_init(void)
 
 //=============================================================================
 
-int   project_addObject(int type, char *id, int n)
+int project_addObject(int type, char *id, int n)
 //
 //  Input:   type = object type
 //           id   = object ID string
@@ -374,7 +377,7 @@ int project_findObject(int type, const char *id)
 
 //=============================================================================
 
-char  *project_findID(int type, char *id)
+char *project_findID(int type, char *id)
 //
 //  Input:   type = object type
 //           id   = ID name being sought
@@ -387,7 +390,7 @@ char  *project_findID(int type, char *id)
 
 //=============================================================================
 
-double ** project_createMatrix(int nrows, int ncols)
+double **project_createMatrix(int nrows, int ncols)
 //
 //  Input:   nrows = number of rows (0-based)
 //           ncols = number of columns (0-based)
@@ -801,6 +804,8 @@ void initPointers()
     Snowmelt = NULL;
     Event    = NULL;
     MemPoolAllocated = FALSE;
+    FhotstartOutputs = (TFile*)calloc(MAXHOTSTARTFILES, sizeof(TFile)); //allow users to save up to 10 hotstart files
+
 }
 
 //=============================================================================
@@ -823,20 +828,27 @@ void setDefaults()
    Fclimate.mode   = NO_FILE; 
    Frunoff.mode    = NO_FILE;
    Frdii.mode      = NO_FILE;
-   Fhotstart1.mode = NO_FILE;
-   Fhotstart2.mode = NO_FILE;
+   FhotstartInput.mode = NO_FILE;
    Finflows.mode   = NO_FILE;
    Foutflows.mode  = NO_FILE;
    Frain.file      = NULL;
    Fclimate.file   = NULL;
    Frunoff.file    = NULL;
    Frdii.file      = NULL;
-   Fhotstart1.file = NULL;
-   Fhotstart2.file = NULL;
+   FhotstartInput.file = NULL;
    Finflows.file   = NULL;
    Foutflows.file  = NULL;
    Fout.file       = NULL;
    Fout.mode       = NO_FILE;
+
+   
+   for (i = 0; i < MAXHOTSTARTFILES; i++)
+   {
+       FhotstartOutputs[i].file = NULL;
+       FhotstartOutputs[i].mode = NO_FILE;
+       FhotstartOutputs[i].saveDateTime = 0;
+   }
+
 
    // Analysis options
    UnitSystem      = US;               // US unit system
@@ -1031,6 +1043,7 @@ void createObjects()
     UnitHyd  = (TUnitHyd *)  calloc(Nobjects[UNITHYD],  sizeof(TUnitHyd));
     Snowmelt = (TSnowmelt *) calloc(Nobjects[SNOWMELT], sizeof(TSnowmelt));
     Shape    = (TShape *)    calloc(Nobjects[SHAPE],    sizeof(TShape));
+  
 
     // --- create array of detailed routing event periods
     Event = (TEvent *) calloc((size_t)NumEvents+1, sizeof(TEvent));
@@ -1297,6 +1310,7 @@ void deleteObjects()
     FREE(Snowmelt);
     FREE(Shape);
     FREE(Event);
+    FREE(FhotstartOutputs);
 }
 
 //=============================================================================

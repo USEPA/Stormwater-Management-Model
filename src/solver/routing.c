@@ -37,6 +37,9 @@
 //   Build 5.2.0:
 //   - Support added for street flow capture and sewer backflow thru inlets.
 //   - Shell sort replaces insertion sort for sorting Event array.
+//   Build 5.3.0:
+//   - Route flows when there is at least one node/link to ensure nodal seepage
+//     is applied even with node only models.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -119,7 +122,7 @@ int routing_open()
 
     // --- initialize flow and quality routing systems
     flowrout_init(RouteModel);
-    if ( Fhotstart1.mode == NO_FILE ) qualrout_init();
+    if ( FhotstartInput.mode == NO_FILE ) qualrout_init();
 
     // --- initialize routing events
     if ( NumEvents > 0 ) sortEvents();
@@ -410,8 +413,9 @@ int  routeFlow(int routingModel, double routingStep)
     for (j = 0; j < Nobjects[NODE]; j++)
         node_initFlows(j, routingStep);
 
-    // --- route flow through the drainage network
-    if ( Nobjects[LINK] > 0 )
+    // --- route flow through the drainage network if there is at least
+    //     one link or node
+    if ( Nobjects[LINK] > 0 || Nobjects[NODE] > 0)
     {
         stepCount = flowrout_execute(SortedLinks, routingModel, routingStep);
     }

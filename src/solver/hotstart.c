@@ -38,6 +38,8 @@
 //   Build 5.2.5:
 //   - Fixed bug in fwrite count argument when writing catchment landuse pollutant
 //     build-up.
+//   Build 5.3.0
+//   - Modified code to allow saving multiple hotstart files at different times.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -61,44 +63,168 @@ static int fileVersion;
 //-----------------------------------------------------------------------------
 // Function declarations
 //-----------------------------------------------------------------------------
-static int  openHotstartFile1(void); 
-static int  openHotstartFile2(void);       
+static int  initializeFromHotstartFile(void); 
+static int  initializeSaveHotstartFile(TFile *hotstartFile);
 static void readRunoff(void);
-static void saveRunoff(void);
+static void saveRunoff(TFile *hotstartFile);
 static void readRouting(void);
-static void saveRouting(void);
-static int  readFloat(float *x, FILE* f);
-static int  readDouble(double* x, FILE* f);
+static void saveRouting(TFile *hotstartFile);
+static int  readFloat(float *x, FILE *f);
+static int  readDouble(double *x, FILE *f);
 
 //=============================================================================
 
 int hotstart_open()
 {
+    int i;
+    int errorCode = 0;
+
     // --- open hot start files
-    if ( !openHotstartFile1() ) return FALSE;       //input hot start file
-    if ( !openHotstartFile2() ) return FALSE;       //output hot start file
+    if ( !initializeFromHotstartFile() ) return FALSE;       //input hot start file
+
+    for (i = 0; i < MAXHOTSTARTFILES; i++)
+    {
+        if ((errorCode = initializeSaveHotstartFile(&FhotstartOutputs[i])))
+        {
+            report_writeErrorMsg(errorCode, FhotstartOutputs[i].name);
+            return FALSE;      
+        }
+    }
+
     return TRUE;
 }
 
 //=============================================================================
 
-void hotstart_close()
-{
-    if ( Fhotstart2.file )
+void hotstart_save()
+//
+//  Input:   none
+//  Output:  none
+//  Purpose: Saves hotstart files whose specified save time has arrived.
+{  
+    int i;
+
+    for (i = 0; i < MAXHOTSTARTFILES; i++)
     {
-        saveRunoff();
-        saveRouting();
-        fclose(Fhotstart2.file);
+        if (FhotstartOutputs[i].file && 
+            FhotstartOutputs[i].saveDateTime > 0 && 
+            NewRoutingTime >= FhotstartOutputs[i].saveDateTime)
+        {
+            saveRunoff(&FhotstartOutputs[i]);
+            saveRouting(&FhotstartOutputs[i]);
+            fclose(FhotstartOutputs[i].file);
+            FhotstartOutputs[i].file = NULL;
+        }
     }
 }
 
 //=============================================================================
 
-int openHotstartFile1()
+int hotstart_save_to_file(const char *hotstartFile)
+//
+//  Input:   hotStartFile = filepath to hotstart file to use
+//  Output:  returns error code
+//  Purpose: Saves and closes hotstart files that are to be written at end of simulation.
+{
+    int error_code = 0;
+    char  fname[MAXFNAME + 1];
+    TFile *hotstart = (TFile *) calloc(1, sizeof(TFile));
+
+    hotstart->file = NULL;
+    hotstart->mode = SAVE_FILE;
+    hotstart->saveDateTime = 0;
+
+    sstrncpy(fname, hotstartFile, MAXFNAME);
+    sstrncpy(hotstart->name, addAbsolutePath(fname), MAXFNAME);
+
+    if(error_code = initializeSaveHotstartFile(hotstart))
+	{
+		FREE(hotstart);
+		return error_code;
+	}
+    else
+    {
+		saveRunoff(hotstart);
+		saveRouting(hotstart);
+		fclose(hotstart->file);
+		hotstart->file = NULL;
+		FREE(hotstart);
+		return error_code;
+	}
+}
+
+//=============================================================================
+
+int hotstart_is_valid(const char *hotstartFile, int *inputFileVersion)
+//
+//  Input:   hotStartFile     = filepath to hotstart file to check
+//  Output:  inputFileVersion = version of hotstart file
+//           returns error code
+{
+	char  fStamp[]     = "SWMM5-HOTSTART";
+	char  fileStamp[]  = "SWMM5-HOTSTART";
+	char  fStampx[]    = "SWMM5-HOTSTARTx";
+	char  fileStamp2[] = "SWMM5-HOTSTART2";
+	char  fileStamp3[] = "SWMM5-HOTSTART3";
+	char  fileStamp4[] = "SWMM5-HOTSTART4";
+	FILE* f;
+
+	// --- try to open the file
+	if ( (f = fopen(hotstartFile, "r+b")) == NULL)
+	{
+		return ERR_HOTSTART_FILE_OPEN;
+	}
+
+	// --- check that file contains proper header records
+	fread(fStampx, sizeof(char), strlen(fileStamp2), f);
+	if      ( strcmp(fStampx, fileStamp4) == 0 ) *inputFileVersion = 4;
+	else if ( strcmp(fStampx, fileStamp3) == 0 ) *inputFileVersion = 3;
+	else if ( strcmp(fStampx, fileStamp2) == 0 ) *inputFileVersion = 2;
+	else
+	{
+		rewind(f);
+		fread(fStamp, sizeof(char), strlen(fileStamp), f);
+		if ( strcmp(fStamp, fileStamp) != 0 )
+		{
+			fclose(f);
+			return ERR_HOTSTART_FILE_FORMAT;
+		}
+		*inputFileVersion = 1;
+	}
+    
+    fclose(f);
+    return 0;
+}
+
+//=============================================================================
+
+void hotstart_close()
 //
 //  Input:   none
 //  Output:  none
-//  Purpose: opens a previously saved routing hotstart file.
+//  Purpose: Saves and closes hotstart files that are to be written at end of simulation.
+{
+    int i;
+
+    for (i =0; i< MAXHOTSTARTFILES; i++)
+	{
+		if (FhotstartOutputs[i].file  && FhotstartOutputs[i].saveDateTime == 0)
+		{
+			saveRunoff(&FhotstartOutputs[i]);
+			saveRouting(&FhotstartOutputs[i]);
+			fclose(FhotstartOutputs[i].file);
+		}
+	}
+
+}
+
+//=============================================================================
+
+int initializeFromHotstartFile()
+//
+//  Input:   none
+//  Output:  True for successful initialization of hotstart file or False otherwise
+//  Purpose: initializes model state a previously saved routing hotstart file.
 //
 {
     int   nSubcatch;
@@ -107,36 +233,40 @@ int openHotstartFile1()
     int   nPollut;
     int   nLandUses;
     int   flowUnits;
-    char  fStamp[]     = "SWMM5-HOTSTART";
-    char  fileStamp[]  = "SWMM5-HOTSTART";
-    char  fStampx[]    = "SWMM5-HOTSTARTx";
-    char  fileStamp2[] = "SWMM5-HOTSTART2";
-    char  fileStamp3[] = "SWMM5-HOTSTART3";
-    char  fileStamp4[] = "SWMM5-HOTSTART4";
+    int   errorCode;
 
     // --- try to open the file
-    if ( Fhotstart1.mode != USE_FILE ) return TRUE;
-    if ( (Fhotstart1.file = fopen(Fhotstart1.name, "r+b")) == NULL)
-    {
-        report_writeErrorMsg(ERR_HOTSTART_FILE_OPEN, Fhotstart1.name);
+    if ( FhotstartInput.mode != USE_FILE ) return TRUE;
+    errorCode = hotstart_is_valid(FhotstartInput.name, &fileVersion);
+  
+    if (errorCode)
+    {   
+        if (errorCode == ERR_HOTSTART_FILE_OPEN)
+		{
+			report_writeErrorMsg(
+				ERR_HOTSTART_FILE_OPEN, 
+				FhotstartInput.name);
+		}
+		else
+		{
+			report_writeErrorMsg(errorCode, "");
+		}
         return FALSE;
     }
 
-    // --- check that file contains proper header records
-    fread(fStampx, sizeof(char), strlen(fileStamp2), Fhotstart1.file);
-    if      ( strcmp(fStampx, fileStamp4) == 0 ) fileVersion = 4;
-    else if ( strcmp(fStampx, fileStamp3) == 0 ) fileVersion = 3;
-    else if ( strcmp(fStampx, fileStamp2) == 0 ) fileVersion = 2;
+    FhotstartInput.file = fopen(FhotstartInput.name, "r+b");
+    // --- read header records from the file
+    if (fileVersion > 1)
+    {
+        char fStampx[] = "SWMM5-HOTSTARTx";
+        char fileStamp2[] = "SWMM5-HOTSTART2";
+        fread(fStampx, sizeof(char), strlen(fileStamp2), FhotstartInput.file);
+    }
     else
     {
-        rewind(Fhotstart1.file);
-        fread(fStamp, sizeof(char), strlen(fileStamp), Fhotstart1.file);
-        if ( strcmp(fStamp, fileStamp) != 0 )
-        {
-            report_writeErrorMsg(ERR_HOTSTART_FILE_FORMAT, "");
-            return FALSE;
-        }
-        fileVersion = 1;
+        char  fStamp[] = "SWMM5-HOTSTART";
+		char  fileStamp[] = "SWMM5-HOTSTART";
+		fread(fStamp, sizeof(char), strlen(fileStamp), FhotstartInput.file);
     }
 
     nSubcatch = -1;
@@ -147,18 +277,18 @@ int openHotstartFile1()
     flowUnits = -1;
     if ( fileVersion >= 2 )
     {    
-        fread(&nSubcatch, sizeof(int), 1, Fhotstart1.file);
+        fread(&nSubcatch, sizeof(int), 1, FhotstartInput.file);
     }
     else nSubcatch = Nobjects[SUBCATCH];
     if ( fileVersion >= 3 )
     {
-        fread(&nLandUses, sizeof(int), 1, Fhotstart1.file);
+        fread(&nLandUses, sizeof(int), 1, FhotstartInput.file);
     }
     else nLandUses = Nobjects[LANDUSE];
-    fread(&nNodes, sizeof(int), 1, Fhotstart1.file);
-    fread(&nLinks, sizeof(int), 1, Fhotstart1.file);
-    fread(&nPollut, sizeof(int), 1, Fhotstart1.file);
-    fread(&flowUnits, sizeof(int), 1, Fhotstart1.file);
+    fread(&nNodes, sizeof(int), 1, FhotstartInput.file);
+    fread(&nLinks, sizeof(int), 1, FhotstartInput.file);
+    fread(&nPollut, sizeof(int), 1, FhotstartInput.file);
+    fread(&flowUnits, sizeof(int), 1, FhotstartInput.file);
     if ( nSubcatch != Nobjects[SUBCATCH] 
     ||   nLandUses != Nobjects[LANDUSE]
     ||   nNodes    != Nobjects[NODE]
@@ -173,20 +303,21 @@ int openHotstartFile1()
     // --- read contents of the file and close it
     if ( fileVersion >= 3 ) readRunoff();
     readRouting();
-    fclose(Fhotstart1.file);
+    fclose(FhotstartInput.file);
     if ( ErrorCode ) return FALSE;
     else return TRUE;
 }
 
 //=============================================================================
 
-int openHotstartFile2()
+int initializeSaveHotstartFile(TFile *hotstartFile)
 //
-//  Input:   none
-//  Output:  none
+//  Input:   hotStartFile = filepath to hotstart file to use
+//  Output:  returns error code
 //  Purpose: opens a new routing hotstart file to save results to.
 //
 {
+    int   error_code = 0;
     int   nSubcatch;
     int   nLandUses;
     int   nNodes;
@@ -196,11 +327,13 @@ int openHotstartFile2()
     char  fileStamp[] = "SWMM5-HOTSTART4";
 
     // --- try to open file
-    if ( Fhotstart2.mode != SAVE_FILE ) return TRUE;
-    if ( (Fhotstart2.file = fopen(Fhotstart2.name, "w+b")) == NULL)
+    if (hotstartFile->mode != SAVE_FILE ) 
+        return 0;
+
+    if ( (hotstartFile->file = fopen(hotstartFile->name, "w+b")) == NULL)
     {
-        report_writeErrorMsg(ERR_HOTSTART_FILE_OPEN, Fhotstart2.name);
-        return FALSE;
+        error_code = ERR_HOTSTART_FILE_OPEN;
+        return error_code;
     }
 
     // --- write file stamp & number of objects to file
@@ -210,45 +343,45 @@ int openHotstartFile2()
     nLinks = Nobjects[LINK];
     nPollut = Nobjects[POLLUT];
     flowUnits = FlowUnits;
-    fwrite(fileStamp, sizeof(char), strlen(fileStamp), Fhotstart2.file);
-    fwrite(&nSubcatch, sizeof(int), 1, Fhotstart2.file);
-    fwrite(&nLandUses, sizeof(int), 1, Fhotstart2.file);
-    fwrite(&nNodes, sizeof(int), 1, Fhotstart2.file);
-    fwrite(&nLinks, sizeof(int), 1, Fhotstart2.file);
-    fwrite(&nPollut, sizeof(int), 1, Fhotstart2.file);
-    fwrite(&flowUnits, sizeof(int), 1, Fhotstart2.file);
-    return TRUE;
+    fwrite(fileStamp, sizeof(char), strlen(fileStamp), hotstartFile->file);
+    fwrite(&nSubcatch, sizeof(int), 1, hotstartFile->file);
+    fwrite(&nLandUses, sizeof(int), 1, hotstartFile->file);
+    fwrite(&nNodes, sizeof(int), 1, hotstartFile->file);
+    fwrite(&nLinks, sizeof(int), 1, hotstartFile->file);
+    fwrite(&nPollut, sizeof(int), 1, hotstartFile->file);
+    fwrite(&flowUnits, sizeof(int), 1, hotstartFile->file);
+    return error_code;
 }
 
 //=============================================================================
 
-void  saveRouting()
+void saveRouting(TFile *hotstartFile)
 //
-//  Input:   none
+//  Input:   hotStartFile = hotstart file to use
 //  Output:  none
 //  Purpose: saves current state of all nodes and links to hotstart file.
 //
 {
     int   i, j;
-    float x[3];
+    float x[3] = { 0 };
 
     for (i = 0; i < Nobjects[NODE]; i++)
     {
         x[0] = (float)Node[i].newDepth;
         x[1] = (float)Node[i].newLatFlow;
-        fwrite(x, sizeof(float), 2, Fhotstart2.file);
+        fwrite(x, sizeof(float), 2, hotstartFile->file);
 
         if ( Node[i].type == STORAGE )
         {
             j = Node[i].subIndex;
             x[0] = (float)Storage[j].hrt;
-            fwrite(&x[0], sizeof(float), 1, Fhotstart2.file);
+            fwrite(&x[0], sizeof(float), 1, hotstartFile->file);
         }
 
         for (j = 0; j < Nobjects[POLLUT]; j++)
         {
             x[0] = (float)Node[i].newQual[j];
-            fwrite(&x[0], sizeof(float), 1, Fhotstart2.file);
+            fwrite(&x[0], sizeof(float), 1, hotstartFile->file);
         }
     }
     for (i = 0; i < Nobjects[LINK]; i++)
@@ -256,11 +389,11 @@ void  saveRouting()
         x[0] = (float)Link[i].newFlow;
         x[1] = (float)Link[i].newDepth;
         x[2] = (float)Link[i].setting;
-        fwrite(x, sizeof(float), 3, Fhotstart2.file);
+        fwrite(x, sizeof(float), 3, hotstartFile->file);
         for (j = 0; j < Nobjects[POLLUT]; j++)
         {
             x[0] = (float)Link[i].newQual[j];
-            fwrite(&x[0], sizeof(float), 1, Fhotstart2.file);
+            fwrite(&x[0], sizeof(float), 1, hotstartFile->file);
         }
     }
 }
@@ -277,8 +410,8 @@ void readRouting()
 {
     int   i, j;
     float x;
-    double xgw[4];
-    FILE* f = Fhotstart1.file;
+    double xgw[4] = { 0 };
+    FILE* f = FhotstartInput.file;
 
     // --- for file format 2, assign GW moisture content and lower depth
     if ( fileVersion == 2 )
@@ -356,16 +489,16 @@ void readRouting()
 
 //=============================================================================
 
-void  saveRunoff(void)
+void saveRunoff(TFile *hotstartFile)
 //
-//  Input:   none
+//  Input:   hotStartFile = hotstart file to use
 //  Output:  none
 //  Purpose: saves current state of all subcatchments to hotstart file.
 //
 {
     int   i, j, k;
-    double x[6];
-    FILE*  f = Fhotstart2.file;
+    double x[6] = { 0 };
+    FILE*  f = hotstartFile->file;
 
     for (i = 0; i < Nobjects[SUBCATCH]; i++)
     {
@@ -430,7 +563,7 @@ void  saveRunoff(void)
 
 //=============================================================================
 
-void  readRunoff()
+void readRunoff()
 //
 //  Input:   none
 //  Output:  none
@@ -438,8 +571,8 @@ void  readRunoff()
 //
 {
     int    i, j, k;
-    double x[6];
-    FILE*  f = Fhotstart1.file;
+    double x[6] = { 0 };
+    FILE*  f = FhotstartInput.file;
 
     for (i = 0; i < Nobjects[SUBCATCH]; i++)
     {

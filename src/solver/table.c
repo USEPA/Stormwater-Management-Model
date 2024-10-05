@@ -30,6 +30,9 @@
 //   - Support added for relative file names.
 //   Build 5.2.2:
 //   - Prevent re-reading a time series file from start once end is reached.
+//   Build 5.3.0:
+//   - Check for comment first before parsing line when reading table to 
+//     prevent overflow of arrays when comment line is very long.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -852,12 +855,12 @@ int  table_parseFileLine(char* line, TTable* table, double* x, double* y)
     DateTime d;              // day portion of date/time value
     DateTime t;              // time portion of date/time value
 
-    // --- get 3 string tokens from line and check if its a comment
-    n = sscanf(line, "%s %s %s", s1, s2, s3);
-
     // --- return if line is blank or is a comment
     tStr = strtok(line, SEPSTR);
     if ( tStr == NULL || *tStr == ';' ) return -1;
+
+    // --- get 3 string tokens from line and check if its a comment
+    n = sscanf(line, "%s %s %s", s1, s2, s3);
 
     // --- line only has a time and a value
     if ( n == 2 )

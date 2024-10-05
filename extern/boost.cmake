@@ -10,9 +10,9 @@
 
 
 if(WIN32)
-    set(Boost_USE_STATIC_LIBS       ON)
+    set(Boost_USE_STATIC_LIBS ON)
 else()
-    set(Boost_USE_STATIC_LIBS       OFF)
+    set(Boost_USE_STATIC_LIBS OFF)
     add_definitions(-DBOOST_ALL_DYN_LINK)
 endif()
 
