@@ -79,7 +79,7 @@ void    writeLinkLoads(void);
 
 #define WRITE(x) (report_writeLine((x)))
 
-static char   FlowFmt[6];
+static char   FlowFmt[7];
 static double Vcf;
 
 //=============================================================================
@@ -92,8 +92,10 @@ void statsrpt_writeReport()
 //
 {
     // --- set number of decimal places for reporting flow values
-    if ( FlowUnits == MGD || FlowUnits == CMS ) sstrncpy(FlowFmt, "%9.3f", 5);
-    else sstrncpy(FlowFmt, "%9.2f", 5);
+    if ( FlowUnits == MGD || FlowUnits == CMS ) 
+        sstrncpy(FlowFmt, " %8.3f", 6);
+    else 
+        sstrncpy(FlowFmt, " %8.2f", 6);
 
     // --- conversion factor from cu. ft. to mil. gallons or megaliters
     if (UnitSystem == US) Vcf = 7.48 / 1.0e6;
