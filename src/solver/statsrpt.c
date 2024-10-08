@@ -31,8 +31,8 @@
 //   - Calculation of % Evaporation and % Exfiltration losses for storage
 //     units was corrected.
 //   Build 5.2.5
-//   - Changed flow format to scientific to prevent the merging of extremely 
-//     large flows that make it difficult to interpret results.
+//   - Add padding to flow format to prevent fields from running  together 
+//     in the event of a width overflow.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
