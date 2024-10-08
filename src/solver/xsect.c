@@ -34,10 +34,6 @@
 //   - Support added for Street cross sections.
 //   Build 5.2.2:
 //   - Feasibility check added to Mod. Baskethandle & Rect.-Round shapes.
-//   Build 5.2.5:
-//   - Addressing inconsistent results for custom sized elliptical pipes.
-//     Stems from inccorect equations for pipe full area and hydraulic radius
-//     for elliptical pipes from SWMM 4.4.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -573,8 +569,8 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
             // --- length of major axis
             if ( p[1] < 0.0 ) return FALSE;
             xsect->wMax = p[1]/ucf;
-            xsect->aFull = 0.8117 * xsect->yFull * xsect->wMax;
-            xsect->rFull = 0.2448 * sqrt(xsect->yFull * xsect->wMax);
+            xsect->aFull = 1.2692 * xsect->yFull * xsect->yFull;
+            xsect->rFull = 0.3061 * xsect->yFull;
         }
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = xsect->sFull;
@@ -601,8 +597,8 @@ int xsect_setParams(TXsect *xsect, int type, double p[], double ucf)
             // --- length of minor axis
             xsect->yFull = p[0]/ucf;
             xsect->wMax = p[1]/ucf;
-            xsect->aFull = 0.8117 * xsect->yFull * xsect->wMax;
-            xsect->rFull = 0.2448 * sqrt(xsect->yFull * xsect->wMax);
+            xsect->aFull = 1.2692 * xsect->wMax * xsect->wMax;
+            xsect->rFull = 0.3061 * xsect->wMax;
         }
         xsect->sFull = xsect->aFull * pow(xsect->rFull, 2./3.);
         xsect->sMax  = xsect->sFull;
