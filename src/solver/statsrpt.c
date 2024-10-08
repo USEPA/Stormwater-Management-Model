@@ -92,8 +92,8 @@ void statsrpt_writeReport()
 //
 {
     // --- set number of decimal places for reporting flow values
-    if ( FlowUnits == MGD || FlowUnits == CMS ) sstrncpy(FlowFmt, "%9.3g", 5);
-    else sstrncpy(FlowFmt, "%9.2g", 5);
+    if ( FlowUnits == MGD || FlowUnits == CMS ) sstrncpy(FlowFmt, "%9.3f", 5);
+    else sstrncpy(FlowFmt, "%9.2f", 5);
 
     // --- conversion factor from cu. ft. to mil. gallons or megaliters
     if (UnitSystem == US) Vcf = 7.48 / 1.0e6;
