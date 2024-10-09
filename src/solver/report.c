@@ -153,21 +153,12 @@ int report_readOptions(char* tok[], int ntoks)
                 report_writeWarningMsg(WARN13, tok[t]);
                 continue;
             }
-                
-            
+
             switch ( m )
             {
-              case SUBCATCH:  
-                Subcatch[j].rptFlag = TRUE;
-                break;
-              
-              case NODE:      
-                Node[j].rptFlag = TRUE;
-                break;
-              
-              case LINK:      
-                Link[j].rptFlag = TRUE;
-                break;
+              case SUBCATCH:  Subcatch[j].rptFlag = TRUE;  break;
+              case NODE:      Node[j].rptFlag = TRUE;  break;
+              case LINK:      Link[j].rptFlag = TRUE;  break;
             }
         }
     }
