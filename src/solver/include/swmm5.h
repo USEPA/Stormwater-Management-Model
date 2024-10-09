@@ -84,7 +84,8 @@ typedef enum {
     swmm_NODE_LATFLOW  = 306,
     swmm_NODE_INFLOW   = 307,
     swmm_NODE_OVERFLOW = 308,
-    swmm_NODE_RPTFLAG  = 309
+    swmm_NODE_RPTFLAG  = 309,
+    swmm_NODE_OUTFLOW  = 310
 } swmm_NodeProperty;
 
 typedef enum {
