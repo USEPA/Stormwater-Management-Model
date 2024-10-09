@@ -39,6 +39,8 @@
 //   - Support added for reporting most frequent non-converging links.
 //   - Support added for RptFlags.disabled flag.
 //   - Refactored report_readOptions().
+//   Build 5.2.5:
+//   - Made undefined object a warning. 
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -145,8 +147,13 @@ int report_readOptions(char* tok[], int ntoks)
         k = SOME;
         for (t = 1; t < ntoks; t++)
         {
+            // --- issue a warning if object not found
             j = project_findObject(m, tok[t]);
-            if ( j < 0 ) return error_setInpError(ERR_NAME, tok[t]);
+            if ( j < 0 ) {
+                report_writeWarningMsg(WARN13, tok[t]);
+                continue;
+            }
+
             switch ( m )
             {
               case SUBCATCH:  Subcatch[j].rptFlag = TRUE;  break;
