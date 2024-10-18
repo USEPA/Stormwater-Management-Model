@@ -288,7 +288,6 @@ BOOST_FIXTURE_TEST_CASE(test_getSystemSeries, Fixture) {
     BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
 }
 
-
 BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
     error = SMO_getSubcatchResult(p_handle, 1, 1, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
@@ -357,6 +356,131 @@ BOOST_FIXTURE_TEST_CASE(test_getSystemResult, Fixture) {
 
     std::vector<float> test_vec;
     test_vec.assign(array, array + array_dim);
+
+    BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
+}
+
+BOOST_FIXTURE_TEST_CASE(test_getBufferSize, Fixture) {
+
+    int bufferSize;
+
+    // Test SMO_subcatch
+    error = SMO_getBufferSize(p_handle, SMO_subcatch, &bufferSize);
+
+    BOOST_CHECK_EQUAL(bufferSize, 10);
+    BOOST_CHECK_EQUAL(error, 0);
+
+    // Test SMO_node
+    error = SMO_getBufferSize(p_handle, SMO_node, &bufferSize);
+
+    BOOST_CHECK_EQUAL(bufferSize, 8);
+    BOOST_CHECK_EQUAL(error, 0);
+
+    // Test SMO_link
+    error = SMO_getBufferSize(p_handle, SMO_link, &bufferSize);
+
+    BOOST_CHECK_EQUAL(bufferSize, 7);
+    BOOST_CHECK_EQUAL(error, 0);
+
+    // Test SMO_sys
+    error = SMO_getBufferSize(p_handle, SMO_sys, &bufferSize);
+
+    BOOST_CHECK_EQUAL(bufferSize, 14);
+    BOOST_CHECK_EQUAL(error, 0);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_bufferSubcatchResult, Fixture) {
+
+    const int ref_dim            = 10;
+    float     ref_array[ref_dim] = {
+		0.5f, 0.0f, 0.0f, 0.125f, 1.2438242f,
+        0.0f, 0.0f, 0.0f, 33.481991f, 6.6963983f};
+
+    std::vector<float> ref_vec;
+    ref_vec.assign(ref_array, ref_array + ref_dim);
+
+    int buffer_size;
+    error = SMO_getBufferSize(p_handle, SMO_subcatch, &buffer_size);
+    BOOST_REQUIRE(error == 0);
+    float buffer[buffer_size];
+
+    error = SMO_bufferSubcatchResult(p_handle, 1, 1, buffer, buffer_size);
+    BOOST_REQUIRE(error == 0);
+
+    std::vector<float> test_vec;
+    test_vec.assign(buffer, buffer + buffer_size);
+
+    BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
+}
+
+BOOST_FIXTURE_TEST_CASE(test_bufferNodeResult, Fixture) {
+
+    const int ref_dim        = 8;
+    float ref_array[ref_dim] = {
+		0.296234f, 995.296204f, 0.0f, 1.302650f, 1.302650f, 0.0f,
+		15.361463f, 3.072293f};
+
+    std::vector<float> ref_vec;
+    ref_vec.assign(ref_array, ref_array + ref_dim);
+
+    int buffer_size;
+    error = SMO_getBufferSize(p_handle, SMO_node, &buffer_size);
+    BOOST_REQUIRE(error == 0);
+    float buffer[buffer_size];
+
+    error = SMO_bufferNodeResult(p_handle, 2, 2, buffer, buffer_size);
+    BOOST_REQUIRE(error == 0);
+
+    std::vector<float> test_vec;
+    test_vec.assign(buffer, buffer + buffer_size);
+
+    BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
+}
+
+BOOST_FIXTURE_TEST_CASE(test_bufferLinkResult, Fixture) {
+
+    const int ref_dim        = 7;
+    float ref_array[ref_dim] = {
+		4.631762f, 1.0f, 5.8973422f, 314.15927f, 1.0f, 19.070757f,
+		3.8141515f};
+
+    std::vector<float> ref_vec;
+    ref_vec.assign(ref_array, ref_array + ref_dim);
+
+    int buffer_size;
+    error = SMO_getBufferSize(p_handle, SMO_link, &buffer_size);
+    BOOST_REQUIRE(error == 0);
+    float buffer[buffer_size];
+
+    error = SMO_bufferLinkResult(p_handle, 3, 3, buffer, buffer_size);
+    BOOST_REQUIRE(error == 0);
+
+    std::vector<float> test_vec;
+    test_vec.assign(buffer, buffer + buffer_size);
+
+    BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
+}
+
+BOOST_FIXTURE_TEST_CASE(test_bufferSystemResult, Fixture) {
+
+    const int ref_dim            = 14;
+    float     ref_array[ref_dim] = {
+        70.0f, 0.1f, 0.0f, 0.19042271f, 14.172027f, 0.0f, 0.0f, 0.0f,
+		0.0f, 14.172027f, 0.55517411f, 13.622702f, 2913.0793f, 0.0f};
+
+    std::vector<float> ref_vec;
+    ref_vec.assign(ref_array, ref_array + ref_dim);
+
+    int buffer_size;
+    error = SMO_getBufferSize(p_handle, SMO_sys, &buffer_size);
+    BOOST_REQUIRE(error == 0);
+    float buffer[buffer_size];
+
+    error = SMO_bufferSystemResult(p_handle, 4, 4, buffer, buffer_size);
+    BOOST_REQUIRE(error == 0);
+
+    std::vector<float> test_vec;
+    test_vec.assign(buffer, buffer + buffer_size);
 
     BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
 }

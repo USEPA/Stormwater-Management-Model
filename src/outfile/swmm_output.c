@@ -800,6 +800,7 @@ int EXPORT_OUT_API SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
+
 int EXPORT_OUT_API SMO_getSubcatchResult(SMO_Handle p_handle, int periodIndex,
     int subcatchIndex, float **outValueArray, int *arrayLength)
 //
@@ -959,6 +960,184 @@ int EXPORT_OUT_API SMO_getSystemResult(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
+int EXPORT_OUT_API SMO_getBufferSize(SMO_Handle p_handle, SMO_elementType type, int *bufferSize)
+{
+    int size, errorcode = 0;
+    data_t *p_data;
+
+    p_data = (data_t *)p_handle;
+
+    switch (type) {
+
+        case SMO_subcatch:
+            size = p_data->SubcatchVars;
+            break;
+
+        case SMO_node:
+            size = p_data->NodeVars;
+            break;
+
+        case SMO_link:
+            size = p_data->LinkVars;
+            break;
+
+        case SMO_sys:
+            size = p_data->SysVars;
+            break;
+
+        case SMO_pollut:
+            size = p_data->Npolluts;
+            break;
+
+        default:
+            errorcode = 421;
+    }
+
+    *bufferSize = size;
+
+    return set_error(p_data->error_handle, errorcode);
+}
+
+int EXPORT_OUT_API SMO_bufferSubcatchResult(SMO_Handle p_handle, int periodIndex,
+    int subcatchIndex, float *buffer, int bufferSize)
+//
+// Purpose: For a subcatchment at given time, get all attributes.
+//
+{
+    int    errorcode = 0;
+    F_OFF  offset;
+    data_t *p_data;
+
+    p_data = (data_t *)p_handle;
+
+    if (p_data == NULL)
+        errorcode = -1;
+    else if (periodIndex < 0 || periodIndex >= p_data->Nperiods)
+        errorcode = 422;
+    else if (subcatchIndex < 0 || subcatchIndex > p_data->Nsubcatch)
+        errorcode = 423;
+    else if (bufferSize < p_data->SubcatchVars)
+        errorcode = 411;
+    else {
+        // --- compute offset into output file
+        offset = p_data->ResultsPos + (periodIndex)*p_data->BytesPerPeriod +
+                 2 * RECORDSIZE;
+        // add offset for subcatchment
+        offset += (subcatchIndex * p_data->SubcatchVars) * RECORDSIZE;
+
+        _fseek(p_data->file, offset, SEEK_SET);
+        fread(buffer, RECORDSIZE, p_data->SubcatchVars, p_data->file);
+    }
+
+    return set_error(p_data->error_handle, errorcode);
+}
+
+int EXPORT_OUT_API SMO_bufferNodeResult(SMO_Handle p_handle, int periodIndex,
+    int nodeIndex, float *buffer, int bufferSize)
+{
+    int    errorcode = 0;
+    F_OFF  offset;
+    data_t *p_data;
+
+    p_data = (data_t *)p_handle;
+
+    if (p_data == NULL)
+        errorcode = -1;
+    else if (periodIndex < 0 || periodIndex >= p_data->Nperiods)
+        errorcode = 422;
+    else if (nodeIndex < 0 || nodeIndex > p_data->Nnodes)
+        errorcode = 423;
+    else if (bufferSize < p_data->NodeVars)
+        errorcode = 411;
+    else {
+        // calculate byte offset to start time for series
+        offset = p_data->ResultsPos + (periodIndex)*p_data->BytesPerPeriod +
+                 2 * RECORDSIZE;
+        // add offset for subcatchment and node
+        offset += (p_data->Nsubcatch * p_data->SubcatchVars +
+                   nodeIndex * p_data->NodeVars) *
+                  RECORDSIZE;
+
+        _fseek(p_data->file, offset, SEEK_SET);
+        fread(buffer, RECORDSIZE, p_data->NodeVars, p_data->file);
+    }
+
+    return set_error(p_data->error_handle, errorcode);
+}
+
+int EXPORT_OUT_API SMO_bufferLinkResult(SMO_Handle p_handle, int periodIndex,
+    int linkIndex, float *buffer, int bufferSize)
+//
+// Purpose: For a link at given time, get all attributes.
+//
+{
+    int    errorcode = 0;
+    F_OFF  offset;
+    data_t *p_data;
+
+    p_data = (data_t *)p_handle;
+
+    if (p_data == NULL)
+        errorcode = -1;
+    else if (periodIndex < 0 || periodIndex >= p_data->Nperiods)
+        errorcode = 422;
+    else if (linkIndex < 0 || linkIndex > p_data->Nlinks)
+        errorcode = 423;
+    else if (bufferSize < p_data->LinkVars)
+        errorcode = 411;
+    else {
+        // calculate byte offset to start time for series
+        offset = p_data->ResultsPos + (periodIndex)*p_data->BytesPerPeriod +
+                 2 * RECORDSIZE;
+        // add offset for subcatchment, node, and link
+        offset +=
+            (p_data->Nsubcatch * p_data->SubcatchVars +
+             p_data->Nnodes * p_data->NodeVars + linkIndex * p_data->LinkVars) *
+            RECORDSIZE;
+
+        _fseek(p_data->file, offset, SEEK_SET);
+        fread(buffer, RECORDSIZE, p_data->LinkVars, p_data->file);
+    }
+
+    return set_error(p_data->error_handle, errorcode);
+}
+
+int EXPORT_OUT_API SMO_bufferSystemResult(SMO_Handle p_handle, int periodIndex,
+    int dummyIndex, float *buffer, int bufferSize)
+//
+// Purpose: For the system at given time, get all attributes.
+//
+{
+    int    errorcode = 0;
+    F_OFF  offset;
+    data_t *p_data;
+
+    p_data = (data_t *)p_handle;
+
+    if (p_data == NULL)
+        errorcode = -1;
+    else if (periodIndex < 0 || periodIndex >= p_data->Nperiods)
+        errorcode = 422;
+    else if (bufferSize < p_data->SysVars)
+        errorcode = 411;
+    else {
+        // calculate byte offset to start time for series
+        offset = p_data->ResultsPos + (periodIndex)*p_data->BytesPerPeriod +
+                 2 * RECORDSIZE;
+        // add offset for subcatchment, node, and link (system starts after
+        // the last link)
+        offset += (p_data->Nsubcatch * p_data->SubcatchVars +
+                   p_data->Nnodes * p_data->NodeVars +
+                   p_data->Nlinks * p_data->LinkVars) *
+                  RECORDSIZE;
+
+        _fseek(p_data->file, offset, SEEK_SET);
+        fread(buffer, RECORDSIZE, p_data->SysVars, p_data->file);
+    }
+
+    return set_error(p_data->error_handle, errorcode);
+}
+
 void EXPORT_OUT_API SMO_free(void **array)
 //
 //  Purpose: Frees memory allocated by API calls
@@ -1038,6 +1217,7 @@ void errorLookup(int errcode, char *dest_msg, int dest_len)
 
     strncpy(dest_msg, msg, MAXMSG);
 }
+
 
 // Local functions:
 int validateFile(data_t *p_data) {
