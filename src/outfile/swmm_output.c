@@ -771,14 +771,14 @@ int SMO_getLinkAttribute(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-int SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
+int EXPORT_OUT_API SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
     SMO_systemAttribute attr, float **outValueArray, int *length)
 //
 //  Purpose: For the system at given time, get a particular attribute.
 //
 {
     int     errorcode = 0;
-    float   temp;
+    float   *temp;
     data_t *p_data;
 
     p_data = (data_t *)p_handle;
@@ -787,11 +787,13 @@ int SMO_getSystemAttribute(SMO_Handle p_handle, int periodIndex,
         errorcode = -1;
     else if (periodIndex < 0 || periodIndex >= p_data->Nperiods)
         errorcode = 422;
+    else if
+        MEMCHECK(temp = newFloatArray(1)) errorcode = 411;
     else {
         // don't need to loop since there's only one system
-        temp = getSystemValue(p_data, periodIndex, attr);
+        temp[0] = getSystemValue(p_data, periodIndex, attr);
 
-        *outValueArray = &temp;
+        *outValueArray = temp;
         *length        = 1;
     }
 
