@@ -47,7 +47,7 @@ typedef struct IDentry idEntry;
 //  Shared variables
 //-----------------------------------------------------------------------------
 
-typedef struct {
+typedef struct Handle {
     char  name[MAXFILENAME + 1];    // file path/name
     FILE* file;                     // FILE structure pointer
 
@@ -75,7 +75,7 @@ typedef struct {
     F_OFF BytesPerPeriod;    // bytes used for results in each period
 
     error_handle_t* error_handle;
-} data_t;
+} data_t, *SMO_Handle;
 
 //-----------------------------------------------------------------------------
 //   Local functions
@@ -237,7 +237,7 @@ int SMO_open(SMO_Handle p_handle, const char *path)
     // If error close the binary file
     if (errorcode > 400) {
         set_error(p_data->error_handle, errorcode);
-        SMO_close(&p_handle);
+        SMO_close(p_handle);
     }
 
     return errorcode;
