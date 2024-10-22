@@ -34,11 +34,14 @@ file(GLOB
 
 if(BUILD_DEF)
     # Build library with def file interface for backward compatibility
-    set_source_files_properties(${PROJECT_SOURCE_DIR}/bindings/swmm5.def
-        PROPERTIES_HEADER_FILE_ONLY TRUE
+    set_source_files_properties(
+        ${PROJECT_SOURCE_DIR}/bindings/swmm5.def
+            PROPERTIES_HEADER_FILE_ONLY
+                TRUE
     )
 
-    add_library(swmm5
+    add_library(
+      swmm5
         SHARED
             ${SWMM_SOURCES}
             ${PROJECT_SOURCE_DIR}/bindings/swmm5.def
@@ -46,14 +49,16 @@ if(BUILD_DEF)
 
 else()
 
-    add_library(swmm5
+    add_library(
+      swmm5
         SHARED
             ${SWMM_SOURCES}
     )
 
 endif()
 
-target_compile_options(swmm5
+target_compile_options(
+  swmm5
     PUBLIC
         $<$<C_COMPILER_ID:MSVC>:
             $<$<CONFIG:Release>:/GL>
@@ -62,30 +67,42 @@ target_compile_options(swmm5
         >
 )
 
-target_link_options(swmm5
+target_link_options(
+  swmm5
     PUBLIC
         $<$<C_COMPILER_ID:MSVC>:
             $<$<CONFIG:Release>:/LTCG:incremental>
         >
 )
 
-target_link_libraries(swmm5
-    PUBLIC
+target_link_libraries(
+  swmm5
+    PRIVATE
         $<$<NOT:$<BOOL:$<C_COMPILER_ID:MSVC>>>:m>
         $<$<BOOL:OpenMP_C_FOUND>:OpenMP::OpenMP_C>
 )
 
-target_include_directories(swmm5
+target_include_directories(
+  swmm5
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${INCLUDE_DIST}>
 )
 
-install(TARGETS swmm5 EXPORT swmm5Targets
-    RUNTIME    DESTINATION "${TOOL_DIST}"
-    LIBRARY    DESTINATION "${TOOL_DIST}"
-    ARCHIVE    DESTINATION "${LIBRARY_DIST}"
-    FRAMEWORK  DESTINATION "${TOOL_DIST}"
+install(
+    TARGETS
+        swmm5
+    EXPORT
+        swmm5Targets
+    RUNTIME
+        DESTINATION
+            ${CMAKE_INSTALL_BINDIR}
+    LIBRARY
+        DESTINATION
+           ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE
+        DESTINATION
+            ${CMAKE_INSTALL_LIBDIR}
 )
 
 # Create target import scripts so other cmake projects can use swmm libraries
@@ -93,18 +110,27 @@ install(
     EXPORT
         swmm5Targets
     DESTINATION
-        "${CONFIG_DIST}"
+        ${CONFIG_DIST}
     FILE
         swmm5-config.cmake
 )
 
 install(
-    FILES 
-        ${SWMM_PUBLIC_HEADERS} 
-    DESTINATION 
-        "${INCLUDE_DIST}"
+    FILES
+        ${SWMM_PUBLIC_HEADERS}
+    DESTINATION
+        ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
+# Install OpenMP libraries
+if(OpenMP_C_FOUND)
+    install(
+        FILES
+            ${OpenMP_C_LIBRARIES}
+        DESTINATION
+            ${CMAKE_INSTALL_LIBDIR}
+    )
+endif()
 
 # copy swmm5 to build tree for testing
 add_custom_command(TARGET swmm5 POST_BUILD

@@ -37,10 +37,11 @@ endif()
 
 
 # Define install locations (will be prepended by install prefix)
-set(TOOL_DIST "bin")
-set(INCLUDE_DIST "include")
-set(LIBRARY_DIST "lib")
+include(
+    GNUInstallDirs
+)
 set(CONFIG_DIST  "cmake")
+
 
 
 # Define build options
@@ -60,7 +61,10 @@ endif()
 
 
 # Create install rules for vcruntime.dll, msvcp.dll, vcomp.dll etc.
-set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
+set(
+    CMAKE_INSTALL_OPENMP_LIBRARIES
+        TRUE
+)
 include(InstallRequiredSystemLibraries)
 
 
