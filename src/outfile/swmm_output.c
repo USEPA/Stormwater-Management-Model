@@ -123,7 +123,7 @@ int SMO_init(SMO_Handle *p_handle)
     return errorcode;
 }
 
-int SMO_close(SMO_Handle* p_handle)
+int SMO_close(SMO_Handle p_handle)
 //
 //   Purpose: Clean up after and close Output API
 //
@@ -131,7 +131,7 @@ int SMO_close(SMO_Handle* p_handle)
     data_t *p_data;
     int i, n, errorcode = 0;
 
-    p_data = (data_t *)*p_handle;
+    p_data = (data_t *)p_handle;
 
     if (p_data == NULL)
         errorcode = -1;
@@ -153,8 +153,6 @@ int SMO_close(SMO_Handle* p_handle)
             fclose(p_data->file);
 
         free(p_data);
-
-        *p_handle = NULL;
     }
 
     return errorcode;
@@ -1138,15 +1136,12 @@ int SMO_bufferSystemResult(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-void SMO_free(void **array)
+void SMO_freeMemory(void *array)
 //
 //  Purpose: Frees memory allocated by API calls
 //
 {
-    if (array != NULL) {
-        free(*array);
-        *array = NULL;
-    }
+    free(array);
 }
 
 void SMO_clearError(SMO_Handle p_handle) {

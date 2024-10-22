@@ -16,7 +16,7 @@
 #define MAXELENAME 31      // Max characters in element name
 
 // This is an opaque pointer to struct. Do not access variables.
-typedef void *SMO_Handle;
+typedef struct Handle *SMO_Handle;
 
 
 #include "swmm_output_enums.h"
@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 EXPORT_OUT_API int SMO_init(SMO_Handle *p_handle);
-EXPORT_OUT_API int SMO_close(SMO_Handle *p_handle);
+EXPORT_OUT_API int SMO_close(SMO_Handle p_handle);
 EXPORT_OUT_API int SMO_open(SMO_Handle p_handle, const char *path);
 EXPORT_OUT_API int SMO_getVersion(SMO_Handle p_handle, int *version);
 EXPORT_OUT_API int SMO_getProjectSize(SMO_Handle p_handle, int **elementCount, int *length);
@@ -60,7 +60,7 @@ EXPORT_OUT_API int SMO_bufferNodeResult(SMO_Handle p_handle, int periodIndex, in
 EXPORT_OUT_API int SMO_bufferLinkResult(SMO_Handle p_handle, int timeIndex, int linkIndex, float *buffer, int bufferSize);
 EXPORT_OUT_API int SMO_bufferSystemResult(SMO_Handle p_handle, int timeIndex, int dummyIndex, float *buffer, int bufferize);
 
-EXPORT_OUT_API void SMO_free(void **array);
+EXPORT_OUT_API void SMO_freeMemory(void *array);
 EXPORT_OUT_API void SMO_clearError(SMO_Handle p_handle_in);
 EXPORT_OUT_API int SMO_checkError(SMO_Handle p_handle_in, char **msg_buffer);
 
