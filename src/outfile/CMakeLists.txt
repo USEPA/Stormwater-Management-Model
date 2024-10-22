@@ -29,11 +29,14 @@ target_include_directories(swmm-output
 )
 
 include(GenerateExportHeader)
-generate_export_header(swmm-output
-    BASE_NAME swmm_output
-    EXPORT_MACRO_NAME EXPORT_OUT_API
-    EXPORT_FILE_NAME swmm_output_export.h
-    STATIC_DEFINE SHARED_EXPORTS_BUILT_AS_STATIC
+generate_export_header(
+  swmm-output
+    BASE_NAME
+        swmm_output
+    EXPORT_MACRO_NAME
+        EXPORT_OUT_API
+    EXPORT_FILE_NAME
+        swmm_output_export.h
 )
 
 file(COPY ${CMAKE_CURRENT_BINARY_DIR}/swmm_output_export.h
@@ -72,7 +75,7 @@ install(
 )
 
 
-# copy epanet-output to build tree for testing
+# copy swmm-output to build tree for testing
 if(BUILD_TESTS)
     add_custom_command(TARGET swmm-output POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy

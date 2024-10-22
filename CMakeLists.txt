@@ -9,16 +9,19 @@
 #
 
 
-cmake_minimum_required (VERSION 3.13)
+cmake_minimum_required(VERSION 3.13)
 
 if("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     message(FATAL_ERROR "In-source builds are disabled.")
 endif()
 
 
-project(swmm-solver
-    VERSION 5.2.4
-    LANGUAGES C CXX
+project(
+  swmm-solver
+    VERSION
+        5.2.4
+    LANGUAGES
+        C CXX
 )
 
 # Append local dir to module search path
