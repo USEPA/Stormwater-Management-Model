@@ -79,16 +79,16 @@ BOOST_AUTO_TEST_CASE(InitTest) {
     BOOST_REQUIRE(error == 0);
     BOOST_CHECK(p_handle != NULL);
 
-    SMO_close(&p_handle);
+    SMO_close(p_handle);
 }
 
 BOOST_AUTO_TEST_CASE(CloseTest) {
     SMO_Handle p_handle = NULL;
     SMO_init(&p_handle);
 
-    int error = SMO_close(&p_handle);
+    int error = SMO_close(p_handle);
     BOOST_REQUIRE(error == 0);
-    BOOST_CHECK(p_handle == NULL);
+    //BOOST_CHECK(p_handle == NULL);
 }
 
 BOOST_AUTO_TEST_CASE(InitOpenCloseTest) {
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(InitOpenCloseTest) {
     int error = SMO_open(p_handle, path.c_str());
     BOOST_REQUIRE(error == 0);
 
-    SMO_close(&p_handle);
+    SMO_close(p_handle);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -116,8 +116,8 @@ struct Fixture {
         array_dim = 0;
     }
     ~Fixture() {
-        SMO_free((void**)&array);
-        error = SMO_close(&p_handle);
+        SMO_freeMemory((void*)array);
+        error = SMO_close(p_handle);
     }
 
     std::string path;
@@ -148,7 +148,7 @@ BOOST_FIXTURE_TEST_CASE(test_getProjectSize, Fixture) {
     std::vector<int> test;
     test.assign(i_array, i_array + array_dim);
 
-    // subcatchs, nodes, links, pollutants
+    // subcatchs, nodes, links, system, pollutants
     const int ref_dim            = 5;
     int       ref_array[ref_dim] = {8, 14, 13, 1, 2};
 
@@ -158,7 +158,7 @@ BOOST_FIXTURE_TEST_CASE(test_getProjectSize, Fixture) {
     BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(),
                                   test.end());
 
-    SMO_free((void**)&i_array);
+    SMO_freeMemory((void*)i_array);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getUnits, Fixture) {
@@ -180,7 +180,7 @@ BOOST_FIXTURE_TEST_CASE(test_getUnits, Fixture) {
     BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(),
                                   test.end());
 
-    SMO_free((void**)&i_array);
+    SMO_freeMemory((void*)i_array);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getFlowUnits, Fixture) {
@@ -209,8 +209,8 @@ BOOST_FIXTURE_TEST_CASE(test_getPollutantUnits, Fixture) {
     BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(),
                                   test.end());
 
-    SMO_free((void**)&i_array);
-    BOOST_CHECK(i_array == NULL);
+    SMO_freeMemory((void*)i_array);
+    //BOOST_CHECK(i_array == NULL);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getStartDate, Fixture) {
@@ -247,7 +247,7 @@ BOOST_FIXTURE_TEST_CASE(test_getElementName, Fixture) {
     std::string ref("10");
     BOOST_CHECK(check_string(test, ref));
 
-    SMO_free((void**)&c_array);
+    SMO_freeMemory((void*)c_array);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
@@ -360,33 +360,27 @@ BOOST_FIXTURE_TEST_CASE(test_getSystemResult, Fixture) {
     BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
 }
 
-BOOST_FIXTURE_TEST_CASE(test_getBufferSize, Fixture) {
+BOOST_FIXTURE_TEST_CASE(test_getReportVars, Fixture) {
 
-    int bufferSize;
+    int* i_array = NULL;
 
-    // Test SMO_subcatch
-    error = SMO_getBufferSize(p_handle, SMO_subcatch, &bufferSize);
+    error = SMO_getReportVars(p_handle, &i_array, &array_dim);
+    BOOST_REQUIRE(error == 0);
 
-    BOOST_CHECK_EQUAL(bufferSize, 10);
-    BOOST_CHECK_EQUAL(error, 0);
+    std::vector<int> test;
+    test.assign(i_array, i_array + array_dim);
 
-    // Test SMO_node
-    error = SMO_getBufferSize(p_handle, SMO_node, &bufferSize);
+    // subcatchs, nodes, links, system
+    const int ref_dim            = 4;
+    int       ref_array[ref_dim] = {10, 8, 7, 14};
 
-    BOOST_CHECK_EQUAL(bufferSize, 8);
-    BOOST_CHECK_EQUAL(error, 0);
+    std::vector<int> ref;
+    ref.assign(ref_array, ref_array + ref_dim);
 
-    // Test SMO_link
-    error = SMO_getBufferSize(p_handle, SMO_link, &bufferSize);
+    BOOST_CHECK_EQUAL_COLLECTIONS(ref.begin(), ref.end(), test.begin(),
+                                  test.end());
 
-    BOOST_CHECK_EQUAL(bufferSize, 7);
-    BOOST_CHECK_EQUAL(error, 0);
-
-    // Test SMO_sys
-    error = SMO_getBufferSize(p_handle, SMO_sys, &bufferSize);
-
-    BOOST_CHECK_EQUAL(bufferSize, 14);
-    BOOST_CHECK_EQUAL(error, 0);
+    SMO_freeMemory((void*)i_array);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_bufferSubcatchResult, Fixture) {
@@ -399,9 +393,11 @@ BOOST_FIXTURE_TEST_CASE(test_bufferSubcatchResult, Fixture) {
     std::vector<float> ref_vec;
     ref_vec.assign(ref_array, ref_array + ref_dim);
 
-    int buffer_size;
-    error = SMO_getBufferSize(p_handle, SMO_subcatch, &buffer_size);
+    int* i_array = NULL;
+    error = SMO_getReportVars(p_handle, &i_array, &array_dim);
     BOOST_REQUIRE(error == 0);
+
+    int buffer_size = i_array[SMO_subcatch];
     float buffer[buffer_size];
 
     error = SMO_bufferSubcatchResult(p_handle, 1, 1, buffer, buffer_size);
@@ -423,9 +419,11 @@ BOOST_FIXTURE_TEST_CASE(test_bufferNodeResult, Fixture) {
     std::vector<float> ref_vec;
     ref_vec.assign(ref_array, ref_array + ref_dim);
 
-    int buffer_size;
-    error = SMO_getBufferSize(p_handle, SMO_node, &buffer_size);
+    int* i_array = NULL;
+    error = SMO_getReportVars(p_handle, &i_array, &array_dim);
     BOOST_REQUIRE(error == 0);
+
+    int buffer_size = i_array[SMO_node];
     float buffer[buffer_size];
 
     error = SMO_bufferNodeResult(p_handle, 2, 2, buffer, buffer_size);
@@ -447,9 +445,11 @@ BOOST_FIXTURE_TEST_CASE(test_bufferLinkResult, Fixture) {
     std::vector<float> ref_vec;
     ref_vec.assign(ref_array, ref_array + ref_dim);
 
-    int buffer_size;
-    error = SMO_getBufferSize(p_handle, SMO_link, &buffer_size);
+    int* i_array = NULL;
+    error = SMO_getReportVars(p_handle, &i_array, &array_dim);
     BOOST_REQUIRE(error == 0);
+
+    int buffer_size = i_array[SMO_link];
     float buffer[buffer_size];
 
     error = SMO_bufferLinkResult(p_handle, 3, 3, buffer, buffer_size);
@@ -471,9 +471,11 @@ BOOST_FIXTURE_TEST_CASE(test_bufferSystemResult, Fixture) {
     std::vector<float> ref_vec;
     ref_vec.assign(ref_array, ref_array + ref_dim);
 
-    int buffer_size;
-    error = SMO_getBufferSize(p_handle, SMO_sys, &buffer_size);
+    int* i_array = NULL;
+    error = SMO_getReportVars(p_handle, &i_array, &array_dim);
     BOOST_REQUIRE(error == 0);
+
+    int buffer_size = i_array[SMO_sys];
     float buffer[buffer_size];
 
     error = SMO_bufferSystemResult(p_handle, 4, 4, buffer, buffer_size);

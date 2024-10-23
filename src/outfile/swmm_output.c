@@ -153,6 +153,7 @@ int SMO_close(SMO_Handle p_handle)
             fclose(p_data->file);
 
         free(p_data);
+        p_data = NULL;
     }
 
     return errorcode;
@@ -960,40 +961,29 @@ int SMO_getSystemResult(SMO_Handle p_handle, int periodIndex,
     return set_error(p_data->error_handle, errorcode);
 }
 
-int SMO_getBufferSize(SMO_Handle p_handle, SMO_elementType type, int *bufferSize)
+int SMO_getReportVars(SMO_Handle p_handle, int **elementCount, int *length)
 {
-    int size, errorcode = 0;
-    data_t *p_data;
+    int     errorcode = 0;
+    int     *temp;
+    data_t  *p_data;
 
-    p_data = (data_t *)p_handle;
+    p_data = (data_t*)p_handle;
 
-    switch (type) {
+    *elementCount = NULL;
+    *length = 4;
 
-        case SMO_subcatch:
-            size = p_data->SubcatchVars;
-            break;
+    if (p_data == NULL)
+        errorcode = -1;
+    else if (MEMCHECK(temp = newIntArray(*length)))
+        errorcode = 414;
+    else {
+        temp[0] = p_data->SubcatchVars;
+        temp[1] = p_data->NodeVars;
+        temp[2] = p_data->LinkVars;
+        temp[3] = p_data->SysVars;
 
-        case SMO_node:
-            size = p_data->NodeVars;
-            break;
-
-        case SMO_link:
-            size = p_data->LinkVars;
-            break;
-
-        case SMO_sys:
-            size = p_data->SysVars;
-            break;
-
-        case SMO_pollut:
-            size = p_data->Npolluts;
-            break;
-
-        default:
-            errorcode = 421;
+        *elementCount = temp;
     }
-
-    *bufferSize = size;
 
     return set_error(p_data->error_handle, errorcode);
 }

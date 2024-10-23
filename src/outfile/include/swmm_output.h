@@ -54,7 +54,7 @@ EXPORT_OUT_API int SMO_getNodeResult(SMO_Handle p_handle, int timeIndex, int nod
 EXPORT_OUT_API int SMO_getLinkResult(SMO_Handle p_handle, int timeIndex, int linkIndex, float **float_out, int *int_dim);
 EXPORT_OUT_API int SMO_getSystemResult(SMO_Handle p_handle, int timeIndex, int dummyIndex, float **float_out, int *int_dim);
 
-EXPORT_OUT_API int SMO_getBufferSize(SMO_Handle p_handle, SMO_elementType type, int *bufferSize);
+EXPORT_OUT_API int SMO_getReportVars(SMO_Handle p_handle, int **int_out, int *int_dim);
 EXPORT_OUT_API int SMO_bufferSubcatchResult(SMO_Handle p_handle, int timeIndex, int subcatchIndex, float *buffer, int bufferSize);
 EXPORT_OUT_API int SMO_bufferNodeResult(SMO_Handle p_handle, int periodIndex, int nodeIndex, float *buffer, int bufferSize);
 EXPORT_OUT_API int SMO_bufferLinkResult(SMO_Handle p_handle, int timeIndex, int linkIndex, float *buffer, int bufferSize);
