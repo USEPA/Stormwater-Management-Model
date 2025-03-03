@@ -32,6 +32,10 @@
 //   - Additional validity check for G-A initial deficit added.
 //   - New error message 235 added for invalid infiltration parameters.
 //   - Conversion of runon to ponded depth fixed for Curve Number infiltration.
+//
+//
+// NOTE: Modification made by DWW to acount for seasonal variation in potential 
+//       infiltration
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -933,10 +937,16 @@ double curvenum_getInfil(TCurveNum *infil, double tstep, double irate,
 //  Purpose: computes infiltration rate using the Curve Number method.
 //  Note:    this function treats runon from other subcatchments as part
 //           of the ponded depth and not as an effective rainfall rate.
+//
+// NOTE: Modification made by DWW to acount for seasonal variation in potential 
+//       infiltration
+//
 {
     double F1;                         // new cumulative infiltration (ft)
     double f1 = 0.0;                   // new infiltration rate (ft/sec)
     double fa = irate + depth/tstep;   // max. available infil. rate (ft/sec)
+    double CNadj;                      // Adjusted CN using InfilFactor
+    double SmaxAdj;                    // Adjusted Smax based on CNadj
 
     // --- case where there is rainfall
     if ( irate > ZERO )
@@ -977,6 +987,13 @@ double curvenum_getInfil(TCurveNum *infil, double tstep, double irate,
         else infil->T += tstep;
     }
 
+
+
+
+    // Modification by DWW too account for infiltration pattern
+    CNadj = (1000.0 / (12.0 * infil->Smax + 10.0)) * InfilFactor;
+    SmaxAdj = (1000.0 / CNadj - 10.0) / 12.0;
+
     // --- if there is some infiltration
     if ( f1 > 0.0 )
     {
@@ -997,9 +1014,11 @@ double curvenum_getInfil(TCurveNum *infil, double tstep, double irate,
 
     // --- otherwise regenerate infil. capacity
     else
-    {
-        infil->S += infil->regen * infil->Smax * tstep * Evap.recoveryFactor;
-        if ( infil->S > infil->Smax ) infil->S = infil->Smax;
+{       // Adjustment by DWW, commented out original code. New code adjustment only replaces "infil->Smax" with "SmaxAdj"
+        //infil->S += infil->regen * infil->Smax * tstep * Evap.recoveryFactor;
+        //if ( infil->S > infil->Smax ) infil->S = infil->Smax;
+        infil->S += infil->regen * SmaxAdj * tstep * Evap.recoveryFactor;
+        if (infil->S > SmaxAdj) infil->S = SmaxAdj;
     }
     infil->f = f1;
     return f1;
