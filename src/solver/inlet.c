@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     07/13/23 (Build 5.2.4)
+//   Date:     09/01/23 (Build 5.2.5)
 //   Author:   L. Rossman
 //
 //   Street/Channel Inlet Functions
@@ -22,6 +22,8 @@
 //   - Fixed expression for equivalent gutter slope in getCurbInletCapture.
 //   - Corrected sign in equation for effective head in a curb inlet
 //     with an inclined throat opening in getCurbOrificeFlow.
+//   Build 5.2.5:
+//   - Modified how backflow through submerged inlets is calculated.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -251,6 +253,9 @@ static void   findOnSagCurbFlows(int inletIndex, double depth,
 static double getCurbOrificeFlow(double flowDepth, double openingHeight,
               double openingLength, int throatAngle);
 static double getOnSagSlottedFlow(int inletIndex, double depth);
+
+static double getDepthAboveInlet(TInlet* inlet, double depth);
+static double getOnGradeSubmergedCapturedFlow(TInlet* inlet, double flow, int j, int m);
 
 //=============================================================================
 
@@ -563,7 +568,7 @@ void inlet_findCapturedFlows(double tStep)
 //  set but before a flow routing step has been taken.
 {
     int    i, j, m, placement;
-    double q;
+    double q, qc;
     TInlet *inlet;
 
     // --- For non-DW routing find conduit flow into each node
@@ -593,30 +598,49 @@ void inlet_findCapturedFlows(double tStep)
         if (InletDesigns[inlet->designIndex].type == CUSTOM_INLET)
         {
             q = fabs(Link[i].newFlow);
-            inlet->flowCapture = getCustomCapturedFlow(inlet, q, Node[j].newDepth);
+            qc = getCustomCapturedFlow(inlet, q, Node[j].newDepth);
         }
 
         // --- find flow captured by on-grade inlet
         else if (placement == ON_GRADE)
         {
             q = fabs(Link[i].newFlow);
-            inlet->flowCapture = getOnGradeCapturedFlow(inlet, q, Node[j].newDepth);
+            // --- special case for submerged inlet under DW flow routing
+            if (RouteModel == DW &&
+                Node[m].invertElev + Node[m].newDepth >= Node[j].invertElev)
+                qc = getOnGradeSubmergedCapturedFlow(inlet, q, j, m);
+            else
+            qc = getOnGradeCapturedFlow(inlet, q, Node[j].newDepth);
         }
 
         // --- find flow captured by on-sag inlet
         else
         {
             q = Node[j].inflow;
-            inlet->flowCapture = getOnSagCapturedFlow(inlet, q, Node[j].newDepth);
+            qc = getOnSagCapturedFlow(inlet, q, Node[j].newDepth);
         }
-        if (fabs(inlet->flowCapture) < FUDGE) inlet->flowCapture = 0.0;
+        if (fabs(qc) < FUDGE) qc = 0.0;
 
         // --- add to total flow captured by inlet's node
-        InletFlow[j] += inlet->flowCapture;
+        InletFlow[j] += qc;
 
-        // --- capture node's overflow becomes inlet's backflow
-        inlet->backflow = Node[m].overflow * inlet->backflowRatio;
-        if (fabs(inlet->backflow) < FUDGE) inlet->backflow = 0.0;
+        // --- under DW flow routing, negative qc means there was
+        //     backflow from capture node to bypass node
+        if (RouteModel == DW)
+        {
+            inlet->backflow = 0.0;
+            inlet->flowCapture = 0.0;
+            if (qc < 0.0) inlet->backflow = -qc;
+            else          inlet->flowCapture = qc; 
+        }
+        // --- otherwise capture node's overflow becomes inlet's backflow
+        else
+        {
+            inlet->flowCapture = qc;
+            inlet->backflow = Node[m].overflow * inlet->backflowRatio;
+            if (fabs(inlet->backflow) < FUDGE) inlet->backflow = 0.0;
+        }
+
     }
 
     // --- make second pass through each inlet
@@ -643,6 +667,7 @@ void inlet_findCapturedFlows(double tStep)
         //     node, and add any backflow to bypass node)
         Node[j].newLatFlow -= (inlet->flowCapture - inlet->backflow);
         Node[m].newLatFlow += inlet->flowCapture;
+        if (RouteModel == DW) Node[m].newLatFlow -= inlet->backflow;
 
         // --- update inlet's performance if reporting has begun
         if (getDateTime(NewRoutingTime) > ReportStart)
@@ -1595,6 +1620,9 @@ double getOnSagCapturedFlow(TInlet* inlet, double q, double d)
     if (inlet->flowLimit > 0.0)
         qMax = inlet->flowLimit;
 
+    // --- get effective water depth above inlet
+    d = getDepthAboveInlet(inlet, d);
+
     // --- find nominal flow captured by inlet
     qCaptured = getOnSagInletCapture(designIndex, fabs(d));
 
@@ -1602,6 +1630,7 @@ double getOnSagCapturedFlow(TInlet* inlet, double q, double d)
     qCaptured *= inlet->clogFactor;
     qCaptured = MIN(qCaptured, qMax);
     qCaptured *= (double)totalInlets;
+    if (d < 0.0) qCaptured = -qCaptured;
     return qCaptured;
 }
 
@@ -1934,6 +1963,16 @@ double getCustomCapturedFlow(TInlet* inlet, double q, double d)
         // --- curve is captured flow v. approach flow
         if (Curve[c].curveType == DIVERSION_CURVE)
         {
+            // --- Under DW flow routing, assume no capture when
+            //     inlet becomes submerged
+            if (RouteModel == DW)
+            {
+                int m1 = Link[inlet->linkIndex].node2;
+                int m2 = inlet->nodeIndex;
+                if (Node[m2].invertElev + Node[m2].newDepth >=
+                    Node[m1].invertElev) return 0.0;
+            }
+
             // --- add up incrmental capture of each replicate inlet
             for (j = 1; j <= inlet->numInlets; j++)
             {
@@ -1950,10 +1989,68 @@ double getCustomCapturedFlow(TInlet* inlet, double q, double d)
         // --- curve is captured flow v. downstream node depth
         else if (Curve[c].curveType == RATING_CURVE)
         {
+            d = getDepthAboveInlet(inlet, d); 
             qCaptured = inlet->numInlets * inlet->clogFactor *
-                table_lookupEx(&Curve[c], d * UCF(LENGTH)) / UCF(FLOW);
+                table_lookupEx(&Curve[c], fabs(d) * UCF(LENGTH)) / UCF(FLOW);
+            if (d < 0.0) qCaptured = -qCaptured;
         }
         qCaptured *= sides;
     }
     return qCaptured;
+}
+
+//=============================================================================
+
+double getDepthAboveInlet(TInlet* inlet, double d)
+//  
+//  Input:   inlet = an inlet object placed in a conduit link
+//           d = water depth at conduit's bypass node (ft)
+//  Output:  returns the effective water depth above bypass node (ft)
+//  Purpose: finds the net water depth at an inlet's bypass node
+//           that accounts for capture node's HGL.
+//
+{
+    if (RouteModel == DW)
+    {
+        // --- street & sewer node indexes
+        int i = inlet->linkIndex;
+        int j = Link[i].node2;
+        int m = inlet->nodeIndex;
+        
+        // --- street & sewer node HGLs
+        double h1 = Node[j].invertElev + d;
+        double h2 = Node[m].invertElev + Node[m].newDepth;
+        
+        // --- effective water depth above inlet
+        if (h2 < h1) d = h1 - MAX(h2, Node[j].invertElev);
+        else d = h1 - h2;
+    }
+    return d;
+}
+//=============================================================================
+
+double getOnGradeSubmergedCapturedFlow(TInlet* inlet, double q, int j, int m)
+//
+//  Input:   inlet = an inlet object placed in a conduit link
+//           q = flow in link prior to any inlet capture (cfs)
+//           j = index of the inlet's street bypass node
+//           m = index of the inlet's sewer capture node
+//  Output:  returns captured flow rate (cfs)
+//  Purpose: finds the flow captured by an on-grade inlet when sewer node
+//           HGL reaches street level.
+//
+{
+    double h1 = Node[j].invertElev + Node[j].newDepth;  // street node HGL
+    double h2 = Node[m].invertElev + Node[m].newDepth;  // sewer node HGL
+    
+    // --- street can still send captured flow to sewer
+    if (h2 < h1) // 
+    {
+        double q1 = getOnSagCapturedFlow(inlet, q, Node[j].newDepth);
+        double q2 = getOnGradeCapturedFlow(inlet, q, Node[j].newDepth);
+        return MIN(q1, q2);
+    }
+    
+    // --- sewer sends backflow onto street    
+    else return getOnSagCapturedFlow(inlet, q, Node[j].newDepth);
 }

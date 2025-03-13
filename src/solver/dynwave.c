@@ -3,7 +3,7 @@
 //
 //   Project:  EPA SWMM5
 //   Version:  5.2
-//   Date:     07/13/23  (Build 5.2.4)
+//   Date:     09/01/23  (Build 5.2.5)
 //   Author:   L. Rossman
 //             M. Tryby (EPA)
 //             R. Dickinson (CDM)
@@ -47,6 +47,9 @@
 //   Build 5.2.4:
 //   - Conduit evap+seepage outflow split evenly between outflow from
 //     conduit's upstream and non-outfall downstream nodes.
+//   Build 5.2.5:
+//   - Modified setNodeDepth() so that Inlet receptor nodes don't surcharge
+//     and don't flood.
 //-----------------------------------------------------------------------------
 #define _CRT_SECURE_NO_DEPRECATE
 
@@ -678,7 +681,10 @@ void setNodeDepth(int i, double dt)
     {
         // --- ponded nodes don't surcharge
         if (isPonded) isSurcharged = FALSE;
-
+        
+        // --- street inlet capture nodes don't surcharge
+        else if (Node[i].inlet == CAPTURE) isSurcharged = FALSE;
+        
         // --- closed storage units that are full are in surcharge
         else if (Node[i].type == STORAGE)
         {
@@ -745,7 +751,8 @@ void setNodeDepth(int i, double dt)
 
     // --- determine max. non-flooded depth
     yMax = Node[i].fullDepth;
-    if ( canPond == FALSE ) yMax += Node[i].surDepth;
+    if (Node[i].inlet == CAPTURE) yMax += BIG;
+    else if ( canPond == FALSE ) yMax += Node[i].surDepth;
 
     // --- find flooded depth & volume
     if ( yNew > yMax )
