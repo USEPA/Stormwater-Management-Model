@@ -17,7 +17,7 @@ jobs:
     name: Build and Unit Test C/C++ Engine
     permissions: write-all
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [windows-latest, ubuntu-latest, macos-13, macos-latest]
         include:
@@ -64,7 +64,6 @@ jobs:
     - name: Install OpenMP (MacOS)
       if: ${{ matrix.os == 'macos-latest' || matrix.os == 'macos-13' }}
       run: |
-        # brew reinstall --build-from-source libomp
         brew reinstall libomp
         brew link --force --overwrite libomp
 
@@ -115,7 +114,6 @@ jobs:
           build-${{ matrix.vcpkg_triplet }}/*.zip
           build-${{ matrix.vcpkg_triplet }}/*.nupkg
 
-
   python_binding_unit_test:
     name: Build and Unit Test Python Bindings
     strategy:
@@ -159,6 +157,12 @@ jobs:
     steps:
     - name: Checkout SWMM Repo
       uses: actions/checkout@v4
+    
+    - name: Install OpenMP (MacOS)
+      if: ${{ matrix.os == 'macos-latest' || matrix.os == 'macos-13' }}
+      run: |
+        brew reinstall libomp
+        brew link --force --overwrite libomp
 
     - name: Setup python
       uses: actions/setup-python@v4
