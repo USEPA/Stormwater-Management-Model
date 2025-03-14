@@ -460,7 +460,7 @@ void  getGeometry(TTransect *transect, int i, double y)
     if ( aSum == 0.0 )
         transect->hradTbl[i] = transect->hradTbl[i-1];
     else
-        transect->hradTbl[i] = pow(qSum * Nchannel / 1.49 / aSum, 1.5);
+        transect->hradTbl[i] = pow(qSum * Nchannel / PHI / aSum, 1.5);
 }
 
 //=============================================================================
