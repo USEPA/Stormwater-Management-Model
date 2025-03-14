@@ -158,8 +158,8 @@ jobs:
         shell: ${{ matrix.shell }}
 
     steps:
-    # - name: Checkout SWMM Repo
-    #   uses: actions/checkout@v4
+    - name: Checkout SWMM Repo
+      uses: actions/checkout@v4
 
     - name: Setup python
       uses: actions/setup-python@v4
@@ -170,7 +170,7 @@ jobs:
       working-directory: ${{ github.workspace }}/python
       run: |
         python -m pip install --upgrade pip
-        python -m pip install -r requirements-swmm.txt
+        python -m pip install -r requirements.txt
     
     - name: Build Wheels
       working-directory: ${{ github.workspace }}/python
