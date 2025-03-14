@@ -12,12 +12,8 @@ project(
 
 # Define build options
 cmake_policy(SET CMP0148 OLD)
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
-find_package(PythonExtensions REQUIRED)
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
 find_package(Cython REQUIRED)
-
-# Append local dir to module search path
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Sets the position independent code property for all targets
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
