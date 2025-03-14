@@ -4,6 +4,9 @@
 # Created on: 2024-11-19
 #
 
+# Include the CMake module for building Python extensions
+include(UseCython)
+
 # Add Cython target
 add_cython_target(_solver _solver.pyx CXX PY3)
 

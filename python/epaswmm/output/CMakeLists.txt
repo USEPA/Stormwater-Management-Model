@@ -3,6 +3,9 @@
 # Created by: Caleb Buahin (EPA/ORD/CESER/WID)
 # Created on: 2024-11-19
 
+# Include the CMake module for building Python extensions
+include(UseCython)
+
 add_cython_target(_output _output.pyx LANGUAGE CXX PY3)
 
 # Add Cython target

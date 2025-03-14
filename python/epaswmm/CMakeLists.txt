@@ -2,6 +2,9 @@
 # Created by: Caleb Buahin (EPA/ORD/CESER/WID)
 # Created on: 2024-11-19
 
+# Include the CMake module for building Python extensions
+include(UseCython)
+
 # Add Cython targets for epaswmm
 add_cython_target(_epaswmm _epaswmm.pyx CXX PY3)
 
