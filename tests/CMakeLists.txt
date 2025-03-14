@@ -11,7 +11,7 @@
 #         US EPA ORD/CESER
 
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost REQUIRED COMPONENTS test)
 
 # Set the minimum required version c++ 
 set(CMAKE_CXX_STANDARD 17)

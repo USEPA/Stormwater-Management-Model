@@ -19,7 +19,7 @@ target_include_directories(
 target_link_libraries(
     test_output
     PRIVATE
-        Boost::unit_test_framework
+        Boost::test
         swmm-output
     )
 

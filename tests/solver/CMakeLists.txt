@@ -26,7 +26,7 @@ target_link_libraries(
     PRIVATE
         swmm-output 
         swmm5
-        Boost::unit_test_framework
+        Boost::test
  )
 
 set_target_properties(
@@ -53,7 +53,7 @@ target_link_libraries(
     PRIVATE
         swmm-output 
         swmm5
-        Boost::unit_test_framework
+        Boost::test
  )
 
 set_target_properties(
@@ -80,7 +80,7 @@ target_link_libraries(
     PRIVATE
         swmm-output 
         swmm5
-        Boost::unit_test_framework
+        Boost::test
  )
 
 set_target_properties(
@@ -108,7 +108,7 @@ target_link_libraries(
     PRIVATE
         swmm-output 
         swmm5
-        Boost::unit_test_framework
+        Boost::test
  )
 
 set_target_properties( 
