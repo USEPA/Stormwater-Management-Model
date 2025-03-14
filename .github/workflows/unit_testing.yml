@@ -66,7 +66,7 @@ jobs:
         ref: 2025.02.14
         path: vcpkg
     
-    - name: Install OpenMP on MacOS
+    - name: Install OpenMP (MacOS)
       if: ${{ matrix.os == 'macos-latest' || matrix.os == 'macos-13' }}
       run: |
         # brew reinstall --build-from-source libomp
@@ -94,7 +94,7 @@ jobs:
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
     
-    - name: Install Required Libraries (Windows)
+    - name: Install Required Libraries
       # if: ${{ matrix.os == 'windows-latest' }}
       run: |
           ${{ env.VCPKG_EXE }} install

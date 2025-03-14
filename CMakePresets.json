@@ -5,7 +5,8 @@
             "name": "default-debug",
             "generator": "Ninja",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
             }
         },
         {
@@ -33,7 +34,7 @@
         {
             "name": "Darwin-debug",
             "inherits": "default-debug",
-            "description": "macOS build using Unix Makefiles generator",
+            "description": "macOS build using Xcode generator",
             "generator": "Xcode",
             "condition": {
                 "type": "equals",
@@ -45,6 +46,7 @@
             "name": "default",
             "generator": "Ninja",
             "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
             }
         },
         {
@@ -72,7 +74,7 @@
         {
             "name": "Darwin",
             "inherits": "default",
-            "description": "macOS build using Unix Makefiles generator",
+            "description": "macOS build using Xcode generator",
             "generator": "Xcode",
             "condition": {
                 "type": "equals",
