@@ -8,8 +8,8 @@ on:
 
 env:
   BUILD_TYPE: Release
-  VCPKG_ROOT: ${{ github.workspace }}/vcpkg
-  VCPKG_EXE:  ${{ github.workspace }}/vcpkg/vcpkg
+  VCPKG_ROOT: ${{ github.workspace }}\vcpkg
+  VCPKG_EXE:  ${{ github.workspace }}\vcpkg\vcpkg
   # NUGET_FEED_URL: https://nuget.pkg.github.com/USEPA/index.json
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
   OMP_NUM_THREADS: 1
