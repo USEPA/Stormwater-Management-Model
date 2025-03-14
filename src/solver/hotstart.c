@@ -137,7 +137,7 @@ int hotstart_save_to_file(const char *hotstartFile)
     sstrncpy(fname, hotstartFile, MAXFNAME);
     sstrncpy(hotstart->name, addAbsolutePath(fname), MAXFNAME);
 
-    if(error_code = initializeSaveHotstartFile(hotstart))
+    if((error_code = initializeSaveHotstartFile(hotstart)))
 	{
 		FREE(hotstart);
 		return error_code;

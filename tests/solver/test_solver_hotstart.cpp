@@ -78,10 +78,10 @@ BOOST_AUTO_TEST_SUITE(test_solver_hotstart, *boost::unit_test::label("Test SWMM 
 * Then, the test case runs the SWMM model with the hotstart file and checks for errors.
 * \sa swmm_run
 */
-BOOST_AUTO_TEST_CASE(
-	test_save_hotstart, 
-	*boost::unit_test::label("Test save multiple hotstart files")
-) {
+BOOST_AUTO_TEST_CASE(test_save_hotstart) 
+{
+	BOOST_TEST_DECORATOR(*boost::unit_test::label("Test save multiple hotstart files"));
+	
 	int error = 0;
 	std::string filepath = std::string(ORIGINAL_INPUT_FILE);
     std::string extension = ".inp";
@@ -125,11 +125,11 @@ BOOST_AUTO_TEST_CASE(
 * The test case runs the SWMM model with the hotstart file and compares
 * the results with the original input file at critical locations.
 */
-BOOST_AUTO_TEST_CASE(
-	test_run_hotstart_first,
-	*boost::unit_test::depends_on("test_solver_hotstart/test_save_hotstart"),
-	*boost::unit_test::label("Test using first saved hotstart")
-) {
+BOOST_AUTO_TEST_CASE(test_run_hotstart_first) {
+
+    BOOST_TEST_DECORATOR(*boost::unit_test::depends_on("test_solver_hotstart/test_save_hotstart"));
+    BOOST_TEST_DECORATOR(*boost::unit_test::label("Test using first saved hotstart"));
+
 	int error = 0;
 	std::string originalFilepath = std::string(ORIGINAL_INPUT_FILE);
 	std::string filepath = std::string(RUN_HOTSTART_INPUT_FILE_v1);

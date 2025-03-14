@@ -98,6 +98,9 @@ BOOST_AUTO_TEST_CASE(InitTest) {
     SMO_close(&p_handle);
 }
 
+/*!
+* \brief Test the SMO_close function
+*/
 BOOST_AUTO_TEST_CASE(CloseTest) {
     SMO_Handle p_handle = NULL;
     SMO_init(&p_handle);
@@ -107,6 +110,9 @@ BOOST_AUTO_TEST_CASE(CloseTest) {
     BOOST_CHECK(p_handle == NULL);
 }
 
+/*!
+* \brief Test the SMO_open function on valid file and then test SMO_close
+*/
 BOOST_AUTO_TEST_CASE(InitOpenCloseTest) {
     std::string path     = std::string(DATA_PATH);
     SMO_Handle  p_handle = NULL;
@@ -120,6 +126,10 @@ BOOST_AUTO_TEST_CASE(InitOpenCloseTest) {
 
 BOOST_AUTO_TEST_SUITE_END()
 
+
+/*!
+* \brief Test fixture for SWMM outputapi functions
+*/
 struct Fixture {
     Fixture() {
         std::string path = std::string(DATA_PATH);
@@ -144,8 +154,14 @@ struct Fixture {
     int    array_dim;
 };
 
+/*!
+* \brief Test SWMM outputapi functions
+*/
 BOOST_AUTO_TEST_SUITE(test_output_fixture)
 
+/*!
+* \brief Test the SMO_getVersion function
+*/
 BOOST_FIXTURE_TEST_CASE(test_getVersion, Fixture) {
     int version;
 
@@ -155,6 +171,9 @@ BOOST_FIXTURE_TEST_CASE(test_getVersion, Fixture) {
     BOOST_CHECK_EQUAL(51000, version);
 }
 
+/*!
+* \brief Test the SMO_getProjectSize function
+*/
 BOOST_FIXTURE_TEST_CASE(test_getProjectSize, Fixture) {
     int* i_array = NULL;
 
@@ -177,6 +196,9 @@ BOOST_FIXTURE_TEST_CASE(test_getProjectSize, Fixture) {
     SMO_free((void**)&i_array);
 }
 
+/*!
+* \brief Test the SMO_getUnits function 
+*/
 BOOST_FIXTURE_TEST_CASE(test_getUnits, Fixture) {
     int*      i_array            = NULL;
 
@@ -199,6 +221,9 @@ BOOST_FIXTURE_TEST_CASE(test_getUnits, Fixture) {
     SMO_free((void**)&i_array);
 }
 
+/*!
+* \brief Test the SMO_getFlowUnits function
+*/
 BOOST_FIXTURE_TEST_CASE(test_getFlowUnits, Fixture) {
     int units = -1;
 
@@ -207,6 +232,9 @@ BOOST_FIXTURE_TEST_CASE(test_getFlowUnits, Fixture) {
     BOOST_CHECK_EQUAL(0, units);
 }
 
+/*!
+* \brief Test the SMO_getPollutantUnits function
+*/
 BOOST_FIXTURE_TEST_CASE(test_getPollutantUnits, Fixture) {
     int* i_array = NULL;
 
@@ -229,6 +257,9 @@ BOOST_FIXTURE_TEST_CASE(test_getPollutantUnits, Fixture) {
     BOOST_CHECK(i_array == NULL);
 }
 
+/*!
+* \brief Test the SMO_getStartDate function
+*/
 BOOST_FIXTURE_TEST_CASE(test_getStartDate, Fixture) {
     double date = -1;
 
@@ -238,6 +269,9 @@ BOOST_FIXTURE_TEST_CASE(test_getStartDate, Fixture) {
     BOOST_CHECK_EQUAL(35796., date);
 }
 
+/*!
+* \brief Test the SMO_getTimes function
+*/
 BOOST_FIXTURE_TEST_CASE(test_getTimes, Fixture) {
     int time = -1;
 
@@ -252,6 +286,9 @@ BOOST_FIXTURE_TEST_CASE(test_getTimes, Fixture) {
     BOOST_CHECK_EQUAL(36, time);
 }
 
+/*!
+* \brief Test the SMO_getElementName function
+*/
 BOOST_FIXTURE_TEST_CASE(test_getElementName, Fixture) {
     char* c_array = NULL;
     int   index   = 1;
@@ -266,6 +303,9 @@ BOOST_FIXTURE_TEST_CASE(test_getElementName, Fixture) {
     SMO_free((void**)&c_array);
 }
 
+/*!
+* \brief Test the SMO_getSubcatchSeries function
+*/
 BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
     error = SMO_getSubcatchSeries(p_handle, 1, SMO_runoff_rate, 0, 10, &array,
                                   &array_dim);
@@ -285,6 +325,9 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchSeries, Fixture) {
     BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
 }
 
+/*!
+* \brief Test the SMO_getSystemSeries function
+*/
 BOOST_FIXTURE_TEST_CASE(test_getSystemSeries, Fixture) {
     error = SMO_getSystemSeries(p_handle, SMO_runoff_flow, 0, 10, &array,
                                   &array_dim);
@@ -304,6 +347,9 @@ BOOST_FIXTURE_TEST_CASE(test_getSystemSeries, Fixture) {
     BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
 }
 
+/*!
+* \brief Test the SMO_getSubcatchResult function
+*/
 BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
     error = SMO_getSubcatchResult(p_handle, 1, 1, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
@@ -322,6 +368,9 @@ BOOST_FIXTURE_TEST_CASE(test_getSubcatchResult, Fixture) {
     BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
 }
 
+/*!
+* \brief Test the SMO_getNodeResult function
+*/
 BOOST_FIXTURE_TEST_CASE(test_getNodeResult, Fixture) {
     error = SMO_getNodeResult(p_handle, 2, 2, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
@@ -340,6 +389,9 @@ BOOST_FIXTURE_TEST_CASE(test_getNodeResult, Fixture) {
     BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
 }
 
+/*!
+* \brief Test the SMO_getLinkResult function
+*/
 BOOST_FIXTURE_TEST_CASE(test_getLinkResult, Fixture) {
     error = SMO_getLinkResult(p_handle, 3, 3, &array, &array_dim);
     BOOST_REQUIRE(error == 0);
@@ -358,6 +410,9 @@ BOOST_FIXTURE_TEST_CASE(test_getLinkResult, Fixture) {
     BOOST_CHECK(check_cdd_float(test_vec, ref_vec, 3));
 }
 
+/*!
+* \brief Test the test_getSystemResult function 
+*/
 BOOST_FIXTURE_TEST_CASE(test_getSystemResult, Fixture) {
     error = SMO_getSystemResult(p_handle, 4, 4, &array, &array_dim);
     BOOST_REQUIRE(error == 0);

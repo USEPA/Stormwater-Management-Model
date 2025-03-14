@@ -167,7 +167,7 @@
  * \brief Maximum number of time series rows that can be cached to memory to speed up simulation
  * \TODO Allow users to set this value in the input file and GUI
  */
-#define MAXTIMESERIESCACHESIZE = 10 // maximum number of time series that can be cached
+#define MAXTIMESERIESCACHESIZE 10 // maximum number of time series that can be cached
 
 /*!
  * \}
