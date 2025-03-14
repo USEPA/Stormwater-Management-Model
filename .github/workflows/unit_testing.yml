@@ -10,13 +10,8 @@ env:
   BUILD_TYPE: Release
   VCPKG_ROOT: ${{ github.workspace }}/vcpkg
   VCPKG_EXE:  ${{ github.workspace }}/vcpkg/vcpkg
-  # NUGET_FEED_URL: https://nuget.pkg.github.com/USEPA/index.json
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
   OMP_NUM_THREADS: 1
-  BUILD_HOME: build
-  # NUGET_USER_NAME: ${{ secrets.CALEB_NUGET_USER_NAME }}
-  # NUGET_API_KEY: ${{ secrets.GITHUB_TOKEN  }}
-
 jobs:
   engine_unit_test:
     name: Build and Unit Testing of Engine
@@ -103,7 +98,7 @@ jobs:
       env:
         VCPKG_ROOT:  ${{ env.VCPKG_ROOT }}
       run: |
-        cmake -B build-${{ matrix.vcpkg_triplet }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_TESTS=ON  --preset=${{ matrix.cmake_preset }}
+        cmake -B build-${{ matrix.vcpkg_triplet }} -DBUILD_TESTS=ON  --preset=${{ matrix.cmake_preset }}
         cmake --build build-${{ matrix.vcpkg_triplet }} --target package
 
     - name: Unit Test
