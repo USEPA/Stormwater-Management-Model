@@ -1760,7 +1760,7 @@ int EXPORT_SWMM_OUTPUT_API SMO_checkError(SMO_Handle p_handle, char **msg_buffer
  */
 void errorLookup(int errcode, char *dest_msg, int dest_len)
 {
-    const char msg[ERR_MAXMSG];
+    char msg[ERR_MAXMSG];
 
     switch (errcode)
     {

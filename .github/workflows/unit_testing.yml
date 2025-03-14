@@ -175,7 +175,7 @@ jobs:
     - name: Build Wheels
       working-directory: ${{ github.workspace }}/python
       run: |
-        python -m build --sduild
+        python -m build --sbuild
         cibuildwheel --output-dir wheelhouse
 
     - name: Build and Install
