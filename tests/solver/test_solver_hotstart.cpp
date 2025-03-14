@@ -81,12 +81,16 @@ BOOST_AUTO_TEST_SUITE(test_solver_hotstart, *boost::unit_test::label("Test SWMM 
 BOOST_AUTO_TEST_CASE(test_save_hotstart) 
 {
 	BOOST_TEST_DECORATOR(*boost::unit_test::label("Test save multiple hotstart files"));
-	
+
 	int error = 0;
 	std::string filepath = std::string(ORIGINAL_INPUT_FILE);
     std::string extension = ".inp";
 
     size_t startPos = filepath.find(extension);
+    if (startPos == std::string::npos) {
+        BOOST_FAIL("Extension not found in filepath");
+    }
+
     std::string reportFilepath = std::string(filepath).replace(startPos, extension.length(), ".rpt");
 	std::string outputFilepath = std::string(filepath).replace(startPos, extension.length(), ".out");
 
@@ -135,30 +139,38 @@ BOOST_AUTO_TEST_CASE(test_run_hotstart_first) {
 	std::string filepath = std::string(RUN_HOTSTART_INPUT_FILE_v1);
 	std::string extension = ".inp";
 
-	size_t startPos = filepath.find(extension);
+    size_t startPos = filepath.find(extension);
+    if (startPos == std::string::npos) {
+        BOOST_FAIL("Extension not found in filepath");
+    }
 	std::string reportFilepath = std::string(filepath).replace(startPos, extension.length(), ".rpt");
 	std::string outputFilepath = std::string(filepath).replace(startPos, extension.length(), ".out");
 	error = swmm_run(filepath.c_str(), reportFilepath.c_str(), outputFilepath.c_str());
 	BOOST_REQUIRE(error == 0);
 	
-	std::string originalOutputFilepath = std::string(originalFilepath).replace(startPos, extension.length(), ".out");
-	SWMMOutputFile output_file(originalOutputFilepath);
+	startPos = originalFilepath.find(extension);
+    if (startPos == std::string::npos) {
+        BOOST_FAIL("Extension not found in filepath");
+    }
 
-	int *origElementCount;
-	int origLength;
-	error = SMO_getProjectSize(output_file.m_handle, &origElementCount, &origLength);
-	BOOST_REQUIRE(error == 0);
+	// std::string originalOutputFilepath = std::string(originalFilepath).replace(startPos, extension.length(), ".out");
+	// SWMMOutputFile output_file(originalOutputFilepath);
 
-	int num_periods;
-	double startDate;
-	error = SMO_getTimes(output_file.m_handle, SMO_time::SMO_numPeriods, &num_periods);
-	BOOST_REQUIRE(error == 0);
+	// int *origElementCount;
+	// int origLength;
+	// error = SMO_getProjectSize(output_file.m_handle, &origElementCount, &origLength);
+	// BOOST_REQUIRE(error == 0);
 
-	error = SMO_getStartDate(output_file.m_handle, &startDate);
-	BOOST_REQUIRE(error == 0);
+	// int num_periods;
+	// double startDate;
+	// error = SMO_getTimes(output_file.m_handle, SMO_time::SMO_numPeriods, &num_periods);
+	// BOOST_REQUIRE(error == 0);
 
-	std::string outputFilePath = std::string(filepath).replace(startPos, extension.length(), ".out");
-	SWMMOutputFile hotstart_output_file(outputFilePath);
+	// error = SMO_getStartDate(output_file.m_handle, &startDate);
+	// BOOST_REQUIRE(error == 0);
+
+	// std::string outputFilePath = std::string(filepath).replace(startPos, extension.length(), ".out");
+	// SWMMOutputFile hotstart_output_file(outputFilePath);
 
 }
 

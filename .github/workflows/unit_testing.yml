@@ -28,24 +28,24 @@ jobs:
         include:
           # - os: ubuntu-latest
           #   alias: Linux
-          #   shell: bash
-          #   cmake_preset: Linux
-          #   shell_extension: .sh
-          #   vcpkg_triplet: x64-linux
+            shell: bash
+            cmake_preset: Linux
+            shell_extension: .sh
+            vcpkg_triplet: x64-linux
 
-          # - os: macos-13
-          #   alias: intel-mac
-          #   cmake_preset: Darwin
-          #   shell: bash
-          #   shell_extension: .sh
-          #   vcpkg_triplet: x64-osx
+          - os: macos-13
+            alias: intel-mac
+            cmake_preset: Darwin
+            shell: bash
+            shell_extension: .sh
+            vcpkg_triplet: x64-osx
 
-          # - os: macos-latest
-          #   alias: apple-silicon
-          #   cmake_preset: Darwin
-          #   shell: bash
-          #   shell_extension: .sh
-          #   vcpkg_triplet: arm64-osx
+          - os: macos-latest
+            alias: apple-silicon
+            cmake_preset: Darwin
+            shell: bash
+            shell_extension: .sh
+            vcpkg_triplet: arm64-osx
 
           - os: windows-latest
             alias: win64
