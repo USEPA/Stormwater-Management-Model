@@ -14,7 +14,7 @@ env:
   OMP_NUM_THREADS: 1
 jobs:
   engine_unit_test:
-    name: Build and Unit Testing of Engine
+    name: Build and Unit Test C/C++ Engine
     permissions: write-all
     strategy:
       fail-fast: false
@@ -117,8 +117,7 @@ jobs:
 
 
   python_binding_unit_test:
-    name: Build and Unit Test and Python Bindings
-    needs: engine_unit_test
+    name: Build and Unit Test Python Bindings
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-13, macos-latest]
@@ -172,16 +171,16 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
     
+    - name: Build and Install
+      working-directory: ${{ github.workspace }}/python
+      run: |
+        python -m pip install .
+
     - name: Build Wheels
       working-directory: ${{ github.workspace }}/python
       run: |
         python -m build
         cibuildwheel --output-dir wheelhouse
-
-    - name: Build and Install
-      working-directory: ${{ github.workspace }}/python
-      run: |
-        python -m pip install .
     
     - name: Unit Test
       working-directory: ${{ github.workspace }}/python
