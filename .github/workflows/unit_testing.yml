@@ -24,10 +24,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest] #, ubuntu-latest, macos-13, macos-latest]
+        os: [windows-latest, ubuntu-latest, macos-13, macos-latest]
         include:
-          # - os: ubuntu-latest
-          #   alias: Linux
+          - os: ubuntu-latest
+            alias: Linux
             shell: bash
             cmake_preset: Linux
             shell_extension: .sh
