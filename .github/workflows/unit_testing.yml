@@ -95,7 +95,7 @@ jobs:
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
     
     - name: Install Required Libraries (Windows)
-      if: ${{ matrix.os == 'windows-latest' }}
+      # if: ${{ matrix.os == 'windows-latest' }}
       run: |
           ${{ env.VCPKG_EXE }} install
 
