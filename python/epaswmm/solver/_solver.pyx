@@ -1,8 +1,7 @@
+# cython: language_level=3str
 # Description: Cython module for epaswmm solver
 # Created by: Caleb Buahin (EPA/ORD/CESER/WID)
 # Created on: 2024-11-19
-
-# cython: language_level=3
 
 # python and cython imports
 from enum import Enum

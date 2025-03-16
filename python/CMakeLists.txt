@@ -11,16 +11,20 @@ project(
 )
 
 # Define build options
-cmake_policy(SET CMP0148 OLD)
-find_package(Python REQUIRED COMPONENTS Interpreter Development)
-find_package(Cython REQUIRED)
+find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 
 # Sets the position independent code property for all targets
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Sets default install prefix when cmakecache is initialized for first time
 if(SKBUILD)
-    message(STATUS "Building with scikit-build")
+    message(STATUS "Building with scikit-build-core")
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set_property (TARGET ${name} PROPERTY SUFFIX ".${SKBUILD_SOABI}.pyd")
+else()
+    set_property (TARGET ${name} PROPERTY SUFFIX ".${SKBUILD_SOABI}${CMAKE_SHARED_MODULE_SUFFIX}")
 endif()
 
 # Sets default install prefix when cmakecache is initialized for first time
@@ -38,8 +42,11 @@ set(CONFIG_DIST  "cmake")
 set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)
 
-add_subdirectory(../src/solver ./solver_build)
-add_subdirectory(../src/outfile ./output_build)
+# Recursivily search for solver and output libraries in parent directory
+list(APPEND CMAKE_MODULE_PATH "C:/Users/CBUAHIN/SourceCodes/cbuahin/Stormwater-Management-Model/build/_CPack_Packages/win64/ZIP/swmm-solver-5.3.0-win64/cmake")
+
+find_package(swmm5 REQUIRED)
+find_package(swmm_output REQUIRED)
 
 add_subdirectory(epaswmm)
 

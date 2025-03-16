@@ -11,7 +11,7 @@
 #         US EPA ORD/CESER 
 #
 
-cmake_minimum_required (VERSION 3.27)
+cmake_minimum_required (VERSION 3.15...3.31)
 
 if("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     message(FATAL_ERROR "In-source builds are disabled.") 
@@ -21,9 +21,6 @@ project(swmm-solver
     VERSION 5.3.0
     LANGUAGES C CXX
 )
-
-# Append local dir to module search path
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Sets the position independent code property for all targets
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)

@@ -190,6 +190,7 @@ jobs:
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
           
     - name: Install Required Libraries
+      working-directory: ${{ github.workspace }}/python
       run: |
           ${{ env.VCPKG_EXE }} install
 

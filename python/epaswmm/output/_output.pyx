@@ -1,8 +1,7 @@
+# cython: language_level=3str
 # Description: Cython module for epaswmm output file processing and data extraction functions for the epaswmm python package.
 # Created by: Caleb Buahin (EPA/ORD/CESER/WID)
 # Created on: 2024-11-19
-
-# cython: language_level=3
 
 # python and cython imports
 from enum import Enum

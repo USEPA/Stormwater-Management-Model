@@ -7,12 +7,11 @@ import os
 import sys
 import platform
 import subprocess
-from setuptools import Command, find_packages
+from setuptools import Command, find_packages, setup
 from setuptools.command.build_ext import build_ext
 import shutil
 
 # third party imports
-from skbuild import setup
 
 # local imports
 
@@ -95,7 +94,6 @@ def get_cmake_args():
     configure_cmake_presets()
 
     # Get the cmake arguments
-
     cmake_args = os.getenv(
         "EPASWMM_CMAKE_ARGS", [f"--preset={platform_system}{debug_qualifier()}"]
     )
