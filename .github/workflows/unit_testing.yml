@@ -2,7 +2,7 @@ name: Build and Unit Test
 
 on:
   push:
-    branches: [ master, bug_fixes]
+    branches: [ master]
   pull_request:
     branches: [ master]
 

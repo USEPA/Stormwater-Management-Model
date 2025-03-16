@@ -17,7 +17,7 @@ if("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     message(FATAL_ERROR "In-source builds are disabled.") 
 endif()
 
-project(swmm-solver
+project(swmm
     VERSION 5.3.0
     LANGUAGES C CXX
 )
