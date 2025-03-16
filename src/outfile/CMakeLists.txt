@@ -62,31 +62,17 @@ set_target_properties(swmm-output
 install(TARGETS swmm-output
     EXPORT
         swmm-outputTargets
-    RUNTIME
-        DESTINATION "${TOOL_DIST}"
-    LIBRARY
-        DESTINATION "${TOOL_DIST}"
-    ARCHIVE
-        DESTINATION "${LIBRARY_DIST}"
-    FRAMEWORK
-        DESTINATION "${TOOL_DIST}"
-
+        RUNTIME    DESTINATION  bin
+        LIBRARY    DESTINATION  lib
+        ARCHIVE    DESTINATION  lib
+        INCLUDES   DESTINATION  include
 )
 
 install(
-    EXPORT
-        swmm-outputTargets
-    DESTINATION
-        "${CONFIG_DIST}"
-    FILE
-        swmm-output-config.cmake
-)
-
-install(
-    FILES
-        ${SWMM_OUT_PUBLIC_HEADERS}
-    DESTINATION
-        "${INCLUDE_DIST}"
+    FILES 
+        ${SWMM_OUT_PUBLIC_HEADERS} 
+    DESTINATION 
+        include
 )
 
 

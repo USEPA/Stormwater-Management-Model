@@ -44,51 +44,6 @@ else()
 
 endif()
 
-target_compile_options(swmm5
-    PUBLIC
-        $<$<C_COMPILER_ID:MSVC>:
-            $<$<CONFIG:Release>:/GL>
-            $<$<CONFIG:Release>:/fp:fast>
-            $<$<CONFIG:Release>:/Zi>
-        >
-)
-
-target_link_options(swmm5
-    PUBLIC
-        $<$<C_COMPILER_ID:MSVC>:
-            $<$<CONFIG:Release>:/LTCG:incremental>
-        >
-)
-
-# CONFIGURE BUILD_NUMBER, BUILD_ID, BUILD_COMMIT, BUILD_BRANCH, BUILD_DATE
-string(TIMESTAMP BUILD_TIMESTAMP "%Y-%m-%d %H:%M:%S UTC")
-set(BUILD_DATE "${BUILD_TIMESTAMP}")
-
-execute_process(
-    COMMAND git rev-parse HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_COMMIT_HASH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-# Get the branch name
-execute_process(
-    COMMAND git rev-parse --abbrev-ref HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_BRANCH_NAME
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-string(
-    UUID BUILD_ID 
-    NAMESPACE "00000000-0000-0000-0000-000000000000" 
-    NAME "https://www.epa.gov/water-research/storm-water-management-model-swmm" 
-    TYPE MD5
-)
-set(BUILD_ID "${BUILD_ID}")
-set(BUILD_BRANCH "${GIT_BRANCH_NAME}")
-set(BUILD_COMMIT "${GIT_COMMIT_HASH}")
-
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/include/version.h.in 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/version.h
@@ -125,7 +80,7 @@ target_link_libraries(swmm5
 target_include_directories(swmm5
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:${INCLUDE_DIST}>
+        $<INSTALL_INTERFACE:${SWMM_INCLUDE}>
 )
 
 
@@ -145,28 +100,20 @@ set_target_properties(swmm5
 )
 
 
-install(TARGETS swmm5 EXPORT swmm5Targets
-    RUNTIME    DESTINATION "${TOOL_DIST}"
-    LIBRARY    DESTINATION "${TOOL_DIST}"
-    ARCHIVE    DESTINATION "${LIBRARY_DIST}"
-    FRAMEWORK  DESTINATION "${TOOL_DIST}"
-)
-
-# Create target import scripts so other cmake projects can use swmm libraries
 install(
-    EXPORT
-        swmm5Targets
-    DESTINATION
-        "${CONFIG_DIST}"
-    FILE
-        swmm5-config.cmake
+    TARGETS swmm5
+    EXPORT swmm5Targets
+    RUNTIME    DESTINATION  bin
+    LIBRARY    DESTINATION  lib
+    ARCHIVE    DESTINATION  lib
+    INCLUDES   DESTINATION  include
 )
 
 install(
     FILES 
         ${SWMM_PUBLIC_HEADERS} 
     DESTINATION 
-        "${INCLUDE_DIST}"
+        include
 )
 
 

@@ -36,8 +36,11 @@ set_target_properties(runswmm
         INSTALL_RPATH_USE_LINK_PATH TRUE
 )
 
-install(TARGETS runswmm
-    DESTINATION "${TOOL_DIST}"
+install(
+    TARGETS
+        runswmm
+    DESTINATION
+        bin
 )
 
 
