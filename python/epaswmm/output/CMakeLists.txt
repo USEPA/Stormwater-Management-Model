@@ -3,35 +3,26 @@
 # Created by: Caleb Buahin (EPA/ORD/CESER/WID)
 # Created on: 2024-11-19
 
+add_cython_target(_output _output.pyx LANGUAGE CXX PY3)
 
-# Create Python extension modules
-add_custom_command(
-    OUTPUT output.c
-    COMMENT
-        "Making ${CMAKE_CURRENT_BINARY_DIR}/output.c from ${CMAKE_CURRENT_SOURCE_DIR}/_output.pyx"
-    COMMAND Python::Interpreter -m cython
-          "${CMAKE_CURRENT_SOURCE_DIR}/_output.pyx" --output-file output.c
-    DEPENDS _output.pyx
-    VERBATIM
-)   
+# Add Cython target
+add_library(_output MODULE ${_output})
 
-# Add library target for output
-python_add_library(output MODULE WITH_SOABI output.c)
-
-# Link to SWMM and Python libraries
+# Add library
 target_link_libraries(
-    output
-    PUBLIC
-        swmm_output
-    )
+    _output
+    swmm::swmm-output
+)
 
+# Specify that this is a Python extension module
+python_extension_module(_output)
 
 # Install the target
-install(TARGETS output LIBRARY DESTINATION epaswmm/output)
+install(TARGETS _output LIBRARY DESTINATION epaswmm/output)
 
 # Include directories
 target_include_directories(
-    output PUBLIC 
+    _output
+    PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    $<TARGET_PROPERTY:swmm_output,INCLUDE_DIRECTORIES>
 )

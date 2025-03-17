@@ -29,7 +29,7 @@ add_library(swmm-output
 target_include_directories(swmm-output
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:${INCLUDE_DIST}>
+        $<INSTALL_INTERFACE:include>
 )
 
 include(GenerateExportHeader)
@@ -59,15 +59,6 @@ set_target_properties(swmm-output
         INSTALL_RPATH_USE_LINK_PATH TRUE
 )
 
-install(TARGETS swmm-output
-    EXPORT
-        swmm-outputTargets
-        RUNTIME    DESTINATION  bin
-        LIBRARY    DESTINATION  lib
-        ARCHIVE    DESTINATION  lib
-        INCLUDES   DESTINATION  include
-)
-
 install(
     FILES 
         ${SWMM_OUT_PUBLIC_HEADERS} 
@@ -75,6 +66,12 @@ install(
         include
 )
 
+install(
+    TARGETS
+        swmm-output
+    EXPORT
+        swmmTargets
+)
 
 # copy epanet-output to build tree for testing
 if(BUILD_TESTS)

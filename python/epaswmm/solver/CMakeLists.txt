@@ -4,34 +4,28 @@
 # Created on: 2024-11-19
 #
 
-# Create Python extension modules
-add_custom_command(
-    OUTPUT solver.c
-    COMMENT
-        "Making ${CMAKE_CURRENT_BINARY_DIR}/solver.c from ${CMAKE_CURRENT_SOURCE_DIR}/_solver.pyx"
-    COMMAND Python::Interpreter -m cython
-          "${CMAKE_CURRENT_SOURCE_DIR}/_solver.pyx" --output-file solver.c
-    DEPENDS _solver.pyx
-    VERBATIM
-)   
+# Add Cython target
+add_cython_target(_solver _solver.pyx CXX PY3)
 
-# Add library target for solver
-python_add_library(solver MODULE WITH_SOABI solver.c)
+# Add library
+add_library(_solver MODULE ${_solver})
 
 # Link to SWMM and Python libraries
 target_link_libraries(
-    solver
-    PUBLIC
-        swmm5
-    )
+    _solver
+    swmm::swmm5
+)
+
+# Specify that this is a Python extension module
+python_extension_module(_solver)
 
 # Install the target
-install(TARGETS solver LIBRARY DESTINATION epaswmm/solver)
+install(TARGETS _solver LIBRARY DESTINATION epaswmm/solver)
 
 # Include directories
 target_include_directories(
-    solver PUBLIC
+    _solver
+    PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    $<TARGET_PROPERTY:swmm5,INCLUDE_DIRECTORIES>
-    ${Python3_INCLUDE_DIRS}
+        # ${Python3_INCLUDE_DIRS}
 )

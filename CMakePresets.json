@@ -108,10 +108,10 @@
             "binaryDir": "${sourceDir}/build/darwin",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_CXX_FLAGS": "-O2 -flto -fdata-sections -ffunction-sections -fipa-icf -fno-fast-math -Wall -Wextra -ffloat-store",
+                "CMAKE_CXX_FLAGS": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -ffloat-store",
                 "CMAKE_EXE_LINKER_FLAGS": "-Wl, -flto",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
-                "CMAKE_CXX_FLAGS_RELEASE": "-O2 -flto -fdata-sections -ffunction-sections -fipa-icf -fno-fast-math -Wall -Wextra -ffloat-store",
+                "CMAKE_CXX_FLAGS_RELEASE": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -ffloat-store",
                 "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store"
             },
             "condition": {

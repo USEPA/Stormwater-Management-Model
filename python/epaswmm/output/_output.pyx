@@ -1532,7 +1532,7 @@ cdef class Output:
             free(msg_buffer)
             return error_message
         else:
-            return ""
+            return u""
 
     cdef str __validate_error_code(self, int error_code):
         """
@@ -1549,4 +1549,4 @@ cdef class Output:
             error_message = self.check_error()
             raise SWMMOutputException(f"Error code: {error_code}: {error_message}")
         else:
-            return ""
+            return u""

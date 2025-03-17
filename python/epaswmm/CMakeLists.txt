@@ -2,21 +2,23 @@
 # Created by: Caleb Buahin (EPA/ORD/CESER/WID)
 # Created on: 2024-11-19
 
-# Create Python extension modules
-add_custom_command(
-    OUTPUT epaswmm.c
-    COMMENT
-        "Making ${CMAKE_CURRENT_BINARY_DIR}/epaswmm.c from ${CMAKE_CURRENT_SOURCE_DIR}/_epaswmm.pyx"
-    COMMAND Python::Interpreter -m cython
-          "${CMAKE_CURRENT_SOURCE_DIR}/_epaswmm.pyx" --output-file epaswmm.c
-    DEPENDS _epaswmm.pyx
-    VERBATIM
-)   
+# Add Cython targets for epaswmm
+add_cython_target(_epaswmm _epaswmm.pyx CXX PY3)
 
-python_add_library(epaswmm MODULE WITH_SOABI epaswmm.c)
+# Create Python extension modules
+add_library(_epaswmm MODULE ${_epaswmm})
+
+python_extension_module(_epaswmm)
 
 # Install the epaswmm module
-install(TARGETS epaswmm LIBRARY DESTINATION epaswmm)
+install(TARGETS _epaswmm LIBRARY DESTINATION epaswmm)
+
+# Include the current source directory
+target_include_directories(
+    _epaswmm
+    PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 # Add subdirectories
 add_subdirectory(solver)

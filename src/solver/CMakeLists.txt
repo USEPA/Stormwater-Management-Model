@@ -15,6 +15,7 @@ find_package(OpenMP)
 
 # configure file groups
 set(SWMM_PUBLIC_HEADERS
+    include/swmm5_export.h
     include/swmm5.h
 )
 
@@ -72,17 +73,26 @@ file(COPY ${CMAKE_CURRENT_BINARY_DIR}/swmm5_export.h
 )
 
 target_link_libraries(swmm5
-    PUBLIC
+    PRIVATE
         $<$<NOT:$<BOOL:$<C_COMPILER_ID:MSVC>>>:m>
-        $<$<BOOL:OpenMP_C_FOUND>:OpenMP::OpenMP_C>
+        OpenMP::OpenMP_C
 )
 
-target_include_directories(swmm5
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:${SWMM_INCLUDE}>
+# Set public include directories for both build and install time
+target_include_directories(
+    swmm5
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:include>
+        PRIVATE 
+            ${OpenMP_C_INCLUDE_DIRS}
 )
 
+# target_compile_options(
+#     swmm5sz
+#         PRIVATE
+#             ${OpenMP_C_FLAGS}
+# )
 
 if(APPLE)
     set(LIB_ROOT "@loader_path")
@@ -99,16 +109,6 @@ set_target_properties(swmm5
         INSTALL_RPATH_USE_LINK_PATH TRUE
 )
 
-
-install(
-    TARGETS swmm5
-    EXPORT swmm5Targets
-    RUNTIME    DESTINATION  bin
-    LIBRARY    DESTINATION  lib
-    ARCHIVE    DESTINATION  lib
-    INCLUDES   DESTINATION  include
-)
-
 install(
     FILES 
         ${SWMM_PUBLIC_HEADERS} 
@@ -116,6 +116,10 @@ install(
         include
 )
 
+install(
+    TARGETS swmm5
+    EXPORT swmmTargets
+)
 
 # copy swmm5 to build tree for testing
 add_custom_command(TARGET swmm5 POST_BUILD

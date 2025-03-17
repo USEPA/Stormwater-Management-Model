@@ -4,5 +4,5 @@ cmake>=3.31.4
 wheel>=0.45.1
 cibuildwheel>=2.22.0
 Cython>=3.0.12
-scikit-build-core>=0.11.0
+scikit-build>=0.18.1
 twine>=6.1.0

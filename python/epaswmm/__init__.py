@@ -24,5 +24,5 @@ elif platform.system() == "Linux":
 elif platform.system() == "Darwin":  # macOS
     lib_dir = os.path.join(sys.prefix, 'lib')
     os.environ["DYLD_LIBRARY_PATH"] = lib_dir + ":" + os.environ.get("DYLD_LIBRARY_PATH", "")
-    
+
 from epaswmm import *

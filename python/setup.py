@@ -7,11 +7,12 @@ import os
 import sys
 import platform
 import subprocess
-from setuptools import Command, find_packages, setup
+from setuptools import Command, find_packages
 from setuptools.command.build_ext import build_ext
 import shutil
 
 # third party imports
+from skbuild import setup
 
 # local imports
 
@@ -56,7 +57,7 @@ def get_version() -> str:
     if os.path.exists(root_cmake_lists):
         with open(root_cmake_lists, 'r') as file:
             content = file.read()
-            version_match = re.search(r'project\(\s*swmm-solver\s+VERSION\s+(\d+\.\d+\.\d+)', content)
+            version_match = re.search(r'project\(\s*swmm\s+VERSION\s+(\d+\.\d+\.\d+)', content)
             if version_match:
                 version = version_match.group(1)
             else:

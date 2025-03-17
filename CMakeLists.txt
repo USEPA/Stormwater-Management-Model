@@ -74,13 +74,6 @@ set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-# Export the targets to a script
-# install(EXPORT swmmTargets
-#     FILE swmmTargets.cmake
-#     NAMESPACE swmm::
-#     DESTINATION lib/cmake/swmm
-# )
-
 # Configure the package configuration file
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/swmmConfig.cmake.in
@@ -95,6 +88,7 @@ write_basic_package_version_file(
     COMPATIBILITY AnyNewerVersion
 )
 
+# Define install locations (will be prepended by install prefix)
 install(
     FILES
         ${CMAKE_CURRENT_BINARY_DIR}/swmmConfig.cmake
@@ -102,6 +96,17 @@ install(
     DESTINATION
         ${CMAKE_INSTALL_LIBDIR}/cmake/swmm
 )
+
+# Install the config file
+install(
+    EXPORT
+        swmmTargets
+    NAMESPACE
+        swmm::
+    DESTINATION
+        ${CMAKE_INSTALL_LIBDIR}/cmake/swmm
+)
+
 
 # Configure CPack driven installer package
 set(CPACK_GENERATOR "ZIP")
