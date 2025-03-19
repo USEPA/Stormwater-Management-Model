@@ -13,7 +13,7 @@ add_library(_solver MODULE ${_solver})
 # Link to SWMM and Python libraries
 target_link_libraries(
     _solver
-    swmm::swmm5
+    swmm5
 )
 
 # Specify that this is a Python extension module
@@ -27,5 +27,5 @@ target_include_directories(
     _solver
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-        # ${Python3_INCLUDE_DIRS}
 )
+

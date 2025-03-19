@@ -11,7 +11,7 @@ add_library(_output MODULE ${_output})
 # Add library
 target_link_libraries(
     _output
-    swmm::swmm-output
+     swmm-output
 )
 
 # Specify that this is a Python extension module

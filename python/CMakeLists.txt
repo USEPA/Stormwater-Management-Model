@@ -34,10 +34,7 @@ endif()
 set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)
 
-# Recursivily search for solver and output libraries in parent directory
-list(APPEND CMAKE_PREFIX_PATH "/Users/calebbuahin/Documents/Projects/cbuahin_github/Stormwater-Management-Model/build/debug/_CPack_Packages/Darwin/ZIP/swmm-5.3.0-Darwin/lib/cmake/swmm")
-
-find_package(swmm REQUIRED)
+add_subdirectory(../src/solver ./solver_build)
+add_subdirectory(../src/outfile ./output_build)
 
 add_subdirectory(epaswmm)
-

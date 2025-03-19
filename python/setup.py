@@ -42,7 +42,8 @@ def configure_cmake_presets():
     """
     Cpoy the CMakePresets.json file to the build directory
     """
-    shutil.copyfile(os.path.join(here, r"./../CMakePresets.json"), os.path.join(here, "CMakePresets.json"))
+    # shutil.copyfile(os.path.join(here, r"./../CMakePresets.json"), os.path.join(here, "CMakePresets.json"))
+    pass
 
 
 def get_version() -> str:

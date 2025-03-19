@@ -4,7 +4,6 @@
         {
             "name": "default-debug",
             "generator": "Ninja", 
-            "binaryDir": "${sourceDir}/build/debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
@@ -13,7 +12,6 @@
         {
             "name": "default",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
             }
@@ -23,14 +21,13 @@
             "inherits": "default",
             "description": "Windows build using Visual Studio generator",
             "generator": "Visual Studio 17 2022",
-            "binaryDir": "${sourceDir}/build/windows",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_CXX_FLAGS": "/O2 /GL /fp:precise /W4 /fp:strict",
+                "CMAKE_CXX_FLAGS": "/O2 /GL /fp:precise /W4",
                 "CMAKE_EXE_LINKER_FLAGS": "/LTCG:incremental /OPT:REF /OPT:ICF",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
-                "CMAKE_CXX_FLAGS_RELEASE": "/O2 /GL /fp:precise /W4 /fp:strict",
-                "CMAKE_CXX_FLAGS_DEBUG": "/Zi /Od /DDEBUG /W4 /fp:precise /fp:strict" 
+                "CMAKE_CXX_FLAGS_RELEASE": "/O2 /GL /fp:precise /W4",
+                "CMAKE_CXX_FLAGS_DEBUG": "/Zi /Od /DDEBUG /W4 /fp:precise" 
             },
             "condition": {
                 "type": "equals",
@@ -43,13 +40,12 @@
             "inherits": "default-debug",
             "description": "Windows build for debugging using Visual Studio generator",
             "generator": "Visual Studio 17 2022",
-            "binaryDir": "${sourceDir}/build/windows-debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_CXX_FLAGS": "/Zi /Od /DDEBUG /W4 /fp:precise /fp:strict",
+                "CMAKE_CXX_FLAGS": "/Zi /Od /DDEBUG /W4 /fp:precise",
                 "CMAKE_EXE_LINKER_FLAGS": "/DEBUG",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
-                "CMAKE_CXX_FLAGS_DEBUG": "/Zi /Od /DDEBUG /W4 /fp:precise /fp:strict"
+                "CMAKE_CXX_FLAGS_DEBUG": "/Zi /Od /DDEBUG /W4 /fp:precise"
             },
             "condition": {
                 "type": "equals",
@@ -62,7 +58,6 @@
             "inherits": "default",
             "description": "Linux build using Ninja generator",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/linux",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_CXX_FLAGS": "-O2 -flto -fdata-sections -ffunction-sections -fipa-icf -fno-fast-math -Wall -Wextra -ffloat-store",
@@ -82,7 +77,6 @@
             "inherits": "default-debug",
             "description": "Linux build for debugging using Ninja generator",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/linux-debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_CXX_FLAGS": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store",
@@ -101,7 +95,6 @@
             "inherits": "default",
             "description": "macOS build using Xcode generator",
             "generator": "Xcode",
-            "binaryDir": "${sourceDir}/build/darwin",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_CXX_FLAGS": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -ffloat-store",
@@ -121,7 +114,6 @@
             "inherits": "default-debug",
             "description": "macOS build for debugging using Xcode generator",
             "generator": "Xcode",
-            "binaryDir": "${sourceDir}/build/darwin-debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_CXX_FLAGS": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store",

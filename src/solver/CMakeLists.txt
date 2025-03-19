@@ -88,12 +88,6 @@ target_include_directories(
             ${OpenMP_C_INCLUDE_DIRS}
 )
 
-# target_compile_options(
-#     swmm5sz
-#         PRIVATE
-#             ${OpenMP_C_FLAGS}
-# )
-
 if(APPLE)
     set(LIB_ROOT "@loader_path")
 else()
