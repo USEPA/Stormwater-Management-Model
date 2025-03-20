@@ -90,13 +90,13 @@ jobs:
     
     - name: Build Binaries
       run: |
-        cmake -B build-${{ matrix.vcpkg_triplet }} -DBUILD_TESTS=ON  --preset=${{ matrix.cmake_preset }}
+        cmake --preset=${{ matrix.cmake_preset }} -B build-${{ matrix.vcpkg_triplet }} -DBUILD_TESTS=ON -C Debug
         cmake --build build-${{ matrix.vcpkg_triplet }} --target package
     
-    - name : Change permissions
+    - name : Change permissions (Unix like)
       if : ${{ matrix.os != 'windows-latest' }}
       run: |
-        find build-${{ matrix.vcpkg_triplet }} -type f -perm /u=x -exec chmod +x {} \;
+        chmod +x build-${{ matrix.vcpkg_triplet }}/bin/test_*
     
     - name: Unit Test
       run: |
