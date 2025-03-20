@@ -204,7 +204,7 @@ jobs:
     - name: Unit Test
       working-directory: ${{ github.workspace }}/python
       run: |
-        python -m pytest -v tests
+        python -m pytest -v .
     
     - name: Build Wheels
       working-directory: ${{ github.workspace }}/python
