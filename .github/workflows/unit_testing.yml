@@ -90,14 +90,19 @@ jobs:
     
     - name: Build Binaries
       run: |
-        cmake --preset=${{ matrix.cmake_preset }} -B build-${{ matrix.vcpkg_triplet }} -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
-        cmake --build build-${{ matrix.vcpkg_triplet }}
+        cmake --preset=${{ matrix.cmake_preset }}-debug -B build-${{ matrix.vcpkg_triplet }} -DBUILD_TESTS=ON
+        cmake --build build-${{ matrix.vcpkg_triplet }} --target package 
     
+    - name: Search for Unit Test
+      if: ${{ matrix.os != 'windows-latest' }}
+      run: |
+        ls -l build-${{ matrix.vcpkg_triplet }}/bin
+        ls -l build-${{ matrix.vcpkg_triplet }}/bin/Debug
+
     - name: Unit Test
       run: |
-        ctest --test-dir ./build-${{ matrix.vcpkg_triplet }}/bin  -C Debug --output-on-failure
+        ctest --test-dir ./build-${{ matrix.vcpkg_triplet }}  -C Debug --output-on-failure
 
-    
     - name: Upload Artifacts
       if: ${{ always() }}
       uses: actions/upload-artifact@v4
@@ -106,7 +111,6 @@ jobs:
         path: |
           build-${{ matrix.vcpkg_triplet }}/*.tar.gz
           build-${{ matrix.vcpkg_triplet }}/*.zip
-          build-${{ matrix.vcpkg_triplet }}/*.nupkg
 
   python_binding_unit_test:
     name: Build and Unit Test Python Bindings
