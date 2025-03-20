@@ -96,8 +96,7 @@ jobs:
     - name: Search for Unit Test
       if: ${{ matrix.os != 'windows-latest' }}
       run: |
-        ls -l build-${{ matrix.vcpkg_triplet }}/bin
-        chmod +x build-${{ matrix.vcpkg_triplet }}/bin/test_*
+        ls -lR build-${{ matrix.vcpkg_triplet }}
 
     - name: Unit Test
       run: |
