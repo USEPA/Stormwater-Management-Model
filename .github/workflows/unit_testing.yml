@@ -7,7 +7,6 @@ on:
     branches: [ master]
 
 env:
-  BUILD_TYPE: Release
   VCPKG_ROOT: ${{ github.workspace }}/vcpkg
   VCPKG_EXE:  ${{ github.workspace }}/vcpkg/vcpkg
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
@@ -100,7 +99,7 @@ jobs:
 
     - name: Unit Test
       run: |
-        ctest --test-dir ./build-${{ matrix.vcpkg_triplet }}/bin  -C Debug --output-on-failure
+        ctest --test-dir ./build-${{ matrix.vcpkg_triplet }}  -C Debug --output-on-failure
 
     - name: Upload Artifacts
       if: ${{ always() }}
