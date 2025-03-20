@@ -24,7 +24,7 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_CXX_FLAGS": "/O2 /GL /fp:precise /W4",
-                "CMAKE_EXE_LINKER_FLAGS": "/LTCG:incremental /OPT:REF /OPT:ICF",
+                "CMAKE_EXE_LINKER_FLAGS": "/LTCG /OPT:REF /OPT:ICF",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
                 "CMAKE_CXX_FLAGS_RELEASE": "/O2 /GL /fp:precise /W4",
                 "CMAKE_CXX_FLAGS_DEBUG": "/Zi /Od /DDEBUG /W4 /fp:precise" 

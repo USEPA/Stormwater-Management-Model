@@ -13,7 +13,7 @@ import pickle
 # local imports
 from .data import output as example_output_data
 from epaswmm import output
-from output import Output, SWMMOutputException
+from epaswmm.output import Output, SWMMOutputException
 
 
 class TestSWMMOutput(unittest.TestCase):

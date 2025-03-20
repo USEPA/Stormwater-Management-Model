@@ -198,13 +198,12 @@ jobs:
     - name: Build and Install
       working-directory: ${{ github.workspace }}/python
       run: |
-        python setup.py develop
         python -m pip install .
     
     - name: Unit Test
       working-directory: ${{ github.workspace }}/python
       run: |
-        python -m pytest -v .
+        python -m pytest -v tests
     
     - name: Build Wheels
       working-directory: ${{ github.workspace }}/python
