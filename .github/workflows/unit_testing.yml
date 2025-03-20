@@ -198,6 +198,7 @@ jobs:
     - name: Build and Install
       working-directory: ${{ github.workspace }}/python
       run: |
+        python setup.py develop
         python -m pip install .
     
     - name: Unit Test
