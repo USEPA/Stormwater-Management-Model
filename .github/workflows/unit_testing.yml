@@ -90,7 +90,7 @@ jobs:
     
     - name: Build Binaries
       run: |
-        cmake --preset=${{ matrix.cmake_preset }} -B build-${{ matrix.vcpkg_triplet }} -DBUILD_TESTS=ON -C Debug
+        cmake --preset=${{ matrix.cmake_preset }} -B build-${{ matrix.vcpkg_triplet }} -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
         cmake --build build-${{ matrix.vcpkg_triplet }} --target package
     
     - name : Change permissions (Unix like)
