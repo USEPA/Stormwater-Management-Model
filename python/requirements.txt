@@ -6,3 +6,4 @@ cibuildwheel>=2.22.0
 Cython>=3.0.12
 scikit-build>=0.18.1
 twine>=6.1.0
+pytest>=8.3.5

@@ -55,25 +55,13 @@ mkdir build
 3. Then the following CMake commands to build the binaries:
 
 ``` bash
-cmake -G <compiler> .. -A <platform> -B .\build
-cmake --build . --config Release
+cmake -G <compiler> -B build
+cmake --build ./build --config Release
 ```
 
 where `<compiler>` is the name of the compiler being used
-in double quotes (e.g., "Visual Studio 15 2017", "Visual Studio 16 2019",
-or "Visual Studio 17 2022") and `<platform>` (e.g., Win32 for a 32-bit build 
-or x64 for a 64-bit build). The resulting engine shared libraries (i.e., swmm5.dll), command line executable (i.e., runswmm.exe), and output processing libraries (i.e., swmm-output.dll)
+in double quotes (e.g., "Visual Studio 17 2022" for windows, "Ninja" for linux, or "Xcode" for macos). The resulting engine shared libraries (i.e., swmm5.dll), command line executable (i.e., runswmm.exe), and output processing libraries (i.e., swmm-output.dll)
 will appear in the build\Release directory.
-
-For other platforms, such as Linux or MacOS, Step 3 can be replaced with:
-
-```bash
-cmake .
-cmake --build .\build
-```
-
-The resulting shared object library (libswmm5.so or libswmm5.dylib) and 
-command line executable (runswmm) will be compiled to the build directory. 
 
 ### Python Bindings (Experimental)
 
