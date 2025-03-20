@@ -91,16 +91,11 @@ jobs:
     - name: Build Binaries
       run: |
         cmake --preset=${{ matrix.cmake_preset }} -B build-${{ matrix.vcpkg_triplet }} -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
-        cmake --build build-${{ matrix.vcpkg_triplet }} --target package
-    
-    - name : Change permissions (Unix like)
-      if : ${{ matrix.os != 'windows-latest' }}
-      run: |
-        chmod +x build-${{ matrix.vcpkg_triplet }}/bin/test_*
+        cmake --build build-${{ matrix.vcpkg_triplet }}
     
     - name: Unit Test
       run: |
-        ctest --test-dir build-${{ matrix.vcpkg_triplet }}  -C Debug --output-on-failure
+        ctest --test-dir ./build-${{ matrix.vcpkg_triplet }}  --output-on-failure
 
     
     - name: Upload Artifacts
