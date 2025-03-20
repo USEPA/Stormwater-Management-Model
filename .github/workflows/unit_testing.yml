@@ -98,10 +98,10 @@ jobs:
       run: |
         ls -l build-${{ matrix.vcpkg_triplet }}/bin
         chmod +x build-${{ matrix.vcpkg_triplet }}/bin/test_*
-        
+
     - name: Unit Test
       run: |
-        ctest --test-dir ./build-${{ matrix.vcpkg_triplet }}  -C Debug --output-on-failure
+        ctest --test-dir ./build-${{ matrix.vcpkg_triplet }}/bin  -C Debug --output-on-failure
 
     - name: Upload Artifacts
       if: ${{ always() }}
