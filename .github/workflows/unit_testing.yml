@@ -60,7 +60,32 @@ jobs:
         repository: microsoft/vcpkg
         ref: 2025.02.14
         path: vcpkg
-    
+    - name: Set swap space
+      if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-13' || matrix.os == 'macos-latest' }}
+      run: |
+        echo "Memory and swap:"
+        free -h
+        echo
+        swapon --show
+        echo
+        export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
+        echo "Swap file: $SWAP_FILE"
+        if [ -z "$SWAP_FILE" ]; then
+          SWAP_FILE=/swapfile
+        else
+          sudo swapoff $SWAP_FILE
+          sudo rm $SWAP_FILE
+        fi
+        sudo fallocate -l 10G $SWAP_FILE
+        sudo chmod 600 $SWAP_FILE
+        sudo mkswap $SWAP_FILE
+        sudo swapon $SWAP_FILE
+        echo "Memory and swap:"
+        free -h
+        echo
+        swapon --show
+        echo
+        
     - name: Install OpenMP (MacOS)
       if: ${{ matrix.os == 'macos-latest' || matrix.os == 'macos-13' }}
       run: |
@@ -200,18 +225,18 @@ jobs:
       working-directory: ${{ github.workspace }}/python
       run: |
         python -m pip install .
-
+    
+    - name: Unit Test
+      working-directory: ${{ github.workspace }}/python
+      run: |
+        python -m pytest -v tests
+    
     - name: Build Wheels
       working-directory: ${{ github.workspace }}/python
       run: |
         python -m build
         cibuildwheel --output-dir wheelhouse
     
-    - name: Unit Test
-      working-directory: ${{ github.workspace }}/python
-      run: |
-        python -m pytest -v tests
-
     - name: Upload Python Wheels
       if: ${{ always() }}
       uses: actions/upload-artifact@v4
