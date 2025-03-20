@@ -17,7 +17,7 @@ jobs:
     name: Build and Unit Test C/C++ Engine
     permissions: write-all
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-13, macos-latest]
         include:
@@ -85,7 +85,7 @@ jobs:
         echo
         swapon --show
         echo
-        
+
     - name: Install OpenMP (MacOS)
       if: ${{ matrix.os == 'macos-latest' || matrix.os == 'macos-13' }}
       run: |
@@ -134,7 +134,9 @@ jobs:
 
   python_binding_unit_test:
     name: Build and Unit Test Python Bindings
+    needs: engine_unit_test
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-13, macos-latest]
         python: [3.13]
