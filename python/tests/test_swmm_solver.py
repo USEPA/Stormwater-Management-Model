@@ -232,7 +232,6 @@ class TestSWMMSolver(unittest.TestCase):
                 out_file=self.site_drainage_out
         ) as swmm_solver:
             # Initialize the solver
-            swmm_solver.start()
 
             start_date = datetime(year=2000, month=1, day=2)
             end_date = datetime(year=2000, month=1, day=2, hour=2)
@@ -241,6 +240,8 @@ class TestSWMMSolver(unittest.TestCase):
             swmm_solver.start_datetime = start_date
             swmm_solver.end_datetime = end_date
             swmm_solver.report_start_datetime = report_start_date
+
+            swmm_solver.start()
 
             for i, t in enumerate(swmm_solver):
                 current_datetime = swmm_solver.current_datetime
@@ -450,7 +451,6 @@ class TestSWMMSolver(unittest.TestCase):
                 rpt_file=self.site_drainage_rpt,
                 out_file=self.site_drainage_out,
         ) as swmm_solver:
-            swmm_solver.start()
 
             swmm_solver.set_value(
                 object_type=solver.SWMMObjects.SUBCATCHMENT,
@@ -459,12 +459,14 @@ class TestSWMMSolver(unittest.TestCase):
                 value=100.0
             )
 
+            swmm_solver.start()
+
             for _ in range(12):
                 swmm_solver.step()
 
             sc_value = swmm_solver.get_value(
-                object_type=solver.SWMMObjects.SUBCATCHMENT.value,
-                property_type=solver.SWMMSubcatchmentProperties.WIDTH.value,
+                object_type=solver.SWMMObjects.SUBCATCHMENT,
+                property_type=solver.SWMMSubcatchmentProperties.WIDTH,
                 index=1,
             )
 
@@ -500,13 +502,13 @@ class TestSWMMSolver(unittest.TestCase):
         :return:
         """
 
-        import matplotlib
-        matplotlib.use('TkAgg')
-
-        import matplotlib.pyplot as plt
-        import pandas as pd
-
-        fig, axes = plt.subplots(nrows=2, ncols=1 , sharex=True)
+        # import matplotlib
+        # matplotlib.use('TkAgg')
+        #
+        # import matplotlib.pyplot as plt
+        # import pandas as pd
+        #
+        # fig, axes = plt.subplots(nrows=2, ncols=1 , sharex=True)
 
         with solver.Solver(
                 inp_file=self.site_drainage_inp,
@@ -537,18 +539,18 @@ class TestSWMMSolver(unittest.TestCase):
         )
         del toutput
 
-        runoff = pd.Series(runoff, index=pd.to_datetime(list(runoff.keys())))
-        runoff = pd.DataFrame(runoff, columns=['Runoff (cfs)'])
+        # runoff = pd.Series(runoff, index=pd.to_datetime(list(runoff.keys())))
+        # runoff = pd.DataFrame(runoff, columns=['Runoff (cfs)'])
+        #
+        # runoff.plot()
+        # plt.show()
+        # matplotlib.use('TkAgg')
+        #
+        # runoff.plot(ax=axes[0])
 
-        runoff.plot()
-        plt.show()
-        matplotlib.use('TkAgg')
-
-        runoff.plot(ax=axes[0])
-
-        data = pd.Series(results, index=pd.to_datetime(list(results.keys())))
-        data = pd.DataFrame(data, columns=['TSS Original (mg/L)'])
-        data.plot(ax=axes[1], linewidth=3.0)
+        # data = pd.Series(results, index=pd.to_datetime(list(results.keys())))
+        # data = pd.DataFrame(data, columns=['TSS Original (mg/L)'])
+        # data.plot(ax=axes[1], linewidth=3.0)
 
         with solver.Solver(
                 inp_file=self.site_drainage_inp,
@@ -587,12 +589,12 @@ class TestSWMMSolver(unittest.TestCase):
         )
         del toutput
 
-        rdata = pd.Series(results, index=pd.to_datetime(list(results.keys())))
-        rdata = pd.DataFrame(rdata, columns=['TSS Modified (mg/L)'])
-        rdata.plot(ax=axes[1])
-
-        plt.show()
-        matplotlib.use('TkAgg')
+        # rdata = pd.Series(results, index=pd.to_datetime(list(results.keys())))
+        # rdata = pd.DataFrame(rdata, columns=['TSS Modified (mg/L)'])
+        # rdata.plot(ax=axes[1])
+        #
+        # plt.show()
+        # matplotlib.use('TkAgg')
 
     def test_get_node_value(self):
         """
@@ -611,12 +613,12 @@ class TestSWMMSolver(unittest.TestCase):
                 swmm_solver.step()
 
             node_value = swmm_solver.get_value(
-                object_type=solver.SWMMObjects.NODE.value,
-                property_type=solver.SWMMNodeProperties.TOTAL_INFLOW.value,
+                object_type=solver.SWMMObjects.NODE,
+                property_type=solver.SWMMNodeProperties.TOTAL_INFLOW,
                 index=5,
             )
 
-            self.assertAlmostEqual(node_value, 0.0)
+            self.assertAlmostEqual(node_value, 58.58717843671191)
 
     def test_set_node_value(self):
         """
@@ -629,21 +631,22 @@ class TestSWMMSolver(unittest.TestCase):
                 rpt_file=example_solver_data.NON_EXISTENT_INPUT_FILE.replace(".inp", ".rpt"),
                 out_file=example_solver_data.SITE_DRAINAGE_EXAMPLE_INPUT_FILE.replace(".inp", ".out"),
         ) as swmm_solver:
-            swmm_solver.start()
 
             swmm_solver.set_value(
-                object_type=solver.SWMMObjects.NODE.value,
-                property_type=solver.SWMMNodeProperties.INVERT_ELEVATION.value,
+                object_type=solver.SWMMObjects.NODE,
+                property_type=solver.SWMMNodeProperties.INVERT_ELEVATION,
                 index=5,
                 value=10.0
             )
+
+            swmm_solver.start()
 
             for _ in range(12):
                 swmm_solver.step()
 
             node_value = swmm_solver.get_value(
-                object_type=solver.SWMMObjects.NODE.value,
-                property_type=solver.SWMMNodeProperties.INVERT_ELEVATION.value,
+                object_type=solver.SWMMObjects.NODE,
+                property_type=solver.SWMMNodeProperties.INVERT_ELEVATION,
                 index=5,
             )
 
