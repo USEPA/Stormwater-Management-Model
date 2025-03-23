@@ -18,9 +18,9 @@ target_link_libraries(
 python_extension_module(_output)
 
 # Set RPATH for macOS
-if(APPLE)
-    set_target_properties(_solver PROPERTIES INSTALL_RPATH "@loader_path/../lib")
-endif()
+# if(APPLE)
+#     set_target_properties(_solver PROPERTIES INSTALL_RPATH "@loader_path/../lib")
+# endif()
 
 # Install the target
 install(TARGETS _output LIBRARY DESTINATION epaswmm/output)
