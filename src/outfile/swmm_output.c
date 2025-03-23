@@ -2017,7 +2017,9 @@ int _fopen(FILE **f, const char *name, const char *mode)
 #ifdef _MSC_VER
     ret = (int)fopen_s(f, name, mode);
 #else
-    ret = fopen(name, mode);
+    *f = fopen(name, mode);
+    if (*f == NULL)
+        ret = -1;
 #endif
     return ret;
 }
