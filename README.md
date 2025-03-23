@@ -6,10 +6,10 @@ Stormwater Management Model (SWMM) computational engine and output post-processi
 ## Build Status
 [![Build and Unit Testing](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/unit_testing.yml/badge.svg)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/unit_testing.yml)
 [![Build and Regression Testing](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/regression_testing.yml/badge.svg)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/regression_testing.yml)
+[![Docs](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build_docs.yml/badge.svg)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build_docs.yml)
 [![Deployment](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/deploy.yml/badge.svg)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/deploy.yml)
 [![Documentation](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml/badge.svg?branch=docs)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml)
 [![Issues](https://img.shields.io/github/issues/USEPA/Stormwater-Management-Model)](https://github.com/USEPA/Stormwater-Management-Model/issues)
-
 
 ## Python Binding
 [![PyPi](https://img.shields.io/pypi/v/epaswmm.svg)](https://pypi.org/project/epaswmm)
