@@ -4,6 +4,7 @@
 # Created on: 2024-11-19
 
 # python and cython imports
+import os
 from enum import Enum
 from typing import List, Tuple, Union, Optional, Dict, Set
 from cpython.datetime cimport datetime, timedelta
@@ -351,6 +352,10 @@ cdef class Output:
             error_message = self.check_error()
             raise SWMMOutputException(f"Error initializing the SWMM output file {output_file}. Error code: {error_code}: {error_message}")
 
+        # Check if the output file exists
+        if not os.path.exists(output_file):
+            raise FileNotFoundError(f"Error opening the SWMM output file {output_file}. Error code: {error_code}: {error_message}. The output file may be locked by another process.")
+        
         error_code = SMO_open(self._output_file_handle, c_output_file)
 
         # get error message if error code is not 0 and print it and prevent any memory leaks

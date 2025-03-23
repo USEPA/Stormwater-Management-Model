@@ -111,8 +111,10 @@ install(
 )
 
 install(
-    TARGETS swmm5
-    EXPORT swmmTargets
+    TARGETS
+        swmm5
+    EXPORT
+        swmmTargets
 )
 
 # copy swmm5 to build tree for testing

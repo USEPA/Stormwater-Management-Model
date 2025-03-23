@@ -1286,7 +1286,7 @@ cdef class Solver:
         """
         self._callbacks[callback_type].append(callback)
 
-    def add_progress_callback(self, callback: Callable[[double], None]) -> None:
+    def add_progress_callback(self, callback: Callable[[float], None]) -> None:
         """
         Add a progress callback to the solver.
         
