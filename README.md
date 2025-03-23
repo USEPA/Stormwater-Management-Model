@@ -4,12 +4,20 @@ EPA ORD Stormwater Management Model (SWMM)
 Stormwater Management Model (SWMM) computational engine and output post-processing codebase
 
 ## Build Status
-[![Build and Unit Testing](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml)
-[![Build and Regression Testing](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml)
-[![Deployment](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml)
+[![Build and Unit Testing](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/unit_testing.yml/badge.svg)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/unit_testing.yml)
+[![Build and Regression Testing](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/regression_testing.yml/badge.svg)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/regression_testing.yml)
+[![Deployment](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/deploy.yml/badge.svg)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/deploy.yml)
 [![Documentation](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml/badge.svg?branch=docs)](https://github.com/USEPA/Stormwater-Management-Model/actions/workflows/build-and-test.yml)
-[![PythonVersion](https://img.shields.io/pypi/pyversions/epaswmm.svg)](https://pypi.org/project/epaswmm)
+[![Issues](https://img.shields.io/github/issues/USEPA/Stormwater-Management-Model)](https://github.com/USEPA/Stormwater-Management-Model/issues)
+
+
+## Python Binding
 [![PyPi](https://img.shields.io/pypi/v/epaswmm.svg)](https://pypi.org/project/epaswmm)
+[![PythonVersion](https://img.shields.io/pypi/pyversions/epaswmm.svg)](https://pypi.org/project/epaswmm)
+[![Wheel](https://img.shields.io/pypi/wheel/epaswmm.svg)](https://pypi.org/project/epaswmm)
+[![Downloads](https://pepy.tech/badge/epaswmm)](https://pepy.tech/project/epaswmm)
+[![Downloads](https://pepy.tech/badge/epaswmm/month)](https://pepy.tech/project/epaswmm)
+[![Downloads](https://pepy.tech/badge/epaswmm/week)](https://pepy.tech/project/epaswmm)
 
 ## Introduction
 This is the official SWMM source code repository maintained by US EPA Office of Research and Development, Center For Environmental Solutions & Emergency Response, Water Infrastructure Division located in Cincinnati, Ohio.
@@ -101,7 +109,7 @@ with Solver(inp_file="input_file.inp") as swmm_solver:
       swmm_solver.set_value(
          object_type=solver.SWMMObjects.RAIN_GAGE,
          property_type=solver.SWMMRainGageProperties.GAGE_RAINFALL,
-         index=0,
+         index="RG1",
          value=3.6
       )
 
@@ -129,7 +137,7 @@ swmm_output = Output(output_file='output_file.out')
 
 # Dict[datetime, float]
 link_timeseries = swmm_output.get_link_timeseries(
-   element_index=5,
+   element_index="C1",
    attribute=output.LinkAttribute.FLOW_RATE,
 )
 
