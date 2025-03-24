@@ -354,7 +354,7 @@ cdef class Output:
 
         # Check if the output file exists
         if not os.path.exists(output_file):
-            raise FileNotFoundError(f"Error opening the SWMM output file {output_file}. Error code: {error_code}: {error_message}. The output file may be locked by another process.")
+            raise FileNotFoundError(f"Error opening the SWMM output file {output_file}. Error code: 434: The output file does not exist.")
         
         error_code = SMO_open(self._output_file_handle, c_output_file)
 
@@ -367,7 +367,7 @@ cdef class Output:
                 self._output_file_handle = NULL
 
             if error_code == 434:
-                raise FileNotFoundError(f"Error opening the SWMM output file {output_file}. Error code: {error_code}: {error_message}. The output file may be locked by another process.")
+                raise FileNotFoundError(f"Error opening the SWMM output file {output_file}. Error code: {error_code}: {error_message}. The output file may not exist or may be locked by another process.")
             else:
                 raise SWMMOutputException(f"Error opening the SWMM output file {output_file}. Error code: {error_code}: {error_message}")
 

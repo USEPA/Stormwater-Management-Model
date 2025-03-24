@@ -11,7 +11,8 @@
 #         US EPA ORD/CESER 
 #
 
-find_package(OpenMP)
+find_package(OpenMP REQUIRED)
+
 
 # configure file groups
 set(SWMM_PUBLIC_HEADERS
