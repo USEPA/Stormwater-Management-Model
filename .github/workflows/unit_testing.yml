@@ -161,11 +161,12 @@ jobs:
         ref: 2025.02.14
         path: vcpkg
 
-    - name: Install OpenMP (MacOS)
+    - name: Install OpenMP and Ninja (MacOS)
       if: ${{ matrix.os == 'macos-latest' || matrix.os == 'macos-13' }}
       run: |
         brew reinstall libomp
         brew link --force --overwrite libomp
+        brew install ninja
 
     - name: Bootstrap VCPKG (Windows)
       if: ${{ matrix.os == 'windows-latest' }}
@@ -217,8 +218,9 @@ jobs:
       env:
         CIBW_TEST_COMMAND: "python -m pytest tests"
         CIBW_BEFORE_TEST: pip install -r requirements.txt
-        CIBW_BEFORE_ALL_LINUX: yum reinstall -y python3-devel || dnf reinstall -y python3-devel
+        CIBW_BEFORE_ALL_LINUX: yum install -y python3-devel || dnf install -y python3-devel
         CIBW_BUILD_VERBOSITY: 1
+        CIBW_BEFORE_BUILD_MACOS: brew install ninja
       run: |
         cibuildwheel --output-dir wheelhouse
     
