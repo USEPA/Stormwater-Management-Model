@@ -215,7 +215,10 @@ jobs:
     - name: Build Wheels
       working-directory: ${{ github.workspace }}/python
       env:
-        CIBW_BEFORE_ALL_LINUX: "dnf install -y python3-devel"
+        CIBW_TEST_COMMAND: "python -m pytest tests"
+        CIBW_BEFORE_TEST: pip install -r requirements.txt
+        CIBW_BEFORE_ALL_LINUX: yum reinstall -y python3-devel || dnf reinstall -y python3-devel
+        CIBW_BUILD_VERBOSITY: 1
       run: |
         cibuildwheel --output-dir wheelhouse
     
