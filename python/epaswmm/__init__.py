@@ -7,6 +7,7 @@ This module provides a Python interface to the EPASWMM library.
 import os
 import platform
 import sys
+import importlib.metadata
 
 if platform.system() == "Windows":
     lib_dir = os.path.join(sys.prefix, "bin")
@@ -32,5 +33,6 @@ elif platform.system() == "Darwin":  # macOS
             lib_dir + ":" + os.environ.get("DYLD_LIBRARY_PATH", "")
         )
 
+__version__ = importlib.metadata.version('epaswmm')
 
 from epaswmm import *

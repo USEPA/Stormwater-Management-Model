@@ -199,6 +199,7 @@ jobs:
       working-directory: ${{ github.workspace }}/python
       run: |
         pyclean . 
+        python setup.py sdist bdist_wheel
         python setup.py build_ext --inplace
         python -m pip install .
     
@@ -210,7 +211,6 @@ jobs:
     - name: Build Wheels
       working-directory: ${{ github.workspace }}/python
       run: |
-        python -m build
         cibuildwheel --output-dir wheelhouse
     
     - name: Upload Python Wheels
