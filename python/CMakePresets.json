@@ -5,15 +5,13 @@
             "name": "default-debug",
             "generator": "Ninja", 
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+                "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
             "name": "default",
             "generator": "Ninja",
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
             }
         },
         {
@@ -23,10 +21,13 @@
             "generator": "Visual Studio 17 2022",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_C_FLAGS": "/O2 /GL /fp:precise /W4",
                 "CMAKE_CXX_FLAGS": "/O2 /GL /fp:precise /W4",
                 "CMAKE_EXE_LINKER_FLAGS": "/LTCG /OPT:REF /OPT:ICF",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+                "CMAKE_C_FLAGS_RELEASE": "/O2 /GL /fp:precise /W4",
                 "CMAKE_CXX_FLAGS_RELEASE": "/O2 /GL /fp:precise /W4",
+                "CMAKE_C_FLAGS_DEBUG": "/Zi /Od /DDEBUG /W4 /fp:precise",
                 "CMAKE_CXX_FLAGS_DEBUG": "/Zi /Od /DDEBUG /W4 /fp:precise" 
             },
             "condition": {
@@ -42,9 +43,11 @@
             "generator": "Visual Studio 17 2022",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_C_FLAGS": "/Zi /Od /DDEBUG /W4 /fp:precise",
                 "CMAKE_CXX_FLAGS": "/Zi /Od /DDEBUG /W4 /fp:precise",
                 "CMAKE_EXE_LINKER_FLAGS": "/DEBUG",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+                "CMAKE_C_FLAGS_DEBUG": "/Zi /Od /DDEBUG /W4 /fp:precise",
                 "CMAKE_CXX_FLAGS_DEBUG": "/Zi /Od /DDEBUG /W4 /fp:precise"
             },
             "condition": {
@@ -60,10 +63,13 @@
             "generator": "Ninja",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_C_FLAGS": "-O2 -flto -fdata-sections -ffunction-sections -fipa-icf -fno-fast-math -Wall -Wextra -ffloat-store",
                 "CMAKE_CXX_FLAGS": "-O2 -flto -fdata-sections -ffunction-sections -fipa-icf -fno-fast-math -Wall -Wextra -ffloat-store",
                 "CMAKE_EXE_LINKER_FLAGS": "-Wl,--gc-sections -flto",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+                "CMAKE_C_FLAGS_RELEASE": "-O2 -flto -fdata-sections -ffunction-sections -fipa-icf -fno-fast-math -Wall -Wextra -ffloat-store",
                 "CMAKE_CXX_FLAGS_RELEASE": "-O2 -flto -fdata-sections -ffunction-sections -fipa-icf -fno-fast-math -Wall -Wextra -ffloat-store",
+                "CMAKE_C_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store",
                 "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store"
             },
             "condition": {
@@ -79,9 +85,11 @@
             "generator": "Ninja",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_C_FLAGS": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store",
                 "CMAKE_CXX_FLAGS": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store",
                 "CMAKE_EXE_LINKER_FLAGS": "-g",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+                "CMAKE_C_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store",
                 "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store"
             },
             "condition": {
@@ -97,10 +105,13 @@
             "generator": "Xcode",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_C_FLAGS": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -ffloat-store",
                 "CMAKE_CXX_FLAGS": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -ffloat-store",
                 "CMAKE_EXE_LINKER_FLAGS": "-Wl, -flto",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+                "CMAKE_C_FLAGS_RELEASE": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -ffloat-store",
                 "CMAKE_CXX_FLAGS_RELEASE": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -ffloat-store",
+                "CMAKE_C_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store",
                 "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store"
             },
             "condition": {
@@ -116,9 +127,11 @@
             "generator": "Xcode",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_C_FLAGS": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store",
                 "CMAKE_CXX_FLAGS": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store",
                 "CMAKE_EXE_LINKER_FLAGS": "-g",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+                "CMAKE_C_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store",
                 "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store"
             },
             "condition": {

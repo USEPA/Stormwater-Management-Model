@@ -1365,43 +1365,38 @@ cdef class Solver:
         Step a SWMM simulation.
         
         :param steps: Number of steps to run. Overrides internal stride step if greater than 0.
-        :type steps: int
+        :type steps: int 
         :return: elapsed_time, current_date
         :rtype: Tuple[float, datetime]
         """
         cdef double elapsed_time = 0.0
         cdef double progress = 0.0
         
-        if self._solver_state == SolverState.STARTED:
-            if steps > 0:
-                error_code = swmm_stride(strideStep=steps, elapsedTime=&elapsed_time)
-            elif self._stride_step > 0:
-                error_code = swmm_stride(strideStep=self._stride_step, elapsedTime=&elapsed_time)
-            else:
-                error_code = swmm_step(elapsed_time=&elapsed_time)
+        error_code = swmm_stride(strideStep=steps if steps > 0 else self._stride_step, elapsedTime=&elapsed_time)
 
+        if error_code < 0:
             self.__validate_error(error_code)
-            
-            progress = (
-                swmm_getValue(
-                    property=SWMMSystemProperties.CURRENT_DATE.value,
-                    index=0
-                ) - self._total_duration
-            ) / self._total_duration
-            
-            self.__execute_progress_callbacks(progress)
+        
+        progress = (
+            swmm_getValue(
+                property=SWMMSystemProperties.CURRENT_DATE.value,
+                index=0
+            ) - self._total_duration
+        ) / self._total_duration
+        
+        self.__execute_progress_callbacks(progress)
 
-            if elapsed_time <= 0.0:
-                self._solver_state = SolverState.FINISHED
+        if elapsed_time <= 0.0:
+            self._solver_state = SolverState.FINISHED
 
-            return elapsed_time, decode_swmm_datetime(
-                swmm_datetime=swmm_getValue(
-                    property=SWMMSystemProperties.CURRENT_DATE.value,
-                    index=0
-                )
+        return elapsed_time, decode_swmm_datetime(
+            swmm_datetime=swmm_getValue(
+                property=SWMMSystemProperties.CURRENT_DATE.value,
+                index=0
             )
-        else:
-            raise SWMMSolverException(f'Step failed: Solver is not in a valid state: {self._solver_state}')
+        )
+        # else:
+            # raise SWMMSolverException(f'Step failed: Solver is not in a valid state: {self._solver_state}')
 
     cpdef void end(self):
         """
@@ -1592,7 +1587,7 @@ cdef class Solver:
 
             self._clock = clock()
 
-    cpdef void __validate_error(self, error_code: int) :
+    cdef void __validate_error(self, error_code: int) :
         """
         Validate the error code and raise an exception if it is not 0.
         

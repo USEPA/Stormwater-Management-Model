@@ -770,6 +770,9 @@ int EXPORT_SWMM_SOLVER_API swmm_stride(int strideStep, double *elapsedTime)
 {
     double realRouteStep = RouteStep;
 
+    if (strideStep <= 0)
+        return swmm_step(elapsedTime);
+
     // --- check that simulation can proceed
     *elapsedTime = 0.0;
     if (ErrorCode)
