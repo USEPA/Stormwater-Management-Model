@@ -200,6 +200,7 @@ jobs:
       run: |
         pyclean . 
         python -m build
+        python setup.py build_ext --inplace
         python -m pip install .
     
     - name: Unit Test
