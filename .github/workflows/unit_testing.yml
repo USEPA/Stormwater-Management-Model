@@ -198,8 +198,9 @@ jobs:
     - name: Build and Install
       working-directory: ${{ github.workspace }}/python
       run: |
-        python -m pip install .
+        pyclean . 
         python setup.py build_ext --inplace
+        python -m pip install .
     
     - name: Unit Test
       working-directory: ${{ github.workspace }}/python
