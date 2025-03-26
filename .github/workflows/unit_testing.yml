@@ -176,6 +176,7 @@ jobs:
       run: |
         ./bootstrap-vcpkg${{ matrix.shell_extension }}
         chmod +x vcpkg
+        sudo apt-get install -y ninja-build
 
     - name: Export GitHub Actions cache environment variables
       uses: actions/github-script@v7
