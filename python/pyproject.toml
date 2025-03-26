@@ -19,7 +19,8 @@ build = "cp38-* cp39-* cp310-* cp311-* cp312-* cp313-*"
 name = "epaswmm"
 description = "A python package for EPA SWMM5 preprocessing, solver, and post-processing."
 requires-python = ">=3.8"
-dynamic = ["version", "readme"]
+version = "5.3.0.dev8"
+dynamic = ["readme"]
 keywords = ["SWMM", "stormwater", "modeling", "water", "hydrology", "hydraulics", "wastewater"]
 license =  {file = "LICENSE"}
 # license-files = ["LICEN[CS]E"]
