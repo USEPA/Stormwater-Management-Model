@@ -909,8 +909,8 @@ int EXPORT_SWMM_OUTPUT_API SMO_getNumVars(
 int EXPORT_SWMM_OUTPUT_API SMO_getVarCode(SMO_Handle p_handle, SMO_elementType type, int varIndex, int *varCode)
 {
     int errorcode = 0;
-    int *temp;
-    data_t *p_data;
+    int *temp = NULL;
+    data_t *p_data = NULL;
     *varCode = -1;
 
     p_data = (data_t *)p_handle;
@@ -960,8 +960,8 @@ int EXPORT_SWMM_OUTPUT_API SMO_getVarCode(SMO_Handle p_handle, SMO_elementType t
 int EXPORT_SWMM_OUTPUT_API SMO_getVarCodes(SMO_Handle p_handle, SMO_elementType type, int **varCodes, int *size)
 {
     int errorcode = 0;
-    int *temp;
-    data_t *p_data;
+    int *temp = NULL;
+    data_t *p_data = NULL;
 
     p_data = (data_t *)p_handle;
 
@@ -1039,8 +1039,8 @@ int EXPORT_SWMM_OUTPUT_API SMO_getNumProperties(SMO_Handle p_handle, SMO_element
 int EXPORT_SWMM_OUTPUT_API SMO_getPropertyCode(SMO_Handle p_handle, SMO_elementType type, int propertyIndex, int *propertyCode)
 {
     int errorcode = 0;
-    int *temp;
-    data_t *p_data;
+    int *temp = NULL;
+    data_t *p_data = NULL;
     *propertyCode = -1;
 
     p_data = (data_t *)p_handle;
@@ -1086,8 +1086,8 @@ int EXPORT_SWMM_OUTPUT_API SMO_getPropertyCode(SMO_Handle p_handle, SMO_elementT
 int EXPORT_SWMM_OUTPUT_API SMO_getPropertyCodes(SMO_Handle p_handle, SMO_elementType type, int **propertyCodes, int *size)
 {
     int errorcode = 0;
-    int *temp;
-    data_t *p_data;
+    int *temp = NULL;
+    data_t *p_data = NULL;
 
     p_data = (data_t *)p_handle;
 
@@ -1671,9 +1671,9 @@ int EXPORT_SWMM_OUTPUT_API SMO_getSystemResult(SMO_Handle p_handle, int periodIn
                                                int dummyIndex, float **outValueArray, int *arrayLength)
 {
     int errorcode = 0;
-    float *temp;
+    float *temp = NULL;
     F_OFF offset;
-    data_t *p_data;
+    data_t *p_data = NULL;
 
     p_data = (data_t *)p_handle;
 

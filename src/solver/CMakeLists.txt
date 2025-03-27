@@ -46,6 +46,16 @@ else()
 
 endif()
 
+if (APPLE)
+    set_target_properties(
+        runswmm
+        PROPERTIES
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${PROJECT_VERSION_MAJOR}
+    )
+endif()
+
+
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/include/version.h.in 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/version.h

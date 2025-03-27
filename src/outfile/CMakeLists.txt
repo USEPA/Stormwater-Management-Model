@@ -26,6 +26,15 @@ add_library(swmm-output
         errormanager.c
 )
 
+if (APPLE)
+    set_target_properties(
+        swmm-output
+        PROPERTIES
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${PROJECT_VERSION_MAJOR}
+    )
+endif()
+
 target_include_directories(swmm-output
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

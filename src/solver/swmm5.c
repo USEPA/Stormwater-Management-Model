@@ -1578,7 +1578,6 @@ int setNodeValue(int property, int index, int subIndex, double value)
 int setLinkValue(int property, int index, int subIndex, double value)
 {
     TLink *link = NULL;
-    const char *control_rule_label = "SWMM API";
 
     if (IsOpenFlag == FALSE)
     {

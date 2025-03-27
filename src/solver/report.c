@@ -112,12 +112,12 @@ int report_readOptions(char* tok[], int ntoks)
             return error_setInpError(ERR_KEYWORD, tok[1]);
         switch (k)
         {
-        case 0: RptFlags.disabled = m;   return 0; // DISABLED
-        case 1: RptFlags.input = m;      return 0; // INPUT
-        case 5: RptFlags.continuity = m; return 0; // CONTINUITY
-        case 6: RptFlags.flowStats = m;  return 0; // FLOWSTATS
-        case 7: RptFlags.controls = m;   return 0; // CONTROLS
-        case 8: RptFlags.averages = m;   return 0; // AVERAGES
+        case 0: RptFlags.disabled = (char)m;   return 0; // DISABLED
+        case 1: RptFlags.input = (char)m;      return 0; // INPUT
+        case 5: RptFlags.continuity = (char)m; return 0; // CONTINUITY
+        case 6: RptFlags.flowStats = (char)m;  return 0; // FLOWSTATS
+        case 7: RptFlags.controls = (char)m;   return 0; // CONTROLS
+        case 8: RptFlags.averages = (char)m;   return 0; // AVERAGES
         case 9: return 0;                          // NODESTATS deprecated
         default: return error_setInpError(ERR_KEYWORD, tok[1]);
         }

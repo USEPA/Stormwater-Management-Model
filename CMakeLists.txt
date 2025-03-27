@@ -22,6 +22,10 @@ project(swmm
     LANGUAGES C CXX
 )
 
+if (APPLE)
+    set(CMAKE_MACOSX_RPATH ON)
+endif()
+
 # Sets the position independent code property for all targets
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 

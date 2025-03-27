@@ -17,14 +17,23 @@ target_link_libraries(
 # Specify that this is a Python extension module
 python_extension_module(_output)
 
-# --- Set RPATH handling for macOS ---
-if(APPLE)
+if (APPLE)
     set_target_properties(
-        _solver PROPERTIES
-        BUILD_WITH_INSTALL_RPATH TRUE
-        INSTALL_RPATH "@loader_path/../../../../../lib"
+        _solver
+        PROPERTIES
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${PROJECT_VERSION_MAJOR}
     )
 endif()
+
+# --- Set RPATH handling for macOS ---
+# if(APPLE)
+#     set_target_properties(
+#         _solver PROPERTIES
+#         BUILD_WITH_INSTALL_RPATH TRUE
+#         INSTALL_RPATH "@loader_path/../../../../../lib"
+#     )
+# endif()
 
 # Install the target
 install(TARGETS _output LIBRARY DESTINATION epaswmm/output)

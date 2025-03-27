@@ -10,6 +10,10 @@ project(
     LANGUAGES C CXX
 )
 
+if (APPLE)
+    set(CMAKE_MACOSX_RPATH ON)
+endif()
+
 # Define build options
 cmake_policy(SET CMP0148 OLD)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)

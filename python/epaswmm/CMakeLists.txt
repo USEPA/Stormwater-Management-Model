@@ -10,6 +10,15 @@ add_library(_epaswmm MODULE ${_epaswmm})
 
 python_extension_module(_epaswmm)
 
+if (APPLE)
+    set_target_properties(
+        _epaswmm
+        PROPERTIES
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${PROJECT_VERSION_MAJOR}
+    )
+endif()
+
 # Install the epaswmm module
 install(TARGETS _epaswmm LIBRARY DESTINATION epaswmm)
 

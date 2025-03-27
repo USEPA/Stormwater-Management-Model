@@ -1817,7 +1817,7 @@ void getBackflowRatios()
     TInlet* inlet;
     double  area;
     double  f;
-    int     n;
+    int     nodeIndex;
 
     // --- info for each node receiving flow from an inlet
     typedef struct
@@ -1834,15 +1834,15 @@ void getBackflowRatios()
     for (inlet = FirstInlet; inlet != NULL; inlet = inlet->nextInlet)
     {
         n = inlet->nodeIndex;
-        inletNodes[n].numInletLinks++;
+        inletNodes[nodeIndex].numInletLinks++;
         area = getInletArea(inlet);
         if (area > 0.0)
         {
-            inletNodes[n].numStdInletLinks++;
-            inletNodes[n].totalInletArea += area;
+            inletNodes[nodeIndex].numStdInletLinks++;
+            inletNodes[nodeIndex].totalInletArea += area;
         }
         else
-            inletNodes[n].numCustomInlets += inlet->numInlets;
+            inletNodes[nodeIndex].numCustomInlets += inlet->numInlets;
     }
 
     // --- find fraction of capture node's overflow that becomes inlet backflow        
@@ -1851,16 +1851,16 @@ void getBackflowRatios()
         // --- f is ratio of links with standard inlets to all inlet links
         //     connected to receptor node n
         n = inlet->nodeIndex;
-        f = (double) inletNodes[n].numStdInletLinks /
-            (double) inletNodes[n].numInletLinks;
+        f = (double) inletNodes[nodeIndex].numStdInletLinks /
+            (double) inletNodes[nodeIndex].numInletLinks;
 
         // --- backflow ratio depends if inlet is standard or custom (area = 0)
         area = getInletArea(inlet);
         if (area == 0.0)
             inlet->backflowRatio = (double)inlet->numInlets /
-                                   (double)inletNodes[n].numCustomInlets * (1. - f);
+                                   (double)inletNodes[nodeIndex].numCustomInlets * (1. - f);
         else
-            inlet->backflowRatio = area / inletNodes[n].totalInletArea * f;
+            inlet->backflowRatio = area / inletNodes[nodeIndex].totalInletArea * f;
     }
     free(inletNodes);
 }
