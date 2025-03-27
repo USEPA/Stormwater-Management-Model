@@ -114,14 +114,15 @@
             "binaryDir": "${sourceDir}/build/darwin",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_C_FLAGS": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -ffloat-store -fvisibility=hidden",
-                "CMAKE_CXX_FLAGS": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -ffloat-store -fvisibility=hidden",
+                "CMAKE_C_FLAGS": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -fvisibility=hidden",
+                "CMAKE_CXX_FLAGS": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -fvisibility=hidden",
                 "CMAKE_EXE_LINKER_FLAGS": "-Wl, -flto",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
-                "CMAKE_C_FLAGS_RELEASE": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -ffloat-store",
-                "CMAKE_CXX_FLAGS_RELEASE": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -ffloat-store",
-                "CMAKE_C_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store",
-                "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store"
+                "CMAKE_C_FLAGS_RELEASE": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra",
+                "CMAKE_CXX_FLAGS_RELEASE": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra",
+                "CMAKE_SHARED_LINKER_FLAGS": "-twolevel_namespace",
+                "CMAKE_C_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math",
+                "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math"
             },
             "condition": {
                 "type": "equals",
@@ -141,8 +142,9 @@
                 "CMAKE_CXX_FLAGS": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store -fvisibility=hidden",
                 "CMAKE_EXE_LINKER_FLAGS": "-g",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
-                "CMAKE_C_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store",
-                "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -ffloat-store"
+                "CMAKE_SHARED_LINKER_FLAGS": "-twolevel_namespace",
+                "CMAKE_C_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math",
+                "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math"
             },
             "condition": {
                 "type": "equals",

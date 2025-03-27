@@ -20,16 +20,18 @@ target_link_libraries(
 python_extension_module(_solver)
 
 # # --- Set RPATH handling for macOS ---
-# if(APPLE)
-#     set_target_properties(
-#         _solver PROPERTIES
-#         BUILD_WITH_INSTALL_RPATH TRUE
-#         INSTALL_RPATH "@loader_path/../../../../../lib"
-#     )
-# endif()
+if(APPLE)
+    set_target_properties(
+        _solver PROPERTIES
+        BUILD_WITH_INSTALL_RPATH TRUE
+        INSTALL_RPATH "@loader_path"
+    )
+endif()
 
 # Install the target
 install(TARGETS _solver LIBRARY DESTINATION epaswmm/solver)
+
+
 
 # Include directories
 target_include_directories(
