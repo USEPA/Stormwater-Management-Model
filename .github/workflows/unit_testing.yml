@@ -208,7 +208,6 @@ jobs:
         python setup.py clean --all
         python -m build
         python -m pip install .
-        otool -L epaswmm/solver/*.so
     
     - name: Unit Test
       working-directory: ${{ github.workspace }}/python
