@@ -31,6 +31,9 @@ elif platform.system() == "Darwin":  # macOS
         lib_dir = os.path.join(sys.prefix, "lib")
         os.environ["DYLD_LIBRARY_PATH"] = lib_dir + ":" + os.environ.get("DYLD_LIBRARY_PATH", "")
 
+        lib_dir = os.path.join(sys.prefix, "bin")
+        os.environ["DYLD_LIBRARY_PATH"] = lib_dir + ":" + os.environ.get("DYLD_LIBRARY_PATH", "")
+
 __version__ = importlib.metadata.version('epaswmm')
 
 from epaswmm import *
