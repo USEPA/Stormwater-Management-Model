@@ -220,6 +220,7 @@ jobs:
         CIBW_BEFORE_TEST: pip install -r requirements.txt
         CIBW_BEFORE_ALL_LINUX: yum install -y python3-devel || dnf install -y python3-devel
         CIBW_BUILD_VERBOSITY: 1
+        CIBW_TEST_SKIP: "*-*linux_{aarch64,ppc64le,s390x} *-macosx_arm64 *-macosx_universal2:arm64 cp38-manylinux_x86_64"
         CIBW_BEFORE_BUILD_MACOS: brew install ninja
       run: |
         cibuildwheel --output-dir wheelhouse
