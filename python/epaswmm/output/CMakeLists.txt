@@ -18,13 +18,13 @@ target_link_libraries(
 python_extension_module(_output)
 
 # --- Set RPATH handling for macOS ---
-if(APPLE)
-    set_target_properties(
-        _output PROPERTIES
-        INSTALL_RPATH "@loader_path/../../../.."
-        INSTALL_RPATH_USE_LINK_PATH TRUE
-    )
-endif()
+# if(APPLE)
+#     set_target_properties(
+#         _output PROPERTIES
+#         INSTALL_RPATH "@loader_path/../../../.."
+#         INSTALL_RPATH_USE_LINK_PATH TRUE
+#     )
+# endif()
 
 
 # Install the target
