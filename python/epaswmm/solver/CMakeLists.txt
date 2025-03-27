@@ -19,15 +19,6 @@ target_link_libraries(
 # Specify that this is a Python extension module
 python_extension_module(_solver)
 
-if (APPLE)
-    set_target_properties(
-        _solver
-        PROPERTIES
-        VERSION ${PROJECT_VERSION}
-        SOVERSION ${PROJECT_VERSION_MAJOR}
-    )
-endif()
-
 # # --- Set RPATH handling for macOS ---
 # if(APPLE)
 #     set_target_properties(

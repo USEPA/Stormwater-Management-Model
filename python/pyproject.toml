@@ -22,8 +22,8 @@ requires-python = ">=3.8"
 version = "5.3.0.dev8"
 dynamic = ["readme"]
 keywords = ["SWMM", "stormwater", "modeling", "water", "hydrology", "hydraulics", "wastewater"]
-# license =  {file = "LICENSE"}
-license-files = ["LICEN[CS]E"]
+license =  {file = "LICENSE"}
+# license-files = ["LICEN[CS]E"]
 
 authors = [
     {name = "Caleb Buahin", email = "buahin.caleb@epa.gov"},
