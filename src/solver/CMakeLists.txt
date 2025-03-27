@@ -48,7 +48,7 @@ endif()
 
 if (APPLE)
     set_target_properties(
-        runswmm
+        swmm5
         PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}

@@ -19,7 +19,7 @@ python_extension_module(_output)
 
 if (APPLE)
     set_target_properties(
-        _solver
+        _output
         PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}
