@@ -21,8 +21,7 @@ python_extension_module(_output)
 if(APPLE)
     set_target_properties(
         _output PROPERTIES
-        BUILD_WITH_INSTALL_RPATH TRUE
-        INSTALL_RPATH "@loader_path"
+        BUILD_WITH_INSTALL_RPATH FALSE
     )
 endif()
 
