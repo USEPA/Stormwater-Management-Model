@@ -26,15 +26,6 @@ target_link_libraries(runswmm
         swmm5
 )
 
-if (APPLE)
-    set_target_properties(
-        runswmm
-        PROPERTIES
-        VERSION ${PROJECT_VERSION}
-        SOVERSION ${PROJECT_VERSION_MAJOR}
-    )
-endif()
-
 # Set up rpath for runswmm inside install package
 set_target_properties(runswmm
     PROPERTIES
