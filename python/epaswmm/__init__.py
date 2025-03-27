@@ -29,9 +29,7 @@ elif platform.system() == "Darwin":  # macOS
         from epaswmm import _solver  # Test if the module loads without setting path
     except ImportError:
         lib_dir = os.path.join(sys.prefix, "lib")
-        os.environ["DYLD_LIBRARY_PATH"] = (
-            lib_dir + ":" + os.environ.get("DYLD_LIBRARY_PATH", "")
-        )
+        os.environ["DYLD_LIBRARY_PATH"] = lib_dir + ":" + os.environ.get("DYLD_LIBRARY_PATH", "")
 
 __version__ = importlib.metadata.version('epaswmm')
 

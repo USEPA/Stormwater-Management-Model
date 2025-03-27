@@ -204,8 +204,9 @@ jobs:
       working-directory: ${{ github.workspace }}/python
       run: |
         pyclean . 
-        python -m build
         python setup.py build_ext --inplace
+        python setup.py clean --all
+        python -m build
         python -m pip install .
         otool -L epaswmm/solver/*.so
     
@@ -214,17 +215,17 @@ jobs:
       run: |
         python -m pytest -v tests
     
-    # - name: Build Wheels
-    #   working-directory: ${{ github.workspace }}/python
-    #   env:
-    #     CIBW_TEST_COMMAND: "python -m pytest tests"
-    #     CIBW_BEFORE_TEST: pip install -r requirements.txt
-    #     CIBW_BEFORE_ALL_LINUX: yum install -y python3-devel || dnf install -y python3-devel
-    #     CIBW_BUILD_VERBOSITY: 1
-    #     CIBW_TEST_SKIP: "*-*linux_{aarch64,ppc64le,s390x} *-macosx_arm64 *-macosx_universal2:arm64 cp38-manylinux_x86_64"
-    #     CIBW_BEFORE_BUILD_MACOS: brew install ninja
-    #   run: |
-    #     cibuildwheel --output-dir wheelhouse
+    - name: Build Wheels
+      uses: pypa/cibuildwheel@v2.23.2
+      with:
+        package-dir: ./python
+      env:
+        CIBW_TEST_COMMAND: "python -m pytest tests"
+        CIBW_BEFORE_TEST: pip install -r requirements.txt
+        CIBW_BEFORE_ALL_LINUX: yum install -y python3-devel || dnf install -y python3-devel
+        CIBW_BUILD_VERBOSITY: 1
+        CIBW_SKIP: "*-win32 *-manylinux_i686 pp* *-musllinux*"
+        CIBW_BEFORE_BUILD_MACOS: brew install ninja
     
     - name: Upload Python Wheels
       if: ${{ always() }}
@@ -232,9 +233,9 @@ jobs:
       with:
         name: python-wheels-${{ matrix.vcpkg_triplet }} 
         path: |
-          # python/wheelhouse/*.whl
-          # python/wheelhouse/*.tar.gz
-          # python/wheelhouse/*.zip
+          python/wheelhouse/*.whl
+          python/wheelhouse/*.tar.gz
+          python/wheelhouse/*.zip
           python/dist/*.whl
           python/dist/*.tar.gz
           python/dist/*.zip
