@@ -602,7 +602,7 @@ int EXPORT_SWMM_SOLVER_API swmm_open(const char *inputFile, const char *reportFi
 /*!
  * \copydoc swmm_start
  */
-int EXPORT_SWMM_SOLVER_API swmm_start(int saveResults)
+int EXPORT_SWMM_SOLVER_API swmm_start(int saveFlag)
 {
     // --- check that a project is open & no run started
     if (ErrorCode)
@@ -621,7 +621,7 @@ int EXPORT_SWMM_SOLVER_API swmm_start(int saveResults)
     }
 
     // --- save saveResults flag to global variable
-    SaveResultsFlag = saveResults;
+    SaveResultsFlag = saveFlag;
     ExceptionCount = 0;
 
 #ifdef EXH

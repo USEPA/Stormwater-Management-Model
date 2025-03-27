@@ -17,7 +17,6 @@ cpdef double encode_swmm_datetime(cython_datetime pdatetime)
 # Define the number of days since 01/01/00
 cpdef cython_datetime decode_swmm_datetime(double swmm_datetime)
 
-
 cdef extern from "Python.h":
     object PyObject_CallObject(object, object)
 
