@@ -214,6 +214,23 @@ jobs:
       run: |
         python -m pytest -v tests
     
+    - name: Clean Up (Unix like)
+      working-directory: ${{ github.workspace }}/python
+      if: ${{ matrix.os != 'windows-latest' }}  
+      run: |
+        pyclean .
+        rm -rf build dist *.egg-info
+        find . -name "*.so" -type f -delete
+    
+    - name: Clean Up (Windows)
+      working-directory: ${{ github.workspace }}/python
+      if: ${{ matrix.os == 'windows-latest' }}
+      run: |
+        pyclean .
+        del /s /q build dist *.egg-info
+        del /s /q *.pyd
+      
+    
     - name: Build Wheels
       uses: pypa/cibuildwheel@v2.23.2
       with:
