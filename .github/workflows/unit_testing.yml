@@ -219,7 +219,7 @@ jobs:
       if: ${{ matrix.os != 'windows-latest' }}  
       run: |
         pyclean .
-        rm -rf build dist *.egg-info
+        rm -rf build _skbuild dist *.egg-info
         find . -name "*.so" -type f -delete
     
     - name: Clean Up (Windows)
@@ -227,6 +227,7 @@ jobs:
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
         pyclean .
+        del /s /q _skbuild
         del /s /q build dist *.egg-info
         del /s /q *.pyd
       
