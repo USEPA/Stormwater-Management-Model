@@ -221,7 +221,6 @@ jobs:
       env:
         CIBW_TEST_COMMAND: "python -m pytest tests"
         CIBW_BEFORE_TEST: pip install -r requirements.txt
-        CIBW_BEFORE_ALL_LINUX: yum install -y python3-devel || dnf install -y python3-devel
         CIBW_BUILD_VERBOSITY: 1
         CIBW_SKIP: "*-win32 *-manylinux_i686 pp* *-musllinux*"
         CIBW_BEFORE_BUILD_MACOS: brew install ninja

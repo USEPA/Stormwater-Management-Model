@@ -25,6 +25,7 @@ recursive-include tests *.inp
 recursive-include docs *.*
 recursive-include tests *.*
 global-exclude *.pyd
+global-exclude *.so
 global-exclude *.pyc
 global-exclude *_drainage_example.out
 global-exclude *__pycache__*
