@@ -101,8 +101,8 @@
         {
             "name": "Darwin",
             "inherits": "default",
-            "description": "macOS build using Xcode generator",
-            "generator": "Xcode",
+            "description": "macOS build using Ninja generator",
+            "generator": "Ninja",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_C_FLAGS": "-O2 -flto -fdata-sections -ffunction-sections -fno-fast-math -Wall -Wextra -fvisibility=hidden",
@@ -124,8 +124,8 @@
         {
             "name": "Darwin-debug",
             "inherits": "default-debug",
-            "description": "macOS build for debugging using Xcode generator",
-            "generator": "Xcode",
+            "description": "macOS build for debugging using Ninja generator",
+            "generator": "Ninja",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_C_FLAGS": "-O0 -g -DDEBUG -Wall -Wextra -fno-fast-math -fvisibility=hidden",

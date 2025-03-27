@@ -109,8 +109,8 @@
         {
             "name": "Darwin",
             "inherits": "default",
-            "description": "macOS build using Xcode generator",
-            "generator": "Xcode",
+            "description": "macOS build using Ninja generator",
+            "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/darwin",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
@@ -133,8 +133,8 @@
         {
             "name": "Darwin-debug",
             "inherits": "default-debug",
-            "description": "macOS build for debugging using Xcode generator",
-            "generator": "Xcode",
+            "description": "macOS build for debugging using Ninja generator",
+            "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/darwin-debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
