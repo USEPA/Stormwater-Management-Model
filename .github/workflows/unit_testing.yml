@@ -112,7 +112,7 @@ jobs:
       matrix:
         # os: [windows-latest, ubuntu-latest, macos-13, macos-latest]
         os: [macos-13]
-        python: [3.13]
+        python: [3.12]
         include:
 
           # - os: windows-latest
