@@ -23,7 +23,8 @@ python_extension_module(_solver)
 if(APPLE)
     set_target_properties(
         _solver PROPERTIES
-        BUILD_WITH_INSTALL_RPATH FALSE
+        INSTALL_RPATH "@loader_path/../../../.."
+        INSTALL_RPATH_USE_LINK_PATH TRUE
     )
 endif()
 
