@@ -21,6 +21,19 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# Location of package at runtime on MacOS/Linux
+if(APPLE)
+    set(LIB_ROOT "@loader_path")
+else()
+    set(LIB_ROOT "$ORIGIN")
+endif()
+
+# Set up rpath on MacOS and Linux
+set(PACKAGE_RPATH
+    "${LIB_ROOT}/../../epaswmm/"
+)
+
+
 # Add subdirectories
 add_subdirectory(solver)
 add_subdirectory(output)
