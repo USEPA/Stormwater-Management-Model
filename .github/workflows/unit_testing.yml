@@ -236,7 +236,7 @@ jobs:
       with:
         package-dir: ./python
       env:
-        CIBW_TEST_COMMAND: "python setup.py build_ext --inplace && python -m pip install {package} && python -m pytest {package}/tests -v"
+        CIBW_TEST_COMMAND: "python {package}/setup.py build_ext --inplace && python -m pip install {package} && python -m pytest {package}/tests -v"
         CIBW_BEFORE_TEST: "pip install -r {package}/requirements.txt && python -m pip install ninja && rm -rf {package}/build {package}/dist {package}/*.egg-info {package}/_skbuild"
         CIBW_BUILD_VERBOSITY: 1
         CIBW_SKIP: "*-win32 *-manylinux_i686 pp* *-musllinux*"

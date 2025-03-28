@@ -41,4 +41,10 @@ include(InstallRequiredSystemLibraries)
 add_subdirectory(../src/solver ./solver_build)
 add_subdirectory(../src/outfile ./output_build)
 
+if(APPLE)
+    set(LIB_ROOT "@loader_path")
+else()
+    set(LIB_ROOT "$ORIGIN")
+endif()
+
 add_subdirectory(epaswmm)
