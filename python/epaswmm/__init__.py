@@ -10,6 +10,8 @@ import sys
 import importlib.metadata
 
 
+print("EPASWMM Python API v" + sys.prefix + " " + sys.executable)
+
 try:
     from epaswmm import *
 except ImportError:

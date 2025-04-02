@@ -10,9 +10,7 @@ project(
     LANGUAGES C CXX
 )
 
-if (APPLE)
-    set(CMAKE_MACOSX_RPATH ON)
-endif()
+set(CMAKE_MACOSX_RPATH ON)
 
 # Define build options
 cmake_policy(SET CMP0148 OLD)

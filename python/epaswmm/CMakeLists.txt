@@ -8,8 +8,13 @@ add_cython_target(_epaswmm _epaswmm.pyx CXX PY3)
 # Create Python extension modules
 add_library(_epaswmm MODULE ${_epaswmm})
 
-python_extension_module(_epaswmm)
+set_target_properties(_epaswmm
+    PROPERTIES
+        VERSION ${LIBRARY_VERSION}
+        SOVERSION ${LIBRARY_SOVERSION}
+)
 
+python_extension_module(_epaswmm)
 
 # Install the epaswmm module
 install(TARGETS _epaswmm LIBRARY DESTINATION epaswmm)
@@ -20,19 +25,6 @@ target_include_directories(
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
-
-# Location of package at runtime on MacOS/Linux
-if(APPLE)
-    set(LIB_ROOT "@loader_path")
-else()
-    set(LIB_ROOT "$ORIGIN")
-endif()
-
-# Set up rpath on MacOS and Linux
-set(PACKAGE_RPATH
-    "${LIB_ROOT}/../../epaswmm/"
-)
-
 
 # Add subdirectories
 add_subdirectory(solver)

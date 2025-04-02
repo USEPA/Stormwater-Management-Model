@@ -101,7 +101,7 @@
         {
             "name": "Darwin",
             "inherits": "default",
-            "description": "macOS build using Ninja generator",
+            "description": "macOS build using XCode generator",
             "generator": "Ninja",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",

@@ -11,7 +11,25 @@
 #         US EPA ORD/CESER 
 #
 
-find_package(OpenMP REQUIRED)
+if(APPLE)
+    find_package(OpenMP)
+    if(NOT OpenMP_FOUND)
+        # libomp 15.0+ from brew is keg-only, so have to search in other locations.
+        # See https://github.com/Homebrew/homebrew-core/issues/112107#issuecomment-1278042927.
+        execute_process(COMMAND brew --prefix libomp
+                    OUTPUT_VARIABLE HOMEBREW_LIBOMP_PREFIX
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+        set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -I${HOMEBREW_LIBOMP_PREFIX}/include")
+        set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -I${HOMEBREW_LIBOMP_PREFIX}/include")
+        set(OpenMP_C_LIB_NAMES omp)
+        set(OpenMP_CXX_LIB_NAMES omp)
+        set(OpenMP_omp_LIBRARY ${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib)
+        find_package(OpenMP REQUIRED)
+    endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+else()
+    find_package(OpenMP REQUIRED)
+endif()
 
 
 # configure file groups
@@ -83,10 +101,11 @@ file(COPY ${CMAKE_CURRENT_BINARY_DIR}/swmm5_export.h
     DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(swmm5
-    PRIVATE
-        $<$<NOT:$<BOOL:$<C_COMPILER_ID:MSVC>>>:m>
-        OpenMP::OpenMP_C
+target_link_libraries(
+    swmm5
+        PRIVATE
+    $<$<NOT:$<BOOL:$<C_COMPILER_ID:MSVC>>>:m>
+    OpenMP::OpenMP_C
 )
 
 # Set public include directories for both build and install time
