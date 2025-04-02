@@ -206,7 +206,7 @@ jobs:
         pyclean . 
         python setup.py build_ext --inplace
         python setup.py clean --all
-        python -m pip install . --use-feature=in-tree-build
+        python -m pip install .
     
     - name: Unit Test
       working-directory: ${{ github.workspace }}/python
