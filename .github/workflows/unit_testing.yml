@@ -203,9 +203,9 @@ jobs:
     - name: Build and Install
       working-directory: ${{ github.workspace }}/python
       run: |
-        # pyclean . 
-        # python setup.py build_ext --inplace
-        # python setup.py clean --all
+        pyclean . 
+        python setup.py build_ext --inplace
+        python setup.py clean --all
         python -m build .
         python -m pip install .
     
