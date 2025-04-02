@@ -203,9 +203,10 @@ jobs:
     - name: Build and Install
       working-directory: ${{ github.workspace }}/python
       run: |
-        pyclean . 
-        python setup.py build_ext --inplace
-        python setup.py clean --all
+        # pyclean . 
+        # python setup.py build_ext --inplace
+        # python setup.py clean --all
+        python -m build .
         python -m pip install .
     
     - name: Unit Test
@@ -235,6 +236,7 @@ jobs:
       uses: pypa/cibuildwheel@v2.23.2
       with:
         package-dir: ./python
+        output-dir: ./python/wheelhouse
       env:
         # CIBW_TEST_COMMAND: "python {package}/setup.py build_ext --inplace && python -m pip install {package} && python -m pytest {package}/tests -v"
         CIBW_BEFORE_TEST: "pip install -r {package}/requirements.txt && python -m pip install ninja && rm -rf {package}/build {package}/dist {package}/*.egg-info {package}/_skbuild"
