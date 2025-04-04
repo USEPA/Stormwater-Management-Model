@@ -212,6 +212,7 @@ jobs:
       run: |
         python -m pytest -v tests
         python setup.py clean --all
+        python -m build .
     
     # - name: Clean Up (Unix like)
     #   working-directory: ${{ github.workspace }}/python
@@ -240,9 +241,6 @@ jobs:
         # CIBW_TEST_COMMAND: "python {package}/setup.py build_ext --inplace && python -m pip install {package} && python -m pytest {package}/tests -v"
         CIBW_BEFORE_TEST: "pip install -r {package}/requirements.txt && python -m pip install ninja"
         CIBW_BUILD_VERBOSITY: 1
-        CIBW_ARCHS: "x86_64 aarch64"
-        CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
-        CIBW_MANYLINUX_AARCH64_IMAGE: "manylinux2014"
         CIBW_BEFORE_BUILD_MACOS: brew install ninja
         CIBW_REPAIR_WHEEL_COMMAND: ''
 
