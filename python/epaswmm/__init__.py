@@ -9,9 +9,6 @@ import platform
 import sys
 import importlib.metadata
 
-
-print("EPASWMM Python API v" + sys.prefix + " " + sys.executable)
-
 try:
     from epaswmm import *
 except ImportError:
@@ -27,10 +24,14 @@ except ImportError:
 
     elif platform.system() == "Linux":
         lib_dir = os.path.join(sys.prefix, "lib")
+        sys.path.append(lib_dir)
         os.environ["LD_LIBRARY_PATH"] = lib_dir + ":" + os.environ.get("LD_LIBRARY_PATH", "")
 
     elif platform.system() == "Darwin":  # macOS
         lib_dir = os.path.join(sys.prefix, "lib")
+        sys.path.append(lib_dir)
+
+        
         os.environ["DYLD_LIBRARY_PATH"] = lib_dir + ":" + os.environ.get("DYLD_LIBRARY_PATH", "")
 
         lib_dir = os.path.join(sys.prefix, "bin")

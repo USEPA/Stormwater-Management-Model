@@ -1060,7 +1060,7 @@ void writeStreetStats(int link)
 //           SWMM's report file.
 //
 {
-    int     k, t, placement;
+    int     k = 0, t = 0, placement = 0;
     double  maxSpread, maxDepth, maxFlow;
     double  fp, cp, afc = 0.0, bpf = 0.0;
     TInlet* inlet;
@@ -1279,8 +1279,8 @@ double getOnGradeCapturedFlow(TInlet* inlet, double q, double d)
 //  sequentially, where its approach flow has been reduced by the
 //  amount of flow captured by prior inlets.
 {
-    int    i,
-           linkIndex;        // index of link containing inlets
+    int    i = 0,
+           linkIndex = 0;        // index of link containing inlets
     double qApproach,        // single inlet's approach flow (cfs)
            qc,               // single inlet's captured flow (cfs)
            qCaptured,        // total flow captured by link's inlets (cfs)
@@ -1580,7 +1580,7 @@ double getOnSagCapturedFlow(TInlet* inlet, double q, double d)
 //  Purpose: computes flow captured by an inlet placed on-sag.
 //
 {
-    int    linkIndex, designIndex, totalInlets;
+    int    linkIndex = 0, designIndex = 0, totalInlets = 0;
     double qCaptured = 0.0, qMax = BIG;
 
     if (inlet->numInlets == 0) return 0.0;
@@ -1817,7 +1817,7 @@ void getBackflowRatios()
     TInlet* inlet;
     double  area;
     double  f;
-    int     nodeIndex;
+    int     nodeIndex = 0;
 
     // --- info for each node receiving flow from an inlet
     typedef struct

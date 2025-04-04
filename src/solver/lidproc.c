@@ -744,8 +744,8 @@ void trenchFluxRates(double x[], double f[])
     double storageDepth;
 
     // Intermediate variables
-    double availVolume;
-    double maxRate;
+    double availVolume = 0.0;
+    double maxRate = 0.0;
 
     // Storage layer properties
     double storageThickness = theLidProc->storage.thickness;

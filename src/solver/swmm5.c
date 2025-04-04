@@ -2531,7 +2531,7 @@ size_t sstrncpy(char *dest, const char *src, size_t n)
     {
         while (*(src + offset) != '\0')
         {
-            if (offset == n)
+            if ((size_t)offset == n)
                 break;
             *(dest + offset) = *(src + offset);
             offset++;

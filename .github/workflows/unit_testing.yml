@@ -205,31 +205,29 @@ jobs:
       run: |
         pyclean . 
         python setup.py build_ext --inplace
-        python setup.py clean --all
-        python -m build .
-        python -m pip install .
     
     - name: Unit Test
       working-directory: ${{ github.workspace }}/python
       run: |
         python -m pytest -v tests
+        python setup.py clean --all
     
-    - name: Clean Up (Unix like)
-      working-directory: ${{ github.workspace }}/python
-      if: ${{ matrix.os != 'windows-latest' }}  
-      run: |
-        pyclean .
-        rm -rf build _skbuild dist *.egg-info
-        find . -name "*.so" -type f -delete
+    # - name: Clean Up (Unix like)
+    #   working-directory: ${{ github.workspace }}/python
+    #   if: ${{ matrix.os != 'windows-latest' }}  
+    #   run: |
+    #     pyclean .
+    #     rm -rf build _skbuild dist *.egg-info
+    #     find . -name "*.so" -type f -delete
     
-    - name: Clean Up (Windows)
-      working-directory: ${{ github.workspace }}/python
-      if: ${{ matrix.os == 'windows-latest' }}
-      run: |
-        pyclean .
-        del /s /q _skbuild
-        del /s /q build dist *.egg-info
-        del /s /q *.pyd
+    # - name: Clean Up (Windows)
+    #   working-directory: ${{ github.workspace }}/python
+    #   if: ${{ matrix.os == 'windows-latest' }}
+    #   run: |
+    #     pyclean .
+    #     del /s /q _skbuild
+    #     del /s /q build dist *.egg-info
+    #     del /s /q *.pyd
       
     
     - name: Build Wheels
@@ -239,7 +237,7 @@ jobs:
         output-dir: ./python/wheelhouse
       env:
         # CIBW_TEST_COMMAND: "python {package}/setup.py build_ext --inplace && python -m pip install {package} && python -m pytest {package}/tests -v"
-        CIBW_BEFORE_TEST: "pip install -r {package}/requirements.txt && python -m pip install ninja && rm -rf {package}/build {package}/dist {package}/*.egg-info {package}/_skbuild"
+        CIBW_BEFORE_TEST: "pip install -r {package}/requirements.txt && python -m pip install ninja"
         CIBW_BUILD_VERBOSITY: 1
         CIBW_ARCHS: "x86_64 aarch64"
         CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"

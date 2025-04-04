@@ -36,13 +36,11 @@ endif()
 set(CMAKE_INSTALL_OPENMP_LIBRARIES TRUE)
 include(InstallRequiredSystemLibraries)
 
-add_subdirectory(../src/solver ./solver_build)
-add_subdirectory(../src/outfile ./output_build)
+# Define the paths to the solver and outfile build directories
+set(SOLVER_BUILD_DIR "${CMAKE_BINARY_DIR}/solver_build")
+set(OUTFILE_BUILD_DIR "${CMAKE_BINARY_DIR}/output_build")
 
-if(APPLE)
-    set(LIB_ROOT "@loader_path")
-else()
-    set(LIB_ROOT "$ORIGIN")
-endif()
+add_subdirectory(../src/solver ${SOLVER_BUILD_DIR})
+add_subdirectory(../src/outfile ${OUTFILE_BUILD_DIR})
 
 add_subdirectory(epaswmm)

@@ -119,18 +119,16 @@ target_include_directories(
 )
 
 if(APPLE)
-    set(LIB_ROOT "@loader_path")
+    set(LIB_ROOT "@loader_path/../lib;@rpath")
 else()
-    set(LIB_ROOT "$ORIGIN")
+    set(LIB_ROOT "$ORIGIN/../lib;$ORIGIN")
 endif()
 
 set_target_properties(swmm5
     PROPERTIES
-        MACOSX_RPATH TRUE
-        SKIP_BUILD_RPATH FALSE
-        BUILD_WITH_INSTALL_RPATH FALSE
-        INSTALL_RPATH "${LIB_ROOT};${PACKAGE_RPATH};"
-        INSTALL_RPATH_USE_LINK_PATH TRUE
+        INSTALL_RPATH "${LIB_ROOT}"
+        BUILD_RPATH "${LIB_ROOT}"
+        BUILD_WITH_INSTALL_RPATH TRUE
 )
 
 install(
