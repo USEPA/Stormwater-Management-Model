@@ -204,7 +204,7 @@ jobs:
       working-directory: ${{ github.workspace }}/python
       run: |
         pyclean . 
-        python setup.py build_ext --inplace
+        python -m pip install -e .
     
     - name: Unit Test
       working-directory: ${{ github.workspace }}/python
