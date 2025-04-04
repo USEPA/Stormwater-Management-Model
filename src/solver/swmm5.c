@@ -2546,11 +2546,10 @@ size_t sstrncpy(char *dest, const char *src, size_t n)
  */
 size_t sstrcat(char *dest, const char *src, size_t destsize)
 {
-    size_t dest_len, src_len, offset, src_index;
+    size_t dest_len, offset = 0, src_index = 0;
 
     // obtain initial sizes
     dest_len = strlen(dest);
-    src_len = strlen(src);
 
     // get the end of dest
     offset = dest_len;
