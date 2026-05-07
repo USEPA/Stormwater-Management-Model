@@ -60,6 +60,14 @@ target_compile_options(swmm5
             $<$<CONFIG:Release>:/fp:fast>
             $<$<CONFIG:Release>:/Zi>
         >
+        $<$<AND:$<C_COMPILER_ID:GNU>,$<CONFIG:Release>>:
+            -U_FORTIFY_SOURCE
+            -D_FORTIFY_SOURCE=0
+        >
+        $<$<AND:$<C_COMPILER_ID:GNU>,$<CONFIG:RelWithDebInfo>>:
+            -U_FORTIFY_SOURCE
+            -D_FORTIFY_SOURCE=0
+        >
 )
 
 target_link_options(swmm5
