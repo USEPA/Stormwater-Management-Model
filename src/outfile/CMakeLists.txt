@@ -22,6 +22,18 @@ add_library(swmm-output
         errormanager.c
 )
 
+target_compile_options(swmm-output
+    PUBLIC
+        $<$<AND:$<C_COMPILER_ID:GNU>,$<CONFIG:Release>>:
+            -U_FORTIFY_SOURCE
+            -D_FORTIFY_SOURCE=0
+        >
+        $<$<AND:$<C_COMPILER_ID:GNU>,$<CONFIG:RelWithDebInfo>>:
+            -U_FORTIFY_SOURCE
+            -D_FORTIFY_SOURCE=0
+        >
+)
+
 target_include_directories(swmm-output
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
