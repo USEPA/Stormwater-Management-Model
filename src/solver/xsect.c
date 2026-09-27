@@ -1484,7 +1484,9 @@ double lookup(double x, double *table, int nItems)
     int     i;
 
     // --- find which segment of table contains x
-    delta = 1.0 / ((double)nItems-1);
+    if ( nItems == 51 ) delta = 0.02;
+    else if ( nItems == 26 ) delta = 0.04;
+    else delta = 1.0 / ((double)nItems-1);
     i = (int)(x / delta);
     if ( i >= nItems - 1 ) return table[nItems-1];
 
@@ -1536,7 +1538,9 @@ double invLookup(double y, double *table, int nItems)
     int    i;                // lower table index that brackets y
 
     // --- compute table's uniform x-increment
-    dx = 1.0 / (double)((double)nItems-1);
+    if ( nItems == 51 ) dx = 0.02;
+    else if ( nItems == 26 ) dx = 0.04;
+    else dx = 1.0 / ((double)nItems-1);
 
     // --- truncate item count if last 2 table entries are decreasing
     n = nItems;
@@ -1577,12 +1581,10 @@ int locate(double y, double *table, int jLast)
 //  Purpose: uses bisection method to locate the highest table index whose
 //           table entry does not exceed a given value.
 //
-//  Notes:   This function is only used in conjunction with invLookup().
-//
 {
     int j;
     int j1 = 0;
-    int j2 = jLast;
+    int step;
 
     // Check if value <= first table entry
     if ( y <= table[0] ) return 0;
@@ -1590,20 +1592,17 @@ int locate(double y, double *table, int jLast)
     // Check if value >= the last entry
     if ( y >= table[jLast] ) return jLast;
 
-    // While a portion of the table still remains
-    while ( j2 - j1 > 1)
+    // Current geometry tables contain either 26 or 51 entries.
+    step = jLast >= 32 ? 32 : 16;
+
+    // Search successively smaller power-of-two offsets.
+    while ( step > 0 )
     {
-        // Find midpoint of remaining portion of table
-        j = (j1 + j2) >> 1;
-
-        // Value is greater or equal to midpoint: search from midpoint to j2
-        if ( y >= table[j] ) j1 = j;
-
-        // Value is less than midpoint: search from j1 to midpoint
-        else j2 = j;
+        j = j1 + step;
+        if ( j <= jLast && y >= table[j] ) j1 = j;
+        step >>= 1;
     }
 
-    // Return the lower index of the remaining interval,
     return j1;
 }
 
