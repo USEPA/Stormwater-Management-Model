@@ -1383,7 +1383,7 @@ double conduit_getLossRate(int j, int routeModel, double q, double tstep)
 
         // --- limit total loss rate to current volume for DW routing
         //     or current link flow rate otherwise
-        if (routeModel == DW) q = Link[j].newVolume / tstep;
+        if (routeModel == DW) q = Link[j].newVolume / (tstep * Conduit[Link[j].subIndex].barrels);
         else q = ABS(q);        
         if (totalLossRate > q)
         {
