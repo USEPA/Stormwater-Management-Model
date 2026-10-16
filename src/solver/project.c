@@ -162,7 +162,11 @@ void project_readInput()
     else
     {
         // --- compute total duration of simulation in seconds
-        TotalDuration = floor((EndDateTime - StartDateTime) * SECperDAY);
+        //     (the 0.001 sec tolerance absorbs the floating point error of
+        //      the difference between two large date/time values; without it
+        //      floor() can drop a whole second and the last reporting period
+        //      of the simulation is never saved)
+        TotalDuration = floor((EndDateTime - StartDateTime) * SECperDAY + 0.001);
 
         // --- reporting step must be <= total duration
         if ( (double)ReportStep > TotalDuration )

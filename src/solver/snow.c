@@ -183,6 +183,7 @@ void snow_initSnowpack(int j)
         snowpack->coldc[i] = 0.0;
         snowpack->ati[i]   = Snowmelt[k].tbase[i];
         snowpack->awe[i]   = 1.0;
+        snowpack->imelt[i] = 0.0;              // only set later for surfaces with area > 0
         snowDepth += snowpack->wsnow[i] * snowpack->fArea[i];
     }
     Subcatch[j].newSnowDepth = snowDepth;
