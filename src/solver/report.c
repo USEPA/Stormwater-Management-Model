@@ -991,7 +991,7 @@ void report_writeMaxFlowTurns(TMaxStats flowTurns[], int nMaxStats)
     WRITE("********************************");
     WRITE("Highest Flow Instability Indexes");
     WRITE("********************************");
-    if ( nMaxStats <= 0 || flowTurns[0].index <= 0 )
+    if ( nMaxStats <= 0 || flowTurns[0].index < 0 )
         fprintf(Frpt.file, "\n  All links are stable.");
     else
     {
@@ -1016,7 +1016,7 @@ void report_writeNonconvergedStats(TMaxStats maxNonconverged[], int nMaxStats)
     WRITE("*********************************");
     WRITE("Most Frequent Nonconverging Nodes");
     WRITE("*********************************");
-    if (nMaxStats <= 0 || maxNonconverged[0].index <= 0 ||
+    if (nMaxStats <= 0 || maxNonconverged[0].index < 0 ||
         maxNonconverged[0].value < 0.00005)
         fprintf(Frpt.file, "\n  Convergence obtained at all time steps.");
     else

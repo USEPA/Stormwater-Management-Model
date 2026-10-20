@@ -268,7 +268,12 @@ void updateConvergenceStats()
     int i;
     NonConvergeCount++;
     for (i = 0; i < Nobjects[NODE]; i++)
+    {
+        // --- outfalls are not checked for convergence (see findNodeDepths)
+        //     so their converged flag is never set to TRUE
+        if ( Node[i].type == OUTFALL ) continue;
         stats_updateConvergenceStats(i, Xnode[i].converged);
+    }
 }
 
 //=============================================================================
